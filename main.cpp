@@ -11,7 +11,7 @@
 #include <string>
 #include <cmath>
 #include <vector>
-#include "shader.h"
+#include "material.h"
 #include "texture.h"
 
 struct AppState
@@ -357,6 +357,8 @@ int main()
 
 	Texture texture0("textures/earth.png", GL_TEXTURE_2D, 0);
 
+	Material material0(glm::vec3(0.1f), glm::vec3(1.f), glm::vec3(1.f), texture0.getTextureUnit(), texture0.getTextureUnit(), 32.f);
+
 	glm::mat4 ModelMatrix(1.f);
 	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.f));
 	ModelMatrix = glm::rotate(ModelMatrix, glm::radians(0.f),  glm::vec3(1.f, 0.f, 0.f));
@@ -374,8 +376,6 @@ int main()
 	glm::vec3 lightPos0(0.f, 0.f, 1.f);
 
 	core_program.use();
-
-	core_program.set1i(texture0.getTextureUnit(), "texture0");
 
 	core_program.setMat4fv(ModelMatrix, "ModelMatrix");
 	core_program.setMat4fv(appState.ViewMatrix, "ViewMatrix");
@@ -405,6 +405,7 @@ int main()
 
 		core_program.setVec3f(appState.camPosition, "camPosition");
 		core_program.set1i(1, "isTexture");
+		material0.sendToShader(core_program);
 	
 		texture0.bind();
 
