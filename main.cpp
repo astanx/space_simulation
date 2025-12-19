@@ -12,6 +12,7 @@
 #include <cmath>
 #include <vector>
 #include "material.h"
+#include "light.h"
 #include "texture.h"
 
 struct AppState
@@ -373,7 +374,7 @@ int main()
 		appState.farPlane
 	);
 
-	glm::vec3 lightPos0(0.f, 0.f, 1.f);
+	Light light(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.2f), glm::vec3(0.5f), glm::vec3(1.f));
 
 	core_program.use();
 
@@ -381,7 +382,7 @@ int main()
 	core_program.setMat4fv(appState.ViewMatrix, "ViewMatrix");
 	core_program.setMat4fv(appState.ProjectionMatrix, "ProjectionMatrix");
 	
-	core_program.setVec3f(lightPos0, "lightPos0");
+	light.sendToShader(core_program);
 	core_program.setVec3f(appState.camPosition, "camPosition");
 	core_program.unuse();
 	
@@ -406,11 +407,11 @@ int main()
 		core_program.setVec3f(appState.camPosition, "camPosition");
 		core_program.set1i(1, "isTexture");
 		material0.sendToShader(core_program);
-	
+
 		texture0.bind();
 
 		glBindVertexArray(VAO);
-		
+	 
 		glDrawElements(GL_TRIANGLES, nrOfIndicies, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
