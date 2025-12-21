@@ -27,7 +27,7 @@ public:
   { 
     this->type = type;
     this->textureUnit = textureUnit;
-    unsigned char* image = SOIL_load_image("textures/earth.png", &this->width, &this->height, 0, SOIL_LOAD_RGBA);
+    unsigned char* image = SOIL_load_image(fileName, &this->width, &this->height, 0, SOIL_LOAD_RGBA);
     
     glGenTextures(1, &this->id);
     glBindTexture(type, this->id);
@@ -35,7 +35,7 @@ public:
     glTexParameteri(type, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(type, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     if(image)
     {
@@ -82,7 +82,7 @@ public:
   void loadFromFile(const char* fileName)
   {
     if (this->id) glDeleteTextures(1, &this->id);
-    unsigned char* image = SOIL_load_image("textures/earth.png", &this->width, &this->height, 0, SOIL_LOAD_RGBA);
+    unsigned char* image = SOIL_load_image(fileName, &this->width, &this->height, 0, SOIL_LOAD_RGBA);
     
     glGenTextures(1, &this->id);
     glBindTexture(this->type, this->id);
@@ -90,7 +90,7 @@ public:
     glTexParameteri(this->type, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(this->type, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(this->type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(this->type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(this->type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     if(image)
     {

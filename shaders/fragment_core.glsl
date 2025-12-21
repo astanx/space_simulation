@@ -17,6 +17,10 @@ struct Light
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
+
+  float constant;
+  float linear;
+  float quadratic;
 };
 
 in vec3 vs_position;
@@ -32,25 +36,40 @@ uniform Light light;
 uniform bool isTexture;
 uniform vec3 camPosition; 
 
+
+vec3 getAlbedo()
+{
+  return isTexture
+  ? texture(material.diffuseTexture, vs_texcoord).rgb
+  : vs_color;
+}
+
+vec3 getSpecularMap()
+{
+  return isTexture
+  ? texture(material.specularTexture, vs_texcoord).rgb
+  : vec3(1.0);
+}
+
 vec3 calculateAmbient()
 {
-  return material.ambient * light.ambient;
+  return light.ambient * getAlbedo();
 }
 
 vec3 calculateDiffuse()
 {
-  vec3 posToLightDirVec = normalize(vs_position - light.position);
-  float diffuse = clamp(dot(posToLightDirVec, vs_normal), 0, 1);
-  return material.diffuse * diffuse * light.diffuse;
+  vec3 lightDir = normalize(light.position - vs_position);
+  float diffuse = max(dot(normalize(vs_normal), lightDir), 0.0);
+  return light.diffuse * diffuse * getAlbedo();
 }
 
 vec3 calculateSpecular()
 {
   vec3 lightToPosDirVec = normalize(light.position - vs_position);
-  vec3 reflectDirVec = normalize(reflect(lightToPosDirVec, normalize(vs_normal)));
-  vec3 posToViewDirVec = normalize(vs_position - camPosition);
-  float specular = pow(max(dot(posToViewDirVec, reflectDirVec), 0), material.shininess);
-  return material.specular * specular * light.specular;
+  vec3 reflectDirVec = reflect(-lightToPosDirVec, normalize(vs_normal));
+  vec3 viewDir = normalize(camPosition - vs_position);
+  float specular = pow(max(dot(viewDir, reflectDirVec), 0.0), material.shininess);
+  return light.specular * specular * getSpecularMap();
 }
 
 void main()
@@ -61,9 +80,12 @@ void main()
 
   vec3 specularLight = calculateSpecular();
 
-  vec4 baseColor = isTexture 
-  ? texture(material.diffuseTexture, vs_texcoord) * vec4(vs_color, 1.f) 
-  : vec4(vs_color, 1.f);
+  float distance = length(light.position - vs_position);
+  float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance)); 
+
+  ambientLight *= attenuation;
+  diffuseLight *= attenuation;
+  specularLight *= attenuation; 
   
-  fs_color = baseColor * (vec4(ambientLight, 1.f) + vec4(diffuseLight, 1.f) + vec4(specularLight, 1.f));
+  fs_color = vec4(ambientLight, 1.f) + vec4(diffuseLight, 1.f) + vec4(specularLight, 1.f);
 }

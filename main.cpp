@@ -11,9 +11,8 @@
 #include <string>
 #include <cmath>
 #include <vector>
-#include "material.h"
+#include "mesh.h"
 #include "light.h"
-#include "texture.h"
 
 struct AppState
 {
@@ -35,42 +34,73 @@ struct AppState
 
 	float deltaTime = 0.f;
 	float lastFrame = 0.f;
-
+	
 	float yaw = -90.f;
 	float pitch = 0.f;
 	bool firstMouse = true;
 	float lastX = windowWidth / 2.f;
 	float lastY = windowHeight / 2.f;
 	float sensitivity = 0.1f;
+
+	Light light{glm::vec3(0.f, 0.f, 2.f), glm::vec3(0.8f), glm::vec3(2.f), glm::vec3(1.5f), 1.f, 	0.09f, 0.032f};
 };
 
-struct Vertex 
-{
-	glm::vec3 position;
-	glm::vec3 color;
-	glm::vec2 texcoord;
-	glm::vec3 normal;
-};
+
 
 Vertex vertices[] =
 {
-	glm::vec3(-0.5f, 0.5f, 0.f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 0.f, -1.f),
-	glm::vec3(-0.5f, -0.5f, 0.f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 0.f, -1.f),
-	glm::vec3(0.5f, -0.5f, 0.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 0.f, -1.f),
-	glm::vec3(0.5f, 0.5f, 0.f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 0.f, -1.f)
-};
+	// Front face (+Z)
+	{ glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 0.f, 1.f) },
+	{ glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 0.f, 1.f) },
+	{ glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 0.f, 1.f) },
+	{ glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 0.f, 1.f) },
 
+	// Back face (-Z)
+	{ glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 0.f, -1.f) },
+	{ glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 0.f, -1.f) },
+	{ glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 0.f, -1.f) },
+	{ glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 0.f, -1.f) },
+
+	// Left face (-X)
+	{ glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(-1.f, 0.f, 0.f) },
+	{ glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(-1.f, 0.f, 0.f) },
+	{ glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(-1.f, 0.f, 0.f) },
+	{ glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(-1.f, 0.f, 0.f) },
+
+	// Right face (+X)
+	{ glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(1.f, 0.f, 0.f) },
+	{ glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(1.f, 0.f, 0.f) },
+	{ glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(1.f, 0.f, 0.f) },
+	{ glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(1.f, 0.f, 0.f) },
+
+	// Top face (+Y)
+	{ glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 1.f, 0.f) },
+	{ glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 1.f, 0.f) },
+	{ glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 1.f, 0.f) },
+	{ glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 1.f, 0.f) },
+
+	// Bottom face (-Y)
+	{ glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, -1.f, 0.f) },
+	{ glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, -1.f, 0.f) },
+	{ glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, -1.f, 0.f) },
+	{ glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, -1.f, 0.f) },
+};
 
 unsigned nrOfVertices = sizeof(vertices) / sizeof(Vertex);
 
 GLuint indices[] =
 {
-  0, 1, 2,
-	0, 2, 3
+	0, 1, 2,  0, 2, 3,      // Front
+	4, 5, 6,  4, 6, 7,      // Back
+	8, 9,10,  8,10,11,     // Left
+	12,13,14, 12,14,15,    // Right
+	16,17,18, 16,18,19,    // Top
+	20,21,22, 20,22,23     // Bottom
 };
 
 
-unsigned nrOfIndicies = sizeof(indices) / sizeof(GLuint);
+
+unsigned nrOfIndices = sizeof(indices) / sizeof(GLuint);
 
 
 const double EPS = 1e-6;
@@ -78,18 +108,18 @@ const double G = 6.67430e-11;
 
 class Object {
 public:
-  std::vector<double> position;     // x, y
-  std::vector<double> velocity;     // vx, vy
-  std::vector<double> acceleration; // ax, ay
-  double mass;
-  double radius;
+	std::vector<double> position;     // x, y
+	std::vector<double> velocity;     // vx, vy
+	std::vector<double> acceleration; // ax, ay
+	double mass;
+	double radius;
 
-  Object(std::vector<double> position, std::vector<double> velocity, double mass, double radius)
-    : position(position), velocity(velocity), mass(mass), radius(radius)
-  {
-    //acceleration = {0.0, -9.81}; // Initial acceleration due to gravity
+	Object(std::vector<double> position, std::vector<double> velocity, double mass, double radius)
+		: position(position), velocity(velocity), mass(mass), radius(radius)
+	{
+		//acceleration = {0.0, -9.81}; // Initial acceleration due to gravity
 		acceleration = {0.0, 0.0};
-  }
+	}
 
 	void accelerate(const std::vector<double>& a) {
 		acceleration[0] += a[0];
@@ -230,15 +260,15 @@ void processInput(GLFWwindow* window)
 	{
 		appState->camPosition += cameraSpeed * appState->camFront;
 	}
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		appState->camPosition -= cameraSpeed * appState->camFront;
 	}
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{	
 		appState->camPosition -= glm::normalize(glm::cross(appState->camFront, appState->worldUp)) * cameraSpeed;
 	}
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{	
 		appState->camPosition += glm::normalize(glm::cross(appState->camFront, appState->worldUp)) * cameraSpeed;
 	}
@@ -249,6 +279,10 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
 		appState->camPosition -= cameraSpeed * appState->worldUp;
+	}
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+	{
+		appState->light.move(appState->camPosition);
 	}
 	appState->ViewMatrix = glm::lookAt(appState->camPosition, appState->camPosition + appState->camFront, appState->worldUp);
 }
@@ -287,9 +321,9 @@ int main()
 
 	GLFWwindow* window = glfwCreateWindow(appState.windowWidth, appState.windowHeight, "Gravity Simulation", NULL, NULL);
 	if (!window) {
-    std::cerr << "Failed to create GLFW window\n";
-    glfwTerminate();
-    return -1;
+		std::cerr << "Failed to create GLFW window\n";
+		glfwTerminate();
+		return -1;
 	}
 
 	glfwGetFramebufferSize(window, &appState.framebufferWidth, &appState.framebufferHeight);
@@ -324,48 +358,12 @@ int main()
 
 	Shader core_program("shaders/vertex_core.glsl", "shaders/fragment_core.glsl");
 
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	Mesh cube(vertices, nrOfVertices, indices, nrOfIndices);
 
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	Texture texture0("textures/container.png", GL_TEXTURE_2D, 0);
+	Texture specular("textures/container_specular.png", GL_TEXTURE_2D, 1);
 
-	GLuint EBO;
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, position));
-	glEnableVertexAttribArray(0);
-
-	// Color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, color));
-	glEnableVertexAttribArray(1);
-
-	// Texcoord attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, texcoord));
-	glEnableVertexAttribArray(2);
-
-	// Normal attribute
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
-	glEnableVertexAttribArray(3);
-
-	glBindVertexArray(0);
-
-	Texture texture0("textures/earth.png", GL_TEXTURE_2D, 0);
-
-	Material material0(glm::vec3(0.1f), glm::vec3(1.f), glm::vec3(1.f), texture0.getTextureUnit(), texture0.getTextureUnit(), 32.f);
-
-	glm::mat4 ModelMatrix(1.f);
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.f));
-	ModelMatrix = glm::rotate(ModelMatrix, glm::radians(0.f),  glm::vec3(1.f, 0.f, 0.f));
-	ModelMatrix = glm::rotate(ModelMatrix, glm::radians(0.f),  glm::vec3(0.f, 1.f, 0.f));
-	ModelMatrix = glm::rotate(ModelMatrix, glm::radians(0.f),  glm::vec3(0.f, 0.f, 1.f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(1.f));
+	Material material0(glm::vec3(0.1f), glm::vec3(1.f), glm::vec3(1.f), texture0.getTextureUnit(), specular.getTextureUnit(), 32.f);
 
 	appState.ProjectionMatrix = glm::perspective(
 		glm::radians(appState.fov), 
@@ -374,7 +372,6 @@ int main()
 		appState.farPlane
 	);
 
-	Light light(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.2f), glm::vec3(0.5f), glm::vec3(1.f));
 
 	core_program.use();
 
@@ -382,7 +379,7 @@ int main()
 	core_program.setMat4fv(appState.ViewMatrix, "ViewMatrix");
 	core_program.setMat4fv(appState.ProjectionMatrix, "ProjectionMatrix");
 	
-	light.sendToShader(core_program);
+	appState.light.sendToShader(core_program);
 	core_program.setVec3f(appState.camPosition, "camPosition");
 	core_program.unuse();
 	
@@ -400,25 +397,26 @@ int main()
 
 		core_program.use();
 
-		core_program.setMat4fv(ModelMatrix, "ModelMatrix");
 		core_program.setMat4fv(appState.ViewMatrix, "ViewMatrix");
 		core_program.setMat4fv(appState.ProjectionMatrix, "ProjectionMatrix");
 
 		core_program.setVec3f(appState.camPosition, "camPosition");
 		core_program.set1i(1, "isTexture");
+		appState.light.sendToShader(core_program);
 		material0.sendToShader(core_program);
 
 		texture0.bind();
+		specular.bind();
 
-		glBindVertexArray(VAO);
-	 
-		glDrawElements(GL_TRIANGLES, nrOfIndicies, GL_UNSIGNED_INT, 0);
+
+		cube.render(&core_program);
 
 		glfwSwapBuffers(window);
 
 		glBindVertexArray(0);
 		core_program.unuse();
 		texture0.unbind();
+		specular.unbind();
 	}
 
 	glfwDestroyWindow(window);

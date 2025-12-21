@@ -23,7 +23,7 @@ public:
   Material(
     glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, 
     GLint diffuseTexture, GLint specularTexture, float shininess
-  )
+  ) 
   { 
     this->ambient = ambient;
     this->diffuse = diffuse;
