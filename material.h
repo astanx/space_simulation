@@ -1,3 +1,5 @@
+#pragma once
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -7,7 +9,6 @@
 
 #include <OpenGL/gl.h>
 #include <GLFW/glfw3.h>
-
 
 class Material
 {
@@ -21,10 +22,9 @@ private:
 
 public:
   Material(
-    glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, 
-    GLint diffuseTexture, GLint specularTexture, float shininess
-  ) 
-  { 
+      glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
+      GLint diffuseTexture, GLint specularTexture, float shininess)
+  {
     this->ambient = ambient;
     this->diffuse = diffuse;
     this->specular = specular;
@@ -33,9 +33,9 @@ public:
     this->shininess = shininess;
   }
 
-  ~Material(){}
+  ~Material() {}
 
-  void sendToShader(Shader& program)
+  void sendToShader(Shader &program)
   {
     program.setVec3f(this->ambient, "material.ambient");
     program.setVec3f(this->diffuse, "material.diffuse");
@@ -45,4 +45,3 @@ public:
     program.set1f(this->shininess, "material.shininess");
   }
 };
-

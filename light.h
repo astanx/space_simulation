@@ -1,3 +1,5 @@
+#pragma once
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -6,7 +8,6 @@
 
 #include <OpenGL/gl.h>
 #include <GLFW/glfw3.h>
-
 
 class Light
 {
@@ -22,9 +23,8 @@ private:
 
 public:
   Light(
-    glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float constant, float linear, float quadratic
-  )
-  { 
+      glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float constant, float linear, float quadratic)
+  {
     this->position = position;
     this->ambient = ambient;
     this->diffuse = diffuse;
@@ -34,9 +34,9 @@ public:
     this->quadratic = quadratic;
   }
 
-  ~Light(){}
+  ~Light() {}
 
-  void sendToShader(Shader& program)
+  void sendToShader(Shader &program)
   {
     program.setVec3f(this->position, "light.position");
     program.setVec3f(this->ambient, "light.ambient");
@@ -52,5 +52,4 @@ public:
   {
     this->position = position;
   }
-};  
-
+};

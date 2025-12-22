@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(Gravity)
+project(Scape)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,10 +35,10 @@ link_libraries(
     ${OPENGL_LIBRARIES}
 )
 
-add_executable(Gravity main.cpp)
+add_executable(Space main.cpp)
 
 # Link libraries
-target_link_libraries(Gravity
+target_link_libraries(Space
     ${OPENGL_LIBRARIES}
     ${GLFW_LIBRARY}
     ${GLEW_LIBRARY}
@@ -47,13 +47,13 @@ target_link_libraries(Gravity
 )
 
 # ---- Copy runtime resources (shaders, assets) next to the executable ----
-add_custom_command(TARGET Gravity POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Gravity>/shaders
+add_custom_command(TARGET Space POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Space>/shaders
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/shaders
-            $<TARGET_FILE_DIR:Gravity>/shaders
+            $<TARGET_FILE_DIR:Space>/shaders
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/textures
-            $<TARGET_FILE_DIR:Gravity>/textures
+            $<TARGET_FILE_DIR:Space>/textures
     COMMENT "Copying assets/ to output directory"
 )

@@ -1,8 +1,11 @@
+#pragma once
+
 #include <iostream>
 #include <vector>
 #include "material.h"
 #include "texture.h"
 #include "vertex.h"
+#include "primitives.h"
 
 class Mesh
 {
@@ -19,14 +22,47 @@ private:
   glm::vec3 scale;
   glm::mat4 ModelMatrix;
 
-  
-  void initVAO(Vertex* vertexArray, const unsigned& nrOfVertices, GLuint* indexArray, const unsigned& nrOfIndices)
+  void initVAO(Primitive* primitive)
+  {
+    this->nrOfVertices = primitive->getNrOfVertices();
+    this->nrOfIndices = primitive->getNrOfIndices();
+
+    glGenVertexArrays(1, &this->VAO);
+    glBindVertexArray(this->VAO);
+
+    glGenBuffers(1, &this->VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+    glBufferData(GL_ARRAY_BUFFER, this->nrOfVertices * sizeof(Vertex), primitive->getVertices(), GL_STATIC_DRAW);
+
+    glGenBuffers(1, &this->EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), primitive->getIndices(), GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, position));
+    glEnableVertexAttribArray(0);
+
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, color));
+    glEnableVertexAttribArray(1);
+
+    // Texcoord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, texcoord));
+    glEnableVertexAttribArray(2);
+
+    // Normal attribute
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, normal));
+    glEnableVertexAttribArray(3);
+
+    glBindVertexArray(0);
+  }
+
+  void initVAO(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices)
   {
     this->nrOfVertices = nrOfVertices;
     this->nrOfIndices = nrOfIndices;
 
-
-	  glGenVertexArrays(1, &this->VAO);
+    glGenVertexArrays(1, &this->VAO);
     glBindVertexArray(this->VAO);
 
     glGenBuffers(1, &this->VBO);
@@ -38,25 +74,25 @@ private:
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), indexArray, GL_STATIC_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, position));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
 
     // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, color));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, color));
     glEnableVertexAttribArray(1);
 
     // Texcoord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, texcoord));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, texcoord));
     glEnableVertexAttribArray(2);
 
     // Normal attribute
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, normal));
     glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
   }
 
-  void updateUniforms(Shader* shader)
+  void updateUniforms(Shader *shader)
   {
     shader->setMat4fv(this->ModelMatrix, "ModelMatrix");
   }
@@ -65,21 +101,32 @@ private:
   {
     this->ModelMatrix = glm::mat4(1.f);
     this->ModelMatrix = glm::translate(this->ModelMatrix, this->position);
-    this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.x),  glm::vec3(1.f, 0.f, 0.f));
-    this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.y),  glm::vec3(0.f, 1.f, 0.f));
-    this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.z),  glm::vec3(0.f, 0.f, 1.f));
+    this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.x), glm::vec3(1.f, 0.f, 0.f));
+    this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.y), glm::vec3(0.f, 1.f, 0.f));
+    this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.z), glm::vec3(0.f, 0.f, 1.f));
     this->ModelMatrix = glm::scale(this->ModelMatrix, this->scale);
   }
+
 public:
   Mesh(
-    Vertex* vertexArray, const unsigned& nrOfVertices, GLuint* indexArray, const unsigned& nrOfIndices,
-    glm::vec3 position = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f)
-  )
+      Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices,
+      glm::vec3 position = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f))
   {
     this->position = position;
     this->rotation = rotation;
     this->scale = scale;
     this->initVAO(vertexArray, nrOfVertices, indexArray, nrOfIndices);
+    this->updateModelMatrix();
+  }
+
+  Mesh(
+      Primitive* primitive,
+      glm::vec3 position = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f))
+  {
+    this->position = position;
+    this->rotation = rotation;
+    this->scale = scale;
+    this->initVAO(primitive);
     this->updateModelMatrix();
   }
 
@@ -90,7 +137,7 @@ public:
     glDeleteBuffers(1, &this->EBO);
   }
 
-  //Setters
+  // Setters
   void setPosition(const glm::vec3 position)
   {
     this->position = position;
@@ -106,7 +153,7 @@ public:
     this->scale = scale;
   }
 
-  //Functions
+  // Functions
   void move(const glm::vec3 position)
   {
     this->position += position;
@@ -122,10 +169,9 @@ public:
     this->scale *= scale;
   }
 
-  void update()
-  {};
+  void update() {};
 
-  void render(Shader* shader)
+  void render(Shader *shader)
   {
     this->updateModelMatrix();
     this->updateUniforms(shader);
@@ -133,9 +179,11 @@ public:
     shader->use();
 
     glBindVertexArray(this->VAO);
-	 
-    if (this->nrOfIndices == 0) glDrawArrays(GL_TRIANGLES, 0, this->nrOfVertices);
-		else glDrawElements(GL_TRIANGLES, this->nrOfIndices, GL_UNSIGNED_INT, 0);
+
+    if (this->nrOfIndices == 0)
+      glDrawArrays(GL_TRIANGLES, 0, this->nrOfVertices);
+    else
+      glDrawElements(GL_TRIANGLES, this->nrOfIndices, GL_UNSIGNED_INT, 0);
 
     shader->unuse();
   };

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -13,14 +15,15 @@
 #include <cmath>
 #include <vector>
 
-
-class Shader 
+class Shader
 {
 private:
   GLuint id;
   std::unordered_map<std::string, GLint> uniformCache;
+  int GLSLmajor;
+  int GLSLminor;
 
-  std::string loadShaderSrc(char* fileName)
+  std::string loadShaderSrc(char *fileName)
   {
     std::string temp = "";
     std::string src = "";
@@ -29,9 +32,9 @@ private:
 
     inFile.open(fileName);
 
-    if(inFile.is_open())
+    if (inFile.is_open())
     {
-      while(std::getline(inFile, temp))
+      while (std::getline(inFile, temp))
       {
         src += temp + "\n";
       }
@@ -40,18 +43,22 @@ private:
     {
       std::cout << "Could not open shader file: " << fileName << std::endl;
     }
-	  inFile.close();
+
+    std::string versionLine = "#version " + std::to_string(this->GLSLmajor) + std::to_string(this->GLSLminor) + "0\n";
+    src.replace(src.find("#version"), 12, versionLine);
+
+    inFile.close();
     return src;
   }
 
-  GLuint loadShader(GLenum type, char* fileName)
+  GLuint loadShader(GLenum type, char *fileName)
   {
     char infoLog[512];
-	  GLint success;
+    GLint success;
 
     GLuint shader = glCreateShader(type);
     std::string str_src = this->loadShaderSrc(fileName);
-    const GLchar* src = str_src.c_str();
+    const GLchar *src = str_src.c_str();
     glShaderSource(shader, 1, &src, NULL);
     glCompileShader(shader);
 
@@ -69,16 +76,18 @@ private:
   void linkProgram(GLuint vertexShader, GLuint geometryShader, GLuint fragmentShader)
   {
     char infoLog[512];
-	  GLint success;
+    GLint success;
 
-    this->id = glCreateProgram(); 
-    if (!this->id) {
+    this->id = glCreateProgram();
+    if (!this->id)
+    {
       std::cout << "Failed to create shader program" << std::endl;
     }
 
     glAttachShader(this->id, vertexShader);
-    if (geometryShader) glAttachShader(this->id, geometryShader);
-	  glAttachShader(this->id, fragmentShader);
+    if (geometryShader)
+      glAttachShader(this->id, geometryShader);
+    glAttachShader(this->id, fragmentShader);
 
     glLinkProgram(this->id);
 
@@ -93,26 +102,30 @@ private:
     glUseProgram(0);
   }
 
-  GLint getUniformLocation(const std::string& name)
+  GLint getUniformLocation(const std::string &name)
   {
     auto it = uniformCache.find(name);
     if (it != uniformCache.end())
-        return it->second;
+      return it->second;
 
     GLint loc = glGetUniformLocation(this->id, name.c_str());
     uniformCache[name] = loc;
     return loc;
   }
+
 public:
-  Shader(const char* vertexFile, const char* fragmentFile, const char* geometryFile = nullptr)
+  Shader(const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile = nullptr)
   {
+    this->GLSLmajor = GLSLmajor;
+    this->GLSLminor = GLSLminor;
     GLuint vertexShader = 0;
     GLuint geometryShader = 0;
     GLuint fragmentShader = 0;
 
-    vertexShader = loadShader(GL_VERTEX_SHADER, const_cast<char*>(vertexFile));
-    if (geometryFile != nullptr) geometryShader = loadShader(GL_GEOMETRY_SHADER, const_cast<char*>(geometryFile));
-    fragmentShader = loadShader(GL_FRAGMENT_SHADER, const_cast<char*>(fragmentFile));
+    vertexShader = loadShader(GL_VERTEX_SHADER, const_cast<char *>(vertexFile));
+    if (geometryFile != nullptr)
+      geometryShader = loadShader(GL_GEOMETRY_SHADER, const_cast<char *>(geometryFile));
+    fragmentShader = loadShader(GL_FRAGMENT_SHADER, const_cast<char *>(fragmentFile));
 
     this->linkProgram(vertexShader, geometryShader, fragmentShader);
 
@@ -136,52 +149,59 @@ public:
     glUseProgram(0);
   }
 
-  void set1i(GLint value, const GLchar* name)
+  void set1i(GLint value, const GLchar *name)
   {
     GLint position = getUniformLocation(name);
-    if (position == -1) return;
+    if (position == -1)
+      return;
     glUniform1i(position, value);
   }
 
-  void set1f(GLfloat value,const GLchar* name)
+  void set1f(GLfloat value, const GLchar *name)
   {
     GLint position = getUniformLocation(name);
-    if (position == -1) return;
+    if (position == -1)
+      return;
     glUniform1f(position, value);
   }
 
-  void setVec2f(glm::fvec2 value, const GLchar* name)
+  void setVec2f(glm::fvec2 value, const GLchar *name)
   {
     GLint position = getUniformLocation(name);
-    if (position == -1) return;
+    if (position == -1)
+      return;
     glUniform2fv(position, 1, glm::value_ptr(value));
   }
 
-  void setVec3f(glm::fvec3 value, const GLchar* name)
+  void setVec3f(glm::fvec3 value, const GLchar *name)
   {
     GLint position = getUniformLocation(name);
-    if (position == -1) return;
+    if (position == -1)
+      return;
     glUniform3fv(position, 1, glm::value_ptr(value));
   }
 
-  void setVec4f(glm::fvec4 value, const GLchar* name)
+  void setVec4f(glm::fvec4 value, const GLchar *name)
   {
     GLint position = getUniformLocation(name);
-    if (position == -1) return;
+    if (position == -1)
+      return;
     glUniform4fv(position, 1, glm::value_ptr(value));
   }
 
-  void setMat3fv(glm::mat3 value, const GLchar* name, GLboolean transpose = GL_FALSE)
+  void setMat3fv(glm::mat3 value, const GLchar *name, GLboolean transpose = GL_FALSE)
   {
     GLint position = getUniformLocation(name);
-    if (position == -1) return;
+    if (position == -1)
+      return;
     glUniformMatrix3fv(position, 1, transpose, glm::value_ptr(value));
   }
 
-  void setMat4fv(glm::mat4 value, const GLchar* name, GLboolean transpose = GL_FALSE)
+  void setMat4fv(glm::mat4 value, const GLchar *name, GLboolean transpose = GL_FALSE)
   {
     GLint position = getUniformLocation(name);
-    if (position == -1) return;
+    if (position == -1)
+      return;
     glUniformMatrix4fv(position, 1, transpose, glm::value_ptr(value));
   }
 };

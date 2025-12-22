@@ -13,12 +13,13 @@
 #include <vector>
 #include "mesh.h"
 #include "light.h"
+#include "primitives.h"
 
 struct AppState
 {
 	int windowWidth = 800;
 	int windowHeight = 600;
-	
+
 	int framebufferWidth = 0;
 	int framebufferHeight = 0;
 
@@ -34,7 +35,7 @@ struct AppState
 
 	float deltaTime = 0.f;
 	float lastFrame = 0.f;
-	
+
 	float yaw = -90.f;
 	float pitch = 0.f;
 	bool firstMouse = true;
@@ -42,120 +43,74 @@ struct AppState
 	float lastY = windowHeight / 2.f;
 	float sensitivity = 0.1f;
 
-	Light light{glm::vec3(0.f, 0.f, 2.f), glm::vec3(0.8f), glm::vec3(2.f), glm::vec3(1.5f), 1.f, 	0.09f, 0.032f};
+	Light light{glm::vec3(0.f, 0.f, 2.f), glm::vec3(0.8f), glm::vec3(2.f), glm::vec3(1.5f), 1.f, 0.09f, 0.032f};
+
+	const int GLmajor = 4;
+	const int GLminor = 1;
 };
-
-
-
-Vertex vertices[] =
-{
-	// Front face (+Z)
-	{ glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 0.f, 1.f) },
-	{ glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 0.f, 1.f) },
-	{ glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 0.f, 1.f) },
-	{ glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 0.f, 1.f) },
-
-	// Back face (-Z)
-	{ glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 0.f, -1.f) },
-	{ glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 0.f, -1.f) },
-	{ glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 0.f, -1.f) },
-	{ glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 0.f, -1.f) },
-
-	// Left face (-X)
-	{ glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(-1.f, 0.f, 0.f) },
-	{ glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(-1.f, 0.f, 0.f) },
-	{ glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(-1.f, 0.f, 0.f) },
-	{ glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(-1.f, 0.f, 0.f) },
-
-	// Right face (+X)
-	{ glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(1.f, 0.f, 0.f) },
-	{ glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(1.f, 0.f, 0.f) },
-	{ glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(1.f, 0.f, 0.f) },
-	{ glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(1.f, 0.f, 0.f) },
-
-	// Top face (+Y)
-	{ glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 1.f, 0.f) },
-	{ glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 1.f, 0.f) },
-	{ glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 1.f, 0.f) },
-	{ glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 1.f, 0.f) },
-
-	// Bottom face (-Y)
-	{ glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, -1.f, 0.f) },
-	{ glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, -1.f, 0.f) },
-	{ glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, -1.f, 0.f) },
-	{ glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, -1.f, 0.f) },
-};
-
-unsigned nrOfVertices = sizeof(vertices) / sizeof(Vertex);
-
-GLuint indices[] =
-{
-	0, 1, 2,  0, 2, 3,      // Front
-	4, 5, 6,  4, 6, 7,      // Back
-	8, 9,10,  8,10,11,     // Left
-	12,13,14, 12,14,15,    // Right
-	16,17,18, 16,18,19,    // Top
-	20,21,22, 20,22,23     // Bottom
-};
-
-
-
-unsigned nrOfIndices = sizeof(indices) / sizeof(GLuint);
-
 
 const double EPS = 1e-6;
 const double G = 6.67430e-11;
 
-class Object {
+class Object
+{
 public:
-	std::vector<double> position;     // x, y
-	std::vector<double> velocity;     // vx, vy
+	std::vector<double> position;			// x, y
+	std::vector<double> velocity;			// vx, vy
 	std::vector<double> acceleration; // ax, ay
 	double mass;
 	double radius;
 
 	Object(std::vector<double> position, std::vector<double> velocity, double mass, double radius)
-		: position(position), velocity(velocity), mass(mass), radius(radius)
+			: position(position), velocity(velocity), mass(mass), radius(radius)
 	{
-		//acceleration = {0.0, -9.81}; // Initial acceleration due to gravity
+		// acceleration = {0.0, -9.81}; // Initial acceleration due to gravity
 		acceleration = {0.0, 0.0};
 	}
 
-	void accelerate(const std::vector<double>& a) {
+	void accelerate(const std::vector<double> &a)
+	{
 		acceleration[0] += a[0];
 		acceleration[1] += a[1];
 	};
 
-	void move(double dt) {
+	void move(double dt)
+	{
 		velocity[0] += acceleration[0] * dt;
 		velocity[1] += acceleration[1] * dt;
 		position[0] += velocity[0] * dt;
 		position[1] += velocity[1] * dt;
-		//acceleration = {0.0, -9.81}; // Reset acceleration after move
+		// acceleration = {0.0, -9.81}; // Reset acceleration after move
 		acceleration = {0.0, 0.0};
-		if (position[1] - radius < -1.0) { // Ground collision
+		if (position[1] - radius < -1.0)
+		{ // Ground collision
 			position[1] = -1.0 + radius;
 			velocity[1] = -velocity[1] * 0.6; // Simple bounce with damping
 		}
-		if (position[1] + radius > 1.0) { // Ceiling collision
+		if (position[1] + radius > 1.0)
+		{ // Ceiling collision
 			position[1] = 1.0 - radius;
 			velocity[1] = -velocity[1] * 0.6;
 		}
-		if (position[0] - radius < -1.0) { // Left wall collision
+		if (position[0] - radius < -1.0)
+		{ // Left wall collision
 			position[0] = -1.0 + radius;
 			velocity[0] = -velocity[0] * 0.6;
 		}
-		if (position[0] + radius > 1.0) { // Right wall collision
+		if (position[0] + radius > 1.0)
+		{ // Right wall collision
 			position[0] = 1.0 - radius;
 			velocity[0] = -velocity[0] * 0.6;
 		}
 	}
 
-	void applyGravitation(const Object& other) {
+	void applyGravitation(const Object &other)
+	{
 		double dx = other.position[0] - position[0];
 		double dy = other.position[1] - position[1];
-		double distSq = dx * dx + dy * dy; 
-		if (distSq < EPS) return; // Avoid singularity
+		double distSq = dx * dx + dy * dy;
+		if (distSq < EPS)
+			return; // Avoid singularity
 		double dist = sqrt(distSq);
 		double force = G * mass * other.mass / distSq;
 		double ax = force * dx / (dist * mass);
@@ -164,12 +119,13 @@ public:
 	}
 };
 
-int handleCollisions(Object& object, Object& object2) {
+int handleCollisions(Object &object, Object &object2)
+{
 	double dx = object2.position[0] - object.position[0];
 	double dy = object2.position[1] - object.position[1];
 	double dist = sqrt(dx * dx + dy * dy);
 	if (dist < EPS)
-		return 0; // Avoid singularity
+		return 0;																 // Avoid singularity
 	if (dist < object.radius + object2.radius) // Simple collision response
 	{
 		double rvx = object2.velocity[0] - object.velocity[0];
@@ -178,7 +134,7 @@ int handleCollisions(Object& object, Object& object2) {
 		double ny = dy / dist;
 		double velAlongNormal = rvx * nx + rvy * ny;
 		if (velAlongNormal > 0)
-			return 0; // They are moving apart
+			return 0;			// They are moving apart
 		double e = 0.8; // Coefficient of restitution
 		double j = -(1 + e) * velAlongNormal / (1 / object.mass + 1 / object2.mass);
 
@@ -197,9 +153,11 @@ int handleCollisions(Object& object, Object& object2) {
 	return 0;
 }
 
-void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-	AppState* appState = static_cast<AppState*>(glfwGetWindowUserPointer(window));
-	if (appState->firstMouse) {
+void mouseCallback(GLFWwindow *window, double xpos, double ypos)
+{
+	AppState *appState = static_cast<AppState *>(glfwGetWindowUserPointer(window));
+	if (appState->firstMouse)
+	{
 		appState->lastX = xpos;
 		appState->lastY = ypos;
 		appState->firstMouse = false;
@@ -225,32 +183,32 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
 	direction.x = cos(glm::radians(appState->yaw)) * cos(glm::radians(appState->pitch));
 	direction.y = sin(glm::radians(appState->pitch));
 	direction.z = sin(glm::radians(appState->yaw)) * cos(glm::radians(appState->pitch));
-	appState->camFront	= glm::normalize(direction);
+	appState->camFront = glm::normalize(direction);
 
 	appState->ViewMatrix = glm::lookAt(appState->camPosition, appState->camPosition + appState->camFront, appState->worldUp);
 }
 
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-	AppState* appState = static_cast<AppState*>(glfwGetWindowUserPointer(window));
-	
+void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+	AppState *appState = static_cast<AppState *>(glfwGetWindowUserPointer(window));
+
 	appState->fov -= (float)yoffset;
-	
+
 	if (appState->fov < 1.0f)
 		appState->fov = 1.0f;
 	if (appState->fov > 45.0f)
 		appState->fov = 45.0f;
 
 	appState->ProjectionMatrix = glm::perspective(
-		glm::radians(appState->fov), 
-		static_cast<float>(appState->framebufferWidth) / static_cast<float>(appState->framebufferHeight), 
-		appState->nearPlane, 
-		appState->farPlane
-	);
+			glm::radians(appState->fov),
+			static_cast<float>(appState->framebufferWidth) / static_cast<float>(appState->framebufferHeight),
+			appState->nearPlane,
+			appState->farPlane);
 }
 
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow *window)
 {
-	AppState* appState = static_cast<AppState*>(glfwGetWindowUserPointer(window));
+	AppState *appState = static_cast<AppState *>(glfwGetWindowUserPointer(window));
 	float cameraSpeed = 2.5f * appState->deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
@@ -265,15 +223,15 @@ void processInput(GLFWwindow* window)
 		appState->camPosition -= cameraSpeed * appState->camFront;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	{	
+	{
 		appState->camPosition -= glm::normalize(glm::cross(appState->camFront, appState->worldUp)) * cameraSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	{	
+	{
 		appState->camPosition += glm::normalize(glm::cross(appState->camFront, appState->worldUp)) * cameraSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-	{	
+	{
 		appState->camPosition += cameraSpeed * appState->worldUp;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
@@ -287,24 +245,51 @@ void processInput(GLFWwindow* window)
 	appState->ViewMatrix = glm::lookAt(appState->camPosition, appState->camPosition + appState->camFront, appState->worldUp);
 }
 
-
-void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
+void framebuffer_resize_callback(GLFWwindow *window, int width, int height)
 {
-	if (height == 0) return;
+	if (height == 0)
+		return;
 
-	AppState* appState = static_cast<AppState*>(glfwGetWindowUserPointer(window));
+	AppState *appState = static_cast<AppState *>(glfwGetWindowUserPointer(window));
 
 	appState->framebufferWidth = width;
 	appState->framebufferHeight = height;
 
 	appState->ProjectionMatrix = glm::perspective(
-		glm::radians(appState->fov), 
-		static_cast<float>(width) / static_cast<float>(height), 
-		appState->nearPlane, 
-		appState->farPlane
-	);
+			glm::radians(appState->fov),
+			static_cast<float>(width) / static_cast<float>(height),
+			appState->nearPlane,
+			appState->farPlane);
 
 	glViewport(0, 0, width, height);
+}
+
+GLFWwindow* createWindow(const char* title, AppState* appState, GLboolean resizable)
+{
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, appState->GLmajor);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, appState->GLminor);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS
+	glfwWindowHint(GLFW_RESIZABLE, resizable);
+
+	GLFWwindow *window = glfwCreateWindow(appState->windowWidth, appState->windowHeight, title, NULL, NULL);
+	if (!window)
+	{
+		std::cerr << "Failed to create GLFW window\n";
+		glfwTerminate();
+		return nullptr;
+	}
+
+	glfwGetFramebufferSize(window, &appState->framebufferWidth, &appState->framebufferHeight);
+	glfwSetWindowUserPointer(window, appState);
+	glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouseCallback);
+	glfwSetScrollCallback(window, scrollCallback);
+
+	glfwMakeContextCurrent(window);
+
+	return window;
 }
 
 int main()
@@ -313,28 +298,9 @@ int main()
 
 	AppState appState{};
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-
-	GLFWwindow* window = glfwCreateWindow(appState.windowWidth, appState.windowHeight, "Gravity Simulation", NULL, NULL);
-	if (!window) {
-		std::cerr << "Failed to create GLFW window\n";
-		glfwTerminate();
+	GLFWwindow *window = createWindow("Space Simulation", &appState, GL_TRUE);
+	if (!window)
 		return -1;
-	}
-
-	glfwGetFramebufferSize(window, &appState.framebufferWidth, &appState.framebufferHeight);
-	glfwSetWindowUserPointer(window, &appState);
-	glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
-	glfwSetCursorPosCallback(window, mouseCallback);  
-	glfwSetScrollCallback(window, scrollCallback);
-	
-
-	glfwMakeContextCurrent(window);
 
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
@@ -356,38 +322,39 @@ int main()
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	Shader core_program("shaders/vertex_core.glsl", "shaders/fragment_core.glsl");
+	Shader core_program(appState.GLmajor, appState.GLminor, "shaders/vertex_core.glsl", "shaders/fragment_core.glsl");
 
-	Mesh cube(vertices, nrOfVertices, indices, nrOfIndices);
+	Cube cubePrimitive;
+	Mesh cube(&cubePrimitive);
 
 	Texture texture0("textures/container.png", GL_TEXTURE_2D, 0);
 	Texture specular("textures/container_specular.png", GL_TEXTURE_2D, 1);
 
 	Material material0(glm::vec3(0.1f), glm::vec3(1.f), glm::vec3(1.f), texture0.getTextureUnit(), specular.getTextureUnit(), 32.f);
 
-	appState.ProjectionMatrix = glm::perspective(
-		glm::radians(appState.fov), 
-		static_cast<float>(appState.framebufferWidth) / static_cast<float>(appState.framebufferHeight), 
-		appState.nearPlane, 
-		appState.farPlane
-	);
+	if (appState.framebufferHeight == 0)
+		appState.framebufferHeight = 1;
 
+	appState.ProjectionMatrix = glm::perspective(
+			glm::radians(appState.fov),
+			static_cast<float>(appState.framebufferWidth) / static_cast<float>(appState.framebufferHeight),
+			appState.nearPlane,
+			appState.farPlane);
 
 	core_program.use();
 
-	core_program.setMat4fv(ModelMatrix, "ModelMatrix");
 	core_program.setMat4fv(appState.ViewMatrix, "ViewMatrix");
 	core_program.setMat4fv(appState.ProjectionMatrix, "ProjectionMatrix");
-	
+
 	appState.light.sendToShader(core_program);
 	core_program.setVec3f(appState.camPosition, "camPosition");
 	core_program.unuse();
-	
+
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
 		appState.deltaTime = currentFrame - appState.lastFrame;
-		appState.lastFrame = currentFrame; 
+		appState.lastFrame = currentFrame;
 		glfwPollEvents();
 
 		processInput(window);
@@ -407,7 +374,6 @@ int main()
 
 		texture0.bind();
 		specular.bind();
-
 
 		cube.render(&core_program);
 

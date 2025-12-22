@@ -1,3 +1,5 @@
+#pragma once
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,12 +25,12 @@ private:
   GLint textureUnit;
 
 public:
-  Texture(const char* fileName, GLenum type, GLint textureUnit)
-  { 
+  Texture(const char *fileName, GLenum type, GLint textureUnit)
+  {
     this->type = type;
     this->textureUnit = textureUnit;
-    unsigned char* image = SOIL_load_image(fileName, &this->width, &this->height, 0, SOIL_LOAD_RGBA);
-    
+    unsigned char *image = SOIL_load_image(fileName, &this->width, &this->height, 0, SOIL_LOAD_RGBA);
+
     glGenTextures(1, &this->id);
     glBindTexture(type, this->id);
 
@@ -37,7 +39,7 @@ public:
     glTexParameteri(type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    if(image)
+    if (image)
     {
       glTexImage2D(type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
       glGenerateMipmap(type);
@@ -54,7 +56,7 @@ public:
 
   ~Texture()
   {
-    glDeleteTextures(1, &this->id); 
+    glDeleteTextures(1, &this->id);
   }
 
   inline GLuint getId() const
@@ -74,16 +76,17 @@ public:
     glBindTexture(this->type, 0);
   }
 
-  inline GLint getTextureUnit() const 
+  inline GLint getTextureUnit() const
   {
     return this->textureUnit;
   };
 
-  void loadFromFile(const char* fileName)
+  void loadFromFile(const char *fileName)
   {
-    if (this->id) glDeleteTextures(1, &this->id);
-    unsigned char* image = SOIL_load_image(fileName, &this->width, &this->height, 0, SOIL_LOAD_RGBA);
-    
+    if (this->id)
+      glDeleteTextures(1, &this->id);
+    unsigned char *image = SOIL_load_image(fileName, &this->width, &this->height, 0, SOIL_LOAD_RGBA);
+
     glGenTextures(1, &this->id);
     glBindTexture(this->type, this->id);
 
@@ -92,7 +95,7 @@ public:
     glTexParameteri(this->type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(this->type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    if(image)
+    if (image)
     {
       glTexImage2D(this->type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
       glGenerateMipmap(this->type);
