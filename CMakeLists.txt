@@ -35,7 +35,10 @@ link_libraries(
     ${OPENGL_LIBRARIES}
 )
 
-add_executable(Space main.cpp)
+add_executable(Space 
+    main.cpp 
+    application.cpp
+)
 
 # Link libraries
 target_link_libraries(Space
