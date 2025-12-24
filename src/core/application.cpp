@@ -1,4 +1,11 @@
 #include "application.h"
+#include "render/primitives/cube/cube.h"
+#include "render/shader/shader.h"
+#include "render/texture/texture.h"
+#include "render/material/material.h"
+#include "render/light/light.h"
+#include "render/mesh/mesh.h"
+#include <iostream>
 
 // Private functions
 void Application::initGLFW()
@@ -96,8 +103,7 @@ void Application::initMaterials()
 }
 void Application::initMeshes()
 {
-  Cube cube;
-  this->meshes.push_back(new Mesh(&cube));
+  this->meshes.push_back(new Mesh(new Cube()));
 }
 void Application::initLights()
 {

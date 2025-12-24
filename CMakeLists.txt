@@ -23,6 +23,7 @@ endif()
 set(GLM_INCLUDE_DIR "/Users/ivanastanin/vs/cpp/glm-1.0.2")
 
 include_directories(
+    ${CMAKE_SOURCE_DIR}/src
     ${GLFW_INCLUDE_DIR}
     ${GLM_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
@@ -36,9 +37,18 @@ link_libraries(
 )
 
 add_executable(Space 
-    main.cpp 
-    application.cpp
-    camera.cpp
+    src/main.cpp
+    src/core/application.cpp
+    src/core/camera.cpp
+    src/render/shader/shader.cpp
+    src/render/texture/texture.cpp
+    src/render/material/material.cpp
+    src/render/primitives/triangle/triangle.cpp
+    src/render/primitives/primitives.cpp
+    src/render/primitives/quad/quad.cpp
+    src/render/primitives/cube/cube.cpp
+    src/render/mesh/mesh.cpp
+    src/render/light/light.cpp
 )
 
 # Link libraries

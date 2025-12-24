@@ -1,7 +1,7 @@
 #include "camera.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 // Private functions
-
 void Camera::updateCameraVectors()
 {
   this->front.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
@@ -14,7 +14,6 @@ void Camera::updateCameraVectors()
 }
 
 // Constructor and Destructor
-
 Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float windowWidth, float windowHeight)
     : position(position), front(front), worldUp(worldUp), up(worldUp)
 {

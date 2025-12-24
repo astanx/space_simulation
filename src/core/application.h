@@ -1,23 +1,18 @@
 #pragma once
 
+#include <vector>
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <SOIL2/SOIL2.h>
+#include "core/camera.h"
 
-#include <OpenGL/gl.h>
-#include <GLFW/glfw3.h>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cmath>
-#include <vector>
-#include "mesh.h"
-#include "light.h"
-#include "primitives.h"
-#include "camera.h"
-
+class Shader;
+class Texture;
+class Material;
+class Mesh;
+class Light;
 
 // Enums for easy access
 enum shader { CORE_SHADER = 0 };
