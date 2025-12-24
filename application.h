@@ -16,6 +16,7 @@
 #include "mesh.h"
 #include "light.h"
 #include "primitives.h"
+#include "camera.h"
 
 
 // Enums for easy access
@@ -40,27 +41,14 @@ private:
   const int GLminor;
 
   // Matrices
-  float fov;
-	float nearPlane;
-	float farPlane;
   glm::mat4 ProjectionMatrix;
-
-  glm::vec3 worldUp;
-	glm::vec3 camFront;
-	glm::vec3 camPosition;
-  glm::mat4 ViewMatrix;
 
   // Timing
   float deltaTime;
   float lastFrame;
 
-  //Camera control variables
-  float yaw;
-	float pitch;
-	bool firstMouse;
-	float lastX;
-	float lastY;
-	float sensitivity;
+  //Camera 
+  Camera camera;
 
   // Shaders
   std::vector<Shader*> shaders;
@@ -92,7 +80,6 @@ private:
   void initMeshes();
   void initLights();
   void initUniforms();
-
 
   void updateUniforms();
 public:

@@ -38,6 +38,7 @@ link_libraries(
 add_executable(Space 
     main.cpp 
     application.cpp
+    camera.cpp
 )
 
 # Link libraries

@@ -22,7 +22,7 @@ private:
   glm::vec3 scale;
   glm::mat4 ModelMatrix;
 
-  void initVAO(Primitive* primitive)
+  void initVAO(Primitive *primitive)
   {
     this->nrOfVertices = primitive->getNrOfVertices();
     this->nrOfIndices = primitive->getNrOfIndices();
@@ -34,9 +34,12 @@ private:
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
     glBufferData(GL_ARRAY_BUFFER, this->nrOfVertices * sizeof(Vertex), primitive->getVertices(), GL_STATIC_DRAW);
 
-    glGenBuffers(1, &this->EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), primitive->getIndices(), GL_STATIC_DRAW);
+    if (this->nrOfIndices > 0)
+    {
+      glGenBuffers(1, &this->EBO);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), primitive->getIndices(), GL_STATIC_DRAW);
+    }
 
     // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, position));
@@ -69,9 +72,12 @@ private:
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
     glBufferData(GL_ARRAY_BUFFER, this->nrOfVertices * sizeof(Vertex), vertexArray, GL_STATIC_DRAW);
 
-    glGenBuffers(1, &this->EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), indexArray, GL_STATIC_DRAW);
+    if (this->nrOfIndices > 0)
+    {
+      glGenBuffers(1, &this->EBO);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), indexArray, GL_STATIC_DRAW);
+    }
 
     // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, position));
@@ -120,7 +126,7 @@ public:
   }
 
   Mesh(
-      Primitive* primitive,
+      Primitive *primitive,
       glm::vec3 position = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f))
   {
     this->position = position;
@@ -134,7 +140,8 @@ public:
   {
     glDeleteVertexArrays(1, &this->VAO);
     glDeleteBuffers(1, &this->VBO);
-    glDeleteBuffers(1, &this->EBO);
+    if (this->nrOfIndices > 0)
+      glDeleteBuffers(1, &this->EBO);
   }
 
   // Setters
