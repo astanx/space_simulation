@@ -1,5 +1,6 @@
 #include "application.h"
 #include "render/primitives/cube/cube.h"
+#include "render/primitives/plane/plane.h"
 #include "render/shader/shader.h"
 #include "render/texture/texture.h"
 #include "render/material/material.h"
@@ -106,13 +107,28 @@ void Application::initMaterials()
 
 void Application::initModels()
 {
-  std::vector<Mesh*> meshes;
+  std::vector<Mesh *> meshes;
   meshes.push_back(new Mesh(new Cube()));
+  std::vector<Mesh *> floorMeshes;
+  floorMeshes.push_back(new Mesh(new Plane()));
 
+  this->models.push_back(
+      new Model(
+          glm::vec3(0.f, -1.f, 0.f),
+          this->materials[CONTAINER_MATERIAL],
+          floorMeshes,
+          this->textures[CONTAINER_TEXTURE],
+          nullptr));
+  this->models[0]->scaleBy(glm::vec3(100.f, 0.1f, 100.f));
   this->models.push_back(new Model(glm::vec3(2.f), this->materials[CONTAINER_MATERIAL], meshes, this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
   this->models.push_back(new Model(glm::vec3(0.f), this->materials[CONTAINER_MATERIAL], meshes, this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
 
   for (auto *&mesh : meshes)
+  {
+    delete mesh;
+  }
+
+  for (auto *&mesh : floorMeshes)
   {
     delete mesh;
   }
@@ -255,7 +271,7 @@ void Application::render()
   this->updateUniforms();
 
   // Render models
-  for (auto& model : this->models)
+  for (auto &model : this->models)
   {
     model->render(this->shaders[CORE_SHADER]);
   }

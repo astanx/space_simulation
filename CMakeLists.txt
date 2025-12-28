@@ -46,6 +46,7 @@ add_executable(Space
     src/render/primitives/triangle/triangle.cpp
     src/render/primitives/primitives.cpp
     src/render/primitives/quad/quad.cpp
+    src/render/primitives/plane/plane.cpp
     src/render/primitives/cube/cube.cpp
     src/render/mesh/mesh.cpp
     src/render/light/light.cpp

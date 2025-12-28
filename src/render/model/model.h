@@ -24,6 +24,6 @@ public:
         Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular);
   ~Model();
 
-  void update();
   void render(Shader* shader);
+  void scaleBy(const glm::vec3 scale);
 };

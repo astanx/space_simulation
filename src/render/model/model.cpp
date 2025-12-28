@@ -26,7 +26,7 @@ Model::Model(glm::vec3 position, Material *material,
     this->meshes.push_back(new Mesh(*mesh));
   }
 
-  for (auto& mesh : this->meshes)
+  for (auto &mesh : this->meshes)
   {
     mesh->move(this->position);
   }
@@ -41,9 +41,6 @@ Model::~Model()
 }
 
 // Public functions
-void Model::update()
-{
-}
 void Model::render(Shader *shader)
 {
   shader->use();
@@ -51,8 +48,10 @@ void Model::render(Shader *shader)
   this->updateUniforms(shader);
 
   // Render objects
-  this->overrideTextureDiffuse->bind(0);
-  this->overrideTextureSpecular->bind(1);
+  if (overrideTextureDiffuse != nullptr)
+    this->overrideTextureDiffuse->bind(0);
+  if (overrideTextureSpecular != nullptr)
+    this->overrideTextureSpecular->bind(1);
 
   for (auto &mesh : this->meshes)
   {
@@ -61,7 +60,16 @@ void Model::render(Shader *shader)
 
   // Unbind everything
   glBindVertexArray(0);
-  this->overrideTextureDiffuse->unbind();
-  this->overrideTextureSpecular->unbind();
+  if (overrideTextureDiffuse != nullptr)
+    this->overrideTextureDiffuse->unbind();
+  if (overrideTextureSpecular != nullptr)
+    this->overrideTextureSpecular->unbind();
   shader->unuse();
+}
+void Model::scaleBy(const glm::vec3 scale)
+{
+  for (auto& mesh : meshes)
+  {
+    mesh->scaleBy(scale);
+  }
 }
