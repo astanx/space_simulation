@@ -10,7 +10,9 @@ struct Vertex;
 class Mesh
 {
 private:
+  Vertex *vertices;
   unsigned nrOfVertices;
+  GLuint *indices;
   unsigned nrOfIndices;
 
   GLuint VAO;
@@ -18,13 +20,12 @@ private:
   GLuint EBO;
 
   glm::vec3 position;
+  glm::vec3 rotationOrigin;
   glm::vec3 rotation;
   glm::vec3 scale;
   glm::mat4 ModelMatrix;
 
-  void initVAO(Primitive *primitive);
-
-  void initVAO(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices);
+  void initVAO();
 
   void updateUniforms(Shader *shader);
 
@@ -33,15 +34,19 @@ private:
 public:
   Mesh(
       Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices,
-      glm::vec3 position = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
+      glm::vec3 position = glm::vec3(0.f), glm::vec3 rotationOrigin = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
 
   Mesh(
       Primitive *primitive,
-      glm::vec3 position = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
+      glm::vec3 position = glm::vec3(0.f), glm::vec3 rotationOrigin = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
+
+  Mesh(const Mesh &obj);
   ~Mesh();
 
   // Setters
   void setPosition(const glm::vec3 position);
+
+  void setRotationOrigin(const glm::vec3 rotationOrigin);
 
   void setRotation(const glm::vec3 rotation);
 

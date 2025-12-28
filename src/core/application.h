@@ -13,6 +13,7 @@ class Texture;
 class Material;
 class Mesh;
 class Light;
+class Model;
 
 // Enums for easy access
 enum shader { CORE_SHADER = 0 };
@@ -54,8 +55,8 @@ private:
   // Materials
   std::vector<Material*> materials;
 
-  // Meshes
-  std::vector<Mesh*> meshes;
+  // Models
+  std::vector<Model*> models;
 
   // Lights
   std::vector<Light*> lights;
@@ -72,7 +73,7 @@ private:
   void initShaders();
   void initTextures();
   void initMaterials();
-  void initMeshes();
+  void initModels();
   void initLights();
   void initUniforms();
 

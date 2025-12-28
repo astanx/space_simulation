@@ -5,6 +5,8 @@
 #include "render/material/material.h"
 #include "render/light/light.h"
 #include "render/mesh/mesh.h"
+#include "render/model/model.h"
+
 #include <iostream>
 
 // Private functions
@@ -101,9 +103,19 @@ void Application::initMaterials()
       CONTAINER_SPECULAR_TEXTURE,
       32.f));
 }
-void Application::initMeshes()
+
+void Application::initModels()
 {
-  this->meshes.push_back(new Mesh(new Cube()));
+  std::vector<Mesh*> meshes;
+  meshes.push_back(new Mesh(new Cube()));
+
+  this->models.push_back(new Model(glm::vec3(2.f), this->materials[CONTAINER_MATERIAL], meshes, this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
+  this->models.push_back(new Model(glm::vec3(0.f), this->materials[CONTAINER_MATERIAL], meshes, this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
+
+  for (auto *&mesh : meshes)
+  {
+    delete mesh;
+  }
 }
 void Application::initLights()
 {
@@ -131,8 +143,6 @@ void Application::updateUniforms()
   this->shaders[CORE_SHADER]->setVec3f(this->camera.getPosition(), "camPosition");
   this->shaders[CORE_SHADER]->setMat4fv(this->ProjectionMatrix, "ProjectionMatrix");
   this->shaders[CORE_SHADER]->set1i(1, "isTexture");
-
-  this->materials[CONTAINER_MATERIAL]->sendToShader(*this->shaders[CORE_SHADER]);
 
   for (size_t i = 0; i < this->lights.size(); i++)
   {
@@ -170,7 +180,7 @@ Application::Application(
   this->initShaders();
   this->initTextures();
   this->initMaterials();
-  this->initMeshes();
+  this->initModels();
   this->initLights();
   this->initUniforms();
 }
@@ -180,29 +190,29 @@ Application::~Application()
   glfwDestroyWindow(this->window);
   glfwTerminate();
 
-  for (size_t i = 0; i < this->shaders.size(); i++)
+  for (auto *&shader : this->shaders)
   {
-    delete this->shaders[i];
+    delete shader;
   }
 
-  for (size_t i = 0; i < this->textures.size(); i++)
+  for (auto *&texture : this->textures)
   {
-    delete this->textures[i];
+    delete texture;
   }
 
-  for (size_t i = 0; i < this->materials.size(); i++)
+  for (auto *&material : this->materials)
   {
-    delete this->materials[i];
+    delete material;
   }
 
-  for (size_t i = 0; i < this->meshes.size(); i++)
+  for (auto *&model : this->models)
   {
-    delete this->meshes[i];
+    delete model;
   }
 
-  for (size_t i = 0; i < this->lights.size(); i++)
+  for (auto *&light : this->lights)
   {
-    delete this->lights[i];
+    delete light;
   }
 }
 
@@ -244,11 +254,11 @@ void Application::render()
   // Update uniforms
   this->updateUniforms();
 
-  // Render objects
-  this->textures[CONTAINER_TEXTURE]->bind(CONTAINER_TEXTURE);
-  this->textures[CONTAINER_SPECULAR_TEXTURE]->bind(CONTAINER_SPECULAR_TEXTURE);
-
-  this->meshes[CUBE_MESH]->render(this->shaders[CORE_SHADER]);
+  // Render models
+  for (auto& model : this->models)
+  {
+    model->render(this->shaders[CORE_SHADER]);
+  }
 
   // Swap buffers
   glfwSwapBuffers(this->window);

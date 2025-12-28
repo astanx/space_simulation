@@ -49,6 +49,7 @@ add_executable(Space
     src/render/primitives/cube/cube.cpp
     src/render/mesh/mesh.cpp
     src/render/light/light.cpp
+    src/render/model/model.cpp
 )
 
 # Link libraries
