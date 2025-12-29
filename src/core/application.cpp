@@ -1,12 +1,12 @@
-#include "application.h"
-#include "render/primitives/cube/cube.h"
-#include "render/primitives/plane/plane.h"
-#include "render/shader/shader.h"
-#include "render/texture/texture.h"
-#include "render/material/material.h"
-#include "render/light/light.h"
-#include "render/mesh/mesh.h"
-#include "render/model/model.h"
+#include "core/application.h"
+#include "graphics/primitives/cube.h"
+#include "graphics/primitives/plane.h"
+#include "graphics/shader.h"
+#include "graphics/texture.h"
+#include "graphics/material.h"
+#include "graphics/mesh.h"
+#include "graphics/model.h"
+#include "scene/light.h"
 
 #include <iostream>
 
@@ -82,12 +82,12 @@ void Application::initMatrices()
 }
 void Application::initShaders()
 {
-  this->shaders.push_back(new Shader(this->GLmajor, this->GLminor, "shaders/vertex_core.glsl", "shaders/fragment_core.glsl"));
+  this->shaders.push_back(new Shader(this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl"));
 }
 void Application::initTextures()
 {
-  this->textures.push_back(new Texture("textures/container.png", GL_TEXTURE_2D));
-  this->textures.push_back(new Texture("textures/container_specular.png", GL_TEXTURE_2D));
+  this->textures.push_back(new Texture("assets/textures/container.png", GL_TEXTURE_2D));
+  this->textures.push_back(new Texture("assets/textures/container_specular.png", GL_TEXTURE_2D));
 }
 void Application::initMaterials()
 {

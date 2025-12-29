@@ -1,4 +1,5 @@
-#include "texture.h"
+#include "graphics/texture.h"
+
 #include <SOIL2/SOIL2.h>
 #include <iostream>
 

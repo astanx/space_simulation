@@ -1,9 +1,8 @@
-#include "model.h"
-
-#include "render/mesh/mesh.h"
-#include "render/material/material.h"
-#include "render/texture/texture.h"
-#include "render/shader/shader.h"
+#include "graphics/model.h"
+#include "graphics/mesh.h"
+#include "graphics/material.h"
+#include "graphics/texture.h"
+#include "graphics/shader.h"
 
 // Private functions
 void Model::updateUniforms(Shader *shader)
@@ -44,6 +43,7 @@ Model::~Model()
 void Model::render(Shader *shader)
 {
   shader->use();
+  
   // Update uniforms
   this->updateUniforms(shader);
 

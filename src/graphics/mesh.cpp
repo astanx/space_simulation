@@ -1,7 +1,9 @@
-#include "mesh.h"
-#include "render/shader/shader.h"
-#include "render/primitives/primitives.h"
-#include "render/vertex/vertex.h"
+#include "graphics/mesh.h"
+#include "graphics/shader.h"
+#include "graphics/primitives/primitives.h"
+#include "graphics/mesh.h"
+#include "graphics/vertex.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 // Private functions

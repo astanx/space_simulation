@@ -1,7 +1,8 @@
-#include "light.h"
+#include "graphics/shader.h"
+#include "scene/light.h"
+
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <render/shader/shader.h>
 
 // Private functions
 

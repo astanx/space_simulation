@@ -1,5 +1,6 @@
 #pragma once
-#include "render/primitives/primitives.h"
+
+#include "graphics/primitives/primitives.h"
 
 class Plane : public Primitive
 {

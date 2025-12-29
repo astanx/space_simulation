@@ -1,5 +1,5 @@
-#include "plane.h"
-#include "render/vertex/vertex.h"
+#include "graphics/primitives/plane.h"
+#include "graphics/vertex.h"
 
 // Constructor and Destructor
 Plane::Plane() : Primitive()

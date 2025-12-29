@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(Scape)
+project(Space)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,7 +23,7 @@ endif()
 set(GLM_INCLUDE_DIR "/Users/ivanastanin/vs/cpp/glm-1.0.2")
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/include
     ${GLFW_INCLUDE_DIR}
     ${GLM_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
@@ -39,18 +39,18 @@ link_libraries(
 add_executable(Space 
     src/main.cpp
     src/core/application.cpp
-    src/core/camera.cpp
-    src/render/shader/shader.cpp
-    src/render/texture/texture.cpp
-    src/render/material/material.cpp
-    src/render/primitives/triangle/triangle.cpp
-    src/render/primitives/primitives.cpp
-    src/render/primitives/quad/quad.cpp
-    src/render/primitives/plane/plane.cpp
-    src/render/primitives/cube/cube.cpp
-    src/render/mesh/mesh.cpp
-    src/render/light/light.cpp
-    src/render/model/model.cpp
+    src/camera/camera.cpp
+    src/graphics/shader.cpp
+    src/graphics/texture.cpp
+    src/graphics/material.cpp
+    src/graphics/primitives/triangle.cpp
+    src/graphics/primitives/primitives.cpp
+    src/graphics/primitives/quad.cpp
+    src/graphics/primitives/plane.cpp
+    src/graphics/primitives/cube.cpp
+    src/graphics/mesh.cpp
+    src/scene/light.cpp
+    src/graphics/model.cpp
 )
 
 # Link libraries
@@ -64,12 +64,9 @@ target_link_libraries(Space
 
 # ---- Copy runtime resources (shaders, assets) next to the executable ----
 add_custom_command(TARGET Space POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Space>/shaders
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Space>/assets
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/shaders
-            $<TARGET_FILE_DIR:Space>/shaders
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/textures
-            $<TARGET_FILE_DIR:Space>/textures
+            ${CMAKE_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:Space>/assets
     COMMENT "Copying assets/ to output directory"
 )

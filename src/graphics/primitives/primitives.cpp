@@ -1,5 +1,5 @@
-#include "primitives.h"
-#include "render/vertex/vertex.h"
+#include "graphics/primitives/primitives.h"
+#include "graphics/vertex.h"
 
 // Private functions
 

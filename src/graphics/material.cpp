@@ -1,5 +1,5 @@
-#include "material.h"
-#include "render/shader/shader.h"
+#include "graphics/material.h"
+#include "graphics/shader.h"
 
 // Private functions
 
