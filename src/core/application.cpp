@@ -109,6 +109,10 @@ void Application::initModels()
 {
   std::vector<Mesh *> meshes;
   meshes.push_back(new Mesh(new Cube()));
+
+  this->models.push_back(new Model(glm::vec3(0.f), this->materials[CONTAINER_MATERIAL], meshes, this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
+
+
   std::vector<Mesh *> floorMeshes;
   floorMeshes.push_back(new Mesh(new Plane()));
 
@@ -120,8 +124,9 @@ void Application::initModels()
           this->textures[CONTAINER_TEXTURE],
           nullptr));
   this->models[0]->scaleBy(glm::vec3(100.f, 0.1f, 100.f));
-  this->models.push_back(new Model(glm::vec3(2.f), this->materials[CONTAINER_MATERIAL], meshes, this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
-  this->models.push_back(new Model(glm::vec3(0.f), this->materials[CONTAINER_MATERIAL], meshes, this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
+
+  this->models.push_back(new Model(glm::vec3(4.f), this->materials[CONTAINER_MATERIAL], "assets/models/backpack.obj", this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
+
 
   for (auto *&mesh : meshes)
   {

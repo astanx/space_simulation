@@ -51,6 +51,7 @@ add_executable(Space
     src/graphics/mesh.cpp
     src/scene/light.cpp
     src/graphics/model.cpp
+    src/utils/OBJloader.cpp
 )
 
 # Link libraries

@@ -4,6 +4,8 @@
 #include "graphics/texture.h"
 #include "graphics/shader.h"
 
+#include "utils/OBJloader.h"
+
 // Private functions
 void Model::updateUniforms(Shader *shader)
 {
@@ -29,6 +31,19 @@ Model::Model(glm::vec3 position, Material *material,
   {
     mesh->move(this->position);
   }
+}
+Model::Model(glm::vec3 position, Material *material,
+        const char* OBJfile,
+        Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
+{
+  this->position = position;
+  this->material = material;
+  this->overrideTextureDiffuse = overrideTextureDiffuse;
+  this->overrideTextureSpecular = overrideTextureSpecular;
+
+  std::vector<Vertex> vercites = loadOBJmodel(OBJfile);
+
+  this->meshes.push_back(new Mesh(vercites.data(), vercites.size(), NULL, 0, this->position, this->position));
 }
 
 Model::~Model()

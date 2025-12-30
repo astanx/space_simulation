@@ -22,6 +22,11 @@ public:
   Model(glm::vec3 position, Material *material,
         std::vector<Mesh *>& meshes,
         Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular);
+
+  // OBJ consturctor 
+  Model(glm::vec3 position, Material *material,
+        const char* OBJfile,
+        Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular);
   ~Model();
 
   void render(Shader* shader);
