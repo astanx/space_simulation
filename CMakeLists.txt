@@ -50,8 +50,10 @@ add_executable(Space
     src/graphics/primitives/cube.cpp
     src/graphics/mesh.cpp
     src/scene/light.cpp
+    src/scene/scene.cpp
     src/graphics/model.cpp
-    src/utils/OBJloader.cpp
+    src/resources/OBJloader.cpp
+    src/resources/resourceManager.cpp
 )
 
 # Link libraries

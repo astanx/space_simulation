@@ -39,12 +39,6 @@ Texture::~Texture()
   glDeleteTextures(1, &this->id);
 }
 
-// Getters
-inline GLuint Texture::getId() const
-{
-  return this->id;
-}
-
 // Public functions
 void Texture::bind(const GLint textureUnit)
 {

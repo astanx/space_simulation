@@ -18,8 +18,6 @@ void Camera::updateCameraVectors()
 Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float windowWidth, float windowHeight)
     : position(position), front(front), worldUp(worldUp), up(worldUp)
 {
-  this->ViewMatrix = glm::mat4(1.0f);
-
   this->mouseSensitivity = 0.2f;
   this->movementSpeed = 2.5f;
 

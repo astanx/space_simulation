@@ -1,10 +1,10 @@
 #pragma once
 
+#include "graphics/mesh.h"
 #include <vector>
 #include <glm/glm.hpp>
 
 class Material;
-class Mesh;
 class Shader;
 class Texture;
 
@@ -14,21 +14,25 @@ private:
   Material *material;
   Texture *overrideTextureDiffuse;
   Texture *overrideTextureSpecular;
-  std::vector<Mesh *> meshes;
+  std::vector<std::unique_ptr<Mesh>> meshes;
   glm::vec3 position;
+  glm::mat4 modelMatrix;
 
-  void updateUniforms(Shader* shader);
+  void updateUniforms(Shader *shader);
+  void updateModelMatrix();
+
 public:
   Model(glm::vec3 position, Material *material,
-        std::vector<Mesh *>& meshes,
-        Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular);
+        std::vector<std::unique_ptr<Mesh>> &meshes,
+        Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
 
-  // OBJ consturctor 
+  // OBJ consturctor
   Model(glm::vec3 position, Material *material,
-        const char* OBJfile,
-        Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular);
+        const char *OBJfile,
+        Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
   ~Model();
 
-  void render(Shader* shader);
+  void render(Shader *shader);
   void scaleBy(const glm::vec3 scale);
+  void setPosition(const glm::vec3& newPosition);
 };

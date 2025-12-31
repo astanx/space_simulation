@@ -37,7 +37,7 @@ public:
       glm::vec3 position = glm::vec3(0.f), glm::vec3 rotationOrigin = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
 
   Mesh(
-      Primitive *primitive,
+      std::unique_ptr<Primitive> primitive,
       glm::vec3 position = glm::vec3(0.f), glm::vec3 rotationOrigin = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
 
   Mesh(const Mesh &obj);

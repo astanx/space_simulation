@@ -6,6 +6,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+
 // Private functions
 void Mesh::initVAO()
 {
@@ -88,7 +89,7 @@ Mesh::Mesh(
 }
 
 Mesh::Mesh(
-    Primitive *primitive,
+    std::unique_ptr<Primitive> primitive,
     glm::vec3 position, glm::vec3 rotationOrigin, glm::vec3 rotation, glm::vec3 scale)
 {
   this->position = position;
@@ -119,6 +120,7 @@ Mesh::Mesh(
 
 Mesh::Mesh(const Mesh &obj)
 {
+
   this->position = obj.position;
   this->rotationOrigin = obj.rotationOrigin;
   this->rotation = obj.rotation;

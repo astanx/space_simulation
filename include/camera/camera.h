@@ -16,8 +16,6 @@ enum CameraMovement
 class Camera
 {
 private:
-  glm::mat4 ViewMatrix;
-
   GLfloat movementSpeed;
   GLfloat mouseSensitivity;
 

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "camera/camera.h"
+#include "scene/scene.h"
+#include "resources/resourceManager.h"
 
 #include <vector>
 #include <GL/glew.h>
@@ -17,13 +18,6 @@ class Mesh;
 class Light;
 class Model;
 
-// Enums for easy access
-enum shader { CORE_SHADER = 0 };
-enum texture { CONTAINER_TEXTURE = 0, CONTAINER_SPECULAR_TEXTURE = 1 };
-enum material { CONTAINER_MATERIAL = 0 };
-enum mesh { CUBE_MESH = 0 };
-
-
 class Application 
 {
 private:
@@ -38,30 +32,15 @@ private:
   const int GLmajor;
   const int GLminor;
 
-  // Matrices
-  glm::mat4 ProjectionMatrix;
+  // Resource manager
+  ResourceManager resourceManager;
+
+  // Scene
+  Scene scene;
 
   // Timing
   float deltaTime;
   float lastFrame;
-
-  //Camera 
-  Camera camera;
-
-  // Shaders
-  std::vector<Shader*> shaders;
-
-  // Textures
-  std::vector<Texture*> textures;
-
-  // Materials
-  std::vector<Material*> materials;
-
-  // Models
-  std::vector<Model*> models;
-
-  // Lights
-  std::vector<Light*> lights;
 
   // INITIALIZERS
   // GLFW and window
@@ -69,17 +48,6 @@ private:
   void initWindow(const char* title, GLboolean resizable);
   void initGLEW();
   void initOpenGLSettings();
-
-  // Application components
-  void initMatrices();
-  void initShaders();
-  void initTextures();
-  void initMaterials();
-  void initModels();
-  void initLights();
-  void initUniforms();
-
-  void updateUniforms();
 public:
   Application(
     const char* title, const int windowWidth, const int windowHeight, const int GLmajor, const int GLminor, GLboolean resizable

@@ -2,11 +2,7 @@
 #include "graphics/primitives/cube.h"
 #include "graphics/primitives/plane.h"
 #include "graphics/shader.h"
-#include "graphics/texture.h"
-#include "graphics/material.h"
-#include "graphics/mesh.h"
-#include "graphics/model.h"
-#include "scene/light.h"
+#include "scene/scene.h"
 
 #include <iostream>
 
@@ -71,105 +67,6 @@ void Application::initOpenGLSettings()
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
-void Application::initMatrices()
-{
-  if (this->framebufferHeight == 0)
-  {
-    std::cerr << "WARNING::FRAMEBUFFER_HEIGHT_ZERO, SETTING TO 1 TO AVOID DIVISION BY ZERO" << std::endl;
-    this->framebufferHeight = 1;
-  }
-  this->ProjectionMatrix = this->camera.getProjectionMatrix(static_cast<float>(this->framebufferWidth) / static_cast<float>(this->framebufferHeight));
-}
-void Application::initShaders()
-{
-  this->shaders.push_back(new Shader(this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl"));
-}
-void Application::initTextures()
-{
-  this->textures.push_back(new Texture("assets/textures/container.png", GL_TEXTURE_2D));
-  this->textures.push_back(new Texture("assets/textures/container_specular.png", GL_TEXTURE_2D));
-}
-void Application::initMaterials()
-{
-  if (this->textures.size() < 2)
-  {
-    std::cerr << "ERROR::NOT_ENOUGH_TEXTURES_TO_CREATE_MATERIAL" << std::endl;
-    return;
-  }
-  this->materials.push_back(new Material(
-      glm::vec3(0.1f),
-      glm::vec3(1.f),
-      glm::vec3(1.f),
-      CONTAINER_TEXTURE,
-      CONTAINER_SPECULAR_TEXTURE,
-      32.f));
-}
-
-void Application::initModels()
-{
-  std::vector<Mesh *> meshes;
-  meshes.push_back(new Mesh(new Cube()));
-
-  this->models.push_back(new Model(glm::vec3(0.f), this->materials[CONTAINER_MATERIAL], meshes, this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
-
-
-  std::vector<Mesh *> floorMeshes;
-  floorMeshes.push_back(new Mesh(new Plane()));
-
-  this->models.push_back(
-      new Model(
-          glm::vec3(0.f, -1.f, 0.f),
-          this->materials[CONTAINER_MATERIAL],
-          floorMeshes,
-          this->textures[CONTAINER_TEXTURE],
-          nullptr));
-  this->models[0]->scaleBy(glm::vec3(100.f, 0.1f, 100.f));
-
-  this->models.push_back(new Model(glm::vec3(4.f), this->materials[CONTAINER_MATERIAL], "assets/models/backpack.obj", this->textures[CONTAINER_TEXTURE], this->textures[CONTAINER_SPECULAR_TEXTURE]));
-
-
-  for (auto *&mesh : meshes)
-  {
-    delete mesh;
-  }
-
-  for (auto *&mesh : floorMeshes)
-  {
-    delete mesh;
-  }
-}
-void Application::initLights()
-{
-  this->lights.push_back(new Light(
-      glm::vec3(0.f, 0.f, 2.f), glm::vec3(0.8f), glm::vec3(2.f), glm::vec3(1.5f), 1.f, 0.09f, 0.032f));
-}
-void Application::initUniforms()
-{
-  this->shaders[CORE_SHADER]->use();
-
-  this->shaders[CORE_SHADER]->setMat4fv(this->camera.getViewMatrix(), "ViewMatrix");
-  this->shaders[CORE_SHADER]->setMat4fv(this->ProjectionMatrix, "ProjectionMatrix");
-
-  for (size_t i = 0; i < this->lights.size(); i++)
-  {
-    this->lights[i]->sendToShader(*this->shaders[CORE_SHADER]);
-  }
-
-  this->shaders[CORE_SHADER]->unuse();
-}
-
-void Application::updateUniforms()
-{
-  this->shaders[CORE_SHADER]->setMat4fv(this->camera.getViewMatrix(), "ViewMatrix");
-  this->shaders[CORE_SHADER]->setVec3f(this->camera.getPosition(), "camPosition");
-  this->shaders[CORE_SHADER]->setMat4fv(this->ProjectionMatrix, "ProjectionMatrix");
-  this->shaders[CORE_SHADER]->set1i(1, "isTexture");
-
-  for (size_t i = 0; i < this->lights.size(); i++)
-  {
-    this->lights[i]->sendToShader(*this->shaders[CORE_SHADER]);
-  }
-}
 
 // Constructor / Destructor
 Application::Application(
@@ -177,12 +74,9 @@ Application::Application(
                                                                                                                                    windowHeight(windowHeight),
                                                                                                                                    GLmajor(GLmajor),
                                                                                                                                    GLminor(GLminor),
-                                                                                                                                   camera(
-                                                                                                                                       glm::vec3(0.f, 0.f, 3.f),
-                                                                                                                                       glm::vec3(0.f, 0.f, -1.f),
-                                                                                                                                       glm::vec3(0.f, 1.f, 0.f),
-                                                                                                                                       static_cast<float>(windowWidth),
-                                                                                                                                       static_cast<float>(windowHeight))
+                                                                                                                                   resourceManager(),
+                                                                                                                                   scene(&resourceManager)
+
 {
   // Init variables
   this->window = nullptr;
@@ -191,50 +85,31 @@ Application::Application(
 
   this->deltaTime = 0.f;
   this->lastFrame = 0.f;
-
+  
   // Initialize application
   this->initGLFW();
   this->initWindow(title, resizable);
   this->initGLEW();
   this->initOpenGLSettings();
-  this->initMatrices();
-  this->initShaders();
-  this->initTextures();
-  this->initMaterials();
-  this->initModels();
-  this->initLights();
-  this->initUniforms();
+
+  this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
+  
+  this->resourceManager.LoadTexture(Res::CONTAINER_DIFFUSE, "assets/textures/container.png", GL_TEXTURE_2D);
+  this->resourceManager.LoadTexture(Res::CONTAINER_SPECULAR, "assets/textures/container_specular.png", GL_TEXTURE_2D);
+
+  this->resourceManager.LoadTexture(Res::BACKPACK_DIFFUSE, "assets/textures/backpack_diffuse.png", GL_TEXTURE_2D);
+  this->resourceManager.LoadTexture(Res::BACKPACK_SPECULAR, "assets/textures/backpack_specular.png", GL_TEXTURE_2D);
+  
+  auto cube = std::make_unique<Cube>();
+  this->resourceManager.LoadMesh(Res::CUBE_MESH, std::move(cube));
+
+  this->scene.init(windowWidth, windowHeight);
 }
 
 Application::~Application()
 {
   glfwDestroyWindow(this->window);
   glfwTerminate();
-
-  for (auto *&shader : this->shaders)
-  {
-    delete shader;
-  }
-
-  for (auto *&texture : this->textures)
-  {
-    delete texture;
-  }
-
-  for (auto *&material : this->materials)
-  {
-    delete material;
-  }
-
-  for (auto *&model : this->models)
-  {
-    delete model;
-  }
-
-  for (auto *&light : this->lights)
-  {
-    delete light;
-  }
 }
 
 // Accessors
@@ -269,26 +144,13 @@ void Application::render()
   glClearColor(0.f, 0.f, 0.f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // Use shader
-  this->shaders[CORE_SHADER]->use();
+  Shader *core = this->resourceManager.GetShader(Res::CORE_SHADER);
 
-  // Update uniforms
-  this->updateUniforms();
-
-  // Render models
-  for (auto &model : this->models)
-  {
-    model->render(this->shaders[CORE_SHADER]);
-  }
+  // Render scene
+  this->scene.render(core, this->framebufferWidth, this->framebufferHeight);
 
   // Swap buffers
   glfwSwapBuffers(this->window);
-
-  // Unbind everything
-  glBindVertexArray(0);
-  this->textures[CONTAINER_TEXTURE]->unbind();
-  this->textures[CONTAINER_SPECULAR_TEXTURE]->unbind();
-  this->shaders[CORE_SHADER]->unuse();
 }
 
 void Application::processInput()
@@ -299,31 +161,31 @@ void Application::processInput()
   }
   if (glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS)
   {
-    this->camera.processKeyboard(FORWARD, this->deltaTime);
+    this->scene.processKeyboard(FORWARD, this->deltaTime);
   }
   if (glfwGetKey(this->window, GLFW_KEY_S) == GLFW_PRESS)
   {
-    this->camera.processKeyboard(BACKWARD, this->deltaTime);
+    this->scene.processKeyboard(BACKWARD, this->deltaTime);
   }
   if (glfwGetKey(this->window, GLFW_KEY_A) == GLFW_PRESS)
   {
-    this->camera.processKeyboard(LEFT, this->deltaTime);
+    this->scene.processKeyboard(LEFT, this->deltaTime);
   }
   if (glfwGetKey(this->window, GLFW_KEY_D) == GLFW_PRESS)
   {
-    this->camera.processKeyboard(RIGHT, this->deltaTime);
+    this->scene.processKeyboard(RIGHT, this->deltaTime);
   }
   if (glfwGetKey(this->window, GLFW_KEY_SPACE) == GLFW_PRESS)
   {
-    this->camera.processKeyboard(UP, this->deltaTime);
+    this->scene.processKeyboard(UP, this->deltaTime);
   }
   if (glfwGetKey(this->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
   {
-    this->camera.processKeyboard(DOWN, this->deltaTime);
+    this->scene.processKeyboard(DOWN, this->deltaTime);
   }
   if (glfwGetKey(this->window, GLFW_KEY_L) == GLFW_PRESS)
   {
-    this->lights[0]->move(this->camera.getPosition());
+    this->scene.getLights()[0]->move(this->scene.getActiveCameraPosition());
   }
 }
 
@@ -332,16 +194,14 @@ void Application::mouseCallback(GLFWwindow *window, double xpos, double ypos)
 {
   Application *appState = static_cast<Application *>(glfwGetWindowUserPointer(window));
 
-  appState->camera.processMouseMovement(static_cast<float>(xpos), static_cast<float>(ypos));
+  appState->scene.processMouseMovement(static_cast<float>(xpos), static_cast<float>(ypos));
 }
 
 void Application::scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
   Application *appState = static_cast<Application *>(glfwGetWindowUserPointer(window));
 
-  appState->camera.processMouseScroll(static_cast<float>(yoffset));
-
-  appState->ProjectionMatrix = appState->camera.getProjectionMatrix(static_cast<float>(appState->framebufferWidth) / static_cast<float>(appState->framebufferHeight));
+  appState->scene.processMouseScroll(static_cast<float>(yoffset));
 }
 
 void Application::framebuffer_resize_callback(GLFWwindow *window, int width, int height)
@@ -353,8 +213,6 @@ void Application::framebuffer_resize_callback(GLFWwindow *window, int width, int
 
   appState->framebufferWidth = width;
   appState->framebufferHeight = height;
-
-  appState->ProjectionMatrix = appState->camera.getProjectionMatrix(static_cast<float>(width) / static_cast<float>(height));
 
   glViewport(0, 0, width, height);
 };
