@@ -2,7 +2,7 @@
 
 #include "graphics/model.h"
 #include "camera/camera.h"
-#include "scene/light.h"
+#include "scene/light/pointLight.h"
 #include "resources/resourceManager.h"
 
 class Shader;
@@ -14,7 +14,7 @@ private:
   Camera *activeCamera;
 
   std::vector<std::unique_ptr<Model>> models;
-  std::vector<std::unique_ptr<Light>> lights;
+  std::vector<std::unique_ptr<PointLight>> pointLights;
   std::vector<std::unique_ptr<Camera>> cameras;
 
   // TO-DO
@@ -40,11 +40,11 @@ public:
 
   // Setters
   void addModel(std::unique_ptr<Model> model);
-  void addLight(std::unique_ptr<Light> light);
+  void addPointLight(std::unique_ptr<PointLight> pointLight);
   void addCamera(std::unique_ptr<Camera> camera);
 
   // Getters
   Camera &getActiveCamera();
   const glm::vec3 getActiveCameraPosition() const;
-  const std::vector<std::unique_ptr<Light>> &getLights() const;
+  const std::vector<std::unique_ptr<PointLight>> &getPointLights() const;
 };

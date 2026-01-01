@@ -9,7 +9,8 @@
 // Private functions
 void Model::updateUniforms(Shader *shader)
 {
-  this->material->sendToShader(*shader);
+  if (this->material)
+    this->material->sendToShader(*shader);
 }
 
 // Constructor/Descructor

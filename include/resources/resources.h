@@ -5,15 +5,26 @@
 // Enums for easy access
 namespace Res
 {
+  // Shader
   const std::string CORE_SHADER = "core";
-  const std::string CONTAINER_DIFFUSE = "container_diffuse";
-  const std::string CONTAINER_SPECULAR = "container_specular";
+
+  // Mesh
   const std::string CUBE_MESH = "cube";
   const std::string PLANE_MESH = "plane";
-  const std::string CONTAINER = "container";
-  
-  
-  const std::string BACKPACK = "backpack";
+  const std::string CIRCLE_MESH = "circle";
+  const std::string SPHERE_MESH = "sphere";
+
+  // Texture
+  const std::string CONTAINER_DIFFUSE = "container_diffuse";
+  const std::string CONTAINER_SPECULAR = "container_specular";
   const std::string BACKPACK_DIFFUSE = "backpack_diffuse";
   const std::string BACKPACK_SPECULAR = "backpack_specular";
+
+  // Material
+  const std::string CONTAINER = "container";
+  const std::string SPHERE_MATERIAL = "sphere_material";
+
+  // Model
+  const std::string BACKPACK = "backpack";
+
 }

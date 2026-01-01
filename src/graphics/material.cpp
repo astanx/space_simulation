@@ -7,7 +7,7 @@
 // Constructor and Destructor
 Material::Material(
     glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
-    Texture* diffuseTexture, Texture* specularTexture, float shininess)
+    Texture *diffuseTexture, Texture *specularTexture, float shininess)
 {
   this->ambient = ambient;
   this->diffuse = diffuse;
@@ -25,13 +25,32 @@ void Material::sendToShader(Shader &program)
   program.setVec3f(this->ambient, "material.ambient");
   program.setVec3f(this->diffuse, "material.diffuse");
   program.setVec3f(this->specular, "material.specular");
-
-  this->diffuseTexture->bind(0);   
-  this->specularTexture->bind(1); 
-
-  program.set1i(0, "material.diffuseTexture"); 
-  program.set1i(1, "material.specularTexture");
-
-  program.set1i(1, "isTexture");
   program.set1f(this->shininess, "material.shininess");
+
+  if (this->diffuseTexture)
+  {
+    this->diffuseTexture->bind(0);
+    program.set1i(0, "material.diffuseTexture");
+    program.set1i(1, "isTexture");
+  }
+  else
+  {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+  if (this->specularTexture)
+  {
+    this->specularTexture->bind(1);
+    program.set1i(1, "material.specularTexture");
+    program.set1i(1, "isTexture");
+  }
+  else
+  {
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, 1);
+  }
+
+  if (!this->diffuseTexture && !this->specularTexture)
+    program.set1i(0, "isTexture");
 }

@@ -16,8 +16,8 @@ Scene::Scene(ResourceManager *resourceManager)
 // Public functions
 void Scene::sendLightsToShader(Shader &shader)
 {
-  for (auto &light : this->lights)
-    light->sendToShader(shader);
+  for (auto &pointLight : this->pointLights)
+    pointLight->sendToShader(shader);
 }
 
 void Scene::sendCameraToShader(Shader &shader, float aspectRatio)
@@ -41,8 +41,7 @@ void Scene::init(float width, float height)
                                                       diff, spec, 32.0f);
   Mesh *cubeMesh = this->resourceManager->GetMesh(Res::CUBE_MESH);
   Mesh *planeMesh = this->resourceManager->GetMesh(Res::PLANE_MESH);
-
-  auto cubePrimitive = std::make_unique<Cube>();
+  Mesh *sphereMesh = this->resourceManager->GetMesh(Res::SPHERE_MESH);
 
   std::vector<Mesh *> meshes1;
   meshes1.push_back(cubeMesh);
@@ -50,9 +49,18 @@ void Scene::init(float width, float height)
   std::vector<Mesh *> meshes2;
   meshes2.push_back(planeMesh);
 
+  std::vector<Mesh *> meshes3;
+  meshes3.push_back(sphereMesh);
 
-  auto model1 = std::make_unique<Model>(glm::vec3(-3.0f, 0.0f, 0.0f), mat, meshes1, diff, spec);
-  auto model2 = std::make_unique<Model>(glm::vec3(0.0f, -2.0f, 0.0f), mat, meshes2, diff, spec, glm::vec3(0.f), glm::vec3(100.f));
+  auto container = std::make_unique<Model>(glm::vec3(-3.0f, 0.0f, 0.0f), mat, meshes1, diff, spec);
+  auto plane = std::make_unique<Model>(glm::vec3(0.0f, -2.0f, 0.0f), mat, meshes2, diff, spec, glm::vec3(0.f), glm::vec3(100.f));
+
+  Material *sphereMat = this->resourceManager->LoadMaterial(Res::SPHERE_MATERIAL,
+                                                            glm::vec3(0.1f),
+                                                            glm::vec3(0.7f, 0.3f, 0.5f),
+                                                            glm::vec3(0.3f),
+                                                            nullptr, nullptr, 32.f);
+  auto sphere = std::make_unique<Model>(glm::vec3(3.0f, 0.0f, 0.0f), sphereMat, meshes3);
 
   Texture *diff_backpack = this->resourceManager->GetTexture(Res::BACKPACK_DIFFUSE);
   Texture *spec_backpack = this->resourceManager->GetTexture(Res::BACKPACK_SPECULAR);
@@ -61,21 +69,23 @@ void Scene::init(float width, float height)
                                                                glm::vec3(0.3f),
                                                                diff_backpack, spec_backpack, 32.0f);
 
-  auto model3 = std::make_unique<Model>(glm::vec3(0.0f, 0.0f, 0.0f), mat_backpack, "assets/models/backpack.obj");
-  this->addModel(std::move(model1));
-  this->addModel(std::move(model2));
-  this->addModel(std::move(model3));
+  auto backpack = std::make_unique<Model>(glm::vec3(0.0f, 0.0f, 0.0f), mat_backpack, "assets/models/backpack.obj");
+  this->addModel(std::move(container));
+  this->addModel(std::move(plane));
+  this->addModel(std::move(sphere));
+  this->addModel(std::move(backpack));
 
-  auto light = std::make_unique<Light>(
+  auto pointLight = std::make_unique<PointLight>(
       glm::vec3(1.2f, 1.0f, 2.0f),
       glm::vec3(0.5f),
       glm::vec3(1.0f),
       glm::vec3(1.0f),
-      1.0f,
+      1.f,
+      1.f,
       0.09f,
       0.032f);
 
-  this->addLight(std::move(light));
+  this->addPointLight(std::move(pointLight));
 
   auto cam = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f),
                                       glm::vec3(0.0f, 0.0f, -1.0f),
@@ -149,9 +159,9 @@ void Scene::addModel(std::unique_ptr<Model> model)
   this->models.push_back(std::move(model));
 }
 
-void Scene::addLight(std::unique_ptr<Light> light)
+void Scene::addPointLight(std::unique_ptr<PointLight> pointLight)
 {
-  this->lights.push_back(std::move(light));
+  this->pointLights.push_back(std::move(pointLight));
 }
 
 // Getters
@@ -169,7 +179,7 @@ const glm::vec3 Scene::getActiveCameraPosition() const
   return this->activeCamera->getPosition();
 }
 
-const std::vector<std::unique_ptr<Light>> &Scene::getLights() const
+const std::vector<std::unique_ptr<PointLight>> &Scene::getPointLights() const
 {
-  return this->lights;
+  return this->pointLights;
 }

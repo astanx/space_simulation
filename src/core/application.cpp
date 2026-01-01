@@ -1,6 +1,8 @@
 #include "core/application.h"
 #include "graphics/primitives/cube.h"
 #include "graphics/primitives/plane.h"
+#include "graphics/primitives/circle.h"
+#include "graphics/primitives/sphere.h"
 #include "graphics/shader.h"
 #include "scene/scene.h"
 
@@ -85,7 +87,7 @@ Application::Application(
 
   this->deltaTime = 0.f;
   this->lastFrame = 0.f;
-  
+
   // Initialize application
   this->initGLFW();
   this->initWindow(title, resizable);
@@ -93,18 +95,24 @@ Application::Application(
   this->initOpenGLSettings();
 
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
-  
+
   this->resourceManager.LoadTexture(Res::CONTAINER_DIFFUSE, "assets/textures/container.png", GL_TEXTURE_2D);
   this->resourceManager.LoadTexture(Res::CONTAINER_SPECULAR, "assets/textures/container_specular.png", GL_TEXTURE_2D);
 
   this->resourceManager.LoadTexture(Res::BACKPACK_DIFFUSE, "assets/textures/backpack_diffuse.png", GL_TEXTURE_2D);
   this->resourceManager.LoadTexture(Res::BACKPACK_SPECULAR, "assets/textures/backpack_specular.png", GL_TEXTURE_2D);
-  
+
   auto cube = std::make_unique<Cube>();
   this->resourceManager.LoadMesh(Res::CUBE_MESH, std::move(cube));
 
   auto plane = std::make_unique<Plane>();
   this->resourceManager.LoadMesh(Res::PLANE_MESH, std::move(plane));
+
+  auto circle = std::make_unique<Circle>(15, 1.f);
+  this->resourceManager.LoadMesh(Res::CIRCLE_MESH, std::move(circle));
+
+  auto sphere = std::make_unique<Sphere>(360, 1.f);
+  this->resourceManager.LoadMesh(Res::SPHERE_MESH, std::move(sphere));
 
   this->scene.init(windowWidth, windowHeight);
 }
@@ -188,7 +196,7 @@ void Application::processInput()
   }
   if (glfwGetKey(this->window, GLFW_KEY_L) == GLFW_PRESS)
   {
-    this->scene.getLights()[0]->move(this->scene.getActiveCameraPosition());
+    this->scene.getPointLights()[0]->move(this->scene.getActiveCameraPosition());
   }
 }
 
