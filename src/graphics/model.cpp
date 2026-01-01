@@ -15,7 +15,7 @@ void Model::updateUniforms(Shader *shader)
 
 // Constructor/Descructor
 Model::Model(glm::vec3 position, Material *material,
-             std::vector<std::unique_ptr<Mesh>> &meshes,
+             std::vector<Mesh*> meshes,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
 {
   this->position = position;
@@ -24,7 +24,7 @@ Model::Model(glm::vec3 position, Material *material,
   this->overrideTextureSpecular = overrideTextureSpecular;
 
   for (auto &mesh : meshes)
-    this->meshes.push_back(std::move(mesh));
+    this->meshes.push_back(mesh);
 
   this->updateModelMatrix();
 }
@@ -40,7 +40,7 @@ Model::Model(glm::vec3 position, Material *material,
   std::vector<Vertex> vertices = loadOBJmodel(OBJfile);
 
   Mesh *mesh = new Mesh(vertices.data(), vertices.size(), nullptr, 0, this->position, this->position);
-  this->meshes.push_back(std::unique_ptr<Mesh>(mesh));
+  this->meshes.push_back(mesh);
 }
 
 Model::~Model()

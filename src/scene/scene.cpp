@@ -43,17 +43,11 @@ void Scene::init(float width, float height)
 
   auto cubePrimitive = std::make_unique<Cube>();
 
-  std::vector<std::unique_ptr<Mesh>> meshes1;
-  auto mesh1 = std::make_unique<Mesh>(
-      std::make_unique<Cube>(),
-      glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f));
-  meshes1.push_back(std::move(mesh1));
+  std::vector<Mesh *> meshes1;
+  meshes1.push_back(cubeMesh);
 
-  std::vector<std::unique_ptr<Mesh>> meshes2;
-  auto mesh2 = std::make_unique<Mesh>(
-      std::make_unique<Cube>(),
-      glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f));
-  meshes2.push_back(std::move(mesh2));
+  std::vector<Mesh *> meshes2;
+  meshes2.push_back(cubeMesh);
 
   auto model1 = std::make_unique<Model>(glm::vec3(-3.0f, 0.0f, 0.0f), mat, meshes1, diff, spec);
   auto model2 = std::make_unique<Model>(glm::vec3(2.0f, 0.0f, 0.0f), mat, meshes2, diff, spec);

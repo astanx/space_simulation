@@ -14,7 +14,7 @@ private:
   Material *material;
   Texture *overrideTextureDiffuse;
   Texture *overrideTextureSpecular;
-  std::vector<std::unique_ptr<Mesh>> meshes;
+  std::vector<Mesh*> meshes;
   glm::vec3 position;
   glm::mat4 modelMatrix;
 
@@ -23,7 +23,7 @@ private:
 
 public:
   Model(glm::vec3 position, Material *material,
-        std::vector<std::unique_ptr<Mesh>> &meshes,
+        std::vector<Mesh*> meshes,
         Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
 
   // OBJ consturctor
