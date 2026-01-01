@@ -103,6 +103,9 @@ Application::Application(
   auto cube = std::make_unique<Cube>();
   this->resourceManager.LoadMesh(Res::CUBE_MESH, std::move(cube));
 
+  auto plane = std::make_unique<Plane>();
+  this->resourceManager.LoadMesh(Res::PLANE_MESH, std::move(plane));
+
   this->scene.init(windowWidth, windowHeight);
 }
 

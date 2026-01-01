@@ -116,10 +116,10 @@ void Camera::processKeyboard(CameraMovement direction, float deltaTime)
     this->position += this->right * this->movementSpeed * deltaTime;
     break;
   case UP:
-    this->position += this->up * this->movementSpeed * deltaTime;
+    this->position += this->worldUp * this->movementSpeed * deltaTime;
     break;
   case DOWN:
-    this->position -= this->up * this->movementSpeed * deltaTime;
+    this->position -= this->worldUp * this->movementSpeed * deltaTime;
     break;
   default:
     break;

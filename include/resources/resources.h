@@ -9,6 +9,7 @@ namespace Res
   const std::string CONTAINER_DIFFUSE = "container_diffuse";
   const std::string CONTAINER_SPECULAR = "container_specular";
   const std::string CUBE_MESH = "cube";
+  const std::string PLANE_MESH = "plane";
   const std::string CONTAINER = "container";
   
   

@@ -40,6 +40,7 @@ void Scene::init(float width, float height)
                                                       glm::vec3(0.3f),
                                                       diff, spec, 32.0f);
   Mesh *cubeMesh = this->resourceManager->GetMesh(Res::CUBE_MESH);
+  Mesh *planeMesh = this->resourceManager->GetMesh(Res::PLANE_MESH);
 
   auto cubePrimitive = std::make_unique<Cube>();
 
@@ -47,10 +48,11 @@ void Scene::init(float width, float height)
   meshes1.push_back(cubeMesh);
 
   std::vector<Mesh *> meshes2;
-  meshes2.push_back(cubeMesh);
+  meshes2.push_back(planeMesh);
+
 
   auto model1 = std::make_unique<Model>(glm::vec3(-3.0f, 0.0f, 0.0f), mat, meshes1, diff, spec);
-  auto model2 = std::make_unique<Model>(glm::vec3(2.0f, 0.0f, 0.0f), mat, meshes2, diff, spec);
+  auto model2 = std::make_unique<Model>(glm::vec3(0.0f, -2.0f, 0.0f), mat, meshes2, diff, spec, glm::vec3(0.f), glm::vec3(100.f));
 
   Texture *diff_backpack = this->resourceManager->GetTexture(Res::BACKPACK_DIFFUSE);
   Texture *spec_backpack = this->resourceManager->GetTexture(Res::BACKPACK_SPECULAR);

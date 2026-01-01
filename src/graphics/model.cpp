@@ -10,36 +10,46 @@
 void Model::updateUniforms(Shader *shader)
 {
   this->material->sendToShader(*shader);
-  shader->setMat4fv(this->modelMatrix, "ModelMatrix");
 }
 
 // Constructor/Descructor
 Model::Model(glm::vec3 position, Material *material,
-             std::vector<Mesh*> meshes,
-             Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
+             std::vector<Mesh *> meshes,
+
+             Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
+             glm::vec3 rotation, glm::vec3 scale)
 {
   this->position = position;
   this->material = material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
+  this->rotation = rotation;
+  this->scale = scale;
 
   for (auto &mesh : meshes)
+  {
     this->meshes.push_back(mesh);
-
-  this->updateModelMatrix();
+    mesh->scaleBy(scale);
+    mesh->rotate(rotation);
+  }
 }
 Model::Model(glm::vec3 position, Material *material,
              const char *OBJfile,
-             Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
+             Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
+             glm::vec3 rotation, glm::vec3 scale)
 {
   this->position = position;
   this->material = material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
+  this->rotation = rotation;
+  this->scale = scale;
 
   std::vector<Vertex> vertices = loadOBJmodel(OBJfile);
 
   Mesh *mesh = new Mesh(vertices.data(), vertices.size(), nullptr, 0, this->position, this->position);
+  mesh->scaleBy(scale);
+  mesh->rotate(rotation);
   this->meshes.push_back(mesh);
 }
 
@@ -83,14 +93,7 @@ void Model::scaleBy(const glm::vec3 scale)
   }
 }
 
-void Model::updateModelMatrix()
-{
-  this->modelMatrix = glm::mat4(1.0f);
-  this->modelMatrix = glm::translate(this->modelMatrix, this->position);
-}
-
 void Model::setPosition(const glm::vec3 &newPosition)
 {
   this->position = newPosition;
-  this->updateModelMatrix();
 }
