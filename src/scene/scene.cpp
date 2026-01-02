@@ -35,18 +35,16 @@ void Scene::sendCameraToShader(Shader &shader, float aspectRatio)
 // Process functions
 void Scene::init(float width, float height)
 {
-  Mesh *sphereMesh = this->resourceManager->GetMesh(Res::SPHERE_MESH);
+  Mesh *sunMesh = this->resourceManager->GetMesh(Res::SUN);
+  Mesh *earthMesh = this->resourceManager->GetMesh(Res::EARTH);
 
-  std::vector<Mesh *> earthMeshes;
-  earthMeshes.push_back(sphereMesh);
+
   Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
-  auto earth = std::make_unique<Model>(glm::vec3(3.f, 0.f, 0.f), earthMat, earthMeshes);
+  auto earth = std::make_unique<Model>(glm::vec3(150.f, 0.f, 0.f), earthMat, earthMesh);
   this->addModel(std::move(earth));
 
-  std::vector<Mesh *> sunMeshes;
-  sunMeshes.push_back(sphereMesh);
   Material *sunMat = this->resourceManager->GetMaterial(Res::SUN_MATERIAL);
-  auto sun = std::make_unique<Model>(glm::vec3(0.f, 0.f, 0.f), sunMat, sunMeshes);
+  auto sun = std::make_unique<Model>(glm::vec3(0.f, 0.f, 0.f), sunMat, sunMesh);
   this->addModel(std::move(sun));
 
   auto pointLight = std::make_unique<PointLight>(

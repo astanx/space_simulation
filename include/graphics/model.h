@@ -27,6 +27,11 @@ public:
         Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
         glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
 
+  Model(glm::vec3 position, Material *material,
+        Mesh *mesh,
+        Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
+        glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
+
   // OBJ consturctor
   Model(glm::vec3 position, Material *material,
         const char *OBJfile,

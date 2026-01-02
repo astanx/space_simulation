@@ -34,6 +34,24 @@ Model::Model(glm::vec3 position, Material *material,
     mesh->rotate(rotation);
   }
 }
+
+Model::Model(glm::vec3 position, Material *material,
+             Mesh *mesh,
+             Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
+             glm::vec3 rotation, glm::vec3 scale)
+{
+  this->position = position;
+  this->material = material;
+  this->overrideTextureDiffuse = overrideTextureDiffuse;
+  this->overrideTextureSpecular = overrideTextureSpecular;
+  this->rotation = rotation;
+  this->scale = scale;
+
+  mesh->setScale(scale);
+  mesh->rotate(rotation);
+  this->meshes.push_back(mesh);
+}
+
 Model::Model(glm::vec3 position, Material *material,
              const char *OBJfile,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,

@@ -69,6 +69,8 @@ void Application::initOpenGLSettings()
 
   glEnable(GL_DEPTH_TEST);
 
+  glEnable(GL_STENCIL_TEST);
+  
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
@@ -110,8 +112,11 @@ Application::Application(
                                      glm::vec3(0.3f),
                                      sun_diff, nullptr, 32.f);
 
-  auto sphere = std::make_unique<Sphere>(32, 1.f);
-  this->resourceManager.LoadMesh(Res::SPHERE_MESH, std::move(sphere));
+  auto sun = std::make_unique<Sphere>(32, 109.f);
+  this->resourceManager.LoadMesh(Res::SUN, std::move(sun));
+
+  auto earth = std::make_unique<Sphere>(32, 1.f);
+  this->resourceManager.LoadMesh(Res::EARTH, std::move(earth));
 
   this->scene.init(windowWidth, windowHeight);
 }
@@ -152,7 +157,7 @@ void Application::render()
 {
   // Clear
   glClearColor(0.f, 0.f, 0.f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   Shader *core = this->resourceManager.GetShader(Res::CORE_SHADER);
 

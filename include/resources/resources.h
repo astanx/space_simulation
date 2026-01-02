@@ -13,6 +13,8 @@ namespace Res
   const std::string PLANE_MESH = "plane";
   const std::string CIRCLE_MESH = "circle";
   const std::string SPHERE_MESH = "sphere";
+  const std::string SUN = "sun";
+  const std::string EARTH = "earth";
 
   // Texture
   const std::string EARTH_DIFFUSE = "earth_diffuse";

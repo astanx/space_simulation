@@ -104,6 +104,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 
 void main()
 {
+  // if (texture(material.diffuseTexture, vs_texcoord).a < 0.1) discard;
   vec3 normal = normalize(vs_normal);
   vec3 viewDir = normalize(camPosition - vs_position);
 

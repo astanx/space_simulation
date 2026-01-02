@@ -61,8 +61,8 @@ void Texture::loadFromFile(const char *fileName)
   glGenTextures(1, &this->id);
   glBindTexture(this->type, this->id);
 
-  glTexParameteri(this->type, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(this->type, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(this->type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(this->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(this->type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(this->type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
