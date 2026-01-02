@@ -37,15 +37,20 @@ void Scene::init(float width, float height)
 {
   Mesh *sphereMesh = this->resourceManager->GetMesh(Res::SPHERE_MESH);
 
-
   std::vector<Mesh *> earthMeshes;
   earthMeshes.push_back(sphereMesh);
   Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
-  auto earth = std::make_unique<Model>(glm::vec3(0.f, 0.f, 0.f), earthMat, earthMeshes);
+  auto earth = std::make_unique<Model>(glm::vec3(3.f, 0.f, 0.f), earthMat, earthMeshes);
   this->addModel(std::move(earth));
 
+  std::vector<Mesh *> sunMeshes;
+  sunMeshes.push_back(sphereMesh);
+  Material *sunMat = this->resourceManager->GetMaterial(Res::SUN_MATERIAL);
+  auto sun = std::make_unique<Model>(glm::vec3(0.f, 0.f, 0.f), sunMat, sunMeshes);
+  this->addModel(std::move(sun));
+
   auto pointLight = std::make_unique<PointLight>(
-      glm::vec3(1.2f, 1.0f, 2.0f),
+      glm::vec3(0.f, 0.f, 0.f),
       glm::vec3(0.5f),
       glm::vec3(1.0f),
       glm::vec3(1.0f),
@@ -57,7 +62,7 @@ void Scene::init(float width, float height)
   this->addPointLight(std::move(pointLight));
 
   auto dirLight = std::make_unique<DirectionalLight>(
-      glm::vec3(-0.2f, -1.0f, -0.3f),
+      glm::vec3(1.2f, 1.0f, 2.0f),
       glm::vec3(0.5f),
       glm::vec3(1.0f),
       glm::vec3(1.0f), 1.f);

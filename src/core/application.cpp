@@ -67,6 +67,8 @@ void Application::initOpenGLSettings()
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  glEnable(GL_DEPTH_TEST);
+
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
@@ -96,13 +98,19 @@ Application::Application(
 
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
 
-  Texture *diff = this->resourceManager.LoadTexture(Res::EARTH_DIFFUSE, "assets/textures/earth.png", GL_TEXTURE_2D);
-  Material *mat = this->resourceManager.LoadMaterial(Res::EARTH_MATERIAL, glm::vec3(0.1f),
-                                                      glm::vec3(0.9f, 0.5f, 0.4f),
-                                                      glm::vec3(0.3f),
-                                                      diff, nullptr, 30.f);
+  Texture *earth_diff = this->resourceManager.LoadTexture(Res::EARTH_DIFFUSE, "assets/textures/earth.png", GL_TEXTURE_2D);
+  this->resourceManager.LoadMaterial(Res::EARTH_MATERIAL, glm::vec3(0.1f),
+                                     glm::vec3(0.9f, 0.5f, 0.4f),
+                                     glm::vec3(0.3f),
+                                     earth_diff, nullptr, 32.f);
 
-  auto sphere = std::make_unique<Sphere>(32, 3.f);
+  Texture *sun_diff = this->resourceManager.LoadTexture(Res::SUN_DIFFUSE, "assets/textures/sun.png", GL_TEXTURE_2D);
+  this->resourceManager.LoadMaterial(Res::SUN_MATERIAL, glm::vec3(0.1f),
+                                     glm::vec3(0.9f, 0.5f, 0.4f),
+                                     glm::vec3(0.3f),
+                                     sun_diff, nullptr, 32.f);
+
+  auto sphere = std::make_unique<Sphere>(32, 1.f);
   this->resourceManager.LoadMesh(Res::SPHERE_MESH, std::move(sphere));
 
   this->scene.init(windowWidth, windowHeight);

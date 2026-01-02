@@ -30,7 +30,7 @@ Model::Model(glm::vec3 position, Material *material,
   for (auto &mesh : meshes)
   {
     this->meshes.push_back(mesh);
-    mesh->scaleBy(scale);
+    mesh->setScale(scale);
     mesh->rotate(rotation);
   }
 }
@@ -49,7 +49,7 @@ Model::Model(glm::vec3 position, Material *material,
   std::vector<Vertex> vertices = loadOBJmodel(OBJfile);
 
   Mesh *mesh = new Mesh(vertices.data(), vertices.size(), nullptr, 0, this->position, this->position);
-  mesh->scaleBy(scale);
+  mesh->setScale(scale);
   mesh->rotate(rotation);
   this->meshes.push_back(mesh);
 }
@@ -90,7 +90,7 @@ void Model::scaleBy(const glm::vec3 scale)
 {
   for (auto &mesh : meshes)
   {
-    mesh->scaleBy(scale);
+    mesh->setScale(scale);
   }
 }
 
