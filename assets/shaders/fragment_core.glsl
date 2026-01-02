@@ -9,6 +9,8 @@ struct Material
   sampler2D specularTexture;
   float shininess;
 };
+uniform Material material;
+
 
 struct PointLight
 {
@@ -23,6 +25,17 @@ struct PointLight
   float linear;
   float quadratic;
 };
+uniform PointLight pointLight;
+
+
+struct DirLight {
+  vec3 direction;
+  float intensity;  
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+};  
+uniform DirLight dirLight;
 
 in vec3 vs_position;
 in vec3 vs_color;
@@ -30,9 +43,6 @@ in vec2 vs_texcoord;
 in vec3 vs_normal;
 
 out vec4 fs_color;
-
-uniform Material material;
-uniform PointLight pointLight;
 
 uniform bool isTexture;
 uniform vec3 camPosition; 
@@ -52,41 +62,52 @@ vec3 getSpecularMap()
   : vec3(1.0);
 }
 
-vec3 calculateAmbient()
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 {
-  return pointLight.ambient * getAlbedo();
-}
+    vec3 lightDir = normalize(-light.direction);
+    // diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    // specular shading
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    // combine results
+    vec3 ambient  = light.ambient  * getAlbedo();
+    vec3 diffuse  = light.diffuse  * diff * getAlbedo();
+    vec3 specular = light.specular * spec * getSpecularMap();
+    return (ambient + diffuse + specular) * light.intensity;
+} 
 
-vec3 calculateDiffuse()
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
-  vec3 lightDir = normalize(pointLight.position - vs_position);
-  float diffuse = max(dot(normalize(vs_normal), lightDir), 0.0);
-  return pointLight.diffuse * diffuse * getAlbedo();
-}
+  vec3 lightDir = normalize(light.position - fragPos);
+  float diff = max(dot(normal, lightDir), 0.0);
 
-vec3 calculateSpecular()
-{
-  vec3 lightToPosDirVec = normalize(pointLight.position - vs_position);
-  vec3 reflectDirVec = reflect(-lightToPosDirVec, normalize(vs_normal));
-  vec3 viewDir = normalize(camPosition - vs_position);
-  float specular = pow(max(dot(viewDir, reflectDirVec), 0.0), material.shininess);
-  return pointLight.specular * specular * getSpecularMap();
-}
+  vec3 reflectDir = reflect(-lightDir, normal);
+  float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+
+  float distance = length(light.position - fragPos);
+  float attenuation = 1.0 / (
+    light.constant +
+    light.linear * distance +
+    light.quadratic * distance * distance
+  );
+
+  vec3 ambient  = light.ambient * getAlbedo();
+  vec3 diffuse  = light.diffuse * diff * getAlbedo();
+  vec3 specular = light.specular * spec * getSpecularMap();
+
+  ambient  *= attenuation;
+  diffuse  *= attenuation;
+  specular *= attenuation;
+  return (ambient + diffuse + specular) * light.intensity;
+} 
 
 void main()
 {
-  vec3 ambientLight = calculateAmbient();
+  vec3 normal = normalize(vs_normal);
+  vec3 viewDir = normalize(camPosition - vs_position);
 
-  vec3 diffuseLight = calculateDiffuse();
-
-  vec3 specularLight = calculateSpecular();
-
-  float distance = length(pointLight.position - vs_position);
-  float attenuation = 1.0 / (pointLight.constant + pointLight.linear * distance + pointLight.quadratic * (distance * distance)); 
-
-  ambientLight *= attenuation;
-  diffuseLight *= attenuation;
-  specularLight *= attenuation; 
-  
-  fs_color = (vec4(ambientLight, 1.f) + vec4(diffuseLight, 1.f) + vec4(specularLight, 1.f)) * pointLight.intensity;
+  vec3 result = CalcDirLight(dirLight, normal, viewDir);
+  result += CalcPointLight(pointLight, normal, vs_position, viewDir);
+  fs_color = vec4(result, 1.0);
 }

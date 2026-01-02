@@ -60,8 +60,8 @@ void Application::initOpenGLSettings()
 {
   glEnable(GL_DEPTH_TEST);
 
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
+  // glEnable(GL_CULL_FACE);
+  // glCullFace(GL_BACK);
   glFrontFace(GL_CCW);
 
   glEnable(GL_BLEND);
@@ -96,22 +96,13 @@ Application::Application(
 
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
 
-  this->resourceManager.LoadTexture(Res::CONTAINER_DIFFUSE, "assets/textures/container.png", GL_TEXTURE_2D);
-  this->resourceManager.LoadTexture(Res::CONTAINER_SPECULAR, "assets/textures/container_specular.png", GL_TEXTURE_2D);
+  Texture *diff = this->resourceManager.LoadTexture(Res::EARTH_DIFFUSE, "assets/textures/earth.png", GL_TEXTURE_2D);
+  Material *mat = this->resourceManager.LoadMaterial(Res::EARTH_MATERIAL, glm::vec3(0.1f),
+                                                      glm::vec3(0.9f, 0.5f, 0.4f),
+                                                      glm::vec3(0.3f),
+                                                      diff, nullptr, 30.f);
 
-  this->resourceManager.LoadTexture(Res::BACKPACK_DIFFUSE, "assets/textures/backpack_diffuse.png", GL_TEXTURE_2D);
-  this->resourceManager.LoadTexture(Res::BACKPACK_SPECULAR, "assets/textures/backpack_specular.png", GL_TEXTURE_2D);
-
-  auto cube = std::make_unique<Cube>();
-  this->resourceManager.LoadMesh(Res::CUBE_MESH, std::move(cube));
-
-  auto plane = std::make_unique<Plane>();
-  this->resourceManager.LoadMesh(Res::PLANE_MESH, std::move(plane));
-
-  auto circle = std::make_unique<Circle>(15, 1.f);
-  this->resourceManager.LoadMesh(Res::CIRCLE_MESH, std::move(circle));
-
-  auto sphere = std::make_unique<Sphere>(360, 1.f);
+  auto sphere = std::make_unique<Sphere>(32, 3.f);
   this->resourceManager.LoadMesh(Res::SPHERE_MESH, std::move(sphere));
 
   this->scene.init(windowWidth, windowHeight);

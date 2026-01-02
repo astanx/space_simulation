@@ -18,6 +18,8 @@ void Scene::sendLightsToShader(Shader &shader)
 {
   for (auto &pointLight : this->pointLights)
     pointLight->sendToShader(shader);
+  if (this->directionalLight)
+    this->directionalLight->sendToShader(shader);
 }
 
 void Scene::sendCameraToShader(Shader &shader, float aspectRatio)
@@ -33,47 +35,14 @@ void Scene::sendCameraToShader(Shader &shader, float aspectRatio)
 // Process functions
 void Scene::init(float width, float height)
 {
-  Texture *diff = this->resourceManager->GetTexture(Res::CONTAINER_DIFFUSE);
-  Texture *spec = this->resourceManager->GetTexture(Res::CONTAINER_SPECULAR);
-  Material *mat = this->resourceManager->LoadMaterial(Res::CONTAINER, glm::vec3(0.1f),
-                                                      glm::vec3(0.9f, 0.5f, 0.4f),
-                                                      glm::vec3(0.3f),
-                                                      diff, spec, 32.0f);
-  Mesh *cubeMesh = this->resourceManager->GetMesh(Res::CUBE_MESH);
-  Mesh *planeMesh = this->resourceManager->GetMesh(Res::PLANE_MESH);
   Mesh *sphereMesh = this->resourceManager->GetMesh(Res::SPHERE_MESH);
 
-  std::vector<Mesh *> meshes1;
-  meshes1.push_back(cubeMesh);
 
-  std::vector<Mesh *> meshes2;
-  meshes2.push_back(planeMesh);
-
-  std::vector<Mesh *> meshes3;
-  meshes3.push_back(sphereMesh);
-
-  auto container = std::make_unique<Model>(glm::vec3(-3.0f, 0.0f, 0.0f), mat, meshes1, diff, spec);
-  auto plane = std::make_unique<Model>(glm::vec3(0.0f, -2.0f, 0.0f), mat, meshes2, diff, spec, glm::vec3(0.f), glm::vec3(100.f));
-
-  Material *sphereMat = this->resourceManager->LoadMaterial(Res::SPHERE_MATERIAL,
-                                                            glm::vec3(0.1f),
-                                                            glm::vec3(0.7f, 0.3f, 0.5f),
-                                                            glm::vec3(0.3f),
-                                                            nullptr, nullptr, 32.f);
-  auto sphere = std::make_unique<Model>(glm::vec3(3.0f, 0.0f, 0.0f), sphereMat, meshes3);
-
-  Texture *diff_backpack = this->resourceManager->GetTexture(Res::BACKPACK_DIFFUSE);
-  Texture *spec_backpack = this->resourceManager->GetTexture(Res::BACKPACK_SPECULAR);
-  Material *mat_backpack = this->resourceManager->LoadMaterial(Res::BACKPACK, glm::vec3(0.1f),
-                                                               glm::vec3(0.9f, 0.5f, 0.4f),
-                                                               glm::vec3(0.3f),
-                                                               diff_backpack, spec_backpack, 32.0f);
-
-  auto backpack = std::make_unique<Model>(glm::vec3(0.0f, 0.0f, 0.0f), mat_backpack, "assets/models/backpack.obj");
-  this->addModel(std::move(container));
-  this->addModel(std::move(plane));
-  this->addModel(std::move(sphere));
-  this->addModel(std::move(backpack));
+  std::vector<Mesh *> earthMeshes;
+  earthMeshes.push_back(sphereMesh);
+  Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
+  auto earth = std::make_unique<Model>(glm::vec3(0.f, 0.f, 0.f), earthMat, earthMeshes);
+  this->addModel(std::move(earth));
 
   auto pointLight = std::make_unique<PointLight>(
       glm::vec3(1.2f, 1.0f, 2.0f),
@@ -87,11 +56,20 @@ void Scene::init(float width, float height)
 
   this->addPointLight(std::move(pointLight));
 
+  auto dirLight = std::make_unique<DirectionalLight>(
+      glm::vec3(-0.2f, -1.0f, -0.3f),
+      glm::vec3(0.5f),
+      glm::vec3(1.0f),
+      glm::vec3(1.0f), 1.f);
+
+  this->addDirLight(std::move(dirLight));
+
   auto cam = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f),
                                       glm::vec3(0.0f, 0.0f, -1.0f),
                                       glm::vec3(0.0f, 1.0f, 0.0f),
                                       width,
                                       height);
+
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();
 }
@@ -164,6 +142,11 @@ void Scene::addPointLight(std::unique_ptr<PointLight> pointLight)
   this->pointLights.push_back(std::move(pointLight));
 }
 
+void Scene::addDirLight(std::unique_ptr<DirectionalLight> directionalLight)
+{
+  this->directionalLight = std::move(directionalLight);
+}
+
 // Getters
 Camera &Scene::getActiveCamera()
 {
@@ -182,4 +165,9 @@ const glm::vec3 Scene::getActiveCameraPosition() const
 const std::vector<std::unique_ptr<PointLight>> &Scene::getPointLights() const
 {
   return this->pointLights;
+}
+
+const std::unique_ptr<DirectionalLight> &Scene::getDirLight() const
+{
+  return this->directionalLight;
 }

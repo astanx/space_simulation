@@ -19,10 +19,13 @@ namespace Res
   const std::string CONTAINER_SPECULAR = "container_specular";
   const std::string BACKPACK_DIFFUSE = "backpack_diffuse";
   const std::string BACKPACK_SPECULAR = "backpack_specular";
+  const std::string EARTH_DIFFUSE = "earth_diffuse";
 
   // Material
   const std::string CONTAINER = "container";
   const std::string SPHERE_MATERIAL = "sphere_material";
+  const std::string EARTH_MATERIAL = "earth_material";
+
 
   // Model
   const std::string BACKPACK = "backpack";
