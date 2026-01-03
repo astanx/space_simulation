@@ -22,17 +22,14 @@ Material *ResourceManager::LoadMaterial(const std::string &name, glm::vec3 ambie
   this->materials[name] = std::make_unique<Material>(ambient, diffuse, specular, diffuseTexture, specularTexture, shininess);
   return this->materials[name].get();
 }
-Mesh *ResourceManager::LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices,
-                                glm::vec3 position, glm::vec3 rotationOrigin, glm::vec3 rotation, glm::vec3 scale)
+Mesh *ResourceManager::LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices)
 {
-  this->meshes[name] = std::make_unique<Mesh>(vertexArray, nrOfVertices, indexArray, nrOfIndices, position, rotationOrigin, rotation, scale);
+  this->meshes[name] = std::make_unique<Mesh>(vertexArray, nrOfVertices, indexArray, nrOfIndices);
   return this->meshes[name].get();
 }
-Mesh *ResourceManager::LoadMesh(const std::string &name,
-                                std::unique_ptr<Primitive> primitive,
-                                glm::vec3 position, glm::vec3 rotationOrigin, glm::vec3 rotation, glm::vec3 scale)
+Mesh *ResourceManager::LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive)
 {
-  this->meshes[name] = std::make_unique<Mesh>(std::move(primitive), position, rotationOrigin, rotation, scale);
+  this->meshes[name] = std::make_unique<Mesh>(std::move(primitive));
   return this->meshes[name].get();
 }
 Mesh *ResourceManager::LoadMesh(const std::string &name, const Mesh &obj)

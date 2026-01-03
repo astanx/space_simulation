@@ -41,7 +41,9 @@ void Scene::init(float width, float height)
 
   Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
   auto earth = std::make_unique<Model>(glm::vec3(150.f, 0.f, 0.f), earthMat, earthMesh);
+  auto earth2 = std::make_unique<Model>(glm::vec3(170.f, 0.f, 0.f), earthMat, earthMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(10.f));
   this->addModel(std::move(earth));
+  this->addModel(std::move(earth2));
 
   Material *sunMat = this->resourceManager->GetMaterial(Res::SUN_MATERIAL);
   auto sun = std::make_unique<Model>(glm::vec3(0.f, 0.f, 0.f), sunMat, sunMesh);

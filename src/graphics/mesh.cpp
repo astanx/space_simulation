@@ -43,32 +43,9 @@ void Mesh::initVAO()
   glBindVertexArray(0);
 }
 
-void Mesh::updateUniforms(Shader *shader)
-{
-  shader->setMat4fv(this->ModelMatrix, "ModelMatrix");
-}
-
-void Mesh::updateModelMatrix()
-{
-  this->ModelMatrix = glm::mat4(1.f);
-  this->ModelMatrix = glm::translate(this->ModelMatrix, this->rotationOrigin);
-  this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.x), glm::vec3(1.f, 0.f, 0.f));
-  this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.y), glm::vec3(0.f, 1.f, 0.f));
-  this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.z), glm::vec3(0.f, 0.f, 1.f));
-  this->ModelMatrix = glm::translate(this->ModelMatrix, this->position - this->rotationOrigin);
-  this->ModelMatrix = glm::scale(this->ModelMatrix, this->scale);
-}
-
 // Constructor and Destructor
-Mesh::Mesh(
-    Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices,
-    glm::vec3 position, glm::vec3 rotationOrigin, glm::vec3 rotation, glm::vec3 scale)
+Mesh::Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices)
 {
-  this->position = position;
-  this->rotationOrigin = rotationOrigin;
-  this->rotation = rotation;
-  this->scale = scale;
-
   this->nrOfVertices = nrOfVertices;
   this->nrOfIndices = nrOfIndices;
 
@@ -85,18 +62,10 @@ Mesh::Mesh(
   }
 
   this->initVAO();
-  this->updateModelMatrix();
 }
 
-Mesh::Mesh(
-    std::unique_ptr<Primitive> primitive,
-    glm::vec3 position, glm::vec3 rotationOrigin, glm::vec3 rotation, glm::vec3 scale)
+Mesh::Mesh(std::unique_ptr<Primitive> primitive)
 {
-  this->position = position;
-  this->rotationOrigin = rotationOrigin;
-  this->rotation = rotation;
-  this->scale = scale;
-
   this->nrOfVertices = primitive->getNrOfVertices();
   this->nrOfIndices = primitive->getNrOfIndices();
 
@@ -115,17 +84,10 @@ Mesh::Mesh(
   }
 
   this->initVAO();
-  this->updateModelMatrix();
 }
 
 Mesh::Mesh(const Mesh &obj)
 {
-
-  this->position = obj.position;
-  this->rotationOrigin = obj.rotationOrigin;
-  this->rotation = obj.rotation;
-  this->scale = obj.scale;
-
   this->nrOfVertices = obj.nrOfVertices;
   this->nrOfIndices = obj.nrOfIndices;
 
@@ -142,7 +104,6 @@ Mesh::Mesh(const Mesh &obj)
   }
 
   this->initVAO();
-  this->updateModelMatrix();
 }
 
 Mesh::~Mesh()
@@ -156,50 +117,9 @@ Mesh::~Mesh()
   delete[] this->indices;
 }
 
-// Setters
-void Mesh::setPosition(const glm::vec3 position)
-{
-  this->position = position;
-}
-
-void Mesh::setRotationOrigin(const glm::vec3 rotationOrigin)
-{
-  this->rotationOrigin = rotationOrigin;
-}
-
-
-void Mesh::setRotation(const glm::vec3 rotation)
-{
-  this->rotation = rotation;
-}
-
-void Mesh::setScale(const glm::vec3 scale)
-{
-  this->scale = scale;
-}
-
 // Functions
-
-void Mesh::move(const glm::vec3 position)
-{
-  this->position += position;
-}
-
-void Mesh::rotate(const glm::vec3 rotation)
-{
-  this->rotation += rotation;
-}
-
-void Mesh::scaleBy(const glm::vec3 scale)
-{
-  this->scale *= scale;
-}
-
 void Mesh::render(Shader *shader)
 {
-  this->updateModelMatrix();
-  this->updateUniforms(shader);
-
   shader->use();
 
   glBindVertexArray(this->VAO);

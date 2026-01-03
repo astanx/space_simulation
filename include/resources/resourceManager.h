@@ -33,11 +33,8 @@ public:
   Material *LoadMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
                          Texture* diffuseTexture, Texture* specularTexture, float shininess);
 
-  Mesh *LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices,
-                 glm::vec3 position = glm::vec3(0.f), glm::vec3 rotationOrigin = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
-  Mesh *LoadMesh(const std::string &name,
-                 std::unique_ptr<Primitive> primitive,
-                 glm::vec3 position = glm::vec3(0.f), glm::vec3 rotationOrigin = glm::vec3(0.f), glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f));
+  Mesh *LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices);
+  Mesh *LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive);
   Mesh *LoadMesh(const std::string &name, const Mesh &obj);
 
   // Getters
