@@ -66,6 +66,18 @@ Model::Model(glm::vec3 position, Material *material,
   this->meshes.push_back(mesh);
 }
 
+Model::Model(const Model& model)
+{
+  this->position = model.position;
+  this->material = model.material;
+  this->overrideTextureDiffuse = model.overrideTextureDiffuse;
+  this->overrideTextureSpecular = model.overrideTextureSpecular;
+  this->rotation = model.rotation;
+  this->scale = model.scale;
+  this->rotationOrigin = model.rotationOrigin;
+  this->meshes = model.meshes;
+}
+
 Model::Model(glm::vec3 position, Material *material,
              const char *OBJfile,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
@@ -123,6 +135,11 @@ void Model::render(Shader *shader)
 void Model::scaleBy(const glm::vec3 &scale)
 {
   this->scale *= scale;
+}
+
+glm::vec3 Model::getPosition() const
+{
+  return this->position;
 }
 
 void Model::rotate(const glm::vec3 &rotation)

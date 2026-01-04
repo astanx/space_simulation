@@ -2,6 +2,8 @@
 #include "graphics/shader.h"
 #include "graphics/primitives/cube.h"
 #include "graphics/mesh.h"
+#include "physics/planet.h"
+#include "physics/constants.h"
 #include "resources/resourceManager.h"
 
 #include <iostream>
@@ -37,17 +39,24 @@ void Scene::init(float width, float height)
 {
   Mesh *sunMesh = this->resourceManager->GetMesh(Res::SUN);
   Mesh *earthMesh = this->resourceManager->GetMesh(Res::EARTH);
-
-
-  Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
-  auto earth = std::make_unique<Model>(glm::vec3(150.f, 0.f, 0.f), earthMat, earthMesh);
-  auto earth2 = std::make_unique<Model>(glm::vec3(170.f, 0.f, 0.f), earthMat, earthMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(10.f));
-  this->addModel(std::move(earth));
-  this->addModel(std::move(earth2));
+  Mesh *moonMesh = this->resourceManager->GetMesh(Res::MOON);
 
   Material *sunMat = this->resourceManager->GetMaterial(Res::SUN_MATERIAL);
-  auto sun = std::make_unique<Model>(glm::vec3(0.f, 0.f, 0.f), sunMat, sunMesh);
-  this->addModel(std::move(sun));
+  auto sunModel = std::make_unique<Model>(sunPos, sunMat, sunMesh);
+  auto sun = std::make_unique<Planet>(sunPos, sunMass, sunRadius, std::move(sunModel));
+  Planet *sunPtr = sun.get();
+  this->addObject(std::move(sun));
+  
+  Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
+  auto earthModel = std::make_unique<Model>(earthPos, earthMat, earthMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(1.f), sunPos);
+  auto earth = std::make_unique<Planet>(earthPos, earthMass, earthRadius, std::move(earthModel), glm::vec3(0.f));
+  Planet *earthPtr = earth.get();
+  this->addObject(std::move(earth));
+
+  Material *moonMat = this->resourceManager->GetMaterial(Res::MOON_MATERIAL);
+  auto moonModel = std::make_unique<Model>(moonPos, moonMat, moonMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(1.f), earthPos);
+  auto moon = std::make_unique<Planet>(moonPos, moonMass, moonRadius, std::move(moonModel), glm::vec3(0.f), earthPtr);
+  this->addObject(std::move(moon));
 
   auto pointLight = std::make_unique<PointLight>(
       glm::vec3(0.f, 0.f, 0.f),
@@ -69,7 +78,7 @@ void Scene::init(float width, float height)
 
   this->addDirLight(std::move(dirLight));
 
-  auto cam = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f),
+  auto cam = std::make_unique<Camera>(glm::vec3(149000.0f, 0.0f, 3.0f),
                                       glm::vec3(0.0f, 0.0f, -1.0f),
                                       glm::vec3(0.0f, 1.0f, 0.0f),
                                       width,
@@ -102,7 +111,37 @@ void Scene::processMouseScroll(float yoffset)
   this->activeCamera->processMouseScroll(yoffset);
 }
 
-void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight)
+void Scene::update(float dt)
+{
+  // this->objects[EARTH]->applyGravitation(*objects[MOON]);
+  // this->objects[MOON]->applyGravitation(*objects[EARTH]);
+  // this->objects[EARTH]->applyGravitation(*objects[SUN]);
+  // this->objects[MOON]->applyGravitation(*objects[SUN]);
+
+  // dt += 216000; // 1 tick ~ 1 hour 
+  for (size_t i = 0; i < objects.size(); ++i)
+    for (size_t j = i + 1; j < objects.size(); ++j)
+    {
+      objects[i]->applyGravitation(*objects[j]);
+      objects[j]->applyGravitation(*objects[i]);
+    }
+  for (auto &object : objects)
+  {
+    object->update(dt);
+  }
+
+  const auto &moonModel = this->objects[MOON]->getModel();
+  // auto earthPos = objects[EARTH]->getPosition();
+  // std::cout << "Earth position: " << earthPos.x << ' ' << earthPos.y << ' ' << earthPos.z << std::endl;
+  // moonModel->setRotationOrigin(objects[EARTH]->getPosition());
+  // moonModel->rotate(glm::vec3(0.f, 20.f * dt, 0.f));
+
+  // const auto &earthModel = this->objects[EARTH]->getModel();
+  // earthModel->setRotationOrigin(objects[SUN]->getPosition());
+  // earthModel->rotate(glm::vec3(0.f, 5.f * dt, 0.f));
+}
+
+void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt)
 {
   if (!activeCamera)
     return;
@@ -111,6 +150,8 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight)
   if (aspect <= 0.0f)
     aspect = 1.0f;
 
+  this->update(dt);
+
   shader->use();
 
   // Send camera
@@ -118,11 +159,10 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight)
   // Send lights
   sendLightsToShader(*shader);
 
-  // Render all models
-  int i = 0;
-  for (auto &model : this->models)
+  // Render all objects
+  for (auto &object : this->objects)
   {
-    model->render(shader);
+    object->render(shader);
   }
 
   shader->unuse();
@@ -140,6 +180,11 @@ void Scene::addCamera(std::unique_ptr<Camera> camera)
 void Scene::addModel(std::unique_ptr<Model> model)
 {
   this->models.push_back(std::move(model));
+}
+
+void Scene::addObject(std::unique_ptr<Object> object)
+{
+  this->objects.push_back(std::move(object));
 }
 
 void Scene::addPointLight(std::unique_ptr<PointLight> pointLight)

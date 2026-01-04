@@ -10,7 +10,7 @@ class Texture;
 
 class Model
 {
-private:
+protected:
   Material *material;
   Texture *overrideTextureDiffuse;
   Texture *overrideTextureSpecular;
@@ -35,14 +35,20 @@ public:
         Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
         glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f), glm::vec3 rotationOrigin = glm::vec3(0.f));
 
+  Model(const Model &model);
+
   // OBJ consturctor
   Model(glm::vec3 position, Material *material,
         const char *OBJfile,
         Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
         glm::vec3 rotation = glm::vec3(0.f), glm::vec3 scale = glm::vec3(1.f), glm::vec3 rotationOrigin = glm::vec3(0.f));
+  
   ~Model();
 
   void render(Shader *shader);
+
+  glm::vec3 getPosition() const;
+
   void rotate(const glm::vec3 &rotation);
   void scaleBy(const glm::vec3 &scale);
   void setPosition(const glm::vec3 &newPosition);

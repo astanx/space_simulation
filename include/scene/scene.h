@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/model.h"
+#include "physics/object.h"
 #include "camera/camera.h"
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
@@ -15,6 +16,7 @@ private:
   Camera *activeCamera;
 
   std::vector<std::unique_ptr<Model>> models;
+  std::vector<std::unique_ptr<Object>> objects;
   std::vector<std::unique_ptr<Camera>> cameras;
 
   std::vector<std::unique_ptr<PointLight>> pointLights;
@@ -34,13 +36,14 @@ public:
   void processMouseScroll(float yoffset);
 
   void update(float dt);
-  void render(Shader *shader, int framebufferWidth, int framebufferHeight);
+  void render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt);
 
   void sendLightsToShader(Shader &shader);
   void sendCameraToShader(Shader &shader, float aspectRatio);
 
   // Setters
   void addModel(std::unique_ptr<Model> model);
+  void addObject(std::unique_ptr<Object> object);
   void addPointLight(std::unique_ptr<PointLight> pointLight);
   void addDirLight(std::unique_ptr<DirectionalLight> directionalLight);
   void addCamera(std::unique_ptr<Camera> camera);

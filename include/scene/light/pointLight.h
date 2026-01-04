@@ -15,6 +15,6 @@ public:
              float constant = 1.f, float linear = 0.045f, float quadratic = 0.0075f);
   ~PointLight() = default;
 
-  void sendToShader(Shader &program);
+  void sendToShader(Shader &program) override;
   void move(glm::vec3 position);
 };

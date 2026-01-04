@@ -4,6 +4,7 @@
 #include "graphics/primitives/circle.h"
 #include "graphics/primitives/sphere.h"
 #include "graphics/shader.h"
+#include "physics/constants.h"
 #include "scene/scene.h"
 
 #include <iostream>
@@ -70,7 +71,7 @@ void Application::initOpenGLSettings()
   glEnable(GL_DEPTH_TEST);
 
   glEnable(GL_STENCIL_TEST);
-  
+
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
@@ -105,6 +106,8 @@ Application::Application(
                                      glm::vec3(0.9f, 0.5f, 0.4f),
                                      glm::vec3(0.3f),
                                      earth_diff, nullptr, 32.f);
+  auto earth = std::make_unique<Sphere>(32, earthRadius);
+  this->resourceManager.LoadMesh(Res::EARTH, std::move(earth));
 
   Texture *sun_diff = this->resourceManager.LoadTexture(Res::SUN_DIFFUSE, "assets/textures/sun.png", GL_TEXTURE_2D);
   this->resourceManager.LoadMaterial(Res::SUN_MATERIAL, glm::vec3(0.1f),
@@ -112,11 +115,16 @@ Application::Application(
                                      glm::vec3(0.3f),
                                      sun_diff, nullptr, 32.f);
 
-  auto sun = std::make_unique<Sphere>(32, 109.f);
+  auto sun = std::make_unique<Sphere>(32, sunRadius);
   this->resourceManager.LoadMesh(Res::SUN, std::move(sun));
 
-  auto earth = std::make_unique<Sphere>(32, 1.f);
-  this->resourceManager.LoadMesh(Res::EARTH, std::move(earth));
+  Texture *moon_diff = this->resourceManager.LoadTexture(Res::MOON_DIFFUSE, "assets/textures/moon.png", GL_TEXTURE_2D);
+  this->resourceManager.LoadMaterial(Res::MOON_MATERIAL, glm::vec3(0.1f),
+                                     glm::vec3(0.9f, 0.5f, 0.4f),
+                                     glm::vec3(0.3f),
+                                     moon_diff, nullptr, 32.f);
+  auto moon = std::make_unique<Sphere>(32, moonRadius);
+  this->resourceManager.LoadMesh(Res::MOON, std::move(moon));
 
   this->scene.init(windowWidth, windowHeight);
 }
@@ -162,7 +170,7 @@ void Application::render()
   Shader *core = this->resourceManager.GetShader(Res::CORE_SHADER);
 
   // Render scene
-  this->scene.render(core, this->framebufferWidth, this->framebufferHeight);
+  this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime);
 
   // Swap buffers
   glfwSwapBuffers(this->window);

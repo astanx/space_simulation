@@ -11,6 +11,6 @@ public:
                    glm::vec3 specular, float intensity = 1.f);
   ~DirectionalLight() = default;
 
-  void sendToShader(Shader &program);
+  void sendToShader(Shader &program) override;
   void changeDirection(glm::vec3 direction);
 };

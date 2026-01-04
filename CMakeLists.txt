@@ -58,6 +58,9 @@ add_executable(Space
     src/graphics/model.cpp
     src/resources/OBJloader.cpp
     src/resources/resourceManager.cpp
+    src/physics/object.cpp
+    src/physics/planet.cpp
+    src/physics/constants.cpp
 )
 
 # Link libraries
