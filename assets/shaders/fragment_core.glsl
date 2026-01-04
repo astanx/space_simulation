@@ -47,7 +47,6 @@ out vec4 fs_color;
 uniform bool isTexture;
 uniform vec3 camPosition; 
 
-
 vec3 getAlbedo()
 {
   return isTexture

@@ -19,12 +19,14 @@ private:
   GLuint VBO;
   GLuint EBO;
 
+  GLenum drawMode;
+
   void initVAO();
 
 public:
-  Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices);
+  Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, GLenum drawMode = GL_TRIANGLES);
 
-  Mesh(std::unique_ptr<Primitive> primitive);
+  Mesh(std::unique_ptr<Primitive> primitive, GLenum drawMode = GL_TRIANGLES);
 
   Mesh(const Mesh &obj);
   ~Mesh();

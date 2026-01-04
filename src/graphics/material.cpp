@@ -27,11 +27,13 @@ void Material::sendToShader(Shader &program)
   program.setVec3f(this->specular, "material.specular");
   program.set1f(this->shininess, "material.shininess");
 
+  int isTexture = 0;
+
   if (this->diffuseTexture)
   {
     this->diffuseTexture->bind(0);
     program.set1i(0, "material.diffuseTexture");
-    program.set1i(1, "isTexture");
+    isTexture = 1;
   }
   else
   {
@@ -43,14 +45,13 @@ void Material::sendToShader(Shader &program)
   {
     this->specularTexture->bind(1);
     program.set1i(1, "material.specularTexture");
-    program.set1i(1, "isTexture");
+    isTexture = 1;
   }
   else
   {
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, 1);
+    glBindTexture(GL_TEXTURE_2D, 0);
   }
 
-  if (!this->diffuseTexture && !this->specularTexture)
-    program.set1i(0, "isTexture");
+  program.set1i(isTexture, "isTexture");
 }

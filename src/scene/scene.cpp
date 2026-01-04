@@ -46,16 +46,16 @@ void Scene::init(float width, float height)
   auto sun = std::make_unique<Planet>(sunPos, sunMass, sunRadius, std::move(sunModel));
   Planet *sunPtr = sun.get();
   this->addObject(std::move(sun));
-  
+
   Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
   auto earthModel = std::make_unique<Model>(earthPos, earthMat, earthMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(1.f), sunPos);
-  auto earth = std::make_unique<Planet>(earthPos, earthMass, earthRadius, std::move(earthModel), glm::vec3(0.f));
+  auto earth = std::make_unique<Planet>(earthPos, earthMass, earthRadius, std::move(earthModel), glm::vec3(0.f), sunPtr, earthOrbitalPeriod, glm::vec3(0.f, 1.f, 0.f));
   Planet *earthPtr = earth.get();
   this->addObject(std::move(earth));
 
   Material *moonMat = this->resourceManager->GetMaterial(Res::MOON_MATERIAL);
-  auto moonModel = std::make_unique<Model>(moonPos, moonMat, moonMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(1.f), earthPos);
-  auto moon = std::make_unique<Planet>(moonPos, moonMass, moonRadius, std::move(moonModel), glm::vec3(0.f), earthPtr);
+  auto moonModel = std::make_unique<Model>(moonPos, moonMat, moonMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(1.f));
+  auto moon = std::make_unique<Planet>(moonPos, moonMass, moonRadius, std::move(moonModel), glm::vec3(0.f), earthPtr, moonOrbitalPeriod, glm::vec3(1.f, 1.f, 1.f));
   this->addObject(std::move(moon));
 
   auto pointLight = std::make_unique<PointLight>(
@@ -78,7 +78,7 @@ void Scene::init(float width, float height)
 
   this->addDirLight(std::move(dirLight));
 
-  auto cam = std::make_unique<Camera>(glm::vec3(149000.0f, 0.0f, 3.0f),
+  auto cam = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f),
                                       glm::vec3(0.0f, 0.0f, -1.0f),
                                       glm::vec3(0.0f, 1.0f, 0.0f),
                                       width,
@@ -118,7 +118,7 @@ void Scene::update(float dt)
   // this->objects[EARTH]->applyGravitation(*objects[SUN]);
   // this->objects[MOON]->applyGravitation(*objects[SUN]);
 
-  // dt += 216000; // 1 tick ~ 1 hour 
+  dt *= TIME_SCALE;
   for (size_t i = 0; i < objects.size(); ++i)
     for (size_t j = i + 1; j < objects.size(); ++j)
     {
@@ -129,16 +129,6 @@ void Scene::update(float dt)
   {
     object->update(dt);
   }
-
-  const auto &moonModel = this->objects[MOON]->getModel();
-  // auto earthPos = objects[EARTH]->getPosition();
-  // std::cout << "Earth position: " << earthPos.x << ' ' << earthPos.y << ' ' << earthPos.z << std::endl;
-  // moonModel->setRotationOrigin(objects[EARTH]->getPosition());
-  // moonModel->rotate(glm::vec3(0.f, 20.f * dt, 0.f));
-
-  // const auto &earthModel = this->objects[EARTH]->getModel();
-  // earthModel->setRotationOrigin(objects[SUN]->getPosition());
-  // earthModel->rotate(glm::vec3(0.f, 5.f * dt, 0.f));
 }
 
 void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt)

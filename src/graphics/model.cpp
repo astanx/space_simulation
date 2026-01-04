@@ -12,6 +12,7 @@ void Model::updateUniforms(Shader *shader)
   if (this->material)
     this->material->sendToShader(*shader);
   shader->setMat4fv(this->ModelMatrix, "ModelMatrix");
+  shader->set1i(1, "useModelMatrix");
 }
 
 void Model::updateModelMatrix()
@@ -107,7 +108,6 @@ Model::~Model()
 // Public functions
 void Model::render(Shader *shader)
 {
-  shader->use();
   // Update uniforms
   this->updateModelMatrix();
   this->updateUniforms(shader);
@@ -129,8 +129,6 @@ void Model::render(Shader *shader)
     this->overrideTextureDiffuse->unbind();
   if (this->overrideTextureSpecular != nullptr)
     this->overrideTextureSpecular->unbind();
-
-  shader->unuse();
 }
 void Model::scaleBy(const glm::vec3 &scale)
 {

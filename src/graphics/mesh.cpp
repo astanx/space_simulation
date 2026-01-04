@@ -44,7 +44,7 @@ void Mesh::initVAO()
 }
 
 // Constructor and Destructor
-Mesh::Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices)
+Mesh::Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, GLenum drawMode)
 {
   this->nrOfVertices = nrOfVertices;
   this->nrOfIndices = nrOfIndices;
@@ -61,10 +61,12 @@ Mesh::Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray
     this->indices[i] = indexArray[i];
   }
 
+  this->drawMode = drawMode;
+
   this->initVAO();
 }
 
-Mesh::Mesh(std::unique_ptr<Primitive> primitive)
+Mesh::Mesh(std::unique_ptr<Primitive> primitive, GLenum drawMode)
 {
   this->nrOfVertices = primitive->getNrOfVertices();
   this->nrOfIndices = primitive->getNrOfIndices();
@@ -82,6 +84,8 @@ Mesh::Mesh(std::unique_ptr<Primitive> primitive)
   {
     this->indices[i] = indexArray[i];
   }
+
+  this->drawMode = drawMode;
 
   this->initVAO();
 }
@@ -103,6 +107,8 @@ Mesh::Mesh(const Mesh &obj)
     this->indices[i] = obj.indices[i];
   }
 
+  this->drawMode = obj.drawMode;
+
   this->initVAO();
 }
 
@@ -120,14 +126,10 @@ Mesh::~Mesh()
 // Functions
 void Mesh::render(Shader *shader)
 {
-  shader->use();
-
   glBindVertexArray(this->VAO);
 
   if (this->nrOfIndices == 0)
-    glDrawArrays(GL_TRIANGLES, 0, this->nrOfVertices);
+    glDrawArrays(this->drawMode, 0, this->nrOfVertices);
   else
-    glDrawElements(GL_TRIANGLES, this->nrOfIndices, GL_UNSIGNED_INT, 0);
-
-  shader->unuse();
+    glDrawElements(this->drawMode, this->nrOfIndices, GL_UNSIGNED_INT, 0);
 };

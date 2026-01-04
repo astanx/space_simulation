@@ -11,7 +11,6 @@ Object::Object(glm::vec3 position, float mass, float radius, glm::vec3 velocity)
   this->mass = mass;
   this->radius = radius;
   this->velocity = velocity;
-  // acceleration = {0.0, -9.81}; // Initial acceleration due to gravity
   this->acceleration = glm::vec3(0.f);
 }
 
@@ -27,28 +26,7 @@ void Object::move(float dt)
   this->position += velocity * dt;
   std::cout << "New position: " << position.x << ' ' << position.y << ' ' << position.z << std::endl; 
 
-  // acceleration = {0.0, -9.81}; // Reset acceleration after move
   this->acceleration = glm::vec3(0.f);
-  // if (position[1] - radius < -1.0)
-  // { // Ground collision
-  //   position[1] = -1.0 + radius;
-  //   velocity[1] = -velocity[1] * 0.6; // Simple bounce with damping
-  // }
-  // if (position[1] + radius > 1.0)
-  // { // Ceiling collision
-  //   position[1] = 1.0 - radius;
-  //   velocity[1] = -velocity[1] * 0.6;
-  // }
-  // if (position[0] - radius < -1.0)
-  // { // Left wall collision
-  //   position[0] = -1.0 + radius;
-  //   velocity[0] = -velocity[0] * 0.6;
-  // }
-  // if (position[0] + radius > 1.0)
-  // { // Right wall collision
-  //   position[0] = 1.0 - radius;
-  //   velocity[0] = -velocity[0] * 0.6;
-  // }
 }
 // Getters
 glm::vec3 Object::getPosition() const

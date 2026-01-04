@@ -14,14 +14,24 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
+uniform bool useModelMatrix;
+
+mat4 getModelMatrix()
+{
+  return useModelMatrix ?
+  ModelMatrix 
+  : mat4(1.0);
+}
+
 void main()
 {
-  vs_position = vec4(ModelMatrix * vec4(vertex_position, 1.f)).xyz;
+  mat4 model = getModelMatrix();
+  vs_position = vec4(model * vec4(vertex_position, 1.f)).xyz;
   vs_color = vertex_color;
   vs_texcoord = vec2(vertex_texcoord.x, vertex_texcoord.y * -1);
   
-  mat3 normalMatrix = transpose(inverse(mat3(ModelMatrix)));
+  mat3 normalMatrix = transpose(inverse(mat3(model)));
   vs_normal = normalize(normalMatrix * vertex_normal);
 
-  gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vertex_position, 1.f);
+  gl_Position = ProjectionMatrix * ViewMatrix * model * vec4(vertex_position, 1.f);
 }
