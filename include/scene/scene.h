@@ -23,8 +23,6 @@ private:
   std::unique_ptr<DirectionalLight> directionalLight;
 
   // Skybox* skybox;
-
-  // PhysicsWorld* physics;
 public:
   Scene(ResourceManager *resourceManager);
   ~Scene() = default;

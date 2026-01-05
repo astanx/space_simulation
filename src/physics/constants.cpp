@@ -28,3 +28,11 @@ const glm::vec3 moonPos = earthPos + glm::vec3(30.0f, 0.0f, 0.0f);
 // Orbital velocities
 const float earthOrbitalPeriod = 365.25f * 24.f * 3600.f;
 const float moonOrbitalPeriod = 27.321f * 24.f * 3600.f;
+
+// Longitudes
+const double earthLongitude = 140.0;
+const double moonLongitude = 18.6;
+
+// Inclinations
+const double earthInclination = 0.0001;
+const double moonInclination = 5.145;

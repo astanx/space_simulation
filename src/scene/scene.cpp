@@ -50,14 +50,14 @@ void Scene::init(float width, float height)
 
   Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
   auto earthModel = std::make_unique<Model>(earthPos, earthMat, earthMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(1.f), sunPos);
-  auto earthOrbit = std::make_unique<Orbit>(sunPtr, earthOrbitalPeriod);
+  auto earthOrbit = std::make_unique<Orbit>(sunPtr, earthOrbitalPeriod, earthInclination, earthLongitude);
   auto earth = std::make_unique<Planet>(earthPos, earthMass, earthRadius, std::move(earthModel), glm::vec3(0.f), std::move(earthOrbit));
   Planet *earthPtr = earth.get();
   this->addObject(std::move(earth));
 
   Material *moonMat = this->resourceManager->GetMaterial(Res::MOON_MATERIAL);
   auto moonModel = std::make_unique<Model>(moonPos, moonMat, moonMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(1.f));
-  auto moonOrbit = std::make_unique<Orbit>(earthPtr, moonOrbitalPeriod);
+  auto moonOrbit = std::make_unique<Orbit>(earthPtr, moonOrbitalPeriod, moonInclination, moonLongitude);
   auto moon = std::make_unique<Planet>(moonPos, moonMass, moonRadius, std::move(moonModel), glm::vec3(0.f), std::move(moonOrbit));
   this->addObject(std::move(moon));
 

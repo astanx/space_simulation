@@ -25,6 +25,14 @@ Planet *Orbit::getCentralBody()
 {
   return this->centralBody;
 }
+double Orbit::getInclination() const
+{
+  return this->inclination;
+}
+double Orbit::getLongitude() const
+{
+  return this->longitude;
+}
 
 void Orbit::renderTrail(Shader *shader)
 {
@@ -58,21 +66,32 @@ void Orbit::updateTrail(glm::dvec3 position)
 }
 
 // Static functions
-glm::vec3 Orbit::calculateOrbitalVelocity(const Planet *centralBody, const Planet *orbitBody)
+glm::dvec3 Orbit::calculateOrbitalVelocity(const Planet *centralBody, const Planet *orbitBody)
 {
-  if (!centralBody || !orbitBody) throw "ERROR:ORBIT:CALCULATE_VELOCITY:NO_BODY";
-  // TO-DO calculate normal
-  glm::vec3 normal(0.f, 1.f, 0.f); // y-axis normal
-  glm::vec3 velocity(0.f);
+  if (!centralBody || !orbitBody)
+    throw "ERROR:ORBIT:CALCULATE_VELOCITY:NO_BODY";
+  
+    // TO-DO calculate normal
+  glm::dvec3 normal(0.0);
+  glm::dvec3 velocity(0.0);
 
-  glm::vec3 dp = centralBody->getPosition() - orbitBody->getPosition();
+  Orbit* orbit = orbitBody->getOrbit();
 
-  float a;                                                                                               // semi-major axis
+  double i = glm::radians(orbit->getInclination());
+  double longitude = glm::radians(orbit->getLongitude());
+
+  normal.x = sin(i) * sin(longitude);
+  normal.y = cos(i);
+  normal.z = sin(i) * cos(longitude);
+
+  glm::dvec3 dp = centralBody->getPosition() - orbitBody->getPosition();
+
+  double a;                                                                                                    // semi-major axis
   a = cbrt(pow(orbitBody->getOrbit()->getOrbitalPeriod(), 2) * G * centralBody->getMass() / 4 / pow(M_PI, 2)); // Kepler`s third law
-  float r = glm::length(dp);
-  float speed = sqrt(G * centralBody->getMass() * (2 / r - 1 / a)); // Vis-viva equation
+  double r = glm::length(dp);
+  double speed = sqrt(G * centralBody->getMass() * (2 / r - 1 / a)); // Vis-viva equation
 
-  glm::vec3 v_dir = glm::normalize(glm::cross(normal, dp));
+  glm::dvec3 v_dir = glm::normalize(glm::cross(normal, dp));
   velocity = speed * v_dir;
   std::cout << "Orbital speed: " << velocity.x << ' ' << velocity.y << ' ' << velocity.z << std::endl;
   return velocity;

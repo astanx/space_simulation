@@ -3,6 +3,7 @@
 
 extern const double EPS;
 extern const double G;
+
 extern const float TIME_SCALE;
 
 extern const double sunMass;
@@ -15,6 +16,12 @@ extern const float moonRadius;
 
 extern const float earthOrbitalPeriod;
 extern const float moonOrbitalPeriod;
+
+extern const double earthLongitude;
+extern const double moonLongitude;
+
+extern const double earthInclination;
+extern const double moonInclination;
 
 extern const glm::vec3 sunPos;
 extern const glm::vec3 earthPos;
