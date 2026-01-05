@@ -3,6 +3,7 @@
 #include "graphics/primitives/cube.h"
 #include "graphics/mesh.h"
 #include "physics/planet.h"
+#include "physics/orbit.h"
 #include "physics/constants.h"
 #include "resources/resourceManager.h"
 
@@ -49,13 +50,15 @@ void Scene::init(float width, float height)
 
   Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
   auto earthModel = std::make_unique<Model>(earthPos, earthMat, earthMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(1.f), sunPos);
-  auto earth = std::make_unique<Planet>(earthPos, earthMass, earthRadius, std::move(earthModel), glm::vec3(0.f), sunPtr, earthOrbitalPeriod, glm::vec3(0.f, 1.f, 0.f));
+  auto earthOrbit = std::make_unique<Orbit>(sunPtr, earthOrbitalPeriod);
+  auto earth = std::make_unique<Planet>(earthPos, earthMass, earthRadius, std::move(earthModel), glm::vec3(0.f), std::move(earthOrbit));
   Planet *earthPtr = earth.get();
   this->addObject(std::move(earth));
 
   Material *moonMat = this->resourceManager->GetMaterial(Res::MOON_MATERIAL);
   auto moonModel = std::make_unique<Model>(moonPos, moonMat, moonMesh, nullptr, nullptr, glm::vec3(0.f), glm::vec3(1.f));
-  auto moon = std::make_unique<Planet>(moonPos, moonMass, moonRadius, std::move(moonModel), glm::vec3(0.f), earthPtr, moonOrbitalPeriod, glm::vec3(1.f, 1.f, 1.f));
+  auto moonOrbit = std::make_unique<Orbit>(earthPtr, moonOrbitalPeriod);
+  auto moon = std::make_unique<Planet>(moonPos, moonMass, moonRadius, std::move(moonModel), glm::vec3(0.f), std::move(moonOrbit));
   this->addObject(std::move(moon));
 
   auto pointLight = std::make_unique<PointLight>(
