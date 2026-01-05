@@ -101,29 +101,54 @@ Application::Application(
 
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
 
-  Texture *earth_diff = this->resourceManager.LoadTexture(Res::EARTH_DIFFUSE, "assets/textures/earth.png", GL_TEXTURE_2D);
-  this->resourceManager.LoadMaterial(Res::EARTH_MATERIAL, glm::vec3(0.1f),
-                                     glm::vec3(0.9f, 0.5f, 0.4f),
-                                     glm::vec3(0.3f),
-                                     earth_diff, nullptr, 32.f);
-  auto earth = std::make_unique<Sphere>(32, earthRadius);
-  this->resourceManager.LoadMesh(Res::EARTH, std::move(earth));
-
+  // SUN
   Texture *sun_diff = this->resourceManager.LoadTexture(Res::SUN_DIFFUSE, "assets/textures/sun.png", GL_TEXTURE_2D);
   this->resourceManager.LoadMaterial(Res::SUN_MATERIAL, glm::vec3(0.1f),
                                      glm::vec3(0.9f, 0.5f, 0.4f),
                                      glm::vec3(0.3f),
                                      sun_diff, nullptr, 32.f);
 
-  auto sun = std::make_unique<Sphere>(32, sunRadius);
+  auto sun = std::make_unique<Sphere>(32, sunRadius * VISUAL_RADIUS_SCALE);
   this->resourceManager.LoadMesh(Res::SUN, std::move(sun));
 
+  // Mercury
+  Texture *mercury_diff = this->resourceManager.LoadTexture(Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", GL_TEXTURE_2D);
+  this->resourceManager.LoadMaterial(Res::MERCURY_MATERIAL, glm::vec3(0.1f),
+                                     glm::vec3(0.9f, 0.5f, 0.4f),
+                                     glm::vec3(0.3f),
+                                     mercury_diff, nullptr, 32.f);
+
+  auto mercury = std::make_unique<Sphere>(32, mercuryRadius * VISUAL_RADIUS_SCALE);
+  this->resourceManager.LoadMesh(Res::MERCURY, std::move(mercury));
+
+  // VENUS
+  Texture *venus_diff = this->resourceManager.LoadTexture(Res::VENUS_DIFFUSE, "assets/textures/venus.png", GL_TEXTURE_2D);
+  this->resourceManager.LoadMaterial(Res::VENUS_MATERIAL, glm::vec3(0.1f),
+                                     glm::vec3(0.9f, 0.5f, 0.4f),
+                                     glm::vec3(0.3f),
+                                     venus_diff, nullptr, 32.f);
+
+  auto venus = std::make_unique<Sphere>(32, venusRadius * VISUAL_RADIUS_SCALE);
+  this->resourceManager.LoadMesh(Res::VENUS, std::move(venus));
+
+  // EARTH
+  Texture *earth_diff = this->resourceManager.LoadTexture(Res::EARTH_DIFFUSE, "assets/textures/earth.png", GL_TEXTURE_2D);
+  this->resourceManager.LoadMaterial(Res::EARTH_MATERIAL, glm::vec3(0.1f),
+                                     glm::vec3(0.9f, 0.5f, 0.4f),
+                                     glm::vec3(0.3f),
+                                     earth_diff, nullptr, 32.f);
+  auto earth = std::make_unique<Sphere>(32, earthRadius * VISUAL_RADIUS_SCALE);
+  this->resourceManager.LoadMesh(Res::EARTH, std::move(earth));
+
+  
+
+  // MOON
   Texture *moon_diff = this->resourceManager.LoadTexture(Res::MOON_DIFFUSE, "assets/textures/moon.png", GL_TEXTURE_2D);
   this->resourceManager.LoadMaterial(Res::MOON_MATERIAL, glm::vec3(0.1f),
                                      glm::vec3(0.9f, 0.5f, 0.4f),
                                      glm::vec3(0.3f),
                                      moon_diff, nullptr, 32.f);
-  auto moon = std::make_unique<Sphere>(32, moonRadius);
+  auto moon = std::make_unique<Sphere>(32, moonRadius * VISUAL_RADIUS_SCALE);
   this->resourceManager.LoadMesh(Res::MOON, std::move(moon));
 
   this->scene.init(windowWidth, windowHeight);

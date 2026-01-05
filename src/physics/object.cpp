@@ -1,17 +1,18 @@
 #include "physics/constants.h"
 #include "physics/object.h"
+#include "maths/rk4.h"
 
 #include <cmath>
 #include <iostream>
 
 // Constructor
-Object::Object(glm::vec3 position, double mass, double radius, glm::vec3 velocity)
+Object::Object(glm::dvec3 position, double mass, double radius, glm::dvec3 velocity)
 {
   this->position = position;
   this->mass = mass;
   this->radius = radius;
   this->velocity = velocity;
-  this->acceleration = glm::vec3(0.f);
+  this->acceleration = glm::dvec3(0.f);
 }
 
 // Public functions
@@ -22,24 +23,43 @@ void Object::accelerate(const glm::dvec3 &acc)
 
 void Object::move(double dt)
 {
-  this->velocity += this->acceleration * dt;
-  this->position += velocity * dt;
-  std::cout << "New position: " << position.x << ' ' << position.y << ' ' << position.z << std::endl; 
+// MAY BE REWORK ( DOES NOT WORK FOR BIG TIM_SCALE )
 
-  this->acceleration = glm::vec3(0.f);
-}
+  auto velocityF = [this](const glm::dvec3& y, double t)
+  {
+    return this->acceleration; // da/dt = a
+  };
+
+  auto positionF = [this](const glm::dvec3& y, double t)
+  {
+    return this->velocity; // dp/dt = v
+  };
+
+  this->velocity = rk4_order(this->velocity, 0.0, dt, velocityF);
+  this->position = rk4_order(this->position, 0.0, dt, positionF);
+  this->renderPosition = this->position * VISUAL_SCALE;
+
+  std::cout << "New position: " << renderPosition.x << ' ' << renderPosition.y << ' ' << renderPosition.z << std::endl; 
+
+  this->acceleration = glm::dvec3(0.f);
+};
+
 // Getters
 glm::dvec3 Object::getPosition() const
 {
   return this->position;
 }
-glm::dvec3 &Object::getPositionRef()
+glm::dvec3 Object::getRenderPosition() const
 {
-  return this->position;
+  return this->renderPosition;
 }
 glm::dvec3 Object::getVelocity() const
 {
   return this->velocity;
+}
+glm::dvec3 Object::getAcceleration() const
+{
+  return this->acceleration;
 }
 double Object::getMass() const
 {
@@ -64,13 +84,12 @@ void Object::setPosition(const glm::dvec3 &position)
 void Object::applyGravitation(const Object &other)
 {
   glm::dvec3 dp = other.position - this->position;
-  float distSq = glm::dot(dp, dp);
+  double distSq = glm::dot(dp, dp);
   if (distSq < EPS)
     return; // Avoid singularity
-  float dist = sqrt(distSq);
-  float force = G * this->mass * other.mass / distSq;
+  double dist = sqrt(distSq);
+  double force = G * this->mass * other.mass / distSq;
   glm::dvec3 acc = dp * (force / (dist * this->mass));
-
   accelerate(acc);
 }
 

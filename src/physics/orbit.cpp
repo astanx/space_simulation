@@ -71,7 +71,6 @@ glm::dvec3 Orbit::calculateOrbitalVelocity(const Planet *centralBody, const Plan
   if (!centralBody || !orbitBody)
     throw "ERROR:ORBIT:CALCULATE_VELOCITY:NO_BODY";
   
-    // TO-DO calculate normal
   glm::dvec3 normal(0.0);
   glm::dvec3 velocity(0.0);
 

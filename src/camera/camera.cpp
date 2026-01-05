@@ -19,7 +19,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float win
     : position(position), front(front), worldUp(worldUp), up(worldUp)
 {
   this->mouseSensitivity = 0.2f;
-  this->movementSpeed = 150.5f;
+  this->movementSpeed = 50.5f;
 
   this->right = glm::normalize(glm::cross(this->front, this->worldUp));
 

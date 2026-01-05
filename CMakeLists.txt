@@ -62,6 +62,7 @@ add_executable(Space
     src/physics/planet.cpp
     src/physics/constants.cpp
     src/physics/orbit.cpp
+    src/maths/rk4.cpp
 )
 
 # Link libraries

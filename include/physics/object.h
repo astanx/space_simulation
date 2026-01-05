@@ -8,18 +8,20 @@ class Object
 {
 protected:
   glm::dvec3 position;
+  glm::dvec3 renderPosition;
   glm::dvec3 velocity;
   glm::dvec3 acceleration;
   double mass;
   double radius;
 
 public:
-  Object(glm::vec3 position, double mass, double radius, glm::vec3 velocity = glm::vec3(0.f));
+  Object(glm::dvec3 position, double mass, double radius, glm::dvec3 velocity = glm::dvec3(0.f));
   virtual ~Object() = default;
 
   glm::dvec3 getPosition() const;
-  glm::dvec3& getPositionRef();
+  glm::dvec3 getRenderPosition() const;
   glm::dvec3 getVelocity() const;
+  glm::dvec3 getAcceleration() const;
   double getMass() const;
   double getRadius() const;
 
