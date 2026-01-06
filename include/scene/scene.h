@@ -8,6 +8,7 @@
 #include "resources/resourceManager.h"
 
 class Shader;
+class Planet;
 
 class Scene
 {
@@ -26,6 +27,9 @@ private:
 public:
   Scene(ResourceManager *resourceManager);
   ~Scene() = default;
+
+
+  Planet* createPlanet(std::string name, std::string material_name, glm::dvec3 pos, double mass, double radius, Planet* centralBody = nullptr, double orbitalPeriod = 0.0, double inclination = 0.0, double longitude = 0.0);
 
   // Process functions
   void init(float width, float height);

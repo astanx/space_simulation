@@ -21,22 +21,11 @@ void Object::accelerate(const glm::dvec3 &acc)
   this->acceleration += acc;
 };
 
+// TO-DO Wisdom-Holman
 void Object::move(double dt)
 {
-// MAY BE REWORK ( DOES NOT WORK FOR BIG TIM_SCALE )
-
-  auto velocityF = [this](const glm::dvec3& y, double t)
-  {
-    return this->acceleration; // da/dt = a
-  };
-
-  auto positionF = [this](const glm::dvec3& y, double t)
-  {
-    return this->velocity; // dp/dt = v
-  };
-
-  this->velocity = rk4_order(this->velocity, 0.0, dt, velocityF);
-  this->position = rk4_order(this->position, 0.0, dt, positionF);
+  this->velocity += this->acceleration * dt;
+  this->position += this->velocity * dt;
   this->renderPosition = this->position * VISUAL_SCALE;
 
   std::cout << "New position: " << renderPosition.x << ' ' << renderPosition.y << ' ' << renderPosition.z << std::endl; 

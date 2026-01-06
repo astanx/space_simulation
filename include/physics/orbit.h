@@ -31,6 +31,5 @@ public:
   double getLongitude() const;
 
   void updateTrail(glm::dvec3 position);
-
   void renderTrail(Shader *shader);
 };

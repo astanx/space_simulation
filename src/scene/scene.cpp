@@ -35,52 +35,35 @@ void Scene::sendCameraToShader(Shader &shader, float aspectRatio)
   shader.setVec3f(this->activeCamera->getPosition(), "camPosition");
 }
 
+Planet *Scene::createPlanet(std::string name, std::string material_name, glm::dvec3 pos, double mass,
+                            double radius, Planet *centralBody, double orbitalPeriod, double inclination, double longitude)
+{
+  Mesh *mesh = this->resourceManager->GetMesh(name);
+  Material *mat = this->resourceManager->GetMaterial(material_name);
+  auto model = std::make_unique<Model>(pos * VISUAL_SCALE, mat, mesh);
+
+  std::unique_ptr<Planet> planet;
+  if (centralBody)
+  {
+    auto orbit = std::make_unique<Orbit>(centralBody, orbitalPeriod, inclination, longitude);
+    planet = std::make_unique<Planet>(pos, mass, radius, std::move(model), glm::vec3(0.f), std::move(orbit));
+  }
+  else
+    planet = std::make_unique<Planet>(pos, mass, radius, std::move(model));
+
+  Planet *ptr = planet.get();
+  this->addObject(std::move(planet));
+  return ptr;
+}
+
 // Process functions
 void Scene::init(float width, float height)
 {
-
-  // SUN
-  Mesh *sunMesh = this->resourceManager->GetMesh(Res::SUN);
-  Material *sunMat = this->resourceManager->GetMaterial(Res::SUN_MATERIAL);
-  auto sunModel = std::make_unique<Model>(sunPos * VISUAL_SCALE, sunMat, sunMesh);
-  auto sun = std::make_unique<Planet>(sunPos, sunMass, sunRadius, std::move(sunModel));
-  Planet *sunPtr = sun.get();
-  this->addObject(std::move(sun));
-
-  // MERCURY
-  Mesh *mercuryMesh = this->resourceManager->GetMesh(Res::MERCURY);
-  Material *mercuryMat = this->resourceManager->GetMaterial(Res::MERCURY_MATERIAL);
-  auto mercuryModel = std::make_unique<Model>(mercuryPos * VISUAL_SCALE, mercuryMat, mercuryMesh);
-  auto mercuryOrbit = std::make_unique<Orbit>(sunPtr, mercuryOrbitalPeriod, mercuryInclination, mercuryLongitude);
-  auto mercury = std::make_unique<Planet>(mercuryPos, mercuryMass, mercuryRadius, std::move(mercuryModel), glm::vec3(0.f), std::move(mercuryOrbit));
-  Planet *mercuryPtr = mercury.get();
-  this->addObject(std::move(mercury));
-
-  // VENUS
-  Mesh *venusMesh = this->resourceManager->GetMesh(Res::VENUS);
-  Material *venusMat = this->resourceManager->GetMaterial(Res::VENUS_MATERIAL);
-  auto venusModel = std::make_unique<Model>(venusPos * VISUAL_SCALE, venusMat, venusMesh);
-  auto venusOrbit = std::make_unique<Orbit>(sunPtr, venusOrbitalPeriod, venusInclination, venusLongitude);
-  auto venus = std::make_unique<Planet>(venusPos, venusMass, venusRadius, std::move(venusModel), glm::vec3(0.f), std::move(venusOrbit));
-  Planet *venusPtr = venus.get();
-  this->addObject(std::move(venus));
-
-  // EARTH
-  Mesh *earthMesh = this->resourceManager->GetMesh(Res::EARTH);
-  Material *earthMat = this->resourceManager->GetMaterial(Res::EARTH_MATERIAL);
-  auto earthModel = std::make_unique<Model>(earthPos * VISUAL_SCALE, earthMat, earthMesh);
-  auto earthOrbit = std::make_unique<Orbit>(sunPtr, earthOrbitalPeriod, earthInclination, earthLongitude);
-  auto earth = std::make_unique<Planet>(earthPos, earthMass, earthRadius, std::move(earthModel), glm::vec3(0.f), std::move(earthOrbit));
-  Planet *earthPtr = earth.get();
-  this->addObject(std::move(earth));
-
-  // MOON
-  Mesh *moonMesh = this->resourceManager->GetMesh(Res::MOON);
-  Material *moonMat = this->resourceManager->GetMaterial(Res::MOON_MATERIAL);
-  auto moonModel = std::make_unique<Model>(moonPos * VISUAL_SCALE, moonMat, moonMesh);
-  auto moonOrbit = std::make_unique<Orbit>(earthPtr, moonOrbitalPeriod, moonInclination, moonLongitude);
-  auto moon = std::make_unique<Planet>(moonPos, moonMass, moonRadius, std::move(moonModel), glm::vec3(0.f), std::move(moonOrbit));
-  this->addObject(std::move(moon));
+  Planet* sunPtr = createPlanet(Res::SUN, Res::SUN_MATERIAL, sunPos, sunMass, sunRadius);
+  createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryPos, mercuryMass, mercuryRadius, sunPtr, mercuryOrbitalPeriod, mercuryInclination, mercuryLongitude);
+  createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusPos, venusMass, venusRadius, sunPtr, venusOrbitalPeriod, venusInclination, venusLongitude);
+  Planet* earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthPos, earthMass, earthRadius, sunPtr, earthOrbitalPeriod, earthInclination, earthLongitude);
+  createPlanet(Res::MOON, Res::MOON_MATERIAL, moonPos, moonMass, moonRadius, earthPtr, moonOrbitalPeriod, moonInclination, moonLongitude);
 
   auto pointLight = std::make_unique<PointLight>(
       glm::vec3(0.f, 0.f, 0.f),

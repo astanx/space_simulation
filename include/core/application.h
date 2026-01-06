@@ -61,5 +61,6 @@ public:
   static void mouseCallback(GLFWwindow *window, double xpos, double ypos);
   static void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
   static void framebuffer_resize_callback(GLFWwindow *window, int width, int height); 
+  void loadCircularObject(std::string name, std::string diffuse_name, const char* diffusePath, std::string material_name, double radius, int segments = 32);
   void processInput();
 };

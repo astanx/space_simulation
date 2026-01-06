@@ -1,6 +1,6 @@
 #include "maths/rk4.h"
 
-// MAY BE REWORK ( DOES NOT WORK FOR BIG TIM_SCALE )
+// MAY BE REWORK ( DOES NOT WORK FOR BIG TIM_SCALE)
 
 glm::dvec3 rk4_order(const glm::dvec3& y, double t, 
   double dt, const std::function<glm::dvec3(const glm::dvec3&, double)>& f)
