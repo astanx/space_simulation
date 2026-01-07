@@ -18,9 +18,6 @@ Planet::Planet(Object *centralBody, double mu, double radius, const KeplerElemen
 void Planet::update(double dt)
 {
   this->move(dt);
-
-  if (this->orbit)
-    this->orbit->updateTrail(this->renderPosition);
   if (this->model)
     this->model->setPosition(this->renderPosition);
 }
@@ -28,7 +25,7 @@ void Planet::update(double dt)
 void Planet::render(Shader *shader)
 {
   if (this->orbit)
-    this->orbit->renderTrail(shader);
+    this->renderTrail(shader);
 
   if (model)
     model->render(shader);

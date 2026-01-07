@@ -5,7 +5,7 @@
 const double AU_TO_METER = 1.49597870700e11;
 // VISUAL SCALING
 const double VISUAL_SCALE = 1e-9;
-const double VISUAL_RADIUS_SCALE = VISUAL_SCALE * 25.0;
+const double VISUAL_RADIUS_SCALE = VISUAL_SCALE * 50.0;
 
 // Precision
 const double EPS = 1e-6;
@@ -14,7 +14,7 @@ const double EPS = 1e-6;
 const double G = 6.674e-11;
 
 // Time step
-const double TIME_SCALE = 3600.0 * 24;
+const double TIME_SCALE = 3600.0 * 24 * 365;
 
 // SUN
 const double sunMu = 1.3271244004210e20;

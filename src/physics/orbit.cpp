@@ -23,37 +23,6 @@ Object *Orbit::getCentralBody()
   return this->centralBody;
 }
 
-void Orbit::renderTrail(Shader *shader)
-{
-  if (trail.size() < 2)
-    return;
-
-  std::vector<Vertex> vertices;
-  for (auto &p : trail)
-  {
-    Vertex v{};
-    v.position = p;
-    v.color = glm::vec3(1.f);
-    v.texcoord = glm::vec2(0.0f);
-    v.normal = glm::vec3(0.0f);
-
-    vertices.push_back(v);
-  }
-  Mesh mesh(vertices.data(), vertices.size(), nullptr, 0, GL_LINE_STRIP);
-
-  shader->set1i(0, "useModelMatrix");
-  shader->set1i(1, "isTexture");
-
-  mesh.render(shader);
-}
-
-void Orbit::updateTrail(glm::dvec3 position)
-{
-  this->trail.push_back(position);
-  if (this->trail.size() > this->maxTrailPoints)
-    trail.pop_front();
-}
-
 // Static functions
 glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, const OrbitalObject *orbitBody)
 {
@@ -68,10 +37,8 @@ glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, const Orbi
   KeplerElements elements = orbit->getKeplerElements();
 
   normal.x = sin(elements.i) * sin(elements.Omega);
-  normal.y = cos(elements.i);
-  normal.z = sin(elements.i) * cos(elements.Omega);
-
-  std::cout<< "Central: " << centralBody->getPosition().x << " " << " " << orbitBody->getPosition().x << std::endl;
+  normal.y = -sin(elements.i) * cos(elements.Omega);
+  normal.z = cos(elements.i);
 
   glm::dvec3 dp = centralBody->getPosition() - orbitBody->getPosition();
 

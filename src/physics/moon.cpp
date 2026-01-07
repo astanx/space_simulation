@@ -10,17 +10,13 @@ Moon::Moon(Object *centralBody, double mu, double radius, const KeplerElements &
 void Moon::update(double dt)
 {
   this->move(dt);
-
-  if (this->orbit)
-    this->orbit->updateTrail(this->renderPosition);
-
   this->model->setPosition(this->renderPosition);
 }
 
 void Moon::render(Shader *shader)
 {
   if (this->orbit)
-    this->orbit->renderTrail(shader);
+    this->renderTrail(shader);
 
   if (model)
     model->render(shader);

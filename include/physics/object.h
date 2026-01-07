@@ -29,7 +29,7 @@ public:
   void setPosition(const glm::dvec3 &position);
 
   void accelerate(const glm::dvec3 &acc);
-  void move(double dt);
+  virtual void move(double dt);
 
   void applyGravitation(const Object &other);
   static int handleCollisions(Object &object, Object &object2);

@@ -21,14 +21,11 @@ void Object::accelerate(const glm::dvec3 &acc)
   this->acceleration += acc;
 };
 
-// TO-DO Wisdom-Holman
 void Object::move(double dt)
 {
   this->velocity += this->acceleration * dt;
   this->position += this->velocity * dt;
   this->renderPosition = this->position * VISUAL_SCALE;
-
-  std::cout << "New position: " << renderPosition.x << ' ' << renderPosition.y << ' ' << renderPosition.z << std::endl;
 
   this->acceleration = glm::dvec3(0.f);
 };
