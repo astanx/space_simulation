@@ -22,6 +22,8 @@ protected:
   glm::dmat3 createR3matrix(double angle);
   glm::dmat3 createR1matrix(double angle);
 
+  glm::dvec3 realToVisualPos(glm::dvec3 pos);
+
 public:
   OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements);
   ~OrbitalObject() = default;

@@ -8,6 +8,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // Private functions
+glm::dvec3 OrbitalObject::realToVisualPos(glm::dvec3 pos)
+{
+  return glm::dvec3(
+             pos.x,
+             pos.z, // Z → Y
+             -pos.y // Y → -Z
+             ) *
+         VISUAL_SCALE;
+}
 glm::dmat3 OrbitalObject::createR3matrix(double angle)
 {
   return glm::dmat3(
@@ -38,7 +47,8 @@ void OrbitalObject::generateTrail(const KeplerElements &keplerElements)
   {
     glm::dvec3 pos = this->orbitalToInertial(nu, keplerElements);
     pos += this->centralBody->getPosition();
-    pos *= VISUAL_SCALE;
+    pos = this->realToVisualPos(pos);
+
     trailVec.push_back(pos);
   }
 
@@ -92,7 +102,7 @@ void OrbitalObject::move(double dt)
   this->keplerDrift(dt);
   this->velocity += 0.5 * this->acceleration * dt;
 
-  this->renderPosition = this->position * VISUAL_SCALE;
+  this->renderPosition = this->realToVisualPos(this->position);
 
   std::cout << "New position: " << renderPosition.x << ' ' << renderPosition.y << ' ' << renderPosition.z << std::endl;
 
