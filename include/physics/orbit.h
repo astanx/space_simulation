@@ -1,34 +1,35 @@
 #pragma once
 
+#include "physics/keplerElements.h"
+
 #include <deque>
 #include <glm/glm.hpp>
 
 class Shader;
-class Planet;
+class Object;
+class OrbitalObject;
 
 class Orbit
 {
 private:
-  Planet *centralBody;
-
-  double orbitalPeriod;
-  double inclination;
-  double longitude;
+  KeplerElements keplerElements;
+  Object *centralBody;
 
   std::deque<glm::dvec3> trail;
   size_t maxTrailPoints = 35000;
 
 public:
-  Orbit(Planet *centralBody = nullptr, double orbitalPeriod = 0.0, double inclination = 0.0, double longitude = 0.0);
+  Orbit(Object *centralBody, const KeplerElements &KeplerElements);
   ~Orbit() = default;
 
-  static glm::dvec3 calculateOrbitalVelocity(const Planet *centralBody, const Planet *orbitBody);
+  static glm::dvec3 calculateOrbitalVelocity(const Object *centralBody, const OrbitalObject *orbitBody);
 
-  Planet *getCentralBody();
+  Object *getCentralBody();
 
-  double getOrbitalPeriod() const;
+  KeplerElements getKeplerElements() const;
+
   double getInclination() const;
-  double getLongitude() const;
+  double getSemiMajorAxis() const;
 
   void updateTrail(glm::dvec3 position);
   void renderTrail(Shader *shader);

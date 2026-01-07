@@ -4,6 +4,8 @@
 #include "graphics/mesh.h"
 #include "physics/planet.h"
 #include "physics/orbit.h"
+#include "physics/star.h"
+#include "physics/moon.h"
 #include "physics/constants.h"
 #include "resources/resourceManager.h"
 
@@ -35,35 +37,62 @@ void Scene::sendCameraToShader(Shader &shader, float aspectRatio)
   shader.setVec3f(this->activeCamera->getPosition(), "camPosition");
 }
 
-Planet *Scene::createPlanet(std::string name, std::string material_name, glm::dvec3 pos, double mass,
-                            double radius, Planet *centralBody, double orbitalPeriod, double inclination, double longitude)
+Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
+                            double radius, Object *centralBody, const KeplerElements keplerElements)
 {
   Mesh *mesh = this->resourceManager->GetMesh(name);
   Material *mat = this->resourceManager->GetMaterial(material_name);
-  auto model = std::make_unique<Model>(pos * VISUAL_SCALE, mat, mesh);
+  auto model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
-  std::unique_ptr<Planet> planet;
-  if (centralBody)
-  {
-    auto orbit = std::make_unique<Orbit>(centralBody, orbitalPeriod, inclination, longitude);
-    planet = std::make_unique<Planet>(pos, mass, radius, std::move(model), glm::vec3(0.f), std::move(orbit));
-  }
-  else
-    planet = std::make_unique<Planet>(pos, mass, radius, std::move(model));
+  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radius, keplerElements);
+
+  planet->addModel(std::move(model));
 
   Planet *ptr = planet.get();
   this->addObject(std::move(planet));
   return ptr;
 }
 
+Star *Scene::createStar(std::string name, std::string material_name, double mu,
+                        double radius, glm::dvec3 position, glm::dvec3 velocity)
+{
+  Mesh *mesh = this->resourceManager->GetMesh(name);
+  Material *mat = this->resourceManager->GetMaterial(material_name);
+  auto model = std::make_unique<Model>(position, mat, mesh);
+
+  std::unique_ptr<Star> star = std::make_unique<Star>(mu, radius, position, velocity);
+
+  star->addModel(std::move(model));
+
+  Star *ptr = star.get();
+  this->addObject(std::move(star));
+  return ptr;
+}
+
+Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
+                        double radius, Object *centralBody, const KeplerElements keplerElements)
+{
+  Mesh *mesh = this->resourceManager->GetMesh(name);
+  Material *mat = this->resourceManager->GetMaterial(material_name);
+  auto model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
+
+  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, keplerElements);
+
+  moon->addModel(std::move(model));
+
+  Moon *ptr = moon.get();
+  this->addObject(std::move(moon));
+  return ptr;
+}
+
 // Process functions
 void Scene::init(float width, float height)
 {
-  Planet* sunPtr = createPlanet(Res::SUN, Res::SUN_MATERIAL, sunPos, sunMass, sunRadius);
-  createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryPos, mercuryMass, mercuryRadius, sunPtr, mercuryOrbitalPeriod, mercuryInclination, mercuryLongitude);
-  createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusPos, venusMass, venusRadius, sunPtr, venusOrbitalPeriod, venusInclination, venusLongitude);
-  Planet* earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthPos, earthMass, earthRadius, sunPtr, earthOrbitalPeriod, earthInclination, earthLongitude);
-  createPlanet(Res::MOON, Res::MOON_MATERIAL, moonPos, moonMass, moonRadius, earthPtr, moonOrbitalPeriod, moonInclination, moonLongitude);
+  Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadius, sunPos);
+  createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadius, sunPtr, mercuryElements);
+  createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadius, sunPtr, venusElements);
+  Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadius, sunPtr, earthElements);
+  createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadius, earthPtr, moonElements);
 
   auto pointLight = std::make_unique<PointLight>(
       glm::vec3(0.f, 0.f, 0.f),
@@ -139,9 +168,9 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   if (!activeCamera)
     return;
 
-  float aspect = static_cast<float>(framebufferWidth) / static_cast<float>(framebufferHeight);
-  if (aspect <= 0.0f)
-    aspect = 1.0f;
+  float aspect = 1.0f;
+  if (framebufferHeight > 0)
+    aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
 
   this->update(dt);
 

@@ -10,18 +10,8 @@
 #include <iostream>
 
 // Constructor
-Planet::Planet(glm::dvec3 position, double mass, double radius, std::unique_ptr<Model> model,
-               glm::dvec3 velocity, std::unique_ptr<Orbit> orbit) : Object(position, mass, radius, velocity)
+Planet::Planet(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements) : OrbitalObject(centralBody, mu, radius, keplerElements)
 {
-  this->renderPosition = position * VISUAL_SCALE;
-  this->model = std::move(model);
-  this->model->setPosition(this->renderPosition);
-  this->orbit = std::move(orbit);
-  if (this->orbit)
-  {
-    this->velocity = this->orbit->calculateOrbitalVelocity(this->orbit->getCentralBody(), this);
-    this->velocity += this->orbit->getCentralBody()->getVelocity();
-  }
 }
 
 // Public functions
@@ -31,8 +21,8 @@ void Planet::update(double dt)
 
   if (this->orbit)
     this->orbit->updateTrail(this->renderPosition);
-
-  this->model->setPosition(this->renderPosition);
+  if (this->model)
+    this->model->setPosition(this->renderPosition);
 }
 
 void Planet::render(Shader *shader)
@@ -42,14 +32,10 @@ void Planet::render(Shader *shader)
 
   if (model)
     model->render(shader);
-}
+};
 
-Model *Planet::getModel() const
+void Planet::addModel(std::unique_ptr<Model> model)
 {
-  return this->model.get();
-}
-
-Orbit *Planet::getOrbit() const
-{
-  return this->orbit.get();
-}
+  this->model = std::move(model);
+  this->model->setPosition(this->position * VISUAL_SCALE);
+};

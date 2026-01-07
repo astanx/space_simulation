@@ -1,22 +1,22 @@
 #pragma once
 
-#include "physics/object.h"
+#include "physics/orbitalObject.h"
+#include "physics/keplerElements.h"
+#include "physics/moon.h"
+#include "graphics/renderable.h"
 
 class Model;
-class Orbit;
 
-class Planet : public Object
+class Planet : public OrbitalObject, public Renderable
 {
 protected:
-  std::unique_ptr<Model> model;
-  std::unique_ptr<Orbit> orbit;
+  std::vector<std::unique_ptr<Moon>> moons;
 
 public:
-  Planet(glm::dvec3 position, double mass, double radius, std::unique_ptr<Model> model, glm::dvec3 velocity = glm::vec3(0.f), std::unique_ptr<Orbit> orbit = nullptr);
+  Planet(Object* centralBody, double mu, double radius, const KeplerElements& keplerElements);
   ~Planet() = default;
 
   void update(double dt) override;
   void render(Shader *shader) override;
-  Model *getModel() const override;
-  Orbit *getOrbit() const;
+  void addModel(std::unique_ptr<Model> m) override;
 };

@@ -8,30 +8,19 @@
 #include <iostream>
 
 // Constructor / Destructor
-Orbit::Orbit(Planet *centralBody, double orbitalPeriod, double inclination, double longitude)
+Orbit::Orbit(Object *centralBody, const KeplerElements &keplerElements) : keplerElements(keplerElements)
 {
   this->centralBody = centralBody;
-  this->orbitalPeriod = orbitalPeriod;
-  this->inclination = inclination;
-  this->longitude = longitude;
 }
 
 // Public functions
-double Orbit::getOrbitalPeriod() const
+KeplerElements Orbit::getKeplerElements() const
 {
-  return this->orbitalPeriod;
+  return this->keplerElements;
 }
-Planet *Orbit::getCentralBody()
+Object *Orbit::getCentralBody()
 {
   return this->centralBody;
-}
-double Orbit::getInclination() const
-{
-  return this->inclination;
-}
-double Orbit::getLongitude() const
-{
-  return this->longitude;
 }
 
 void Orbit::renderTrail(Shader *shader)
@@ -66,29 +55,34 @@ void Orbit::updateTrail(glm::dvec3 position)
 }
 
 // Static functions
-glm::dvec3 Orbit::calculateOrbitalVelocity(const Planet *centralBody, const Planet *orbitBody)
+glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, const OrbitalObject *orbitBody)
 {
   if (!centralBody || !orbitBody)
     throw "ERROR:ORBIT:CALCULATE_VELOCITY:NO_BODY";
-  
+
   glm::dvec3 normal(0.0);
   glm::dvec3 velocity(0.0);
 
-  Orbit* orbit = orbitBody->getOrbit();
+  const Orbit *orbit = orbitBody->getOrbit();
 
-  double i = glm::radians(orbit->getInclination());
-  double longitude = glm::radians(orbit->getLongitude());
+  KeplerElements elements = orbit->getKeplerElements();
 
-  normal.x = sin(i) * sin(longitude);
-  normal.y = cos(i);
-  normal.z = sin(i) * cos(longitude);
+  normal.x = sin(elements.i) * sin(elements.Omega);
+  normal.y = cos(elements.i);
+  normal.z = sin(elements.i) * cos(elements.Omega);
+
+  std::cout<< "Central: " << centralBody->getPosition().x << " " << " " << orbitBody->getPosition().x << std::endl;
 
   glm::dvec3 dp = centralBody->getPosition() - orbitBody->getPosition();
 
-  double a;                                                                                                    // semi-major axis
-  a = cbrt(pow(orbitBody->getOrbit()->getOrbitalPeriod(), 2) * G * centralBody->getMass() / 4 / pow(M_PI, 2)); // Kepler`s third law
   double r = glm::length(dp);
-  double speed = sqrt(G * centralBody->getMass() * (2 / r - 1 / a)); // Vis-viva equation
+  if (r < EPS)
+  {
+    std::cerr << "ERROR:ORBIT:CALCULATE_VELOCITY: r is too small" << std::endl;
+    return glm::dvec3(0.0);
+  }
+
+  double speed = sqrt(centralBody->getMu() * (2 / r - 1 / elements.a)); // Vis-viva equation
 
   glm::dvec3 v_dir = glm::normalize(glm::cross(normal, dp));
   velocity = speed * v_dir;

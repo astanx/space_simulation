@@ -6,9 +6,12 @@
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
 #include "resources/resourceManager.h"
+#include "physics/keplerElements.h"
 
 class Shader;
 class Planet;
+class Star;
+class Moon;
 
 class Scene
 {
@@ -28,8 +31,14 @@ public:
   Scene(ResourceManager *resourceManager);
   ~Scene() = default;
 
+  Planet *createPlanet(std::string name, std::string material_name, double mu,
+                       double radius, Object *centralBody, const KeplerElements keplerElements);
 
-  Planet* createPlanet(std::string name, std::string material_name, glm::dvec3 pos, double mass, double radius, Planet* centralBody = nullptr, double orbitalPeriod = 0.0, double inclination = 0.0, double longitude = 0.0);
+  Star *createStar(std::string name, std::string material_name, double mu,
+                          double radius, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
+
+  Moon *createMoon(std::string name, std::string material_name, double mu,
+                   double radius, Object *centralBody, const KeplerElements keplerElements);
 
   // Process functions
   void init(float width, float height);
