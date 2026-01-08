@@ -8,8 +8,11 @@ class Model;
 class Moon : public OrbitalObject, public Renderable
 {
 protected:
+ void generateTrail() override;
+
+  bool useTrail = false;
 public:
-  Moon(Object *centralBody, double mu, double radius, const KeplerElements& keplerElements);
+  Moon(OrbitalObject *centralBody, double mu, double radius, const KeplerElements& keplerElements);
   ~Moon() = default;
 
   void update(double dt) override;

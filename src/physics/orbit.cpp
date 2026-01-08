@@ -18,6 +18,10 @@ KeplerElements Orbit::getKeplerElements() const
 {
   return this->keplerElements;
 }
+void Orbit::updateKeplerElements(KeplerElements newElements)
+{
+  this->keplerElements = newElements;
+}
 Object *Orbit::getCentralBody()
 {
   return this->centralBody;

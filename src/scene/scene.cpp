@@ -70,7 +70,7 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 }
 
 Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
-                        double radius, Object *centralBody, const KeplerElements keplerElements)
+                        double radius, Planet *centralBody, const KeplerElements keplerElements)
 {
   Mesh *mesh = this->resourceManager->GetMesh(name);
   Material *mat = this->resourceManager->GetMaterial(material_name);
@@ -81,7 +81,9 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   moon->addModel(std::move(model));
 
   Moon *ptr = moon.get();
-  this->addObject(std::move(moon));
+
+  centralBody->addMoon(std::move(moon));
+  
   return ptr;
 }
 

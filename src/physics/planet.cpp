@@ -18,6 +18,11 @@ Planet::Planet(Object *centralBody, double mu, double radius, const KeplerElemen
 void Planet::update(double dt)
 {
   this->move(dt);
+
+  for (auto &moon : this->moons)
+  {
+    moon->update(dt);
+  }
   if (this->model)
     this->model->setPosition(this->renderPosition);
 }
@@ -26,6 +31,11 @@ void Planet::render(Shader *shader)
 {
   if (this->orbit)
     this->renderTrail(shader);
+
+  for (auto &moon : this->moons)
+  {
+    moon->render(shader);
+  }
 
   if (model)
     model->render(shader);
@@ -36,3 +46,8 @@ void Planet::addModel(std::unique_ptr<Model> model)
   this->model = std::move(model);
   this->model->setPosition(this->position * VISUAL_SCALE);
 };
+
+void Planet::addMoon(std::unique_ptr<Moon> moon)
+{
+  this->moons.push_back(std::move(moon));
+}

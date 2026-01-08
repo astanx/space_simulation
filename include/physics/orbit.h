@@ -23,6 +23,7 @@ public:
   Object *getCentralBody();
 
   KeplerElements getKeplerElements() const;
+  void updateKeplerElements(KeplerElements newElements);
 
   double getInclination() const;
   double getSemiMajorAxis() const;

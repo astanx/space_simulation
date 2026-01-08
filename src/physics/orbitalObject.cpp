@@ -13,7 +13,7 @@ glm::dvec3 OrbitalObject::realToVisualPos(glm::dvec3 pos)
   return glm::dvec3(
              pos.x,
              pos.z, // Z → Y
-             -pos.y // Y → -Z
+             pos.y  // Y → -Z
              ) *
          VISUAL_SCALE;
 }
@@ -33,20 +33,21 @@ glm::dmat3 OrbitalObject::createR1matrix(double angle)
       glm::dvec3(0, sin(angle), cos(angle)));
 }
 
-glm::dvec3 OrbitalObject::orbitalToInertial(double nu, const KeplerElements &keplerElements)
+glm::dvec3 OrbitalObject::orbitalToInertial(double nu)
 {
+  KeplerElements keplerElements = this->orbit->getKeplerElements();
   double r = keplerElements.a * (1 - keplerElements.e * keplerElements.e) / (1 + keplerElements.e * cos(nu));
   glm::dvec3 orb(r * cos(nu), r * sin(nu), 0.0);
   return createR3matrix(keplerElements.Omega) * createR1matrix(keplerElements.i) * createR3matrix(keplerElements.omega) * orb;
 }
 
-void OrbitalObject::generateTrail(const KeplerElements &keplerElements)
+void OrbitalObject::generateTrail()
 {
   std::vector<glm::dvec3> trailVec;
   for (double nu = 0; nu < 2 * M_PI; nu += 0.01)
   {
-    glm::dvec3 pos = this->orbitalToInertial(nu, keplerElements);
-    pos += this->centralBody->getPosition();
+    glm::dvec3 pos = this->orbitalToInertial(nu);
+    pos += this->orbit->getCentralBody()->getPosition();
     pos = this->realToVisualPos(pos);
 
     trailVec.push_back(pos);
@@ -63,21 +64,21 @@ void OrbitalObject::generateTrail(const KeplerElements &keplerElements)
 
     vertices.push_back(v);
   }
-  this->trail = std::make_unique<Mesh>(vertices.data(), vertices.size(), nullptr, 0, GL_LINE_STRIP);
+  this->trail = std::make_unique<Mesh>(vertices.data(), vertices.size(), nullptr, 0, GL_LINE_LOOP);
 }
 
 // Constructor
-OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements) : Object(mu, radius), keplerElements(keplerElements)
+OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements) : Object(mu, radius)
 {
-  this->centralBody = centralBody;
-  this->position = orbitalToInertial(0.0, keplerElements); // at periapsis
-  this->position += centralBody->getPosition();
   this->orbit = std::make_unique<Orbit>(centralBody, keplerElements);
+  this->position = orbitalToInertial(0.0); // at periapsis
+  this->position += centralBody->getPosition();
   if (this->orbit)
   {
     this->velocity = this->orbit->calculateOrbitalVelocity(centralBody, this);
     this->velocity += this->orbit->getCentralBody()->getVelocity();
-    generateTrail(keplerElements);
+    if (this->useTrail)
+      generateTrail();
   }
 }
 
@@ -89,11 +90,13 @@ const Orbit *OrbitalObject::getOrbit() const
 
 void OrbitalObject::renderTrail(Shader *shader)
 {
+  if (!trail || !this->useTrail)
+    return;
+
   shader->set1i(0, "useModelMatrix");
   shader->set1i(1, "isTexture");
 
-  if (trail)
-    trail->render(shader);
+  trail->render(shader);
 }
 
 void OrbitalObject::move(double dt)
@@ -109,9 +112,11 @@ void OrbitalObject::move(double dt)
   this->acceleration = glm::dvec3(0.f);
 }
 
-glm::dvec3 OrbitalObject::keplerDrift(double dt)
+void OrbitalObject::keplerDrift(double dt)
 {
-  double n = sqrt(this->centralBody->getMu() / pow(keplerElements.a, 3));
+  KeplerElements keplerElements = this->orbit->getKeplerElements();
+  Object *centralBody = this->orbit->getCentralBody();
+  double n = sqrt(centralBody->getMu() / pow(keplerElements.a, 3));
   double m = keplerElements.m + n * dt;
 
   m = fmod(m, 2 * M_PI);
@@ -129,17 +134,18 @@ glm::dvec3 OrbitalObject::keplerDrift(double dt)
   glm::dvec3 pos(0.0);
 
   pos.x = keplerElements.a * (cos(E) - keplerElements.e);
-  pos.y = -keplerElements.a * sqrt(1 - pow(keplerElements.e, 2)) * sin(E);
+  pos.y = keplerElements.a * sqrt(1 - pow(keplerElements.e, 2)) * sin(E);
 
   glm::dvec3 v(0.0);
   double r = keplerElements.a * (1 - keplerElements.e * cos(E));
 
-  v.x = -sqrt(this->centralBody->getMu() * keplerElements.a) / r * sin(E);
-  v.y = sqrt(this->centralBody->getMu() * keplerElements.a * (1 - pow(keplerElements.e, 2))) / r * cos(E);
+  v.x = -sqrt(centralBody->getMu() * keplerElements.a) / r * sin(E);
+  v.y = sqrt(centralBody->getMu() * keplerElements.a * (1 - pow(keplerElements.e, 2))) / r * cos(E);
 
   glm::dmat3 R = createR3matrix(keplerElements.Omega) * createR1matrix(keplerElements.i) * createR3matrix(keplerElements.omega);
 
-  this->velocity = R * v + this->centralBody->getVelocity();
-  this->position = R * pos + this->centralBody->getPosition();
+  this->velocity = R * v + centralBody->getVelocity();
+  this->position = R * pos + centralBody->getPosition();
   keplerElements.m = m;
+  this->orbit->updateKeplerElements(keplerElements);
 }

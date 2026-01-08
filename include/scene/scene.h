@@ -38,7 +38,7 @@ public:
                           double radius, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
 
   Moon *createMoon(std::string name, std::string material_name, double mu,
-                   double radius, Object *centralBody, const KeplerElements keplerElements);
+                   double radius, Planet *centralBody, const KeplerElements keplerElements);
 
   // Process functions
   void init(float width, float height);
