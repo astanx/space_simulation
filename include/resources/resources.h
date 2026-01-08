@@ -7,6 +7,7 @@ namespace Res
 {
   // Shader
   const std::string CORE_SHADER = "core";
+  const std::string SKYBOX_SHADER = "skybox";
 
   // Mesh
   const std::string CUBE_MESH = "cube";

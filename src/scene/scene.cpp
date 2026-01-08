@@ -16,6 +16,7 @@ Scene::Scene(ResourceManager *resourceManager)
 {
   this->resourceManager = resourceManager;
   this->activeCamera = nullptr;
+  this->skybox = nullptr;
 }
 
 // Public functions
@@ -83,7 +84,7 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   Moon *ptr = moon.get();
 
   centralBody->addMoon(std::move(moon));
-  
+
   return ptr;
 }
 
@@ -124,6 +125,20 @@ void Scene::init(float width, float height)
 
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();
+
+  std::vector<const char *> faces =
+      {
+
+          "assets/skybox/right.png",
+          "assets/skybox/left.png",
+          "assets/skybox/top.png",
+          "assets/skybox/bottom.png",
+          "assets/skybox/front.png",
+          "assets/skybox/back.png"};
+
+  auto sb = std::make_unique<Skybox>(faces);
+  this->addSkybox(std::move(sb));
+  this->skybox = this->skyboxes.back().get();
 }
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)
 {
@@ -164,8 +179,19 @@ void Scene::update(float dt)
     object->update(dt);
   }
 }
+void Scene::renderSkybox(Shader *skyboxShader, float aspectRatio)
+{
+  skyboxShader->use();
+  glm::mat4 view = glm::mat4(glm::mat3(this->activeCamera->getViewMatrix()));
+  glm::mat4 projection = this->activeCamera->getProjectionMatrix(aspectRatio);
+  
+  skyboxShader->setMat4fv(view, "ViewMatrix");
+  skyboxShader->setMat4fv(projection, "ProjectionMatrix");
 
-void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt)
+  this->skybox->render(skyboxShader);
+  skyboxShader->unuse();
+}
+void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader)
 {
   if (!activeCamera)
     return;
@@ -173,6 +199,9 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   float aspect = 1.0f;
   if (framebufferHeight > 0)
     aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
+
+  // Render skybox
+  renderSkybox(skyboxShader, aspect);
 
   this->update(dt);
 
@@ -219,6 +248,10 @@ void Scene::addPointLight(std::unique_ptr<PointLight> pointLight)
 void Scene::addDirLight(std::unique_ptr<DirectionalLight> directionalLight)
 {
   this->directionalLight = std::move(directionalLight);
+}
+void Scene::addSkybox(std::unique_ptr<Skybox> skybox)
+{
+  this->skyboxes.push_back(std::move(skybox));
 }
 
 // Getters

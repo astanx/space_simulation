@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/model.h"
+#include "graphics/skybox.h"
 #include "physics/object.h"
 #include "camera/camera.h"
 #include "scene/light/pointLight.h"
@@ -18,15 +19,16 @@ class Scene
 private:
   ResourceManager *resourceManager;
   Camera *activeCamera;
+  Skybox* skybox;
 
   std::vector<std::unique_ptr<Model>> models;
   std::vector<std::unique_ptr<Object>> objects;
   std::vector<std::unique_ptr<Camera>> cameras;
+  std::vector<std::unique_ptr<Skybox>> skyboxes;
 
   std::vector<std::unique_ptr<PointLight>> pointLights;
   std::unique_ptr<DirectionalLight> directionalLight;
 
-  // Skybox* skybox;
 public:
   Scene(ResourceManager *resourceManager);
   ~Scene() = default;
@@ -47,7 +49,8 @@ public:
   void processMouseScroll(float yoffset);
 
   void update(float dt);
-  void render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt);
+  void render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader);
+  void renderSkybox(Shader *skyboxShader, float aspectRatio);
 
   void sendLightsToShader(Shader &shader);
   void sendCameraToShader(Shader &shader, float aspectRatio);
@@ -58,7 +61,7 @@ public:
   void addPointLight(std::unique_ptr<PointLight> pointLight);
   void addDirLight(std::unique_ptr<DirectionalLight> directionalLight);
   void addCamera(std::unique_ptr<Camera> camera);
-
+  void addSkybox(std::unique_ptr<Skybox> skybox);
   // Getters
   Camera &getActiveCamera();
   const glm::vec3 getActiveCameraPosition() const;

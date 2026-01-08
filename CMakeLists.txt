@@ -11,8 +11,6 @@ find_package(OpenGL REQUIRED)
 if(APPLE)
     set(GLFW_INCLUDE_DIR "/opt/homebrew/include")
     set(GLFW_LIBRARY "/opt/homebrew/lib/libglfw.dylib")
-    set(SOIL2_INCLUDE_DIR "/opt/homebrew/include/SOIL2")
-    set(SOIL2_LIBRARY "/opt/homebrew/lib/libsoil2-debug.a")
 
     # GLEW (Homebrew)
     set(GLEW_INCLUDE_DIR "/opt/homebrew/opt/glew/include")
@@ -43,6 +41,7 @@ add_executable(Space
     src/graphics/shader.cpp
     src/graphics/texture.cpp
     src/graphics/material.cpp
+    src/graphics/skybox.cpp
     src/graphics/primitives/triangle.cpp
     src/graphics/primitives/primitives.cpp
     src/graphics/primitives/quad.cpp
@@ -73,7 +72,6 @@ target_link_libraries(Space
     ${OPENGL_LIBRARIES}
     ${GLFW_LIBRARY}
     ${GLEW_LIBRARY}
-    ${SOIL2_LIBRARY}
     "-framework CoreFoundation"
 )
 

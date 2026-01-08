@@ -60,17 +60,15 @@ void Application::initGLEW()
 void Application::initOpenGLSettings()
 {
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_STENCIL_TEST);
 
   glEnable(GL_CULL_FACE);
+  glDisable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glFrontFace(GL_CW);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glEnable(GL_DEPTH_TEST);
-
-  glEnable(GL_STENCIL_TEST);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
@@ -100,6 +98,7 @@ Application::Application(
   this->initOpenGLSettings();
 
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
+  this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->GLmajor, this->GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
 
   loadCircularObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/sun.png", Res::SUN_MATERIAL, sunRadius);
   loadCircularObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", Res::MERCURY_MATERIAL, mercuryRadius);
@@ -149,9 +148,10 @@ void Application::render()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   Shader *core = this->resourceManager.GetShader(Res::CORE_SHADER);
+  Shader *skybox = this->resourceManager.GetShader(Res::SKYBOX_SHADER);
 
   // Render scene
-  this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime);
+  this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime, skybox);
 
   // Swap buffers
   glfwSwapBuffers(this->window);
@@ -193,7 +193,7 @@ void Application::processInput()
   }
 }
 
-void Application::loadCircularObject(std::string name, std::string diffuse_name, const char* diffusePath, std::string material_name, double radius, int segments)
+void Application::loadCircularObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name, double radius, int segments)
 {
   Texture *diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
   this->resourceManager.LoadMaterial(material_name, glm::vec3(0.1f),

@@ -1,6 +1,13 @@
 #include "graphics/texture.h"
 
-#include <SOIL2/SOIL2.h>
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_PNG
+#define STBI_ONLY_JPEG
+#define STBI_ONLY_TGA
+#define STBI_ONLY_BMP
+#define STBI_ONLY_HDR
+#define STBI_ONLY_TIFF
+#include "external/stb_image.h"
 #include <iostream>
 
 // Private functions
@@ -9,7 +16,7 @@
 Texture::Texture(const char *fileName, GLenum type)
 {
   this->type = type;
-  unsigned char *image = SOIL_load_image(fileName, &this->width, &this->height, 0, SOIL_LOAD_RGBA);
+  unsigned char *image = stbi_load(fileName, &this->width, &this->height, 0, 4);
 
   glGenTextures(1, &this->id);
   glBindTexture(type, this->id);
@@ -31,7 +38,7 @@ Texture::Texture(const char *fileName, GLenum type)
 
   glActiveTexture(0);
   glBindTexture(type, 0);
-  SOIL_free_image_data(image);
+  stbi_image_free(image);
 }
 
 Texture::~Texture()
@@ -48,7 +55,7 @@ void Texture::bind(const GLint textureUnit)
 
 void Texture::unbind()
 {
-  glActiveTexture(0);
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(this->type, 0);
 }
 
@@ -56,7 +63,7 @@ void Texture::loadFromFile(const char *fileName)
 {
   if (this->id)
     glDeleteTextures(1, &this->id);
-  unsigned char *image = SOIL_load_image(fileName, &this->width, &this->height, 0, SOIL_LOAD_RGBA);
+  unsigned char *image = stbi_load(fileName, &this->width, &this->height, 0, 4);
 
   glGenTextures(1, &this->id);
   glBindTexture(this->type, this->id);
@@ -78,5 +85,5 @@ void Texture::loadFromFile(const char *fileName)
 
   glActiveTexture(0);
   glBindTexture(this->type, 0);
-  SOIL_free_image_data(image);
+  stbi_image_free(image);
 }
