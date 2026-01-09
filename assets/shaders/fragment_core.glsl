@@ -2,7 +2,7 @@
 
 out vec4 fs_color;
 
-in GS_OUT {
+in VS_OUT {
   vec3 vs_position;
   vec3 vs_color;
   vec2 vs_texcoord;
