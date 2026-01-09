@@ -1,5 +1,14 @@
 #version 410
 
+out vec4 fs_color;
+
+in GS_OUT {
+  vec3 vs_position;
+  vec3 vs_color;
+  vec2 vs_texcoord;
+  vec3 vs_normal;
+} fs_in;
+
 struct Material
 {
   vec3 ambient;
@@ -37,27 +46,20 @@ struct DirLight {
 };  
 uniform DirLight dirLight;
 
-in vec3 vs_position;
-in vec3 vs_color;
-in vec2 vs_texcoord;
-in vec3 vs_normal;
-
-out vec4 fs_color;
-
 uniform bool isTexture;
 uniform vec3 camPosition; 
 
 vec3 getAlbedo()
 {
   return isTexture
-  ? texture(material.diffuseTexture, vs_texcoord).rgb
-  : vs_color;
+  ? texture(material.diffuseTexture, fs_in.vs_texcoord).rgb
+  : fs_in.vs_color;
 }
 
 vec3 getSpecularMap()
 {
   return isTexture
-  ? texture(material.specularTexture, vs_texcoord).rgb
+  ? texture(material.specularTexture, fs_in.vs_texcoord).rgb
   : vec3(1.0);
 }
 
@@ -103,11 +105,11 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 
 void main()
 {
-  // if (texture(material.diffuseTexture, vs_texcoord).a < 0.1) discard;
-  vec3 normal = normalize(vs_normal);
-  vec3 viewDir = normalize(camPosition - vs_position);
+  // if (texture(material.diffuseTexture, fs_in.vs_texcoord).a < 0.1) discard;
+  vec3 normal = normalize(fs_in.vs_normal);
+  vec3 viewDir = normalize(camPosition - fs_in.vs_position);
 
   vec3 result = CalcDirLight(dirLight, normal, viewDir);
-  result += CalcPointLight(pointLight, normal, vs_position, viewDir);
+  result += CalcPointLight(pointLight, normal, fs_in.vs_position, viewDir);
   fs_color = vec4(result, 1.0);
 }

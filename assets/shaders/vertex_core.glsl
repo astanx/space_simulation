@@ -5,10 +5,12 @@ layout (location = 1) in vec3 vertex_color;
 layout (location = 2) in vec2 vertex_texcoord;
 layout (location = 3) in vec3 vertex_normal;
 
-out vec3 vs_position;
-out vec3 vs_color;
-out vec2 vs_texcoord;
-out vec3 vs_normal;
+out VS_OUT {
+  vec3 vs_position;
+  vec3 vs_color;
+  vec2 vs_texcoord;
+  vec3 vs_normal;
+} vs_out;
 
 uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
@@ -26,12 +28,12 @@ mat4 getModelMatrix()
 void main()
 {
   mat4 model = getModelMatrix();
-  vs_position = vec4(model * vec4(vertex_position, 1.f)).xyz;
-  vs_color = vertex_color;
-  vs_texcoord = vec2(vertex_texcoord.x, vertex_texcoord.y * -1);
+  vs_out.vs_position = vec3(model * vec4(vertex_position, 1.0));
+  vs_out.vs_color = vertex_color;
+  vs_out.vs_texcoord = vec2(vertex_texcoord.x, vertex_texcoord.y * -1);
   
   mat3 normalMatrix = transpose(inverse(mat3(model)));
-  vs_normal = normalize(normalMatrix * vertex_normal);
+  vs_out.vs_normal = normalize(normalMatrix * vertex_normal);
 
   gl_Position = ProjectionMatrix * ViewMatrix * model * vec4(vertex_position, 1.f);
 }
