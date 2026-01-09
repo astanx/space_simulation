@@ -44,7 +44,7 @@ Shader *ResourceManager::GetShader(const std::string &name)
   auto it = this->shaders.find(name);
   if (it == this->shaders.end())
   {
-    std::cerr << "ERROR:RESOURCE_MANAGER:SHADER_NOT_FOUND: '" << name << std::endl;
+    std::cerr << "ERROR::RESOURCE_MANAGER::SHADER_NOT_FOUND: '" << name << std::endl;
     assert(false && "Shader not loaded!");
     return nullptr;
   }
@@ -55,7 +55,7 @@ Texture *ResourceManager::GetTexture(const std::string &name)
   auto it = this->textures.find(name);
   if (it == this->textures.end())
   {
-    std::cerr << "ERROR:RESOURCE_MANAGER:TEXTURE_NOT_FOUND: '" << name << std::endl;
+    std::cerr << "ERROR::RESOURCE_MANAGER::TEXTURE_NOT_FOUND: '" << name << std::endl;
     assert(false && "Texture not loaded!");
     return nullptr;
   }
@@ -66,7 +66,7 @@ Material *ResourceManager::GetMaterial(const std::string &name)
   auto it = this->materials.find(name);
   if (it == this->materials.end())
   {
-    std::cerr << "ERROR:RESOURCE_MANAGER:MATERIAL_NOT_FOUND: '" << name << std::endl;
+    std::cerr << "ERROR::RESOURCE_MANAGER::MATERIAL_NOT_FOUND: '" << name << std::endl;
     assert(false && "Material not loaded!");
     return nullptr;
   }
@@ -77,7 +77,7 @@ Mesh *ResourceManager::GetMesh(const std::string &name)
   auto it = this->meshes.find(name);
   if (it == this->meshes.end())
   {
-    std::cerr << "ERROR:RESOURCE_MANAGER:MESH_NOT_FOUND: '" << name << std::endl;
+    std::cerr << "ERROR::RESOURCE_MANAGER::MESH_NOT_FOUND: '" << name << std::endl;
     assert(false && "Mesh not loaded!");
     return nullptr;
   }

@@ -63,7 +63,6 @@ void Application::initOpenGLSettings()
   glEnable(GL_STENCIL_TEST);
 
   glEnable(GL_CULL_FACE);
-  glDisable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glFrontFace(GL_CW);
 
@@ -105,6 +104,7 @@ Application::Application(
   loadCircularObject(Res::VENUS, Res::VENUS_DIFFUSE, "assets/textures/venus.png", Res::VENUS_MATERIAL, venusRadius);
   loadCircularObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/earth.png", Res::EARTH_MATERIAL, earthRadius);
   loadCircularObject(Res::MOON, Res::MOON_DIFFUSE, "assets/textures/moon.png", Res::MOON_MATERIAL, moonRadius);
+  loadCircularObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/mars.png", Res::MARS_MATERIAL, marsRadius);
 
   this->scene.init(windowWidth, windowHeight);
 }

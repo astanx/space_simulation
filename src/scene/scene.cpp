@@ -31,7 +31,7 @@ void Scene::sendLightsToShader(Shader &shader)
 void Scene::sendCameraToShader(Shader &shader, float aspectRatio)
 {
   if (!this->activeCamera)
-    throw "ERROR:SCENE:NO_ACTIVE_CAMERA";
+    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
 
   shader.setMat4fv(this->activeCamera->getProjectionMatrix(aspectRatio), "ProjectionMatrix");
   shader.setMat4fv(this->activeCamera->getViewMatrix(), "ViewMatrix");
@@ -96,6 +96,7 @@ void Scene::init(float width, float height)
   createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadius, sunPtr, venusElements);
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadius, sunPtr, earthElements);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadius, earthPtr, moonElements);
+  createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadius, sunPtr, marsElements);
 
   auto pointLight = std::make_unique<PointLight>(
       glm::vec3(0.f, 0.f, 0.f),
@@ -143,7 +144,7 @@ void Scene::init(float width, float height)
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)
 {
   if (!this->activeCamera)
-    throw "ERROR:SCENE:NO_ACTIVE_CAMERA";
+    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
 
   this->activeCamera->processKeyboard(direction, deltaTime);
 }
@@ -151,7 +152,7 @@ void Scene::processKeyboard(CameraMovement direction, float deltaTime)
 void Scene::processMouseMovement(const float &xpos, const float &ypos)
 {
   if (!this->activeCamera)
-    throw "ERROR:SCENE:NO_ACTIVE_CAMERA";
+    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
 
   this->activeCamera->processMouseMovement(xpos, ypos);
 }
@@ -159,7 +160,7 @@ void Scene::processMouseMovement(const float &xpos, const float &ypos)
 void Scene::processMouseScroll(float yoffset)
 {
   if (!this->activeCamera)
-    throw "ERROR:SCENE:NO_ACTIVE_CAMERA";
+    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
 
   this->activeCamera->processMouseScroll(yoffset);
 }
@@ -257,14 +258,14 @@ void Scene::addSkybox(std::unique_ptr<Skybox> skybox)
 Camera &Scene::getActiveCamera()
 {
   if (!this->activeCamera)
-    throw "ERROR:SCENE:NO_ACTIVE_CAMERA";
+    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
   return *this->activeCamera;
 }
 
 const glm::vec3 Scene::getActiveCameraPosition() const
 {
   if (!this->activeCamera)
-    throw "ERROR:SCENE:NO_ACTIVE_CAMERA";
+    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
   return this->activeCamera->getPosition();
 }
 

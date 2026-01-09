@@ -33,7 +33,7 @@ Texture::Texture(const char *fileName, GLenum type)
   }
   else
   {
-    std::cout << "Failed to load texture: " << fileName << std::endl;
+    std::cerr << "ERROR::TEXTURE::FAILED_TO_LOAD: " << fileName << std::endl;
   }
 
   glActiveTexture(0);
@@ -80,7 +80,7 @@ void Texture::loadFromFile(const char *fileName)
   }
   else
   {
-    std::cout << "Failed to load texture from file: " << fileName << std::endl;
+    std::cerr << "ERROR::TEXTURE::FAILED_TO_LOAD_FROM_FILE: " << fileName << std::endl;
   }
 
   glActiveTexture(0);

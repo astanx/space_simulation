@@ -23,7 +23,7 @@ std::string Shader::loadShaderSrc(char *fileName)
   }
   else
   {
-    std::cout << "Could not open shader file: " << fileName << std::endl;
+    std::cerr << "ERROR::SHADER::COULD_NOT_OPEN_SHADER_FILE: " << fileName << std::endl;
   }
 
   std::string versionLine = "#version " + std::to_string(this->GLSLmajor) + std::to_string(this->GLSLminor) + "0\n";
@@ -48,7 +48,7 @@ GLuint Shader::loadShader(GLenum type, char *fileName)
 
   if (!success)
   {
-    std::cout << "Shader compilation failed: " << fileName << std::endl;
+    std::cerr << "ERROR::SHADER::COMPILATION_FAILED_FOR: " << fileName << std::endl;
     glGetShaderInfoLog(shader, 512, NULL, infoLog);
     std::cout << infoLog << std::endl;
   }
@@ -63,7 +63,7 @@ void Shader::linkProgram(GLuint vertexShader, GLuint geometryShader, GLuint frag
   this->id = glCreateProgram();
   if (!this->id)
   {
-    std::cout << "Failed to create shader program" << std::endl;
+    std::cerr << "ERROR::SHADER::FAILED_TO_CREATE_PROGRAM" << std::endl;
   }
 
   glAttachShader(this->id, vertexShader);
@@ -76,7 +76,7 @@ void Shader::linkProgram(GLuint vertexShader, GLuint geometryShader, GLuint frag
   glGetProgramiv(this->id, GL_LINK_STATUS, &success);
   if (!success)
   {
-    std::cout << "Shader program linking failed" << std::endl;
+    std::cerr << "ERROR::SHADER::PROGRAM_LINKING_FAILED" << std::endl;
     glGetProgramInfoLog(this->id, 512, NULL, infoLog);
     std::cout << infoLog << std::endl;
   }

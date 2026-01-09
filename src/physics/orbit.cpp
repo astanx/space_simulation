@@ -31,7 +31,7 @@ Object *Orbit::getCentralBody()
 glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, const OrbitalObject *orbitBody)
 {
   if (!centralBody || !orbitBody)
-    throw "ERROR:ORBIT:CALCULATE_VELOCITY:NO_BODY";
+    throw std::runtime_error("ERROR:ORBIT:CALCULATE_VELOCITY:NO_BODY");
 
   glm::dvec3 normal(0.0);
   glm::dvec3 velocity(0.0);
@@ -49,7 +49,7 @@ glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, const Orbi
   double r = glm::length(dp);
   if (r < EPS)
   {
-    std::cerr << "ERROR:ORBIT:CALCULATE_VELOCITY: r is too small" << std::endl;
+    std::cerr << "ERROR::ORBIT::CALCULATE_VELOCITY: r is too small" << std::endl;
     return glm::dvec3(0.0);
   }
 

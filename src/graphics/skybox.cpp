@@ -28,7 +28,7 @@ void Skybox::loadCubemap(std::vector<const char *> faces)
       GLenum err = glGetError();
       if (err != GL_NO_ERROR)
       {
-        std::cerr << "ERROR:SKYBOX::ERROR_LOADING_FACE " << i << ": " << err << std::endl;
+        std::cerr << "ERROR::SKYBOX::ERROR_LOADING_FACE " << i << ": " << err << std::endl;
       }
     }
     else
@@ -53,7 +53,7 @@ void Skybox::loadCubemap(std::vector<const char *> faces)
 Skybox::Skybox(std::vector<const char *> &faces) : mesh(std::make_unique<Cube>())
 {
   if (faces.size() != 6)
-    std::cerr << "ERROR:SKYBOX:CONSTRUCTOR:REQUIRED_6_FACES" << std::endl;
+    std::cerr << "ERROR::SKYBOX::CONSTRUCTOR::REQUIRED_6_FACES" << std::endl;
 
   this->loadCubemap(faces);
 }

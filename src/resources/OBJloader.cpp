@@ -103,7 +103,7 @@ std::vector<Vertex> loadOBJmodel(const char *filename)
   }
 
   if (vertex_positions.empty() || vertex_texcoords.empty() || vertex_normals.empty())
-    std::cout << "OBJ data incomplete" << std::endl;
+    std::cerr << "ERROR::OBJ_LOADER::OBJ_DATA_INCOMPLETE" << std::endl;
 
   vertices.resize(vertex_position_indices.size());
 

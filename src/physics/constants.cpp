@@ -64,3 +64,14 @@ const KeplerElements moonElements(
     glm::radians(125.08),
     glm::radians(318.15),
     glm::radians(115.3684));
+
+// MARS
+const double marsMu = 4.2828372e13;
+const double marsRadius = 3.3896e6;
+const KeplerElements marsElements(
+    1.52368055 * AU_TO_METER,
+    0.0934,
+    glm::radians(1.85),
+    glm::radians(49.57854),
+    glm::radians(286.5),
+    glm::radians(19.412));
