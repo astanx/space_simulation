@@ -103,7 +103,7 @@ Application::Application(
   loadCircularObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/sun.png", Res::SUN_MATERIAL, sunRadius);
   loadCircularObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", Res::MERCURY_MATERIAL, mercuryRadius);
   loadCircularObject(Res::VENUS, Res::VENUS_DIFFUSE, "assets/textures/venus.png", Res::VENUS_MATERIAL, venusRadius);
-  loadCircularObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/earth.png", Res::EARTH_MATERIAL, earthRadius);
+  loadCircularObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/earth.png", Res::EARTH_MATERIAL, earthRadius, Res::EARTH_SPECULAR, "assets/textures/earth_specular.png");
   loadCircularObject(Res::MOON, Res::MOON_DIFFUSE, "assets/textures/moon.png", Res::MOON_MATERIAL, moonRadius);
   loadCircularObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/mars.png", Res::MARS_MATERIAL, marsRadius);
 
@@ -194,7 +194,7 @@ void Application::processInput()
   }
 }
 
-void Application::loadCircularObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name, double radius, int segments)
+void Application::loadCircularObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name, double radius, std::string specular_name, const char *specularPath, int segments)
 {
   Texture *diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
   this->resourceManager.LoadMaterial(material_name, glm::vec3(0.1f),

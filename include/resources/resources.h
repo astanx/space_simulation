@@ -38,6 +38,17 @@ namespace Res
   const std::string URANUS_DIFFUSE = "uranus_diffuse";
   const std::string NEPTUNE_DIFFUSE = "neptune_diffuse";
 
+  const std::string EARTH_SPECULAR = "earth_specular";
+  const std::string MERCURY_SPECULAR = "mercury_specular";
+  const std::string SUN_SPECULAR = "sun_specular";
+  const std::string VENUS_SPECULAR = "venus_specular";
+  const std::string MOON_SPECULAR = "moon_specular";
+  const std::string MARS_SPECULAR = "mars_specular";
+  const std::string JUPITER_SPECULAR = "jupiter_specular";
+  const std::string SATURN_SPECULAR = "saturn_specular";
+  const std::string URANUS_SPECULAR = "uranus_specular";
+  const std::string NEPTUNE_SPECULAR = "neptune_specular";
+
   // Material
   const std::string EARTH_MATERIAL = "earth_material";
   const std::string MERCURY_MATERIAL = "mercury_material";
