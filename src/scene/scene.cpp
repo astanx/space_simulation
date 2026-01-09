@@ -184,7 +184,7 @@ void Scene::renderSkybox(Shader *skyboxShader, float aspectRatio)
   skyboxShader->use();
   glm::mat4 view = glm::mat4(glm::mat3(this->activeCamera->getViewMatrix()));
   glm::mat4 projection = this->activeCamera->getProjectionMatrix(aspectRatio);
-  
+
   skyboxShader->setMat4fv(view, "ViewMatrix");
   skyboxShader->setMat4fv(projection, "ProjectionMatrix");
 
@@ -199,10 +199,6 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   float aspect = 1.0f;
   if (framebufferHeight > 0)
     aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
-
-  // Render skybox
-  renderSkybox(skyboxShader, aspect);
-
   this->update(dt);
 
   shader->use();
@@ -219,6 +215,9 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   }
 
   shader->unuse();
+
+  // Render skybox
+  renderSkybox(skyboxShader, aspect);
 }
 
 // Setters

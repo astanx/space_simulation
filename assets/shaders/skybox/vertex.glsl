@@ -11,5 +11,6 @@ void main()
 {
     vs_texcoord = vs_position;
     mat4 ViewMatrixNoTranslation = mat4(mat3(ViewMatrix));
-    gl_Position = ProjectionMatrix * ViewMatrixNoTranslation * vec4(vs_position, 1.0);
+    vec4 pos = ProjectionMatrix * ViewMatrixNoTranslation * vec4(vs_position, 1.0);
+    gl_Position = pos.xyww;
 }  
