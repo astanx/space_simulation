@@ -71,7 +71,7 @@ void Skybox::render(Shader *shader)
 
   this->bind(0);
   shader->set1i(0, "skybox");
-  this->mesh.render(shader);
+  this->mesh.render();
   this->unbind();
 
   glDepthMask(GL_TRUE);

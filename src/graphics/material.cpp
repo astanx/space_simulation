@@ -55,3 +55,4 @@ void Material::sendToShader(Shader &program)
 
   program.set1i(isTexture, "isTexture");
 }
+

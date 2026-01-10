@@ -67,7 +67,7 @@ Model::Model(glm::vec3 position, Material *material,
   this->meshes.push_back(mesh);
 }
 
-Model::Model(const Model& model)
+Model::Model(const Model &model)
 {
   this->position = model.position;
   this->material = model.material;
@@ -120,7 +120,7 @@ void Model::render(Shader *shader)
 
   for (auto &mesh : this->meshes)
   {
-    mesh->render(shader);
+    mesh->render();
   }
 
   // Unbind everything
@@ -130,6 +130,32 @@ void Model::render(Shader *shader)
   if (this->overrideTextureSpecular != nullptr)
     this->overrideTextureSpecular->unbind();
 }
+
+void Model::renderInstanced(Shader *shader)
+{
+  // Update uniforms
+  // this->updateModelMatrix();
+  // this->updateUniforms(shader);
+
+  // Render objects
+  // if (this->overrideTextureDiffuse != nullptr)
+  //   this->overrideTextureDiffuse->bind(0);
+  // if (this->overrideTextureSpecular != nullptr)
+  //   this->overrideTextureSpecular->bind(1);
+
+  for (auto &mesh : this->meshes)
+  {
+    mesh->renderInstanced();
+  }
+
+  // Unbind everything
+  glBindVertexArray(0);
+  // if (this->overrideTextureDiffuse != nullptr)
+  //   this->overrideTextureDiffuse->unbind();
+  // if (this->overrideTextureSpecular != nullptr)
+  //   this->overrideTextureSpecular->unbind();
+}
+
 void Model::scaleBy(const glm::vec3 &scale)
 {
   this->scale *= scale;

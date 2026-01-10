@@ -96,7 +96,7 @@ void OrbitalObject::renderTrail(Shader *shader)
   shader->set1i(0, "useModelMatrix");
   shader->set1i(1, "isTexture");
 
-  trail->render(shader);
+  trail->render();
 }
 
 void OrbitalObject::move(double dt)

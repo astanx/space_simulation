@@ -6,7 +6,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-
 // Private functions
 void Mesh::initVAO()
 {
@@ -118,13 +117,52 @@ Mesh::~Mesh()
   glDeleteBuffers(1, &this->VBO);
   if (this->nrOfIndices > 0)
     glDeleteBuffers(1, &this->EBO);
+  if (instancingInitialized)
+    glDeleteBuffers(1, &instanceVBO);
 
   delete[] this->vertices;
   delete[] this->indices;
 }
 
 // Functions
-void Mesh::render(Shader *shader)
+void Mesh::setInstancedBuffer(const std::vector<InstanceData> &instancedData)
+{
+  if (!instancingInitialized)
+  {
+    glGenBuffers(1, &instanceVBO);
+    instancingInitialized = true;
+  }
+
+  instanceCount = static_cast<unsigned int>(instancedData.size());
+
+  glBindVertexArray(VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+
+  glBufferData(
+      GL_ARRAY_BUFFER,
+      instanceCount * sizeof(InstanceData),
+      instancedData.data(),
+      GL_STATIC_DRAW);
+
+  constexpr GLuint INSTANCE_ATTRIB_START = 4;
+
+  for (int i = 0; i < 4; i++)
+  {
+    glEnableVertexAttribArray(INSTANCE_ATTRIB_START + i);
+    glVertexAttribPointer(
+        INSTANCE_ATTRIB_START + i,
+        4,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(InstanceData),
+        (void *)(sizeof(glm::vec4) * i));
+    glVertexAttribDivisor(INSTANCE_ATTRIB_START + i, 1);
+  }
+
+  glBindVertexArray(0);
+}
+
+void Mesh::render()
 {
   glBindVertexArray(this->VAO);
 
@@ -133,3 +171,23 @@ void Mesh::render(Shader *shader)
   else
     glDrawElements(this->drawMode, this->nrOfIndices, GL_UNSIGNED_INT, 0);
 };
+
+void Mesh::renderInstanced()
+{
+  if (!instancingInitialized || instanceCount == 0)
+    return;
+
+  glBindVertexArray(VAO);
+
+  if (nrOfIndices == 0)
+    glDrawArraysInstanced(drawMode, 0, nrOfVertices, instanceCount);
+  else
+    glDrawElementsInstanced(
+        drawMode,
+        nrOfIndices,
+        GL_UNSIGNED_INT,
+        0,
+        instanceCount);
+
+  glBindVertexArray(0);
+}

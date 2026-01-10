@@ -7,6 +7,11 @@ class Shader;
 class Primitive;
 struct Vertex;
 
+struct InstanceData
+{
+  glm::mat4 ModelMatrix;
+};
+
 class Mesh
 {
 private:
@@ -19,6 +24,10 @@ private:
   GLuint VBO;
   GLuint EBO;
 
+  GLuint instanceVBO = 0;
+  unsigned int instanceCount = 0;
+  bool instancingInitialized = false;
+
   GLenum drawMode;
 
   void initVAO();
@@ -28,8 +37,11 @@ public:
 
   Mesh(std::unique_ptr<Primitive> primitive, GLenum drawMode = GL_TRIANGLES);
 
+  void setInstancedBuffer(const std::vector<InstanceData> &instancedData);
+
   Mesh(const Mesh &obj);
   ~Mesh();
 
-  void render(Shader *shader);
+  void render();
+  void renderInstanced();
 };
