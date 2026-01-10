@@ -21,6 +21,7 @@ void Application::initGLFW()
 }
 void Application::initWindow(const char *title, GLboolean resizable)
 {
+  glfwWindowHint(GLFW_SAMPLES, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, this->GLmajor);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, this->GLminor);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -59,6 +60,8 @@ void Application::initGLEW()
 }
 void Application::initOpenGLSettings()
 {
+  glEnable(GL_MULTISAMPLE);
+
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_STENCIL_TEST);
 
