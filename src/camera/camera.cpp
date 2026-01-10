@@ -33,7 +33,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float win
 
   this->fov = 45.f;
   this->nearPlane = 0.1f;
-  this->farPlane = 10000000000.f;
+  this->farPlane = 10000.f;
 
   this->updateCameraVectors();
 }

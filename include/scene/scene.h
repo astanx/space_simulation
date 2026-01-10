@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/model.h"
+#include "graphics/mesh.h"
 #include "graphics/skybox.h"
 #include "physics/object.h"
 #include "camera/camera.h"
@@ -29,6 +30,9 @@ private:
   std::vector<std::unique_ptr<PointLight>> pointLights;
   std::unique_ptr<DirectionalLight> directionalLight;
 
+  std::vector<std::unique_ptr<Model>> asteroids;
+  Material* asteroid_material;
+
 public:
   Scene(ResourceManager *resourceManager);
   ~Scene() = default;
@@ -42,6 +46,8 @@ public:
   Moon *createMoon(std::string name, std::string material_name, double mu,
                    double radius, Planet *centralBody, const KeplerElements keplerElements);
 
+  void createAsteroids(unsigned amount, double innerEdge, double outerEdge);
+
   // Process functions
   void init(float width, float height);
   void processKeyboard(CameraMovement direction, float deltaTime);
@@ -49,7 +55,7 @@ public:
   void processMouseScroll(float yoffset);
 
   void update(float dt);
-  void render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader);
+  void render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader, Shader* instanceShader);
   void renderSkybox(Shader *skyboxShader, float aspectRatio);
 
   void sendLightsToShader(Shader &shader);

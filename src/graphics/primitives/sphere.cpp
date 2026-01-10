@@ -53,8 +53,8 @@ Sphere::Sphere(unsigned segments, float radius) : Primitive()
   for (unsigned j = 0; j < segments; ++j)
   {
     indices.push_back(top);
-    indices.push_back(1 + j);
     indices.push_back(1 + j + 1);
+    indices.push_back(1 + j);
   }
 
   for (unsigned i = 0; i < segments - 2; ++i)
@@ -65,12 +65,12 @@ Sphere::Sphere(unsigned segments, float radius) : Primitive()
       unsigned second = first + ringVertices;
 
       indices.push_back(first);
-      indices.push_back(second);
       indices.push_back(first + 1);
+      indices.push_back(second);
 
       indices.push_back(second);
-      indices.push_back(second + 1);
       indices.push_back(first + 1);
+      indices.push_back(second + 1);
     }
   }
 
@@ -78,8 +78,8 @@ Sphere::Sphere(unsigned segments, float radius) : Primitive()
   for (unsigned j = 0; j < segments; ++j)
   {
     indices.push_back(bottom);
-    indices.push_back(base + j + 1);
     indices.push_back(base + j);
+    indices.push_back(base + j + 1);
   }
 
   this->set(vertices.data(), vertices.size(), indices.data(), indices.size());

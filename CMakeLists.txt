@@ -49,6 +49,7 @@ add_executable(Space
     src/graphics/primitives/cube.cpp
     src/graphics/primitives/circle.cpp
     src/graphics/primitives/sphere.cpp
+    src/graphics/primitives/asteroid.cpp
     src/graphics/mesh.cpp
     src/scene/light/light.cpp
     src/scene/light/pointLight.cpp

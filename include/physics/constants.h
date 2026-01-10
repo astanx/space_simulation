@@ -6,6 +6,8 @@
 
 extern const double EPS;
 extern const double G;
+extern const double AU_TO_METER;
+
 
 extern const double TIME_SCALE;
 
@@ -43,6 +45,11 @@ extern const KeplerElements saturnElements;
 extern const KeplerElements uranusElements;
 extern const KeplerElements neptuneElements;
 
-
 extern const double VISUAL_SCALE;
 extern const double VISUAL_RADIUS_SCALE;
+
+extern const double INNER_ASTEROID_BELT_EDGE;
+extern const double OUTER_ASTEROID_BELT_EDGE;
+
+extern const double MINIMUM_ASTEROID_RADIUS;
+extern const double MAXIMUM_ASTEROID_RADIUS;

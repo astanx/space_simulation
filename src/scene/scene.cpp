@@ -1,6 +1,7 @@
 #include "scene/scene.h"
 #include "graphics/shader.h"
-#include "graphics/primitives/cube.h"
+#include "graphics/primitives/asteroid.h"
+#include "graphics/primitives/sphere.h"
 #include "graphics/mesh.h"
 #include "physics/planet.h"
 #include "physics/orbit.h"
@@ -8,6 +9,7 @@
 #include "physics/moon.h"
 #include "physics/constants.h"
 #include "resources/resourceManager.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
 
@@ -88,6 +90,76 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   return ptr;
 }
 
+void Scene::createAsteroids(unsigned amount,
+                            double innerEdge,
+                            double outerEdge)
+{
+  auto obj = std::make_unique<Asteroid>();
+  resourceManager->LoadMesh(Res::ASTEROID, std::move(obj));
+
+  std::vector<std::unique_ptr<Asteroid>> asteroids;
+  asteroids.push_back(std::make_unique<Asteroid>(24, 12, 2.0, 1.0, 1.0, 0.75, 0.85, 0.65));
+  asteroids.push_back(std::make_unique<Asteroid>(20, 10, 2.2, 1.0, 1.1, 0.70, 0.80, 0.60));
+  asteroids.push_back(std::make_unique<Asteroid>(16, 8, 3.0, 1.0, 1.2, 0.65, 0.75, 0.55));
+  asteroids.push_back(std::make_unique<Asteroid>(4, 7, 2.5, 1.1, 1.3, 0.60, 0.70, 0.50));
+  asteroids.push_back(std::make_unique<Asteroid>(12, 6, 4.0, 1.2, 1.4, 0.55, 0.65, 0.45));
+
+  for (int i = 0; i < asteroids.size(); i++)
+  {
+      resourceManager->LoadMesh(Res::ASTEROID + "_" + std::to_string(i), std::move(asteroids[i]));
+  }
+
+  Mesh *mesh = resourceManager->GetMesh(Res::ASTEROID);
+  this->asteroid_material = resourceManager->GetMaterial(Res::ASTEROID_MATERIAL);
+
+  std::vector<std::vector<InstanceData>> instances(asteroids.size());
+
+  std::srand(static_cast<unsigned>(std::time(nullptr)));
+
+  for (double i = 0; i < amount; i++)
+  {
+    unsigned type = std::rand() % asteroids.size();
+
+    double radius =
+        MINIMUM_ASTEROID_RADIUS +
+        (MAXIMUM_ASTEROID_RADIUS - MINIMUM_ASTEROID_RADIUS) *
+            (std::rand() / (double)RAND_MAX) *
+            VISUAL_RADIUS_SCALE;
+
+    if (radius < 0.01)
+      continue;
+
+    double angle = (std::rand() / (double)RAND_MAX) * 2.0 * M_PI;
+    double distance =
+        innerEdge + (outerEdge - innerEdge) * (std::rand() / (double)RAND_MAX);
+
+    double height = (std::rand() / (double)RAND_MAX - 0.5) * AU_TO_METER;
+
+    glm::dvec3 pos;
+    pos.x = cos(angle) * distance;
+    pos.z = sin(angle) * distance;
+    pos.y = height;
+    pos *= VISUAL_SCALE;
+
+    glm::mat4 model(1.0f);
+    model = glm::translate(model, glm::vec3(pos));
+    model = glm::scale(model, glm::vec3(radius));
+
+    instances[type].emplace_back(InstanceData{model});
+  }
+
+  for (unsigned type = 0; type < asteroids.size(); type++)
+  {
+    if (!instances[type].empty())
+    {
+      Mesh* mesh = resourceManager->GetMesh(Res::ASTEROID + "_" + std::to_string(type));
+      mesh->setInstancedBuffer(instances[type]);
+      std::cout << "Asteroids of type " << type << ": " << instances[type].size() << std::endl;
+      this->asteroids.push_back(std::make_unique<Model>(glm::dvec3(0.0), asteroid_material, mesh));
+    }
+  }
+}
+
 // Process functions
 void Scene::init(float width, float height)
 {
@@ -97,6 +169,7 @@ void Scene::init(float width, float height)
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadius, sunPtr, earthElements);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadius, earthPtr, moonElements);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadius, sunPtr, marsElements);
+  createAsteroids(50000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
 
   auto pointLight = std::make_unique<PointLight>(
       glm::vec3(0.f, 0.f, 0.f),
@@ -192,7 +265,7 @@ void Scene::renderSkybox(Shader *skyboxShader, float aspectRatio)
   this->skybox->render(skyboxShader);
   skyboxShader->unuse();
 }
-void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader)
+void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader, Shader *instanceShader)
 {
   if (!activeCamera)
     return;
@@ -216,6 +289,18 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   }
 
   shader->unuse();
+
+  instanceShader->use();
+  sendCameraToShader(*instanceShader, aspect);
+  sendLightsToShader(*instanceShader);
+  this->asteroid_material->sendToShader(*instanceShader);
+
+  for (auto &asteroid : this->asteroids)
+  {
+    asteroid->renderInstanced(instanceShader);
+  }
+
+  instanceShader->unuse();
 
   // Render skybox
   renderSkybox(skyboxShader, aspect);

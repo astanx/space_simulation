@@ -3,6 +3,7 @@
 #include "graphics/primitives/plane.h"
 #include "graphics/primitives/circle.h"
 #include "graphics/primitives/sphere.h"
+#include "graphics/primitives/asteroid.h"
 #include "graphics/shader.h"
 #include "physics/constants.h"
 #include "scene/scene.h"
@@ -65,9 +66,9 @@ void Application::initOpenGLSettings()
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_STENCIL_TEST);
 
-  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
-  glFrontFace(GL_CW);
+  glFrontFace(GL_CCW);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -102,6 +103,7 @@ Application::Application(
   // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
   this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->GLmajor, this->GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
+  this->resourceManager.LoadShader(Res::INSTANCE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/instanced/vertex.glsl", "assets/shaders/instanced/fragment.glsl");
 
   loadCircularObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/sun.png", Res::SUN_MATERIAL, sunRadius);
   loadCircularObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", Res::MERCURY_MATERIAL, mercuryRadius);
@@ -109,6 +111,12 @@ Application::Application(
   loadCircularObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/earth.png", Res::EARTH_MATERIAL, earthRadius, Res::EARTH_SPECULAR, "assets/textures/earth_specular.png");
   loadCircularObject(Res::MOON, Res::MOON_DIFFUSE, "assets/textures/moon.png", Res::MOON_MATERIAL, moonRadius);
   loadCircularObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/mars.png", Res::MARS_MATERIAL, marsRadius);
+
+  Texture *diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/asteroid.png", GL_TEXTURE_2D);
+  this->resourceManager.LoadMaterial(Res::ASTEROID_MATERIAL, glm::vec3(0.1f),
+                                     glm::vec3(0.9f, 0.5f, 0.4f),
+                                     glm::vec3(0.3f),
+                                     diff, nullptr, 32.f);
 
   this->scene.init(windowWidth, windowHeight);
 }
@@ -153,9 +161,10 @@ void Application::render()
 
   Shader *core = this->resourceManager.GetShader(Res::CORE_SHADER);
   Shader *skybox = this->resourceManager.GetShader(Res::SKYBOX_SHADER);
+  Shader *instance = this->resourceManager.GetShader(Res::INSTANCE_SHADER);
 
   // Render scene
-  this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime, skybox);
+  this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime, skybox, instance);
 
   // Swap buffers
   glfwSwapBuffers(this->window);

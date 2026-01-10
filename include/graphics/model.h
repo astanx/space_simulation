@@ -46,6 +46,7 @@ public:
   ~Model();
 
   void render(Shader *shader);
+  void renderInstanced(Shader *shader);
 
   glm::vec3 getPosition() const;
 

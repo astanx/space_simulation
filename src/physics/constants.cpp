@@ -3,6 +3,13 @@
 #include <glm/glm.hpp>
 
 const double AU_TO_METER = 1.49597870700e11;
+
+const double INNER_ASTEROID_BELT_EDGE = 2.2 * AU_TO_METER;
+const double OUTER_ASTEROID_BELT_EDGE = 3.2 * AU_TO_METER;
+
+extern const double MINIMUM_ASTEROID_RADIUS = 1;
+extern const double MAXIMUM_ASTEROID_RADIUS = 500000;
+
 // VISUAL SCALING
 const double VISUAL_SCALE = 1e-8;
 const double VISUAL_RADIUS_SCALE = VISUAL_SCALE * 50.0;
@@ -75,3 +82,5 @@ const KeplerElements marsElements(
     glm::radians(49.57854),
     glm::radians(286.5),
     glm::radians(19.412));
+
+
