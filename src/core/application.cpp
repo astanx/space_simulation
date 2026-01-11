@@ -66,7 +66,7 @@ void Application::initOpenGLSettings()
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_STENCIL_TEST);
 
-  // glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glFrontFace(GL_CCW);
 
@@ -111,6 +111,7 @@ Application::Application(
   loadCircularObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/earth.png", Res::EARTH_MATERIAL, earthRadius, Res::EARTH_SPECULAR, "assets/textures/earth_specular.png");
   loadCircularObject(Res::MOON, Res::MOON_DIFFUSE, "assets/textures/moon.png", Res::MOON_MATERIAL, moonRadius);
   loadCircularObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/mars.png", Res::MARS_MATERIAL, marsRadius);
+  loadCircularObject(Res::JUPITER, Res::JUPITER_DIFFUSE, "assets/textures/jupiter.png", Res::JUPITER_MATERIAL, jupiterRadius);
 
   Texture *diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadMaterial(Res::ASTEROID_MATERIAL, glm::vec3(0.1f),

@@ -83,4 +83,13 @@ const KeplerElements marsElements(
     glm::radians(286.5),
     glm::radians(19.412));
 
-
+// JUPITER
+const double jupiterMu = 1.266865349e17;
+const double jupiterRadius = 6.9911e7;
+const KeplerElements jupiterElements(
+    5.2038 * AU_TO_METER,
+    0.0489,
+    glm::radians(1.303),
+    glm::radians(100.464),
+    glm::radians(273.867),
+    glm::radians(20.02));
