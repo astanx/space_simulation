@@ -41,35 +41,10 @@ glm::dvec3 OrbitalObject::orbitalToInertial(double nu)
   return createR3matrix(keplerElements.Omega) * createR1matrix(keplerElements.i) * createR3matrix(keplerElements.omega) * orb;
 }
 
-void OrbitalObject::generateTrail()
-{
-  std::vector<glm::dvec3> trailVec;
-  for (double nu = 0; nu < 2 * M_PI; nu += 0.01)
-  {
-    glm::dvec3 pos = this->orbitalToInertial(nu);
-    pos += this->orbit->getCentralBody()->getPosition();
-    pos = this->realToVisualPos(pos);
-
-    trailVec.push_back(pos);
-  }
-
-  std::vector<Vertex> vertices;
-  for (auto &p : trailVec)
-  {
-    Vertex v{};
-    v.position = p;
-    v.color = glm::vec3(1.f);
-    v.texcoord = glm::vec2(0.0f);
-    v.normal = glm::vec3(0.0f);
-
-    vertices.push_back(v);
-  }
-  this->trail = std::make_unique<Mesh>(vertices.data(), vertices.size(), nullptr, 0, GL_LINE_LOOP);
-}
-
 // Constructor
-OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements) : Object(mu, radius)
+OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements, bool useTrail) : Object(mu, radius)
 {
+  this->useTrail = useTrail;
   this->orbit = std::make_unique<Orbit>(centralBody, keplerElements);
   this->position = orbitalToInertial(0.0); // at periapsis
   this->position += centralBody->getPosition();
@@ -88,15 +63,24 @@ const Orbit *OrbitalObject::getOrbit() const
   return this->orbit.get();
 }
 
-void OrbitalObject::renderTrail(Shader *shader)
+const bool OrbitalObject::getUseTrail() const
 {
-  if (!trail || !this->useTrail)
-    return;
+  return this->useTrail;
+}
 
-  shader->set1i(0, "useModelMatrix");
-  shader->set1i(1, "isTexture");
+std::unique_ptr<Trail> OrbitalObject::generateTrail()
+{
+  std::vector<glm::dvec3> trailVec;
+  for (double nu = 0; nu < 2 * M_PI; nu += 0.01)
+  {
+    glm::dvec3 pos = this->orbitalToInertial(nu);
+    pos += this->orbit->getCentralBody()->getPosition();
+    pos = this->realToVisualPos(pos);
 
-  trail->render();
+    trailVec.push_back(pos);
+  }
+
+  return std::make_unique<Trail>(trailVec);
 }
 
 void OrbitalObject::move(double dt)

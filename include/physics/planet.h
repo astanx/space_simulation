@@ -13,7 +13,7 @@ protected:
   std::vector<std::unique_ptr<Moon>> moons;
 
 public:
-  Planet(Object* centralBody, double mu, double radius, const KeplerElements& keplerElements);
+  Planet(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements);
   ~Planet() = default;
 
   void addMoon(std::unique_ptr<Moon> moon);

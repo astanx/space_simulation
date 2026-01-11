@@ -3,7 +3,7 @@
 #include "resources/resources.h"
 #include "graphics/shader.h"
 #include "graphics/texture.h"
-#include "graphics/material.h"
+#include "graphics/materials/material.h"
 #include "graphics/mesh.h"
 #include "graphics/vertex.h"
 
@@ -14,6 +14,7 @@
 #include <glm/glm.hpp>
 
 class Primitive;
+class AsteroidMaterial;
 
 class ResourceManager
 {
@@ -30,11 +31,13 @@ public:
   // Loaders
   Shader *LoadShader(const std::string &name, const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile = nullptr);
   Texture *LoadTexture(const std::string &name, const char *filePath, GLenum type);
-  Material *LoadMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
-                         Texture* diffuseTexture, Texture* specularTexture, float shininess);
+  Material *LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
+                         Texture *diffuseTexture, Texture *specularTexture, float shininess);
 
-  Mesh *LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices);
-  Mesh *LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive);
+  Material *LoadAsteroidMaterial(const std::string &name, Texture *diffuseTexture);
+
+  Mesh *LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
+  Mesh *LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
   Mesh *LoadMesh(const std::string &name, const Mesh &obj);
 
   // Getters

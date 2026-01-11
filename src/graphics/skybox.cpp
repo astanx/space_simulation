@@ -50,7 +50,7 @@ void Skybox::loadCubemap(std::vector<const char *> faces)
 };
 
 // Constructor/Destructor
-Skybox::Skybox(std::vector<const char *> &faces) : mesh(std::make_unique<Cube>())
+Skybox::Skybox(std::vector<const char *> &faces) : mesh(std::make_unique<Cube>(), VertexLayout::PositionOnly)
 {
   if (faces.size() != 6)
     std::cerr << "ERROR::SKYBOX::CONSTRUCTOR::REQUIRED_6_FACES" << std::endl;

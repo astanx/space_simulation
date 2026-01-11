@@ -13,7 +13,7 @@ private:
   int GLSLmajor;
   int GLSLminor;
 
-  std::string loadShaderSrc(char *fileName);
+  std::string loadShaderSrc(const char *fileName, bool isInclude = false);
 
   GLuint loadShader(GLenum type, char *fileName);
 

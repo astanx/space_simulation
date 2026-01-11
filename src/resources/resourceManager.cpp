@@ -1,5 +1,7 @@
 #include "resources/resourceManager.h"
 #include "graphics/primitives/primitives.h"
+#include "graphics/materials/asteroidMaterial.h"
+#include "graphics/materials/phongMaterial.h"
 
 #include <iostream>
 
@@ -16,20 +18,26 @@ Texture *ResourceManager::LoadTexture(const std::string &name, const char *fileP
   return this->textures[name].get();
 }
 
-Material *ResourceManager::LoadMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
-                                        Texture* diffuseTexture, Texture* specularTexture, float shininess)
+Material *ResourceManager::LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
+                                             Texture *diffuseTexture, Texture *specularTexture, float shininess)
 {
-  this->materials[name] = std::make_unique<Material>(ambient, diffuse, specular, diffuseTexture, specularTexture, shininess);
+  this->materials[name] = std::make_unique<PhongMaterial>(ambient, diffuse, specular, diffuseTexture, specularTexture, shininess);
   return this->materials[name].get();
 }
-Mesh *ResourceManager::LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices)
+Material *ResourceManager::LoadAsteroidMaterial(const std::string &name, Texture *diffuseTexture)
 {
-  this->meshes[name] = std::make_unique<Mesh>(vertexArray, nrOfVertices, indexArray, nrOfIndices);
+  this->materials[name] = std::make_unique<AsteroidMaterial>(diffuseTexture);
+  return this->materials[name].get();
+}
+
+Mesh *ResourceManager::LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, VertexLayout layout, GLenum drawMode)
+{
+  this->meshes[name] = std::make_unique<Mesh>(vertexArray, nrOfVertices, indexArray, nrOfIndices, layout, drawMode);
   return this->meshes[name].get();
 }
-Mesh *ResourceManager::LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive)
+Mesh *ResourceManager::LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode)
 {
-  this->meshes[name] = std::make_unique<Mesh>(std::move(primitive));
+  this->meshes[name] = std::make_unique<Mesh>(std::move(primitive), layout, drawMode);
   return this->meshes[name].get();
 }
 Mesh *ResourceManager::LoadMesh(const std::string &name, const Mesh &obj)

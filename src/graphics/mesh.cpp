@@ -9,8 +9,8 @@
 // Private functions
 void Mesh::initVAO()
 {
-  glGenVertexArrays(1, &this->VAO);
-  glBindVertexArray(this->VAO);
+  glGenVertexArrays(1, &this->VAOS[this->layout]);
+  glBindVertexArray(this->VAOS[this->layout]);
 
   glGenBuffers(1, &this->VBO);
   glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
@@ -27,23 +27,28 @@ void Mesh::initVAO()
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, position));
   glEnableVertexAttribArray(0);
 
-  // Color attribute
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, color));
-  glEnableVertexAttribArray(1);
+  if (this->layout != VertexLayout::PositionOnly)
+  {
+    // Texcoord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, texcoord));
+    glEnableVertexAttribArray(1);
 
-  // Texcoord attribute
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, texcoord));
-  glEnableVertexAttribArray(2);
-
-  // Normal attribute
-  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, normal));
-  glEnableVertexAttribArray(3);
+    // Normal attribute
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, normal));
+    glEnableVertexAttribArray(2);
+  } 
+  if (this->layout == VertexLayout::Full)
+  {
+    // Color attribute
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, color));
+    glEnableVertexAttribArray(3);
+  }
 
   glBindVertexArray(0);
 }
 
 // Constructor and Destructor
-Mesh::Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, GLenum drawMode)
+Mesh::Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, VertexLayout layout, GLenum drawMode)
 {
   this->nrOfVertices = nrOfVertices;
   this->nrOfIndices = nrOfIndices;
@@ -61,11 +66,12 @@ Mesh::Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray
   }
 
   this->drawMode = drawMode;
+  this->layout = layout;
 
   this->initVAO();
 }
 
-Mesh::Mesh(std::unique_ptr<Primitive> primitive, GLenum drawMode)
+Mesh::Mesh(std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode)
 {
   this->nrOfVertices = primitive->getNrOfVertices();
   this->nrOfIndices = primitive->getNrOfIndices();
@@ -85,6 +91,7 @@ Mesh::Mesh(std::unique_ptr<Primitive> primitive, GLenum drawMode)
   }
 
   this->drawMode = drawMode;
+  this->layout = layout;
 
   this->initVAO();
 }
@@ -107,13 +114,14 @@ Mesh::Mesh(const Mesh &obj)
   }
 
   this->drawMode = obj.drawMode;
+  this->layout = obj.layout;
 
   this->initVAO();
 }
 
 Mesh::~Mesh()
 {
-  glDeleteVertexArrays(1, &this->VAO);
+  glDeleteVertexArrays(1, &this->VAOS[this->layout]);
   glDeleteBuffers(1, &this->VBO);
   if (this->nrOfIndices > 0)
     glDeleteBuffers(1, &this->EBO);
@@ -129,22 +137,22 @@ void Mesh::setInstancedBuffer(const std::vector<InstanceData> &instancedData)
 {
   if (!instancingInitialized)
   {
-    glGenBuffers(1, &instanceVBO);
+    glGenBuffers(1, &this->instanceVBO);
     instancingInitialized = true;
   }
 
-  instanceCount = static_cast<unsigned int>(instancedData.size());
+  this->instanceCount = static_cast<unsigned int>(instancedData.size());
 
-  glBindVertexArray(VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+  glBindVertexArray(this->VAOS[this->layout]);
+  glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
 
   glBufferData(
       GL_ARRAY_BUFFER,
-      instanceCount * sizeof(InstanceData),
+      this->instanceCount * sizeof(InstanceData),
       instancedData.data(),
       GL_STATIC_DRAW);
 
-  constexpr GLuint INSTANCE_ATTRIB_START = 4;
+  constexpr GLuint INSTANCE_ATTRIB_START = 3;
 
   for (int i = 0; i < 4; i++)
   {
@@ -164,7 +172,7 @@ void Mesh::setInstancedBuffer(const std::vector<InstanceData> &instancedData)
 
 void Mesh::render()
 {
-  glBindVertexArray(this->VAO);
+  glBindVertexArray(this->VAOS[this->layout]);
 
   if (this->nrOfIndices == 0)
     glDrawArrays(this->drawMode, 0, this->nrOfVertices);
@@ -174,20 +182,20 @@ void Mesh::render()
 
 void Mesh::renderInstanced()
 {
-  if (!instancingInitialized || instanceCount == 0)
+  if (!this->instancingInitialized || this->instanceCount == 0)
     return;
 
-  glBindVertexArray(VAO);
+  glBindVertexArray(this->VAOS[this->layout]);
 
-  if (nrOfIndices == 0)
-    glDrawArraysInstanced(drawMode, 0, nrOfVertices, instanceCount);
+  if (this->nrOfIndices == 0)
+    glDrawArraysInstanced(this->drawMode, 0, this->nrOfVertices, this->instanceCount);
   else
     glDrawElementsInstanced(
-        drawMode,
-        nrOfIndices,
+        this->drawMode,
+        this->nrOfIndices,
         GL_UNSIGNED_INT,
         0,
-        instanceCount);
+        this->instanceCount);
 
   glBindVertexArray(0);
 }

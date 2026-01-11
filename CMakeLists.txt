@@ -40,7 +40,8 @@ add_executable(Space
     src/camera/camera.cpp
     src/graphics/shader.cpp
     src/graphics/texture.cpp
-    src/graphics/material.cpp
+    src/graphics/materials/phongMaterial.cpp
+    src/graphics/materials/asteroidMaterial.cpp
     src/graphics/skybox.cpp
     src/graphics/primitives/triangle.cpp
     src/graphics/primitives/primitives.cpp
@@ -64,6 +65,7 @@ add_executable(Space
     src/physics/orbit.cpp
     src/physics/moon.cpp
     src/physics/star.cpp
+    src/physics/trail.cpp
     src/physics/orbitalObject.cpp
     src/maths/rk4.cpp
 )

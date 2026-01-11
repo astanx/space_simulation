@@ -103,7 +103,9 @@ Application::Application(
   // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
   this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->GLmajor, this->GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
-  this->resourceManager.LoadShader(Res::INSTANCE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/instanced/vertex.glsl", "assets/shaders/instanced/fragment.glsl");
+  // this->resourceManager.LoadShader(Res::INSTANCE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/instanced/vertex.glsl", "assets/shaders/instanced/fragment.glsl");
+  this->resourceManager.LoadShader(Res::ASTEROID_SHADER, this->GLmajor, this->GLminor, "assets/shaders/asteroid/vertex.glsl", "assets/shaders/asteroid/fragment.glsl");
+  this->resourceManager.LoadShader(Res::TRAIL_SHADER, this->GLmajor, this->GLminor, "assets/shaders/trail/vertex.glsl", "assets/shaders/trail/fragment.glsl");
 
   loadCircularObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/sun.png", Res::SUN_MATERIAL, sunRadius);
   loadCircularObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", Res::MERCURY_MATERIAL, mercuryRadius);
@@ -114,10 +116,7 @@ Application::Application(
   loadCircularObject(Res::JUPITER, Res::JUPITER_DIFFUSE, "assets/textures/jupiter.png", Res::JUPITER_MATERIAL, jupiterRadius);
 
   Texture *diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/asteroid.png", GL_TEXTURE_2D);
-  this->resourceManager.LoadMaterial(Res::ASTEROID_MATERIAL, glm::vec3(0.1f),
-                                     glm::vec3(0.9f, 0.5f, 0.4f),
-                                     glm::vec3(0.3f),
-                                     diff, nullptr, 32.f);
+  this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
 
   this->scene.init(windowWidth, windowHeight);
 }
@@ -162,10 +161,11 @@ void Application::render()
 
   Shader *core = this->resourceManager.GetShader(Res::CORE_SHADER);
   Shader *skybox = this->resourceManager.GetShader(Res::SKYBOX_SHADER);
-  Shader *instance = this->resourceManager.GetShader(Res::INSTANCE_SHADER);
+  Shader *asteroid = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
+  Shader *trail = this->resourceManager.GetShader(Res::TRAIL_SHADER);
 
   // Render scene
-  this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime, skybox, instance);
+  this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime, skybox, asteroid, trail);
 
   // Swap buffers
   glfwSwapBuffers(this->window);
@@ -210,12 +210,12 @@ void Application::processInput()
 void Application::loadCircularObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name, double radius, std::string specular_name, const char *specularPath, int segments)
 {
   Texture *diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
-  this->resourceManager.LoadMaterial(material_name, glm::vec3(0.1f),
+  this->resourceManager.LoadPhongMaterial(material_name, glm::vec3(0.1f),
                                      glm::vec3(0.9f, 0.5f, 0.4f),
                                      glm::vec3(0.3f),
                                      diff, nullptr, 32.f);
   auto obj = std::make_unique<Sphere>(segments, radius * VISUAL_RADIUS_SCALE);
-  this->resourceManager.LoadMesh(name, std::move(obj));
+  this->resourceManager.LoadMesh(name, std::move(obj), VertexLayout::Full);
 }
 
 // Static functions
