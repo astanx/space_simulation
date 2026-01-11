@@ -52,6 +52,8 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   planet->addModel(std::move(model));
 
   Planet *ptr = planet.get();
+  if (planet->getUseTrail())
+    this->addTrail(planet->generateTrail());
   this->addObject(std::move(planet));
   return ptr;
 }
@@ -82,6 +84,8 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, keplerElements);
 
   moon->addModel(std::move(model));
+  if (moon->getUseTrail())
+    this->addTrail(moon->generateTrail());
 
   Moon *ptr = moon.get();
 
@@ -94,9 +98,6 @@ void Scene::createAsteroids(unsigned amount,
                             double innerEdge,
                             double outerEdge)
 {
-  auto obj = std::make_unique<Asteroid>();
-  resourceManager->LoadMesh(Res::ASTEROID, std::move(obj));
-
   std::vector<std::unique_ptr<Asteroid>> asteroids;
   asteroids.push_back(std::make_unique<Asteroid>(24, 12, 2.0, 1.0, 1.0, 0.75, 0.85, 0.65));
   asteroids.push_back(std::make_unique<Asteroid>(20, 10, 2.2, 1.0, 1.1, 0.70, 0.80, 0.60));
@@ -106,10 +107,9 @@ void Scene::createAsteroids(unsigned amount,
 
   for (int i = 0; i < asteroids.size(); i++)
   {
-      resourceManager->LoadMesh(Res::ASTEROID + "_" + std::to_string(i), std::move(asteroids[i]));
+    resourceManager->LoadMesh(Res::ASTEROID + "_" + std::to_string(i), std::move(asteroids[i]), VertexLayout::Instanced);
   }
 
-  Mesh *mesh = resourceManager->GetMesh(Res::ASTEROID);
   this->asteroid_material = resourceManager->GetMaterial(Res::ASTEROID_MATERIAL);
 
   std::vector<std::vector<InstanceData>> instances(asteroids.size());
@@ -152,7 +152,7 @@ void Scene::createAsteroids(unsigned amount,
   {
     if (!instances[type].empty())
     {
-      Mesh* mesh = resourceManager->GetMesh(Res::ASTEROID + "_" + std::to_string(type));
+      Mesh *mesh = resourceManager->GetMesh(Res::ASTEROID + "_" + std::to_string(type));
       mesh->setInstancedBuffer(instances[type]);
       std::cout << "Asteroids of type " << type << ": " << instances[type].size() << std::endl;
       this->asteroids.push_back(std::make_unique<Model>(glm::dvec3(0.0), asteroid_material, mesh));
@@ -169,7 +169,7 @@ void Scene::init(float width, float height)
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadius, sunPtr, earthElements);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadius, earthPtr, moonElements);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadius, sunPtr, marsElements);
-  createAsteroids(60000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
+  createAsteroids(10000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadius, sunPtr, jupiterElements);
 
   auto pointLight = std::make_unique<PointLight>(
@@ -249,14 +249,18 @@ void Scene::update(float dt)
       objects[j]->applyGravitation(*objects[i]);
     }
 
-  for (auto &object : objects)
+  for (auto &object : this->objects)
   {
     object->update(dt);
   }
 }
+
 void Scene::renderSkybox(Shader *skyboxShader, float aspectRatio)
 {
   skyboxShader->use();
+
+  glCullFace(GL_FRONT);
+
   glm::mat4 view = glm::mat4(glm::mat3(this->activeCamera->getViewMatrix()));
   glm::mat4 projection = this->activeCamera->getProjectionMatrix(aspectRatio);
 
@@ -264,9 +268,12 @@ void Scene::renderSkybox(Shader *skyboxShader, float aspectRatio)
   skyboxShader->setMat4fv(projection, "ProjectionMatrix");
 
   this->skybox->render(skyboxShader);
+
+  glCullFace(GL_BACK);
+
   skyboxShader->unuse();
 }
-void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader, Shader *instanceShader)
+void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader, Shader *asteroidShader, Shader *trailShader)
 {
   if (!activeCamera)
     return;
@@ -275,6 +282,14 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   if (framebufferHeight > 0)
     aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
   this->update(dt);
+
+  trailShader->use();
+  sendCameraToShader(*trailShader, aspect);
+  for (auto &trail : this->trails)
+  {
+    trail->render();
+  }
+  trailShader->unuse();
 
   shader->use();
 
@@ -291,17 +306,17 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
 
   shader->unuse();
 
-  instanceShader->use();
-  sendCameraToShader(*instanceShader, aspect);
-  sendLightsToShader(*instanceShader);
-  this->asteroid_material->sendToShader(*instanceShader);
+  asteroidShader->use();
+  sendCameraToShader(*asteroidShader, aspect);
+  sendLightsToShader(*asteroidShader);
+  this->asteroid_material->sendToShader(*asteroidShader);
 
   for (auto &asteroid : this->asteroids)
   {
-    asteroid->renderInstanced(instanceShader);
+    asteroid->renderInstanced(asteroidShader);
   }
 
-  instanceShader->unuse();
+  asteroidShader->unuse();
 
   // Render skybox
   renderSkybox(skyboxShader, aspect);
@@ -324,6 +339,10 @@ void Scene::addModel(std::unique_ptr<Model> model)
 void Scene::addObject(std::unique_ptr<Object> object)
 {
   this->objects.push_back(std::move(object));
+}
+void Scene::addTrail(std::unique_ptr<Trail> trail)
+{
+  this->trails.push_back(std::move(trail));
 }
 
 void Scene::addPointLight(std::unique_ptr<PointLight> pointLight)

@@ -29,9 +29,6 @@ void Planet::update(double dt)
 
 void Planet::render(Shader *shader)
 {
-  if (this->orbit)
-    this->renderTrail(shader);
-
   for (auto &moon : this->moons)
   {
     moon->render(shader);

@@ -1,11 +1,11 @@
-#include "graphics/material.h"
+#include "graphics/materials/phongMaterial.h"
 #include "graphics/shader.h"
 #include "graphics/texture.h"
 
 // Private functions
 
 // Constructor and Destructor
-Material::Material(
+PhongMaterial::PhongMaterial(
     glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
     Texture *diffuseTexture, Texture *specularTexture, float shininess)
 {
@@ -17,10 +17,8 @@ Material::Material(
   this->shininess = shininess;
 }
 
-Material::~Material() {}
-
 // Public functions
-void Material::sendToShader(Shader &program)
+void PhongMaterial::sendToShader(Shader &program)
 {
   program.setVec3f(this->ambient, "material.ambient");
   program.setVec3f(this->diffuse, "material.diffuse");

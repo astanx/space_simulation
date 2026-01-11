@@ -1,5 +1,5 @@
 #include "graphics/model.h"
-#include "graphics/material.h"
+#include "graphics/materials/material.h"
 #include "graphics/texture.h"
 #include "graphics/shader.h"
 
@@ -97,7 +97,7 @@ Model::Model(glm::vec3 position, Material *material,
 
   std::vector<Vertex> vertices = loadOBJmodel(OBJfile);
 
-  Mesh *mesh = new Mesh(vertices.data(), vertices.size(), nullptr, 0);
+  Mesh *mesh = new Mesh(vertices.data(), vertices.size(), nullptr, 0, VertexLayout::Full);
   this->meshes.push_back(mesh);
 }
 

@@ -2,6 +2,7 @@
 
 #include "physics/object.h"
 #include "physics/orbit.h"
+#include "physics/trail.h"
 #include "physics/keplerElements.h"
 
 class Planet;
@@ -11,10 +12,6 @@ class OrbitalObject : public Object
 {
 protected:
   std::unique_ptr<Orbit> orbit;
-
-  std::unique_ptr<Mesh> trail;
-
-  virtual void generateTrail();
   glm::dvec3 orbitalToInertial(double nu);
   glm::dmat3 createR3matrix(double angle);
   glm::dmat3 createR1matrix(double angle);
@@ -24,13 +21,15 @@ protected:
   bool useTrail = true;
 
 public:
-  OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements);
+  OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements, bool useTrail = true);
   ~OrbitalObject() = default;
 
   const Orbit *getOrbit() const;
+  const bool getUseTrail() const;
 
   void keplerDrift(double dt);
-
-  void renderTrail(Shader *shader);
+  void renderTrail();
   void move(double dt) override;
+
+  virtual std::unique_ptr<Trail> generateTrail();
 };

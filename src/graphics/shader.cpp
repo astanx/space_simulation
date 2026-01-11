@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // Private functions
-std::string Shader::loadShaderSrc(char *fileName)
+std::string Shader::loadShaderSrc(const char *fileName, bool isInclude)
 {
   std::string temp = "";
   std::string src = "";
@@ -18,7 +18,18 @@ std::string Shader::loadShaderSrc(char *fileName)
   {
     while (std::getline(inFile, temp))
     {
-      src += temp + "\n";
+      if (temp.find("#version") == 0)
+        continue;
+
+      if (temp.find("#include") == 0)
+      {
+        auto start = temp.find("\"") + 1;
+        auto end = temp.find("\"", start);
+        std::string includePath = temp.substr(start, end - start);
+        src += this->loadShaderSrc(("assets/shaders/" + includePath).c_str(), true) + "\n";
+      }
+      else
+        src += temp + "\n";
     }
   }
   else
@@ -26,10 +37,15 @@ std::string Shader::loadShaderSrc(char *fileName)
     std::cerr << "ERROR::SHADER::COULD_NOT_OPEN_SHADER_FILE: " << fileName << std::endl;
   }
 
-  std::string versionLine = "#version " + std::to_string(this->GLSLmajor) + std::to_string(this->GLSLminor) + "0\n";
-  src.replace(src.find("#version"), 12, versionLine);
-
   inFile.close();
+
+  if (!isInclude)
+  {
+    std::string versionLine = "#version " + std::to_string(this->GLSLmajor) + std::to_string(this->GLSLminor) + "0\n";
+
+    src = versionLine + src;
+  }
+
   return src;
 }
 

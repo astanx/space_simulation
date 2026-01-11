@@ -7,6 +7,14 @@ class Shader;
 class Primitive;
 struct Vertex;
 
+enum class VertexLayout
+{
+  Full,
+  NoColor,
+  PositionOnly,
+  Instanced
+};
+
 struct InstanceData
 {
   glm::mat4 ModelMatrix;
@@ -20,7 +28,7 @@ private:
   GLuint *indices;
   unsigned nrOfIndices;
 
-  GLuint VAO;
+  std::unordered_map<VertexLayout, GLuint> VAOS;
   GLuint VBO;
   GLuint EBO;
 
@@ -29,13 +37,14 @@ private:
   bool instancingInitialized = false;
 
   GLenum drawMode;
+  VertexLayout layout;
 
   void initVAO();
 
 public:
-  Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, GLenum drawMode = GL_TRIANGLES);
+  Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
 
-  Mesh(std::unique_ptr<Primitive> primitive, GLenum drawMode = GL_TRIANGLES);
+  Mesh(std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
 
   void setInstancedBuffer(const std::vector<InstanceData> &instancedData);
 
