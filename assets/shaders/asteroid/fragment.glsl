@@ -1,5 +1,7 @@
 #version 410
 
+#include "gamma/gamma_correction.glsl"
+
 out vec4 fs_color;
 
 in VS_OUT {
