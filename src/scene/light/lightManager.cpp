@@ -3,7 +3,7 @@
 #include "scene/light/pointLight.h"
 
 // Public functions
-void LightManager::updateDirUBO(const DirectionalLight &dirLight)
+void LightManager::updateDirUBO(const DirectionalLight &dirLight, int enabled)
 {
   DirLightGPU dirUBO{};
 
@@ -12,13 +12,14 @@ void LightManager::updateDirUBO(const DirectionalLight &dirLight)
   dirUBO.specular = glm::vec4(dirLight.getSpecular(), 1.0);
   dirUBO.direction = glm::vec4(dirLight.getDirection(), 0.0);
   dirUBO.intensity = dirLight.getIntensity();
+  dirUBO.enabled = enabled;
 
   glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
   glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirLightGPU), &dirUBO);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void LightManager::updatePointUBO(const PointLight &pointLight)
+void LightManager::updatePointUBO(const PointLight &pointLight, int enabled)
 {
   PointLightGPU pointUBO{};
 
@@ -30,10 +31,20 @@ void LightManager::updatePointUBO(const PointLight &pointLight)
   pointUBO.quadratic = pointLight.getQuadratic();
   pointUBO.constant = pointLight.getConstant();
   pointUBO.linear = pointLight.getLinear();
+  pointUBO.enabled = enabled;
 
   glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
   glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &pointUBO);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void LightManager::maskDirUBO()
+{
+  this->updateDirUBO(DirectionalLight(glm::vec3(0.0), glm::vec3(0.0), glm::vec3(0.0), glm::vec3(0.0)), 0);
+}
+void LightManager::maskPointUBO()
+{
+  this->updatePointUBO(PointLight(glm::vec3(0.0), glm::vec3(0.0), glm::vec3(0.0), glm::vec3(0.0)), 0);
 }
 
 void LightManager::updateSSBO(std::vector<PointLight> &pointLights)
@@ -51,6 +62,7 @@ void LightManager::updateSSBO(std::vector<PointLight> &pointLights)
     pointUBO.quadratic = pointLight.getQuadratic();
     pointUBO.constant = pointLight.getConstant();
     pointUBO.linear = pointLight.getLinear();
+    pointUBO.enabled = 1;
 
     pointLightsSSBO.push_back(pointUBO);
   }

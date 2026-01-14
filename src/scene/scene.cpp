@@ -163,28 +163,27 @@ void Scene::init(float width, float height)
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadius, sunPtr, earthElements);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadius, earthPtr, moonElements);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadius, sunPtr, marsElements);
-  createAsteroids(80000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
+  createAsteroids(50000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadius, sunPtr, jupiterElements);
 
   auto pointLight = std::make_unique<PointLight>(
-      glm::vec3(0.f, 0.f, 0.f),
-      glm::vec3(0.5f),
+      sunPos,
+      glm::vec3(0.05f),
       glm::vec3(1.0f),
       glm::vec3(1.0f),
+      25.f,
       1.f,
-      1.f,
-      0.09f,
-      0.032f);
+      0.00009f,
+      0.0000032f);
 
   this->addPointLight(std::move(pointLight));
 
-  auto dirLight = std::make_unique<DirectionalLight>(
-      glm::vec3(1.2f, 1.0f, 2.0f),
-      glm::vec3(0.5f),
-      glm::vec3(1.0f),
-      glm::vec3(1.0f), 1.f);
-
-  this->addDirLight(std::move(dirLight));
+  // auto dirLight = std::make_unique<DirectionalLight>(
+  //     glm::vec3(1.2f, 1.0f, 2.0f),
+  //     glm::vec3(0.5f),
+  //     glm::vec3(1.0f),
+  //     glm::vec3(1.0f), 1.f);
+  // this->addDirLight(std::move(dirLight));
 
   auto cam = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f),
                                       glm::vec3(0.0f, 0.0f, -1.0f),
@@ -212,10 +211,12 @@ void Scene::init(float width, float height)
   this->lightManager = std::make_unique<LightManager>();
 
   this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
-  this->initShaderBuffer(&this->lightManager->getDirUBO(), sizeof(DirLightGPU), GL_UNIFORM_BUFFER);
+  if (this->directionalLight)
+    this->initShaderBuffer(&this->lightManager->getDirUBO(), sizeof(DirLightGPU), GL_UNIFORM_BUFFER);
   // Multiple-lights(not supported on opengl < 4.2)
   // this->initShaderBuffer(&this->lightManager->getPointSSBO(), sizeof(PointLightGPU) * this->pointLights.size(), GL_SHADER_STORAGE_BUFFER);
-  this->initShaderBuffer(&this->lightManager->getPointUBO(), sizeof(PointLightGPU), GL_UNIFORM_BUFFER);
+  if (this->pointLights[0])
+    this->initShaderBuffer(&this->lightManager->getPointUBO(), sizeof(PointLightGPU), GL_UNIFORM_BUFFER);
 }
 
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)
@@ -256,9 +257,14 @@ void Scene::updateUBO(float aspectRatio)
   glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-  this->lightManager->updateDirUBO(*this->directionalLight.get());
+  if (this->directionalLight)
+    this->lightManager->updateDirUBO(*this->directionalLight.get());
+  else
+    this->lightManager->maskDirUBO();
   if (this->pointLights[0])
     this->lightManager->updatePointUBO(*this->pointLights[0].get());
+  else
+    this->lightManager->maskPointUBO();
 }
 void Scene::bindCameraUBO(GLuint programID)
 {
@@ -327,7 +333,9 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   shader->use();
   GLuint &coreID = shader->getId();
   this->bindCameraUBO(coreID);
+
   this->lightManager->bindDirLight(coreID);
+
   this->lightManager->bindPointLightUBO(coreID);
 
   // Render all objects
@@ -341,7 +349,9 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   asteroidShader->use();
   GLuint &asteroidID = asteroidShader->getId();
   this->bindCameraUBO(asteroidID);
+
   this->lightManager->bindDirLight(asteroidID);
+
   this->lightManager->bindPointLightUBO(asteroidID);
 
   this->asteroid_material->sendToShader(*asteroidShader);
