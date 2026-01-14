@@ -11,6 +11,8 @@ struct DirLightGPU
   glm::vec4 diffuse;
   glm::vec4 specular;
   float intensity;
+  int enabled;
+  glm::vec2 _pad0;
 };
 
 struct PointLightGPU
@@ -25,12 +27,15 @@ struct PointLightGPU
   float constant;
   float linear;
   float quadratic;
+  int enabled;
+  glm::vec3 _pad0;
 };
 
-enum UBOBindingPoints {
-    CAMERA_BINDING = 0,
-    DIR_LIGHT_BINDING = 1,
-    POINT_LIGHT_BINDING = 2
+enum UBOBindingPoints
+{
+  CAMERA_BINDING = 0,
+  DIR_LIGHT_BINDING = 1,
+  POINT_LIGHT_BINDING = 2
 };
 
 class DirectionalLight;
@@ -47,8 +52,12 @@ public:
   LightManager() = default;
   ~LightManager() = default;
 
-  void updateDirUBO(const DirectionalLight &dirLight);
-  void updatePointUBO(const PointLight &pointLight);
+  void updateDirUBO(const DirectionalLight &dirLight, int enabled = 1);
+  void updatePointUBO(const PointLight &pointLight, int enabled = 1);
+
+  void maskDirUBO();
+  void maskPointUBO();
+
   void updateSSBO(std::vector<PointLight> &pointLights);
 
   void bindDirLight(GLuint &programID);
