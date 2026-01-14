@@ -8,7 +8,6 @@ class Model;
 class Moon : public OrbitalObject, public Renderable
 {
 protected:
-
   bool useTrail = false;
 
 public:

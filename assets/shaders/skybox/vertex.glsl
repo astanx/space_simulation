@@ -1,11 +1,10 @@
 #version 410
 
+#include "ubo/camera.glsl"
+
 layout (location = 0) in vec3 vs_position;
 
 out vec3 vs_texcoord;
-
-uniform mat4 ProjectionMatrix;
-uniform mat4 ViewMatrix;
 
 void main()
 {

@@ -8,6 +8,7 @@
 #include "camera/camera.h"
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
+#include "scene/light/lightManager.h"
 #include "resources/resourceManager.h"
 #include "physics/keplerElements.h"
 
@@ -16,12 +17,20 @@ class Planet;
 class Star;
 class Moon;
 
+struct CameraGPU
+{
+  glm::mat4 ProjectionMatrix;
+  glm::mat4 ViewMatrix;
+  glm::vec4 camPosition;
+};
+
 class Scene
 {
 private:
   ResourceManager *resourceManager;
   Camera *activeCamera;
   Skybox *skybox;
+  std::unique_ptr<LightManager> lightManager;
 
   std::vector<std::unique_ptr<Model>> models;
   std::vector<std::unique_ptr<Object>> objects;
@@ -34,6 +43,12 @@ private:
 
   std::vector<std::unique_ptr<Model>> asteroids;
   Material *asteroid_material;
+
+  unsigned int dirLightUBO;
+  unsigned int pointLightUBO;
+  unsigned int cameraUBO;
+
+  void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
 public:
   Scene(ResourceManager *resourceManager);
@@ -56,12 +71,12 @@ public:
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);
 
+  void updateUBO(float aspectRatio);
+  void bindCameraUBO(GLuint programID);
+
   void update(float dt);
   void render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader, Shader *asteroidShader, Shader *trailShader);
   void renderSkybox(Shader *skyboxShader, float aspectRatio);
-
-  void sendLightsToShader(Shader &shader);
-  void sendCameraToShader(Shader &shader, float aspectRatio);
 
   // Setters
   void addModel(std::unique_ptr<Model> model);

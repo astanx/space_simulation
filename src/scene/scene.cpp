@@ -13,6 +13,18 @@
 
 #include <iostream>
 
+// Private functions
+void Scene::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType)
+{
+  glGenBuffers(1, ubo);
+  glBindBuffer(bufferType, *ubo);
+  glBufferData(
+      bufferType,
+      size,
+      nullptr,
+      GL_DYNAMIC_DRAW);
+}
+
 // Constructor/Destructor
 Scene::Scene(ResourceManager *resourceManager)
 {
@@ -22,24 +34,6 @@ Scene::Scene(ResourceManager *resourceManager)
 }
 
 // Public functions
-void Scene::sendLightsToShader(Shader &shader)
-{
-  for (auto &pointLight : this->pointLights)
-    pointLight->sendToShader(shader);
-  if (this->directionalLight)
-    this->directionalLight->sendToShader(shader);
-}
-
-void Scene::sendCameraToShader(Shader &shader, float aspectRatio)
-{
-  if (!this->activeCamera)
-    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
-
-  shader.setMat4fv(this->activeCamera->getProjectionMatrix(aspectRatio), "ProjectionMatrix");
-  shader.setMat4fv(this->activeCamera->getViewMatrix(), "ViewMatrix");
-  shader.setVec3f(this->activeCamera->getPosition(), "camPosition");
-}
-
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
                             double radius, Object *centralBody, const KeplerElements keplerElements)
 {
@@ -169,7 +163,7 @@ void Scene::init(float width, float height)
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadius, sunPtr, earthElements);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadius, earthPtr, moonElements);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadius, sunPtr, marsElements);
-  createAsteroids(10000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
+  createAsteroids(80000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadius, sunPtr, jupiterElements);
 
   auto pointLight = std::make_unique<PointLight>(
@@ -214,7 +208,16 @@ void Scene::init(float width, float height)
   auto sb = std::make_unique<Skybox>(faces);
   this->addSkybox(std::move(sb));
   this->skybox = this->skyboxes.back().get();
+
+  this->lightManager = std::make_unique<LightManager>();
+
+  this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
+  this->initShaderBuffer(&this->lightManager->getDirUBO(), sizeof(DirLightGPU), GL_UNIFORM_BUFFER);
+  // Multiple-lights(not supported on opengl < 4.2)
+  // this->initShaderBuffer(&this->lightManager->getPointSSBO(), sizeof(PointLightGPU) * this->pointLights.size(), GL_SHADER_STORAGE_BUFFER);
+  this->initShaderBuffer(&this->lightManager->getPointUBO(), sizeof(PointLightGPU), GL_UNIFORM_BUFFER);
 }
+
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)
 {
   if (!this->activeCamera)
@@ -239,6 +242,36 @@ void Scene::processMouseScroll(float yoffset)
   this->activeCamera->processMouseScroll(yoffset);
 }
 
+void Scene::updateUBO(float aspectRatio)
+{
+  if (!this->activeCamera)
+    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
+
+  CameraGPU camUBO{};
+  camUBO.ProjectionMatrix = this->activeCamera->getProjectionMatrix(aspectRatio);
+  camUBO.ViewMatrix = this->activeCamera->getViewMatrix();
+  camUBO.camPosition = glm::vec4(this->activeCamera->getPosition(), 1.0);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, this->cameraUBO);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+  this->lightManager->updateDirUBO(*this->directionalLight.get());
+  if (this->pointLights[0])
+    this->lightManager->updatePointUBO(*this->pointLights[0].get());
+}
+void Scene::bindCameraUBO(GLuint programID)
+{
+  GLuint blockIndex =
+      glGetUniformBlockIndex(programID, "Camera");
+
+  if (blockIndex != GL_INVALID_INDEX)
+  {
+    glUniformBlockBinding(programID, blockIndex, CAMERA_BINDING);
+  }
+  glBindBufferBase(GL_UNIFORM_BUFFER, CAMERA_BINDING, cameraUBO);
+}
+
 void Scene::update(float dt)
 {
   dt *= TIME_SCALE;
@@ -258,14 +291,10 @@ void Scene::update(float dt)
 void Scene::renderSkybox(Shader *skyboxShader, float aspectRatio)
 {
   skyboxShader->use();
+  GLuint &skyboxID = skyboxShader->getId();
+  this->bindCameraUBO(skyboxID);
 
   glCullFace(GL_FRONT);
-
-  glm::mat4 view = glm::mat4(glm::mat3(this->activeCamera->getViewMatrix()));
-  glm::mat4 projection = this->activeCamera->getProjectionMatrix(aspectRatio);
-
-  skyboxShader->setMat4fv(view, "ViewMatrix");
-  skyboxShader->setMat4fv(projection, "ProjectionMatrix");
 
   this->skybox->render(skyboxShader);
 
@@ -273,6 +302,7 @@ void Scene::renderSkybox(Shader *skyboxShader, float aspectRatio)
 
   skyboxShader->unuse();
 }
+
 void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader, Shader *asteroidShader, Shader *trailShader)
 {
   if (!activeCamera)
@@ -282,9 +312,12 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   if (framebufferHeight > 0)
     aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
   this->update(dt);
+  this->updateUBO(aspect);
 
   trailShader->use();
-  sendCameraToShader(*trailShader, aspect);
+  GLuint &trailID = trailShader->getId();
+  this->bindCameraUBO(trailID);
+
   for (auto &trail : this->trails)
   {
     trail->render();
@@ -292,11 +325,10 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   trailShader->unuse();
 
   shader->use();
-
-  // Send camera
-  sendCameraToShader(*shader, aspect);
-  // Send lights
-  sendLightsToShader(*shader);
+  GLuint &coreID = shader->getId();
+  this->bindCameraUBO(coreID);
+  this->lightManager->bindDirLight(coreID);
+  this->lightManager->bindPointLightUBO(coreID);
 
   // Render all objects
   for (auto &object : this->objects)
@@ -307,8 +339,11 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   shader->unuse();
 
   asteroidShader->use();
-  sendCameraToShader(*asteroidShader, aspect);
-  sendLightsToShader(*asteroidShader);
+  GLuint &asteroidID = asteroidShader->getId();
+  this->bindCameraUBO(asteroidID);
+  this->lightManager->bindDirLight(asteroidID);
+  this->lightManager->bindPointLightUBO(asteroidID);
+
   this->asteroid_material->sendToShader(*asteroidShader);
 
   for (auto &asteroid : this->asteroids)

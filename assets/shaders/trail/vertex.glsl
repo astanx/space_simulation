@@ -1,9 +1,8 @@
 #version 410
 
-layout (location = 0) in vec3 vertex_position;
+#include "ubo/camera.glsl"
 
-uniform mat4 ViewMatrix;
-uniform mat4 ProjectionMatrix;
+layout (location = 0) in vec3 vertex_position;
 
 void main()
 { 
