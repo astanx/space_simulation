@@ -1,6 +1,7 @@
 #version 410
 
 #include "material/material.glsl"
+#include "gamma/gamma_correction.glsl"
 #include "ubo/dir_light.glsl"
 #include "ssbo/point_light.glsl"
 
@@ -43,5 +44,5 @@ void main()
     );
   }
 
-  fs_color = result;
+  fs_color = gammaCorrection(result);
 }

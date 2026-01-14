@@ -1,6 +1,8 @@
 #ifndef MATERIAL_GLSL
 #define MATERIAL_GLSL
 
+#include "gamma/gamma_correction.glsl"
+
 struct Material
 {
   vec3 ambient;
