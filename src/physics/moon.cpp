@@ -28,7 +28,6 @@ void Moon::addModel(std::unique_ptr<Model> model)
   this->model->setPosition(this->position * VISUAL_SCALE);
 };
 
-
 std::unique_ptr<Trail> Moon::generateTrail()
 {
   std::vector<glm::dvec3> trailVec;

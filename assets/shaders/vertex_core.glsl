@@ -1,5 +1,7 @@
 #version 410
 
+#include "ubo/camera.glsl"
+
 layout (location = 0) in vec3 vertex_position;
 layout (location = 1) in vec2 vertex_texcoord;
 layout (location = 2) in vec3 vertex_normal;
@@ -13,9 +15,6 @@ out VS_OUT {
 } vs_out;
 
 uniform mat4 ModelMatrix;
-uniform mat4 ViewMatrix;
-uniform mat4 ProjectionMatrix;
-
 uniform bool useModelMatrix;
 
 mat4 getModelMatrix()

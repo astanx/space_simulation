@@ -13,4 +13,6 @@ public:
 
   void sendToShader(Shader &program) override;
   void changeDirection(glm::vec3 direction);
+
+  inline const glm::vec3 &getDirection() const { return this->direction; }
 };

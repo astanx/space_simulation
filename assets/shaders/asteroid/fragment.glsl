@@ -1,7 +1,5 @@
 #version 410
 
-#include "lighting/dir_light.glsl"
-
 out vec4 fs_color;
 
 in VS_OUT {
@@ -11,7 +9,6 @@ in VS_OUT {
 } fs_in;
 
 uniform sampler2D diffuseTexture;
-uniform DirLight dirLight;
 
 void main()
 {

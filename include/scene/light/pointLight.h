@@ -17,4 +17,9 @@ public:
 
   void sendToShader(Shader &program) override;
   void move(glm::vec3 position);
+
+  inline const glm::vec3 &getPosition() const { return this->position; }
+  inline float getConstant() const { return this->constant; }
+  inline float getLinear() const { return this->linear; }
+  inline float getQuadratic() const { return this->quadratic; }
 };

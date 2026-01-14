@@ -2,7 +2,7 @@
 #include "graphics/shader.h"
 #include "graphics/texture.h"
 
-// Private functions
+#include <iostream>
 
 // Constructor and Destructor
 PhongMaterial::PhongMaterial(

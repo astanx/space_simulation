@@ -4,25 +4,27 @@
 #include "material/material.glsl"
 
 struct DirLight {
-  vec3 direction;
+  vec4 direction;
+  vec4 ambient;
+  vec4 diffuse;
+  vec4 specular;
+
   float intensity;  
-  vec3 ambient;
-  vec3 diffuse;
-  vec3 specular;
+  vec3 _pad0;
 };  
 
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material mat, vec3 albedo, vec3 specularMap)
+vec4 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material mat, vec3 albedo, vec3 specularMap)
 {
-    vec3 lightDir = normalize(-light.direction);
+    vec3 lightDir = normalize(-light.direction.xyz);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), mat.shininess);
     // combine results
-    vec3 ambient  = light.ambient  * albedo;
-    vec3 diffuse  = light.diffuse  * diff * albedo;
-    vec3 specular = light.specular * spec * specularMap;
+    vec4 ambient  = light.ambient  * vec4(albedo, 1.0);
+    vec4 diffuse  = light.diffuse  * diff * vec4(albedo, 1.0);
+    vec4 specular = light.specular * spec * vec4(specularMap, 1.0);
     return (ambient + diffuse + specular) * light.intensity;
 } 
 

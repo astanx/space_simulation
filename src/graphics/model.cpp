@@ -133,10 +133,6 @@ void Model::render(Shader *shader)
 
 void Model::renderInstanced(Shader *shader)
 {
-  // Update uniforms
-  // this->updateModelMatrix();
-  // this->updateUniforms(shader);
-
   // Render objects
   // if (this->overrideTextureDiffuse != nullptr)
   //   this->overrideTextureDiffuse->bind(0);

@@ -55,6 +55,7 @@ add_executable(Space
     src/scene/light/light.cpp
     src/scene/light/pointLight.cpp
     src/scene/light/directionalLight.cpp
+    src/scene/light/lightManager.cpp
     src/scene/scene.cpp
     src/graphics/model.cpp
     src/resources/OBJloader.cpp

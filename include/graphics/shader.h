@@ -26,6 +26,8 @@ public:
 
   ~Shader();
 
+  inline GLuint &getId() { return this->id; }
+
   void use();
 
   void unuse();
