@@ -17,7 +17,8 @@ enum class VertexLayout
 
 struct InstanceData
 {
-  glm::mat4 ModelMatrix;
+  glm::vec3 position;
+  // glm::mat4 ModelMatrix;
 };
 
 class Mesh
@@ -46,11 +47,14 @@ public:
 
   Mesh(std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
 
-  void setInstancedBuffer(const std::vector<InstanceData> &instancedData);
+  void setInstanceBuffer(const std::vector<InstanceData> &instanceData);
+  void updateInstanceBuffer(const std::vector<InstanceData> &instanceData);
 
   Mesh(const Mesh &obj);
   ~Mesh();
 
   void render();
   void renderInstanced();
+
+  double calculateVolume();
 };

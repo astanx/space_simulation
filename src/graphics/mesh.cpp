@@ -36,7 +36,7 @@ void Mesh::initVAO()
     // Normal attribute
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, normal));
     glEnableVertexAttribArray(2);
-  } 
+  }
   if (this->layout == VertexLayout::Full)
   {
     // Color attribute
@@ -133,7 +133,7 @@ Mesh::~Mesh()
 }
 
 // Functions
-void Mesh::setInstancedBuffer(const std::vector<InstanceData> &instancedData)
+void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
 {
   if (!instancingInitialized)
   {
@@ -141,7 +141,7 @@ void Mesh::setInstancedBuffer(const std::vector<InstanceData> &instancedData)
     instancingInitialized = true;
   }
 
-  this->instanceCount = static_cast<unsigned int>(instancedData.size());
+  this->instanceCount = static_cast<unsigned int>(instanceData.size());
 
   glBindVertexArray(this->VAOS[this->layout]);
   glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
@@ -149,25 +149,45 @@ void Mesh::setInstancedBuffer(const std::vector<InstanceData> &instancedData)
   glBufferData(
       GL_ARRAY_BUFFER,
       this->instanceCount * sizeof(InstanceData),
-      instancedData.data(),
-      GL_STATIC_DRAW);
+      instanceData.data(),
+      GL_DYNAMIC_DRAW);
 
   constexpr GLuint INSTANCE_ATTRIB_START = 3;
 
-  for (int i = 0; i < 4; i++)
-  {
-    glEnableVertexAttribArray(INSTANCE_ATTRIB_START + i);
+  // for (int i = 0; i < 4; i++)
+  // {
+  //   glEnableVertexAttribArray(INSTANCE_ATTRIB_START + i);
+  //   glVertexAttribPointer(
+  //       INSTANCE_ATTRIB_START + i,
+  //       4,
+  //       GL_FLOAT,
+  //       GL_FALSE,
+  //       sizeof(InstanceData),
+  //       (void *)(sizeof(glm::vec4) * i));
+  //   glVertexAttribDivisor(INSTANCE_ATTRIB_START + i, 1);
+  // }
+
+   glEnableVertexAttribArray(INSTANCE_ATTRIB_START);
     glVertexAttribPointer(
-        INSTANCE_ATTRIB_START + i,
-        4,
+        INSTANCE_ATTRIB_START,
+        3,
         GL_FLOAT,
         GL_FALSE,
-        sizeof(InstanceData),
-        (void *)(sizeof(glm::vec4) * i));
-    glVertexAttribDivisor(INSTANCE_ATTRIB_START + i, 1);
-  }
+        sizeof(InstanceData), 0);
+    glVertexAttribDivisor(INSTANCE_ATTRIB_START, 1);
 
   glBindVertexArray(0);
+}
+
+void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
+{
+  glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
+
+  glBufferSubData(
+      GL_ARRAY_BUFFER,
+      0,
+      instanceCount * sizeof(InstanceData),
+      instanceData.data());
 }
 
 void Mesh::render()
@@ -198,4 +218,20 @@ void Mesh::renderInstanced()
         this->instanceCount);
 
   glBindVertexArray(0);
+}
+
+double Mesh::calculateVolume()
+{
+  double volume = 0.0;
+
+  for (size_t i = 0; i < nrOfIndices; i += 3)
+  {
+    const glm::vec3 &v0 = vertices[indices[i]].position;
+    const glm::vec3 &v1 = vertices[indices[i + 1]].position;
+    const glm::vec3 &v2 = vertices[indices[i + 2]].position;
+
+    volume += glm::dot(v0, glm::cross(v1, v2));
+  }
+
+  return std::abs(volume) / 6.0;
 }

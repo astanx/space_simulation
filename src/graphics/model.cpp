@@ -131,14 +131,8 @@ void Model::render(Shader *shader)
     this->overrideTextureSpecular->unbind();
 }
 
-void Model::renderInstanced(Shader *shader)
+void Model::renderInstanced()
 {
-  // Render objects
-  // if (this->overrideTextureDiffuse != nullptr)
-  //   this->overrideTextureDiffuse->bind(0);
-  // if (this->overrideTextureSpecular != nullptr)
-  //   this->overrideTextureSpecular->bind(1);
-
   for (auto &mesh : this->meshes)
   {
     mesh->renderInstanced();
@@ -146,10 +140,6 @@ void Model::renderInstanced(Shader *shader)
 
   // Unbind everything
   glBindVertexArray(0);
-  // if (this->overrideTextureDiffuse != nullptr)
-  //   this->overrideTextureDiffuse->unbind();
-  // if (this->overrideTextureSpecular != nullptr)
-  //   this->overrideTextureSpecular->unbind();
 }
 
 void Model::scaleBy(const glm::vec3 &scale)

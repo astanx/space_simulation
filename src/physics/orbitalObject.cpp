@@ -42,8 +42,9 @@ glm::dvec3 OrbitalObject::orbitalToInertial(double nu)
 }
 
 // Constructor
-OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements, bool useTrail) : Object(mu, radius)
+OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements, bool useTrail) : Object(mu / G, radius)
 {
+  this->mu = mu;
   this->useTrail = useTrail;
   this->orbit = std::make_unique<Orbit>(centralBody, keplerElements);
   this->position = orbitalToInertial(0.0); // at periapsis

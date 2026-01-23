@@ -6,9 +6,9 @@
 #include <iostream>
 
 // Constructor
-Object::Object(double mu, double radius, glm::dvec3 position, glm::dvec3 velocity)
+Object::Object(double mass, double radius, glm::dvec3 position, glm::dvec3 velocity)
 {
-  this->mu = mu;
+  this->mass = mass;
   this->radius = radius;
   this->position = position;
   this->velocity = velocity;
@@ -47,8 +47,16 @@ glm::dvec3 Object::getAcceleration() const
 {
   return this->acceleration;
 }
+double Object::getMass() const
+{
+  return this->mass;
+}
 double Object::getMu() const
 {
+  if (!this->mu)
+  {
+    std::cerr << "ERROR:OBJECT:NO_MU" << std::endl;
+  }
   return this->mu;
 }
 double Object::getRadius() const

@@ -1,11 +1,11 @@
-#include "graphics/primitives/asteroid.h"
+#include "graphics/primitives/asteroidShape.h"
 #include "graphics/vertex.h"
 
 #include <vector>
 #include <cmath>
 
 // Private function
-double Asteroid::calculateR(double angle, double m, double a, double b, double n1, double n2, double n3)
+double AsteroidShape::calculateR(double angle, double m, double a, double b, double n1, double n2, double n3)
 {
   double term1 = std::pow(std::fabs(std::cos(m * angle / 4) / a), n2);
   double term2 = std::pow(std::fabs(std::sin(m * angle / 4) / b), n3);
@@ -13,7 +13,7 @@ double Asteroid::calculateR(double angle, double m, double a, double b, double n
 }
 
 // Constructor
-Asteroid::Asteroid(double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3)
+AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3)
     : Primitive()
 {
   std::vector<Vertex> vertices;

@@ -1,6 +1,5 @@
 #include "scene/scene.h"
 #include "graphics/shader.h"
-#include "graphics/primitives/asteroid.h"
 #include "graphics/primitives/sphere.h"
 #include "graphics/mesh.h"
 #include "physics/planet.h"
@@ -88,70 +87,14 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   return ptr;
 }
 
-void Scene::createAsteroids(unsigned amount,
-                            double innerEdge,
-                            double outerEdge)
+AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge)
 {
-  std::vector<std::unique_ptr<Asteroid>> asteroids;
-  asteroids.push_back(std::make_unique<Asteroid>(24, 12, 2.0, 1.0, 1.0, 0.75, 0.85, 0.65));
-  asteroids.push_back(std::make_unique<Asteroid>(20, 10, 2.2, 1.0, 1.1, 0.70, 0.80, 0.60));
-  asteroids.push_back(std::make_unique<Asteroid>(16, 8, 3.0, 1.0, 1.2, 0.65, 0.75, 0.55));
-  asteroids.push_back(std::make_unique<Asteroid>(4, 7, 2.5, 1.1, 1.3, 0.60, 0.70, 0.50));
-  asteroids.push_back(std::make_unique<Asteroid>(12, 6, 4.0, 1.2, 1.4, 0.55, 0.65, 0.45));
-
-  for (int i = 0; i < asteroids.size(); i++)
-  {
-    resourceManager->LoadMesh(Res::ASTEROID + "_" + std::to_string(i), std::move(asteroids[i]), VertexLayout::Instanced);
-  }
-
-  this->asteroid_material = resourceManager->GetMaterial(Res::ASTEROID_MATERIAL);
-
-  std::vector<std::vector<InstanceData>> instances(asteroids.size());
-
-  std::srand(static_cast<unsigned>(std::time(nullptr)));
-
-  for (double i = 0; i < amount; i++)
-  {
-    unsigned type = std::rand() % asteroids.size();
-
-    double radius =
-        MINIMUM_ASTEROID_RADIUS +
-        (MAXIMUM_ASTEROID_RADIUS - MINIMUM_ASTEROID_RADIUS) *
-            (std::rand() / (double)RAND_MAX) *
-            VISUAL_RADIUS_SCALE;
-
-    if (radius < 0.01)
-      continue;
-
-    double angle = (std::rand() / (double)RAND_MAX) * 2.0 * M_PI;
-    double distance =
-        innerEdge + (outerEdge - innerEdge) * (std::rand() / (double)RAND_MAX);
-
-    double height = (std::rand() / (double)RAND_MAX - 0.5) * AU_TO_METER;
-
-    glm::dvec3 pos;
-    pos.x = cos(angle) * distance;
-    pos.z = sin(angle) * distance;
-    pos.y = height;
-    pos *= VISUAL_SCALE;
-
-    glm::mat4 model(1.0f);
-    model = glm::translate(model, glm::vec3(pos));
-    model = glm::scale(model, glm::vec3(radius));
-
-    instances[type].emplace_back(InstanceData{model});
-  }
-
-  for (unsigned type = 0; type < asteroids.size(); type++)
-  {
-    if (!instances[type].empty())
-    {
-      Mesh *mesh = resourceManager->GetMesh(Res::ASTEROID + "_" + std::to_string(type));
-      mesh->setInstancedBuffer(instances[type]);
-      std::cout << "Asteroids of type " << type << ": " << instances[type].size() << std::endl;
-      this->asteroids.push_back(std::make_unique<Model>(glm::dvec3(0.0), asteroid_material, mesh));
-    }
-  }
+  std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(centralBody, amount,
+                                                                            innerEdge, outerEdge,
+                                                                            this->resourceManager->GetMaterial(Res::ASTEROID_MATERIAL));
+  AsteroidSystem *ptr = system.get();
+  this->asteroidSystems.push_back(std::move(system));
+  return ptr;
 }
 
 // Process functions
@@ -163,7 +106,7 @@ void Scene::init(float width, float height)
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadius, sunPtr, earthElements);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadius, earthPtr, moonElements);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadius, sunPtr, marsElements);
-  createAsteroids(50000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
+  createAsteroidSystem(sunPtr, 10000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadius, sunPtr, jupiterElements);
 
   auto pointLight = std::make_unique<PointLight>(
@@ -282,15 +225,25 @@ void Scene::update(float dt)
 {
   dt *= TIME_SCALE;
   for (size_t i = 0; i < objects.size(); ++i)
+  {
     for (size_t j = i + 1; j < objects.size(); ++j)
     {
       objects[i]->applyGravitation(*objects[j]);
       objects[j]->applyGravitation(*objects[i]);
     }
-
+  }
   for (auto &object : this->objects)
   {
     object->update(dt);
+  }
+
+  for (auto &asteroidSystem : this->asteroidSystems)
+  {
+    asteroidSystem->update(dt);
+    for (size_t i = 0; i < objects.size(); ++i)
+    {
+      asteroidSystem->applyObjectGravitation(objects[i].get());
+    }
   }
 }
 
@@ -351,14 +304,11 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   this->bindCameraUBO(asteroidID);
 
   this->lightManager->bindDirLight(asteroidID);
-
   this->lightManager->bindPointLightUBO(asteroidID);
 
-  this->asteroid_material->sendToShader(*asteroidShader);
-
-  for (auto &asteroid : this->asteroids)
+  for (auto &asteroidSystem : asteroidSystems)
   {
-    asteroid->renderInstanced(asteroidShader);
+    asteroidSystem->render(asteroidShader);
   }
 
   asteroidShader->unuse();
