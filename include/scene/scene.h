@@ -11,6 +11,7 @@
 #include "scene/light/lightManager.h"
 #include "resources/resourceManager.h"
 #include "physics/keplerElements.h"
+#include "physics/asteroidSystem.h"
 
 class Shader;
 class Planet;
@@ -41,8 +42,7 @@ private:
   std::vector<std::unique_ptr<PointLight>> pointLights;
   std::unique_ptr<DirectionalLight> directionalLight;
 
-  std::vector<std::unique_ptr<Model>> asteroids;
-  Material *asteroid_material;
+  std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
 
   unsigned int dirLightUBO;
   unsigned int pointLightUBO;
@@ -63,7 +63,7 @@ public:
   Moon *createMoon(std::string name, std::string material_name, double mu,
                    double radius, Planet *centralBody, const KeplerElements keplerElements);
 
-  void createAsteroids(unsigned amount, double innerEdge, double outerEdge);
+  AsteroidSystem *createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge);
 
   // Process functions
   void init(float width, float height);
@@ -86,6 +86,7 @@ public:
   void addDirLight(std::unique_ptr<DirectionalLight> directionalLight);
   void addCamera(std::unique_ptr<Camera> camera);
   void addSkybox(std::unique_ptr<Skybox> skybox);
+
   // Getters
   Camera &getActiveCamera();
   const glm::vec3 getActiveCameraPosition() const;

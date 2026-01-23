@@ -50,7 +50,7 @@ add_executable(Space
     src/graphics/primitives/cube.cpp
     src/graphics/primitives/circle.cpp
     src/graphics/primitives/sphere.cpp
-    src/graphics/primitives/asteroid.cpp
+    src/graphics/primitives/asteroidShape.cpp
     src/graphics/mesh.cpp
     src/scene/light/light.cpp
     src/scene/light/pointLight.cpp
@@ -68,7 +68,10 @@ add_executable(Space
     src/physics/star.cpp
     src/physics/trail.cpp
     src/physics/orbitalObject.cpp
+    src/physics/asteroidSystem.cpp
+    src/physics/asteroid.cpp
     src/maths/rk4.cpp
+    src/maths/random.cpp
 )
 
 # Link libraries

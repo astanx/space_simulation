@@ -4,11 +4,32 @@
 
 const double AU_TO_METER = 1.49597870700e11;
 
-const double INNER_ASTEROID_BELT_EDGE = 2.2 * AU_TO_METER;
-const double OUTER_ASTEROID_BELT_EDGE = 3.2 * AU_TO_METER;
+const double INNER_ASTEROID_BELT_EDGE = 2.1 * AU_TO_METER;
+const double OUTER_ASTEROID_BELT_EDGE = 3.3 * AU_TO_METER;
 
-extern const double MINIMUM_ASTEROID_RADIUS = 1;
-extern const double MAXIMUM_ASTEROID_RADIUS = 500000;
+// Meters
+const double MINIMUM_ASTEROID_RADIUS = 1.0;
+const double MAXIMUM_ASTEROID_RADIUS = 500000.0;
+
+// kg/m^3
+const double MINIMUM_ASTEROID_DENSITY = 1000.0;
+const double MAXIMUM_ASTEROID_DENSITY = 8000.0;
+
+const KeplerElements MINIMUM_ASTEROID_ELEMENTS(
+    INNER_ASTEROID_BELT_EDGE, // Should not be used
+    0.0,
+    glm::radians(0.0),
+    glm::radians(0.0),
+    glm::radians(0.0),
+    glm::radians(0.0));
+
+const KeplerElements MAXIMUM_ASTEROID_ELEMENTS(
+    OUTER_ASTEROID_BELT_EDGE, // Should not be used
+    0.4,
+    glm::radians(30.0),
+    glm::radians(360.0),
+    glm::radians(360.0),
+    glm::radians(360.0));
 
 // VISUAL SCALING
 const double VISUAL_SCALE = 1e-8;

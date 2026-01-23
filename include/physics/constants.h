@@ -48,8 +48,15 @@ extern const KeplerElements neptuneElements;
 extern const double VISUAL_SCALE;
 extern const double VISUAL_RADIUS_SCALE;
 
+// Asteroids
 extern const double INNER_ASTEROID_BELT_EDGE;
 extern const double OUTER_ASTEROID_BELT_EDGE;
 
 extern const double MINIMUM_ASTEROID_RADIUS;
 extern const double MAXIMUM_ASTEROID_RADIUS;
+
+extern const double MINIMUM_ASTEROID_DENSITY;
+extern const double MAXIMUM_ASTEROID_DENSITY;
+
+extern const KeplerElements MINIMUM_ASTEROID_ELEMENTS;
+extern const KeplerElements MAXIMUM_ASTEROID_ELEMENTS;

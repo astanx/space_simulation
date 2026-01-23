@@ -11,17 +11,19 @@ protected:
   glm::dvec3 renderPosition;
   glm::dvec3 velocity;
   glm::dvec3 acceleration;
+  double mass;
   double mu;
   double radius;
 
 public:
-  Object(double mu, double radius, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
+  Object(double mass, double radius, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
   virtual ~Object() = default;
 
   glm::dvec3 getPosition() const;
   glm::dvec3 getRenderPosition() const;
   glm::dvec3 getVelocity() const;
   glm::dvec3 getAcceleration() const;
+  double getMass() const;
   double getMu() const;
   double getRadius() const;
 
