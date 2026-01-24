@@ -79,7 +79,8 @@ Application::Application(
                                                                                                                                    GLmajor(GLmajor),
                                                                                                                                    GLminor(GLminor),
                                                                                                                                    resourceManager(),
-                                                                                                                                   scene(&resourceManager)
+                                                                                                                                   threadPool(std::thread::hardware_concurrency()),
+                                                                                                                                   scene(resourceManager, threadPool)
 
 {
   // Init variables
@@ -207,9 +208,9 @@ void Application::loadCircularObject(std::string name, std::string diffuse_name,
 {
   Texture *diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
   this->resourceManager.LoadPhongMaterial(material_name, glm::vec3(0.1f),
-                                     glm::vec3(0.9f, 0.5f, 0.4f),
-                                     glm::vec3(0.3f),
-                                     diff, nullptr, 32.f);
+                                          glm::vec3(0.9f, 0.5f, 0.4f),
+                                          glm::vec3(0.3f),
+                                          diff, nullptr, 32.f);
   auto obj = std::make_unique<Sphere>(segments, radius * VISUAL_RADIUS_SCALE);
   this->resourceManager.LoadMesh(name, std::move(obj), VertexLayout::Full);
 }

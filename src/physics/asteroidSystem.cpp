@@ -49,7 +49,7 @@ Asteroid *AsteroidSystem::createAsteroid()
   Asteroid *ptr = asteroid.get();
 
   {
-    std::lock_guard<std::mutex> lock(this->mtx);
+    std::lock_guard<std::mutex> lock(this->threadPool.getMutex());
     this->instances[type].emplace_back(InstanceData{asteroid->getRenderPosition()});
     this->asteroids[type].emplace_back(std::move(asteroid));
   }
@@ -81,17 +81,12 @@ void AsteroidSystem::createAsteroids(unsigned amount)
     meshVolumes.push_back(mesh->calculateVolume());
   }
 
-  unsigned int threadCount = std::thread::hardware_concurrency();
-  if (threadCount == 0)
-    threadCount = 1;
-
-  std::vector<std::thread> threads;
-  threads.reserve(threadCount);
+  unsigned threadCount = this->threadPool.getThreadCount();
   unsigned perThread = amount / threadCount;
   unsigned remaining = amount % threadCount;
   for (unsigned int i = 0; i < threadCount; i++)
   {
-    threads.emplace_back([this, perThread]()
+    this->threadPool.enqueue([this, perThread]()
                          { 
         std::cout << "Creating asteroids in thread " << std::this_thread::get_id() << std::endl; 
         for (unsigned j = 0; j < perThread; j++) 
@@ -103,13 +98,10 @@ void AsteroidSystem::createAsteroids(unsigned amount)
     this->createAsteroid();
   }
 
-  for (auto &t : threads)
-  {
-    t.join();
-  }
+  this->threadPool.wait();
 
   std::cout << "Finished creating asteroids." << std::endl;
-  
+
   // for (size_t i = 0; i < amount; i++)
   // {
 
@@ -134,7 +126,7 @@ void AsteroidSystem::createAsteroids(unsigned amount)
 }
 
 // Constructor
-AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material)
+AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool) : threadPool(threadPool)
 {
   this->asteroid_material = material;
   this->centralBody = centralBody;

@@ -2,6 +2,7 @@
 
 #include "scene/scene.h"
 #include "resources/resourceManager.h"
+#include "resources/threadPool.h"
 
 #include <vector>
 #include <GL/glew.h>
@@ -31,8 +32,9 @@ private:
   const int GLmajor;
   const int GLminor;
 
-  // Resource manager
+  // Resource management
   ResourceManager resourceManager;
+  ThreadPool threadPool;
 
   // Scene
   Scene scene;

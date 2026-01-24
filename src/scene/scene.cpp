@@ -25,9 +25,8 @@ void Scene::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType)
 }
 
 // Constructor/Destructor
-Scene::Scene(ResourceManager *resourceManager)
+Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadPool(threadPool), resourceManager(resourceManager)
 {
-  this->resourceManager = resourceManager;
   this->activeCamera = nullptr;
   this->skybox = nullptr;
 }
@@ -36,8 +35,8 @@ Scene::Scene(ResourceManager *resourceManager)
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
                             double radius, Object *centralBody, const KeplerElements keplerElements)
 {
-  Mesh *mesh = this->resourceManager->GetMesh(name);
-  Material *mat = this->resourceManager->GetMaterial(material_name);
+  Mesh *mesh = this->resourceManager.GetMesh(name);
+  Material *mat = this->resourceManager.GetMaterial(material_name);
   auto model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
   std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radius, keplerElements);
@@ -54,8 +53,8 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
 Star *Scene::createStar(std::string name, std::string material_name, double mu,
                         double radius, glm::dvec3 position, glm::dvec3 velocity)
 {
-  Mesh *mesh = this->resourceManager->GetMesh(name);
-  Material *mat = this->resourceManager->GetMaterial(material_name);
+  Mesh *mesh = this->resourceManager.GetMesh(name);
+  Material *mat = this->resourceManager.GetMaterial(material_name);
   auto model = std::make_unique<Model>(position, mat, mesh);
 
   std::unique_ptr<Star> star = std::make_unique<Star>(mu, radius, position, velocity);
@@ -70,8 +69,8 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
                         double radius, Planet *centralBody, const KeplerElements keplerElements)
 {
-  Mesh *mesh = this->resourceManager->GetMesh(name);
-  Material *mat = this->resourceManager->GetMaterial(material_name);
+  Mesh *mesh = this->resourceManager.GetMesh(name);
+  Material *mat = this->resourceManager.GetMaterial(material_name);
   auto model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
   std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, keplerElements);
@@ -91,7 +90,7 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
 {
   std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(centralBody, amount,
                                                                             innerEdge, outerEdge,
-                                                                            this->resourceManager->GetMaterial(Res::ASTEROID_MATERIAL));
+                                                                            this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
   AsteroidSystem *ptr = system.get();
   this->asteroidSystems.push_back(std::move(system));
   return ptr;

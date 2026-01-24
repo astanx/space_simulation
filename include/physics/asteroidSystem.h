@@ -1,6 +1,7 @@
 #pragma once
 
 #include "physics/asteroid.h"
+#include "resources/threadPool.h"
 
 #include <vector>
 
@@ -12,8 +13,8 @@ class Asteroid;
 class AsteroidSystem
 {
 private:
-std::mutex mtx;
-std::vector<double> meshVolumes;
+  ThreadPool &threadPool;
+  std::vector<double> meshVolumes;
 
   std::vector<std::vector<std::unique_ptr<Asteroid>>> asteroids;
   Material *asteroid_material;
@@ -31,7 +32,7 @@ std::vector<double> meshVolumes;
   void createAsteroids(unsigned amount);
 
 public:
-  AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material);
+  AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool);
   ~AsteroidSystem() = default;
 
   void applyObjectGravitation(Object *object);
