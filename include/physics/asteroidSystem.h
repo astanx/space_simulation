@@ -12,6 +12,9 @@ class Asteroid;
 class AsteroidSystem
 {
 private:
+std::mutex mtx;
+std::vector<double> meshVolumes;
+
   std::vector<std::vector<std::unique_ptr<Asteroid>>> asteroids;
   Material *asteroid_material;
 
