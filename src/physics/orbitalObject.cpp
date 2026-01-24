@@ -53,8 +53,8 @@ OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, cons
   {
     this->velocity = this->orbit->calculateOrbitalVelocity(centralBody, this);
     this->velocity += this->orbit->getCentralBody()->getVelocity();
-    if (this->useTrail)
-      generateTrail();
+    // if (this->useTrail)
+    //   generateTrail();
   }
 }
 

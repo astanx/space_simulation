@@ -25,7 +25,7 @@ KeplerElements AsteroidSystem::createRandomKeplerElements()
 
 Asteroid *AsteroidSystem::createAsteroid()
 {
-  unsigned type = generateRandom(0, this->asteroids.size() - 1);
+  unsigned type = generateRandom(0u, static_cast<unsigned>(this->meshes.size() - 1));
 
   double radius = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
 
@@ -42,17 +42,17 @@ Asteroid *AsteroidSystem::createAsteroid()
   // pos.y = height;
 
   double density = generateRandom(MINIMUM_ASTEROID_DENSITY, MAXIMUM_ASTEROID_DENSITY);
-
-  double mu = density * this->meshes[type]->calculateVolume() / VISUAL_RADIUS_SCALE * G;
+  double mu = density * this->meshVolumes[type] / VISUAL_RADIUS_SCALE * G;
 
   std::unique_ptr<Asteroid> asteroid = std::make_unique<Asteroid>(this->centralBody, mu, radius, this->createRandomKeplerElements());
 
   Asteroid *ptr = asteroid.get();
 
-  this->instances[type].emplace_back(InstanceData{asteroid->getRenderPosition()});
-  this->asteroids[type].push_back(std::move(asteroid));
-
-  std::this_thread::sleep_for(std::chrono::microseconds(1));
+  {
+    std::lock_guard<std::mutex> lock(this->mtx);
+    this->instances[type].emplace_back(InstanceData{asteroid->getRenderPosition()});
+    this->asteroids[type].emplace_back(std::move(asteroid));
+  }
 
   return ptr;
 }
@@ -76,18 +76,50 @@ void AsteroidSystem::createAsteroids(unsigned amount)
     this->meshes.push_back(std::make_unique<Mesh>(std::move(asteroid), VertexLayout::Instanced));
   }
 
-
-
-  for (size_t i = 0; i < amount; i++)
+  for (auto &mesh : meshes)
   {
-
-    Asteroid *asteroid = createAsteroid();
-
-    // glm::mat4 model(1.0f);
-    // model = glm::translate(model, glm::vec3(asteroid->getRenderPosition()));
-    // model = glm::scale(model, glm::vec3(asteroid->getRadius() * VISUAL_RADIUS_SCALE));
-    // this->instances[type].emplace_back(InstanceData{model});
+    meshVolumes.push_back(mesh->calculateVolume());
   }
+
+  unsigned int threadCount = std::thread::hardware_concurrency();
+  if (threadCount == 0)
+    threadCount = 1;
+
+  std::vector<std::thread> threads;
+  threads.reserve(threadCount);
+  unsigned perThread = amount / threadCount;
+  unsigned remaining = amount % threadCount;
+  for (unsigned int i = 0; i < threadCount; i++)
+  {
+    threads.emplace_back([this, perThread]()
+                         { 
+        std::cout << "Creating asteroids in thread " << std::this_thread::get_id() << std::endl; 
+        for (unsigned j = 0; j < perThread; j++) 
+          this->createAsteroid(); });
+  }
+
+  for (unsigned i = 0; i < remaining; i++)
+  {
+    this->createAsteroid();
+  }
+
+  for (auto &t : threads)
+  {
+    t.join();
+  }
+
+  std::cout << "Finished creating asteroids." << std::endl;
+  
+  // for (size_t i = 0; i < amount; i++)
+  // {
+
+  //   Asteroid *asteroid = createAsteroid();
+
+  //   // glm::mat4 model(1.0f);
+  //   // model = glm::translate(model, glm::vec3(asteroid->getRenderPosition()));
+  //   // model = glm::scale(model, glm::vec3(asteroid->getRadius() * VISUAL_RADIUS_SCALE));
+  //   // this->instances[type].emplace_back(InstanceData{model});
+  // }
 
   for (unsigned type = 0; type < asteroids.size(); type++)
   {
