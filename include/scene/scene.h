@@ -12,6 +12,7 @@
 #include "resources/resourceManager.h"
 #include "physics/keplerElements.h"
 #include "physics/asteroidSystem.h"
+#include "resources/threadPool.h"
 
 class Shader;
 class Planet;
@@ -28,7 +29,8 @@ struct CameraGPU
 class Scene
 {
 private:
-  ResourceManager *resourceManager;
+  ResourceManager &resourceManager;
+  ThreadPool &threadPool;
   Camera *activeCamera;
   Skybox *skybox;
   std::unique_ptr<LightManager> lightManager;
@@ -51,7 +53,7 @@ private:
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
 public:
-  Scene(ResourceManager *resourceManager);
+  Scene(ResourceManager &resourceManager, ThreadPool &threadPool);
   ~Scene() = default;
 
   Planet *createPlanet(std::string name, std::string material_name, double mu,
