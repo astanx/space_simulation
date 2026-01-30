@@ -1,0 +1,15 @@
+#pragma once
+
+#include "scene/shadow/shadow.h"
+
+class DirectionalShadow : public Shadow
+{
+protected:
+  void init() override;
+
+public:
+  DirectionalShadow(const GLuint width, const GLuint height);
+
+  void bindShadowMapFBO() const override;
+  void bind(Shader& shader) const override;
+};

@@ -46,9 +46,12 @@ public:
   // Getters
   const glm::mat4 getViewMatrix();
 
-  const glm::mat4 getProjectionMatrix(float aspectRatio);
+  const glm::mat4 getProjectionMatrix(float aspectRatio, float overrideFov = -1.0f);
 
   const glm::vec3 getPosition() const;
+
+  const float getNearPlane() const { return this->nearPlane; };
+  const float getFarPlane() const { return this->farPlane; };
 
   // Functions
   void processMouseScroll(float yoffset);

@@ -167,14 +167,14 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
   //   glVertexAttribDivisor(INSTANCE_ATTRIB_START + i, 1);
   // }
 
-   glEnableVertexAttribArray(INSTANCE_ATTRIB_START);
-    glVertexAttribPointer(
-        INSTANCE_ATTRIB_START,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(InstanceData), 0);
-    glVertexAttribDivisor(INSTANCE_ATTRIB_START, 1);
+  glEnableVertexAttribArray(INSTANCE_ATTRIB_START);
+  glVertexAttribPointer(
+      INSTANCE_ATTRIB_START,
+      3,
+      GL_FLOAT,
+      GL_FALSE,
+      sizeof(InstanceData), 0);
+  glVertexAttribDivisor(INSTANCE_ATTRIB_START, 1);
 
   glBindVertexArray(0);
 }
@@ -183,11 +183,18 @@ void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
 {
   glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
 
-  glBufferSubData(
+  void *ptr = glMapBufferRange(
       GL_ARRAY_BUFFER,
       0,
       instanceCount * sizeof(InstanceData),
-      instanceData.data());
+      GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+  if (!ptr)
+    return; // mapping failed
+
+  memcpy(ptr, instanceData.data(), instanceCount * sizeof(InstanceData));
+  
+  glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
 void Mesh::render()

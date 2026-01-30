@@ -16,6 +16,8 @@ private:
   ThreadPool &threadPool;
   std::vector<double> meshVolumes;
 
+  float lastUpdateTime = 0.0f;
+
   std::vector<std::vector<std::unique_ptr<Asteroid>>> asteroids;
   Material *asteroid_material;
 

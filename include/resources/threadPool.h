@@ -11,9 +11,10 @@ private:
   std::mutex mtx;
   std::condition_variable cv;
   bool stop = false;
+  std::atomic<unsigned> busy_threads{0};
 
 public:
-  ThreadPool(size_t count);
+  ThreadPool(size_t threads = 0);
   ~ThreadPool();
 
   inline unsigned getThreadCount() const { return workers.size(); }

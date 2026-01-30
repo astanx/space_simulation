@@ -31,7 +31,7 @@ struct PointLightGPU
   glm::vec3 _pad0;
 };
 
-enum UBOBindingPoints
+enum LightUBOBindingPoints
 {
   CAMERA_BINDING = 0,
   DIR_LIGHT_BINDING = 1,

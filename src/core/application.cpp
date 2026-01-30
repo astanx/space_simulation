@@ -79,7 +79,7 @@ Application::Application(
                                                                                                                                    GLmajor(GLmajor),
                                                                                                                                    GLminor(GLminor),
                                                                                                                                    resourceManager(),
-                                                                                                                                   threadPool(std::thread::hardware_concurrency()),
+                                                                                                                                   threadPool(),
                                                                                                                                    scene(resourceManager, threadPool)
 
 {
@@ -103,6 +103,8 @@ Application::Application(
   // this->resourceManager.LoadShader(Res::ASTEROID_SHADER, this->GLmajor, this->GLminor, "assets/shaders/asteroid/vertex.glsl", "assets/shaders/asteroid/fragment.glsl");
   this->resourceManager.LoadShader(Res::ASTEROID_SHADER, this->GLmajor, this->GLminor, "assets/shaders/asteroid/vertex_no_matrix.glsl", "assets/shaders/asteroid/fragment.glsl");
   this->resourceManager.LoadShader(Res::TRAIL_SHADER, this->GLmajor, this->GLminor, "assets/shaders/trail/vertex.glsl", "assets/shaders/trail/fragment.glsl");
+  this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
+  // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
 
   loadCircularObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/sun.png", Res::SUN_MATERIAL, sunRadius);
   loadCircularObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", Res::MERCURY_MATERIAL, mercuryRadius);
@@ -144,6 +146,25 @@ void Application::update()
   this->deltaTime = currentFrame - this->lastFrame;
   this->lastFrame = currentFrame;
 
+  // Update FPS counter
+  this->frames++;
+  float elapsed = currentFrame - lastFpsUpdateTime;
+  if (elapsed >= 1.0f)
+  {
+    float fps = frames / elapsed;
+    std::cout << "FPS: " << fps << std::endl;
+
+    frames = 0;
+    lastFpsUpdateTime = currentFrame;
+  }
+
+  float aspect = 1.0f;
+  if (framebufferHeight > 0)
+    aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
+
+  this->scene.update(this->deltaTime);
+  this->scene.updateUBO(aspect);
+
   // Poll events
   glfwPollEvents();
 
@@ -153,16 +174,25 @@ void Application::update()
 void Application::render()
 {
   // Clear
-  glClearColor(0.f, 0.f, 0.f, 1.0f);
+  glClearColor(1.f, 1.f, 1.f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   Shader *core = this->resourceManager.GetShader(Res::CORE_SHADER);
   Shader *skybox = this->resourceManager.GetShader(Res::SKYBOX_SHADER);
   Shader *asteroid = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
   Shader *trail = this->resourceManager.GetShader(Res::TRAIL_SHADER);
+  Shader *pointShadow = this->resourceManager.GetShader(Res::POINT_SHADOW_SHADER);
+
+  // Render shadow map
+  this->scene.renderPointShadow(pointShadow);
+
+  glViewport(0, 0, this->framebufferWidth, this->framebufferHeight);
 
   // Render scene
   this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime, skybox, asteroid, trail);
+
+  // Render skybox
+  this->scene.renderSkybox(skybox, this->framebufferWidth / this->framebufferHeight);
 
   // Swap buffers
   glfwSwapBuffers(this->window);
