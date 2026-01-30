@@ -20,7 +20,7 @@ public:
   virtual ~Shadow();
 
   virtual void bindShadowMapFBO() const = 0;
-  virtual void bind(Shader& shader) const = 0;
+  virtual void bind(Shader& shader, int textureUnit) const = 0;
 
   void unbindShadowMapFBO() const;
 

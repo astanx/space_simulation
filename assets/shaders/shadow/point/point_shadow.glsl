@@ -65,6 +65,16 @@ void calcShadowMatrices(out mat4 shadowMatrices[6], in mat4 shadowProj[6], in ma
 }
 */
 
+vec3 gridSamplingDisk[20] = vec3[]
+(
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
+
 float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_plane, vec3 normal)
 {
   vec3 fragToLight = pos - lightPos.xyz;
@@ -74,8 +84,45 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_p
   float closestDepth = texture(depthMap, sampleDir).r;
   closestDepth *= far_plane;
   vec3 lightDir = normalize(lightPos.xyz - pos);
-  float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-  float shadow = (currentDepth - bias > closestDepth) ? 1.0 : 0.0;
+
+
+    // PCF
+  float shadow = 0.0;
+  float bias = 
+    0.0008 * (1.0 + currentDepth / far_plane) + 
+    0.003 * (1.0 - dot(normal, lightDir));
+
+  /*float samples = 4.0;
+  float offset = 0.1;
+  for(float x = -offset; x < offset; x += offset / (samples * 0.5))
+  {
+    for(float y = -offset; y < offset; y += offset / (samples * 0.5))
+    {
+      for(float z = -offset; z < offset; z += offset / (samples * 0.5))
+      {
+        float closestDepth = texture(depthMap, fragToLight + vec3(x, y, z)).r; // use lightdir to lookup cubemap
+        closestDepth *= far_plane;   // Undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+          shadow += 1.0;
+      }
+    }
+  }
+  shadow /= (samples * samples * samples);
+  */
+
+  int samples = 20;
+  float diskRadius = mix(0.01, 0.12, currentDepth / far_plane);
+
+  for (int i = 0; i < samples; ++i)
+  {
+    vec3 sampleDir = normalize(fragToLight + gridSamplingDisk[i] * diskRadius);
+    float closestDepth = texture(depthMap, sampleDir).r * far_plane;
+    if (currentDepth - bias > closestDepth)
+      shadow += 1.0;
+  }
+  shadow /= float(samples);
+
+
   return shadow;
 }
 

@@ -39,7 +39,7 @@ private:
 
   std::unique_ptr<LightManager> lightManager;
 
-  const GLuint shadowRes = 16384;
+  const GLuint shadowRes = 4096;
   std::unique_ptr<ShadowManager> shadowManager;
 
   std::vector<std::unique_ptr<Model>> models;

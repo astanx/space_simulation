@@ -109,16 +109,25 @@ void Scene::init(float width, float height)
   createAsteroidSystem(sunPtr, 20000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadius, sunPtr, jupiterElements);
 
+  // auto pointLight = std::make_unique<PointLight>(
+  //     sunPos,
+  //     glm::vec3(0.05f),
+  //     glm::vec3(1.0f),
+  //     glm::vec3(1.0f),
+  //     25.f,
+  //     1.f,
+  //     0.00009f,
+  //     0.0000032f);
+
   auto pointLight = std::make_unique<PointLight>(
       sunPos,
-      glm::vec3(0.05f),
-      glm::vec3(1.0f),
-      glm::vec3(1.0f),
-      25.f,
-      1.f,
-      0.00009f,
-      0.0000032f);
-
+      glm::vec3(0.08f),
+      glm::vec3(1.00f, 0.96f, 0.90f),
+      glm::vec3(1.00f, 0.92f, 0.80f),
+      25.0f,
+      1.0f,
+      0.00002f,
+      0.0000008f);
   this->addPointLight(std::move(pointLight));
 
   // auto dirLight = std::make_unique<DirectionalLight>(
@@ -264,11 +273,11 @@ void Scene::update(float dt)
 
   for (auto &asteroidSystem : this->asteroidSystems)
   {
-    asteroidSystem->update(dt);
     for (size_t i = 0; i < objects.size(); ++i)
     {
       asteroidSystem->applyObjectGravitation(objects[i].get());
     }
+    asteroidSystem->update(dt);
   }
 }
 
@@ -291,8 +300,8 @@ void Scene::renderShadowMap(Shader *shadowShader)
 {
   for (auto &object : this->objects)
   {
-    // if (dynamic_cast<Star*>(object.get()))
-    //   continue;
+    if (dynamic_cast<Star *>(object.get()))
+      continue;
 
     object->render(shadowShader);
   }
@@ -327,7 +336,7 @@ void Scene::renderPointShadow(Shader *shadowShader)
 
   glClearDepth(1.0);
   glClear(GL_DEPTH_BUFFER_BIT);
-  
+
   shadowShader->use();
 
   this->pointShadow->bindShadowMapFBO();
@@ -363,7 +372,7 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   this->lightManager->bindPointLightUBO(coreID);
 
   this->shadowManager->bindPointShadowUBO(coreID);
-  this->pointShadow->bind(*shader);
+  this->pointShadow->bind(*shader, 5);
 
   // Render all objects
   for (auto &object : this->objects)
@@ -381,7 +390,7 @@ void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, 
   this->lightManager->bindPointLightUBO(asteroidID);
 
   this->shadowManager->bindPointShadowUBO(asteroidID);
-  this->pointShadow->bind(*asteroidShader);
+  this->pointShadow->bind(*asteroidShader, 5);
 
   for (auto &asteroidSystem : asteroidSystems)
   {

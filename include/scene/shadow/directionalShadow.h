@@ -11,5 +11,5 @@ public:
   DirectionalShadow(const GLuint width, const GLuint height);
 
   void bindShadowMapFBO() const override;
-  void bind(Shader& shader) const override;
+  void bind(Shader& shader, int textureUnit) const override;
 };
