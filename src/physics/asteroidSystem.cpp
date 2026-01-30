@@ -10,6 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <thread>
+#include <GLFW/glfw3.h>
 
 // Private functions
 KeplerElements AsteroidSystem::createRandomKeplerElements()
@@ -87,8 +88,7 @@ void AsteroidSystem::createAsteroids(unsigned amount)
   for (unsigned int i = 0; i < threadCount; i++)
   {
     this->threadPool.enqueue([this, perThread]()
-                         { 
-        std::cout << "Creating asteroids in thread " << std::this_thread::get_id() << std::endl; 
+                             { 
         for (unsigned j = 0; j < perThread; j++) 
           this->createAsteroid(); });
   }
@@ -140,27 +140,74 @@ AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double inne
 // Public functions
 void AsteroidSystem::update(double dt)
 {
+  unsigned threadCount = this->threadPool.getThreadCount();
   for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
   {
-    for (size_t asteroidIndex = 0; asteroidIndex < this->asteroids[typeIndex].size(); asteroidIndex++)
+    // std::cout << "Threads: " << threadCount << std::endl;
+    unsigned perThread = asteroids[typeIndex].size() / threadCount;
+    unsigned remaining = asteroids[typeIndex].size() % threadCount;
+
+    // std::cout << "Per thread: " << perThread << ", remaining: " << remaining << std::endl;
+    unsigned start = 0;
+    for (unsigned int i = 0; i < threadCount; i++)
     {
-      this->asteroids[typeIndex][asteroidIndex]->update(dt);
-      auto pos = this->asteroids[typeIndex][asteroidIndex]->getRenderPosition();
-      // std::cout << "New asteroid: " << pos.x << ' ' << pos.y << ' ' << pos.z << std::endl;
-      // this->instances[typeIndex][asteroidIndex].ModelMatrix = this->asteroids[typeIndex][asteroidIndex]->getModelMatrix();
-      this->instances[typeIndex][asteroidIndex].position = pos;
+      unsigned work = perThread + (i < remaining ? 1 : 0);
+
+      unsigned begin = start;
+      unsigned end = begin + work;
+      start = end;
+
+      this->threadPool.enqueue([this, work, dt, typeIndex, begin, end]()
+                               {
+        for (unsigned j = begin; j < end; j++)
+        {
+          auto& asteroid = this->asteroids[typeIndex][j];
+          asteroid->update(dt);
+          this->instances[typeIndex][j].position = asteroid->getRenderPosition();
+        } });
     }
-    this->meshes[typeIndex]->updateInstanceBuffer(this->instances[typeIndex]);
+
+    // for (size_t asteroidIndex = 0; asteroidIndex < this->asteroids[typeIndex].size(); asteroidIndex++)
+    // {
+    //   this->instances[typeIndex][asteroidIndex].position = this->asteroids[typeIndex][asteroidIndex]->getRenderPosition();
+    // }
+    // this->meshes[typeIndex]->updateInstanceBuffer(this->instances[typeIndex]);
   }
+  this->threadPool.wait();
+
+  for (unsigned typeIndex = 0; typeIndex < this->meshes.size(); typeIndex++)
+    this->meshes[typeIndex]->updateInstanceBuffer(this->instances[typeIndex]);
 }
 
 void AsteroidSystem::applyObjectGravitation(Object *object)
 {
+  float currentTime = static_cast<float>(glfwGetTime());
+  if (currentTime - this->lastUpdateTime < 0.1f)
+    return;
+  this->lastUpdateTime = currentTime;
+  unsigned threadCount = this->threadPool.getThreadCount();
+
   for (auto &asteroidType : this->asteroids)
   {
-    for (auto &asteroid : asteroidType)
-      asteroid->applyGravitation(*object);
+    unsigned perThread = asteroidType.size() / threadCount;
+    unsigned remaining = asteroidType.size() % threadCount;
+
+    unsigned start = 0;
+    for (unsigned int i = 0; i < threadCount; i++)
+    {
+      unsigned work = perThread + (i < remaining ? 1 : 0);
+
+      unsigned begin = start;
+      unsigned end = begin + work;
+      start = end;
+
+      this->threadPool.enqueue([this, &asteroidType, begin, end, object]()
+                               {
+        for (unsigned j = begin; j < end; j++) 
+          asteroidType[j]->applyGravitation(*object); });
+    }
   }
+  this->threadPool.wait();
 }
 
 void AsteroidSystem::render(Shader *shader)

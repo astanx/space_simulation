@@ -9,6 +9,9 @@
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
 #include "scene/light/lightManager.h"
+#include "scene/shadow/directionalShadow.h"
+#include "scene/shadow/pointShadow.h"
+#include "scene/shadow/shadowManager.h"
 #include "resources/resourceManager.h"
 #include "physics/keplerElements.h"
 #include "physics/asteroidSystem.h"
@@ -33,22 +36,32 @@ private:
   ThreadPool &threadPool;
   Camera *activeCamera;
   Skybox *skybox;
+
   std::unique_ptr<LightManager> lightManager;
 
+  const GLuint shadowRes = 16384;
+  std::unique_ptr<ShadowManager> shadowManager;
+
   std::vector<std::unique_ptr<Model>> models;
+
   std::vector<std::unique_ptr<Object>> objects;
+  std::vector<Star*> stars;
+  
   std::vector<std::unique_ptr<Trail>> trails;
   std::vector<std::unique_ptr<Camera>> cameras;
   std::vector<std::unique_ptr<Skybox>> skyboxes;
 
   std::vector<std::unique_ptr<PointLight>> pointLights;
   std::unique_ptr<DirectionalLight> directionalLight;
+  std::unique_ptr<DirectionalShadow> directionalShadow;
+  std::unique_ptr<PointShadow> pointShadow;
 
   std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
 
   unsigned int dirLightUBO;
   unsigned int pointLightUBO;
   unsigned int cameraUBO;
+  unsigned int shadowUBO;
 
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
@@ -77,6 +90,9 @@ public:
   void bindCameraUBO(GLuint programID);
 
   void update(float dt);
+  void renderDirectionalShadow(Shader *shadowShader);
+  void renderShadowMap(Shader *shadowShader);
+  void renderPointShadow(Shader *shadowShader);
   void render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader, Shader *asteroidShader, Shader *trailShader);
   void renderSkybox(Shader *skyboxShader, float aspectRatio);
 

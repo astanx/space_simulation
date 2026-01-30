@@ -33,7 +33,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float win
 
   this->fov = 45.f;
   this->nearPlane = 0.1f;
-  this->farPlane = 10000.f;
+  this->farPlane = 20000.f;
 
   this->updateCameraVectors();
 }
@@ -43,9 +43,10 @@ const glm::mat4 Camera::getViewMatrix()
 {
   return glm::lookAt(this->position, this->position + this->front, this->up);
 }
-const glm::mat4 Camera::getProjectionMatrix(float aspectRatio)
+const glm::mat4 Camera::getProjectionMatrix(float aspectRatio, float overrideFov)
 {
-  return glm::perspective(glm::radians(this->fov), aspectRatio, this->nearPlane, this->farPlane);
+  float fov = overrideFov == -1.0f ? this->fov : overrideFov;
+  return glm::perspective(glm::radians(fov), aspectRatio, this->nearPlane, this->farPlane);
 }
 const glm::vec3 Camera::getPosition() const
 {
@@ -53,7 +54,6 @@ const glm::vec3 Camera::getPosition() const
 }
 
 // Public functions
-
 void Camera::processMouseScroll(float yoffset)
 {
   this->fov -= yoffset;

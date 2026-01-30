@@ -10,6 +10,8 @@ namespace Res
   const std::string SKYBOX_SHADER = "skybox";
   const std::string ASTEROID_SHADER = "asteroid_shader";
   const std::string TRAIL_SHADER = "trail";
+  const std::string POINT_SHADOW_SHADER = "point_shadow";
+  const std::string DIRECTIONAL_SHADOW_SHADER = "directional_shadow";
 
   // Mesh
   const std::string CUBE_MESH = "cube";

@@ -53,8 +53,6 @@ OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, cons
   {
     this->velocity = this->orbit->calculateOrbitalVelocity(centralBody, this);
     this->velocity += this->orbit->getCentralBody()->getVelocity();
-    // if (this->useTrail)
-    //   generateTrail();
   }
 }
 
@@ -92,7 +90,7 @@ void OrbitalObject::move(double dt)
 
   this->renderPosition = this->realToVisualPos(this->position);
 
-  std::cout << "New position: " << renderPosition.x << ' ' << renderPosition.y << ' ' << renderPosition.z << std::endl;
+  // std::cout << "New position: " << renderPosition.x << ' ' << renderPosition.y << ' ' << renderPosition.z << std::endl;
 
   this->acceleration = glm::dvec3(0.f);
 }

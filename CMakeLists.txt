@@ -35,14 +35,27 @@ link_libraries(
 )
 
 add_executable(Space 
+    # Main
     src/main.cpp
+
+    # Core
     src/core/application.cpp
+
+    # Camera
     src/camera/camera.cpp
+
+    # Graphics
     src/graphics/shader.cpp
     src/graphics/texture.cpp
+    src/graphics/skybox.cpp
+    src/graphics/mesh.cpp
+    src/graphics/model.cpp
+
+        #Materials
     src/graphics/materials/phongMaterial.cpp
     src/graphics/materials/asteroidMaterial.cpp
-    src/graphics/skybox.cpp
+    
+        # Primitives
     src/graphics/primitives/triangle.cpp
     src/graphics/primitives/primitives.cpp
     src/graphics/primitives/quad.cpp
@@ -51,16 +64,27 @@ add_executable(Space
     src/graphics/primitives/circle.cpp
     src/graphics/primitives/sphere.cpp
     src/graphics/primitives/asteroidShape.cpp
-    src/graphics/mesh.cpp
-    src/scene/light/light.cpp
-    src/scene/light/pointLight.cpp
-    src/scene/light/directionalLight.cpp
-    src/scene/light/lightManager.cpp
+
+    # Scene
     src/scene/scene.cpp
-    src/graphics/model.cpp
+        # Light
+        src/scene/light/light.cpp
+        src/scene/light/pointLight.cpp
+        src/scene/light/directionalLight.cpp
+        src/scene/light/lightManager.cpp
+
+        # Shadow
+        src/scene/shadow/shadow.cpp
+        src/scene/shadow/directionalShadow.cpp
+        src/scene/shadow/pointShadow.cpp
+        src/scene/shadow/shadowManager.cpp
+
+    # Resources
     src/resources/OBJloader.cpp
     src/resources/resourceManager.cpp
     src/resources/threadPool.cpp
+    
+    # Physics
     src/physics/object.cpp
     src/physics/planet.cpp
     src/physics/constants.cpp
@@ -71,6 +95,8 @@ add_executable(Space
     src/physics/orbitalObject.cpp
     src/physics/asteroidSystem.cpp
     src/physics/asteroid.cpp
+    
+    # Maths
     src/maths/rk4.cpp
     src/maths/random.cpp
 )

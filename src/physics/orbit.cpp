@@ -57,6 +57,6 @@ glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, const Orbi
 
   glm::dvec3 v_dir = glm::normalize(glm::cross(normal, dp));
   velocity = speed * v_dir;
-  std::cout << "Orbital speed: " << velocity.x << ' ' << velocity.y << ' ' << velocity.z << std::endl;
+  // std::cout << "Orbital speed: " << velocity.x << ' ' << velocity.y << ' ' << velocity.z << std::endl;
   return velocity;
 }

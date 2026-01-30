@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 // Constructor
 Asteroid::Asteroid(Object *centralBody, double mu, double radius, const KeplerElements &elements) : OrbitalObject(centralBody, mu, radius, elements)

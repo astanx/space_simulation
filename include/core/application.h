@@ -42,6 +42,8 @@ private:
   // Timing
   float deltaTime;
   float lastFrame;
+  unsigned frames = 0;
+  float lastFpsUpdateTime = 0.0f;
 
   // INITIALIZERS
   // GLFW and window
