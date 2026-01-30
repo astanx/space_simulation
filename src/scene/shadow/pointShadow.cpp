@@ -48,14 +48,14 @@ PointShadow::PointShadow(const GLuint width, const GLuint height, glm::vec3 ligh
 void PointShadow::bindShadowMapFBO() const
 {
   glBindFramebuffer(GL_FRAMEBUFFER, this->shadowMapFBO);
-  // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->shadowMapTexture, 0);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->shadowMapTexture, 0);
   // glDrawBuffer(GL_NONE);
   // glReadBuffer(GL_NONE);
 }
 
-void PointShadow::bind(Shader &shader) const
+void PointShadow::bind(Shader &shader, int textureUnit) const
 {
-  glActiveTexture(GL_TEXTURE0 + this->shadowMapTexture);
+  glActiveTexture(GL_TEXTURE0 + textureUnit);
   glBindTexture(GL_TEXTURE_CUBE_MAP, this->shadowMapTexture);
-  shader.set1i(this->shadowMapTexture, "depthMap");
+  shader.set1i(textureUnit, "depthMap");
 }

@@ -47,6 +47,8 @@ void main()
 
   vec4 dir = CalcDirLight(dirLight, normal, viewDir, material, albedo, specularMap);
   
+  float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, far_plane, normal);
+
   vec4 point = CalcPointLight(
     pointLight,
     normal,
@@ -54,16 +56,11 @@ void main()
     viewDir,
     material,
     albedo,
-    specularMap
+    specularMap,
+    shadow
   );
-
-  float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, far_plane, normal);
-
-  point.rgb *= (1.0 - shadow);
 
   vec4 result = dir + point;
 
   fs_color = gammaCorrection(result);
-  //fs_color = vec4(vec3(shadow), 1.0);
-
 }

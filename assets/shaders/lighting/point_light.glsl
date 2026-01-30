@@ -20,7 +20,7 @@ struct PointLight
   vec3 _pad0;
 };
 
-vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material mat, vec3 albedo, vec3 specularMap)
+vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material mat, vec3 albedo, vec3 specularMap, float shadow)
 {
   if (light.enabled == 0) return vec4(0.0);
   vec3 lightDir = normalize(light.position.xyz - fragPos);
@@ -43,7 +43,8 @@ vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, M
   ambient  *= attenuation;
   diffuse  *= attenuation;
   specular *= attenuation;
-  return (ambient + diffuse + specular) * light.intensity;
+
+  return (ambient + (1.0 - shadow) *  (diffuse + specular)) * light.intensity;
 } 
 
 #endif

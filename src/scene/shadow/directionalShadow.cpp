@@ -40,10 +40,11 @@ void DirectionalShadow::bindShadowMapFBO() const
   // }
 }
 
-void DirectionalShadow::bind(Shader &shader) const
+void DirectionalShadow::bind(Shader &shader, int textureUnit) const
 {
+  glActiveTexture(GL_TEXTURE0 + textureUnit);
   glBindTexture(GL_TEXTURE_2D, this->shadowMapTexture);
 
   // change
-  shader.set1i(0, "directionalShadowMap");
+  shader.set1i(textureUnit, "directionalShadowMap");
 }
