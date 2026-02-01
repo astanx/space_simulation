@@ -3,7 +3,7 @@
 #include "physics/object.h"
 #include "physics/orbit.h"
 #include "physics/trail.h"
-#include "physics/keplerElements.h"
+#include "physics/structs/keplerElements.h"
 
 class Planet;
 class Mesh;

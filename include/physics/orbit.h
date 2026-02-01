@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/keplerElements.h"
+#include "physics/structs/keplerElements.h"
 
 #include <glm/glm.hpp>
 

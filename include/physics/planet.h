@@ -1,7 +1,7 @@
 #pragma once
 
 #include "physics/orbitalObject.h"
-#include "physics/keplerElements.h"
+#include "physics/structs/keplerElements.h"
 #include "physics/moon.h"
 #include "graphics/renderable.h"
 

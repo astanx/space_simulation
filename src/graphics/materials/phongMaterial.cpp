@@ -16,6 +16,17 @@ PhongMaterial::PhongMaterial(
   this->specularTexture = specularTexture;
   this->shininess = shininess;
 }
+PhongMaterial::PhongMaterial(
+    MaterialProperties material,
+    Texture *diffuseTexture, Texture *specularTexture)
+{
+  this->ambient = material.ambient;
+  this->diffuse = material.diffuse;
+  this->specular = material.specular;
+  this->diffuseTexture = diffuseTexture;
+  this->specularTexture = specularTexture;
+  this->shininess = material.shininess;
+}
 
 // Public functions
 void PhongMaterial::sendToShader(Shader &program)
@@ -53,4 +64,3 @@ void PhongMaterial::sendToShader(Shader &program)
 
   program.set1i(isTexture, "isTexture");
 }
-

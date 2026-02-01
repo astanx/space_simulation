@@ -6,6 +6,7 @@
 #include "graphics/materials/material.h"
 #include "graphics/mesh.h"
 #include "graphics/vertex.h"
+#include "physics/structs/materialProperties.h"
 
 #include <unordered_map>
 #include <string>
@@ -32,7 +33,8 @@ public:
   Shader *LoadShader(const std::string &name, const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile = nullptr);
   Texture *LoadTexture(const std::string &name, const char *filePath, GLenum type);
   Material *LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
-                         Texture *diffuseTexture, Texture *specularTexture, float shininess);
+                              Texture *diffuseTexture, Texture *specularTexture, float shininess);
+  Material *LoadPhongMaterial(const std::string &name, MaterialProperties material, Texture *diffuseTexture, Texture *specularTexture);
 
   Material *LoadAsteroidMaterial(const std::string &name, Texture *diffuseTexture);
 

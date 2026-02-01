@@ -1,5 +1,6 @@
 #include "core/application.h"
 #include "graphics/primitives/sphere.h"
+#include "graphics/primitives/ellipsoid.h"
 #include "graphics/shader.h"
 #include "physics/constants.h"
 #include "scene/scene.h"
@@ -106,13 +107,13 @@ Application::Application(
   this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
   // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
 
-  loadCircularObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/sun.png", Res::SUN_MATERIAL, sunRadius, glm::vec3(0.f), glm::vec3(1.f), glm::vec3(0.f), 5 );
-  loadCircularObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", Res::MERCURY_MATERIAL, mercuryRadius, glm::vec3(0.05f), glm::vec3(0.7f, 0.6f, 0.55f), glm::vec3(0.15f), 16);
-  loadCircularObject(Res::VENUS, Res::VENUS_DIFFUSE, "assets/textures/venus.png", Res::VENUS_MATERIAL, venusRadius, glm::vec3(0.12f), glm::vec3(0.95f, 0.85f, 0.65f), glm::vec3(0.4f, 0.35f, 0.25f), 12);
-  loadCircularObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/earth.png", Res::EARTH_MATERIAL, earthRadius, glm::vec3(0.08f), glm::vec3(0.9f, 0.95f, 1.f), glm::vec3(0.6f), 30, Res::EARTH_SPECULAR, "assets/textures/earth_specular.png");
-  loadCircularObject(Res::MOON, Res::MOON_DIFFUSE, "assets/textures/moon.png", Res::MOON_MATERIAL, moonRadius, glm::vec3(0.04f), glm::vec3(0.55f), glm::vec3(0.08f), 13);
-  loadCircularObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/mars.png", Res::MARS_MATERIAL, marsRadius, glm::vec3(0.06f), glm::vec3(0.85f, 0.5f, 0.3f), glm::vec3(0.12f), 17);
-  loadCircularObject(Res::JUPITER, Res::JUPITER_DIFFUSE, "assets/textures/jupiter.png", Res::JUPITER_MATERIAL, jupiterRadius, glm::vec3(0.1f), glm::vec3(0.95f, 0.9f, 0.85f), glm::vec3(0.25f), 25);
+  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/sun.png", Res::SUN_MATERIAL, sunRadii, sunMaterial);
+  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
+  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, "assets/textures/venus.png", Res::VENUS_MATERIAL, venusRadii, venusMaterial);
+  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/earth.png", Res::EARTH_MATERIAL, earthRadii, earthMaterial, Res::EARTH_SPECULAR, "assets/textures/earth_specular.png");
+  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, "assets/textures/moon.png", Res::MOON_MATERIAL, moonRadii, moonMaterial);
+  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/mars.png", Res::MARS_MATERIAL, marsRadii, marsMaterial);
+  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, "assets/textures/jupiter.png", Res::JUPITER_MATERIAL, jupiterRadii, jupiterMaterial);
 
   Texture *diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
@@ -234,14 +235,18 @@ void Application::processInput()
   }
 }
 
-void Application::loadCircularObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name, double radius,
-                                     glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess,
-                                     std::string specular_name, const char *specularPath, int segments)
+void Application::loadEllipsoidObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name,
+                                      Radii radii, MaterialProperties material,
+                                      std::string specular_name, const char *specularPath, int segments)
 {
   Texture *diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
-  this->resourceManager.LoadPhongMaterial(material_name, ambient, diffuse, specular,
-                                          diff, nullptr, shininess);
-  auto obj = std::make_unique<Sphere>(segments, radius * VISUAL_RADIUS_SCALE);
+
+  Texture *spec = nullptr;
+  if (specularPath)
+    spec = this->resourceManager.LoadTexture(specular_name, specularPath, GL_TEXTURE_2D);
+
+  this->resourceManager.LoadPhongMaterial(material_name, material, diff, spec);
+  auto obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE));
   this->resourceManager.LoadMesh(name, std::move(obj), VertexLayout::Full);
 }
 

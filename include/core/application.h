@@ -3,6 +3,7 @@
 #include "scene/scene.h"
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
+#include "physics/structs/radii.h"
 
 #include <vector>
 #include <GL/glew.h>
@@ -64,8 +65,8 @@ public:
   static void mouseCallback(GLFWwindow *window, double xpos, double ypos);
   static void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
   static void framebuffer_resize_callback(GLFWwindow *window, int width, int height);
-  void loadCircularObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name, double radius,
-                          glm::vec3 ambient = glm::vec3(0.1f), glm::vec3 diffuse = glm::vec3(0.9f, 0.5f, 0.4f), glm::vec3 specular = glm::vec3(0.3f), float shininess = 32.f,
-                          std::string specular_name = "", const char *specularPath = "", int segments = 32);
+  void loadEllipsoidObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name,
+                           Radii radii, MaterialProperties material,
+                           std::string specular_name = "", const char *specularPath = nullptr, int segments = 32);
   void processInput();
 };

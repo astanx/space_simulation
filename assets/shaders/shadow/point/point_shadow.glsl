@@ -92,7 +92,7 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_p
     0.0008 * (1.0 + currentDepth / far_plane) + 
     0.003 * (1.0 - dot(normal, lightDir));
 
-  /*float samples = 4.0;
+  float samples = 4.0;
   float offset = 0.1;
   for(float x = -offset; x < offset; x += offset / (samples * 0.5))
   {
@@ -108,8 +108,8 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_p
     }
   }
   shadow /= (samples * samples * samples);
-  */
 
+/*
   int samples = 20;
   float diskRadius = mix(0.01, 0.12, currentDepth / far_plane);
 
@@ -121,6 +121,7 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_p
       shadow += 1.0;
   }
   shadow /= float(samples);
+  */
 
 
   return shadow;
