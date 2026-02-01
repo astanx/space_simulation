@@ -24,6 +24,12 @@ Material *ResourceManager::LoadPhongMaterial(const std::string &name, glm::vec3 
   this->materials[name] = std::make_unique<PhongMaterial>(ambient, diffuse, specular, diffuseTexture, specularTexture, shininess);
   return this->materials[name].get();
 }
+Material *ResourceManager::LoadPhongMaterial(const std::string &name, MaterialProperties material,
+                                             Texture *diffuseTexture, Texture *specularTexture)
+{
+  this->materials[name] = std::make_unique<PhongMaterial>(material, diffuseTexture, specularTexture);
+  return this->materials[name].get();
+}
 Material *ResourceManager::LoadAsteroidMaterial(const std::string &name, Texture *diffuseTexture)
 {
   this->materials[name] = std::make_unique<AsteroidMaterial>(diffuseTexture);

@@ -50,20 +50,20 @@ add_executable(Space
     src/graphics/skybox.cpp
     src/graphics/mesh.cpp
     src/graphics/model.cpp
-
         #Materials
-    src/graphics/materials/phongMaterial.cpp
-    src/graphics/materials/asteroidMaterial.cpp
+        src/graphics/materials/phongMaterial.cpp
+        src/graphics/materials/asteroidMaterial.cpp
     
         # Primitives
-    src/graphics/primitives/triangle.cpp
-    src/graphics/primitives/primitives.cpp
-    src/graphics/primitives/quad.cpp
-    src/graphics/primitives/plane.cpp
-    src/graphics/primitives/cube.cpp
-    src/graphics/primitives/circle.cpp
-    src/graphics/primitives/sphere.cpp
-    src/graphics/primitives/asteroidShape.cpp
+        src/graphics/primitives/triangle.cpp
+        src/graphics/primitives/primitives.cpp
+        src/graphics/primitives/quad.cpp
+        src/graphics/primitives/plane.cpp
+        src/graphics/primitives/cube.cpp
+        src/graphics/primitives/circle.cpp
+        src/graphics/primitives/sphere.cpp
+        src/graphics/primitives/asteroidShape.cpp
+        src/graphics/primitives/ellipsoid.cpp
 
     # Scene
     src/scene/scene.cpp

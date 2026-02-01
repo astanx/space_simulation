@@ -13,7 +13,7 @@
 #include "scene/shadow/pointShadow.h"
 #include "scene/shadow/shadowManager.h"
 #include "resources/resourceManager.h"
-#include "physics/keplerElements.h"
+#include "physics/structs/keplerElements.h"
 #include "physics/asteroidSystem.h"
 #include "resources/threadPool.h"
 

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "physics/keplerElements.h"
+#include "physics/structs/keplerElements.h"
+#include "physics/structs/materialProperties.h"
+#include "physics/structs/radii.h"
 
 #include <glm/glm.hpp>
 
@@ -22,17 +24,6 @@ extern const double saturnMu;
 extern const double uranusMu;
 extern const double neptuneMu;
 
-extern const double sunRadius;
-extern const double mercuryRadius;
-extern const double venusRadius;
-extern const double earthRadius;
-extern const double moonRadius;
-extern const double marsRadius;
-extern const double jupiterRadius;
-extern const double saturnRadius;
-extern const double uranusRadius;
-extern const double neptuneRadius;
-
 extern const glm::dvec3 sunPos;
 
 extern const KeplerElements mercuryElements;
@@ -44,6 +35,29 @@ extern const KeplerElements jupiterElements;
 extern const KeplerElements saturnElements;
 extern const KeplerElements uranusElements;
 extern const KeplerElements neptuneElements;
+
+
+extern const MaterialProperties sunMaterial;
+extern const MaterialProperties mercuryMaterial;
+extern const MaterialProperties venusMaterial;
+extern const MaterialProperties earthMaterial;
+extern const MaterialProperties moonMaterial;
+extern const MaterialProperties marsMaterial;
+extern const MaterialProperties jupiterMaterial;
+extern const MaterialProperties saturnMaterial;
+extern const MaterialProperties uranusMaterial;
+extern const MaterialProperties neptuneMaterial;
+
+extern const Radii sunRadii;
+extern const Radii mercuryRadii;
+extern const Radii venusRadii;
+extern const Radii earthRadii;
+extern const Radii moonRadii;
+extern const Radii marsRadii;
+extern const Radii jupiterRadii;
+extern const Radii saturnRadii;
+extern const Radii uranusRadii;
+extern const Radii neptuneRadii;
 
 extern const double VISUAL_SCALE;
 extern const double VISUAL_RADIUS_SCALE;
