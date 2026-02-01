@@ -2,6 +2,8 @@
 #include "physics/constants.h"
 #include "graphics/vertex.h"
 
+#include <iostream>
+
 // Constructor
 Moon::Moon(OrbitalObject *centralBody, double mu, double radius, const KeplerElements &keplerElements) : OrbitalObject(centralBody, mu, radius, keplerElements, false)
 {
@@ -13,7 +15,9 @@ Moon::Moon(OrbitalObject *centralBody, double mu, double radius, const KeplerEle
 void Moon::update(double dt)
 {
   this->move(dt);
-  this->model->setPosition(this->renderPosition);
+
+  if (this->model)
+    this->model->setPosition(this->renderPosition);
 }
 
 void Moon::render(Shader *shader)
@@ -25,7 +29,8 @@ void Moon::render(Shader *shader)
 void Moon::addModel(std::unique_ptr<Model> model)
 {
   this->model = std::move(model);
-  this->model->setPosition(this->position * VISUAL_SCALE);
+
+  this->model->setPosition(this->renderPosition);
 };
 
 std::unique_ptr<Trail> Moon::generateTrail()

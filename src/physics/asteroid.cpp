@@ -33,7 +33,7 @@ void Asteroid::renderInstanced()
 void Asteroid::addModel(std::unique_ptr<Model> model)
 {
   this->model = std::move(model);
-  this->model->setPosition(this->position * VISUAL_SCALE);
+  this->model->setPosition(this->renderPosition);
 };
 
 glm::mat4 Asteroid::getModelMatrix()

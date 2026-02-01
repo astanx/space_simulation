@@ -5,12 +5,25 @@
 #include <cmath>
 #include <iostream>
 
+// Private functions
+glm::dvec3 Object::realToVisualPos(glm::dvec3 pos)
+{
+  return glm::dvec3(
+             pos.x,
+             -pos.z, // Z → Y
+             pos.y  // Y → -Z
+             ) *
+         VISUAL_SCALE;
+  // return this->position * VISUAL_SCALE;
+}
+
 // Constructor
 Object::Object(double mass, double radius, glm::dvec3 position, glm::dvec3 velocity)
 {
   this->mass = mass;
   this->radius = radius;
   this->position = position;
+  this->renderPosition = realToVisualPos(position);
   this->velocity = velocity;
   this->acceleration = glm::dvec3(0.0);
 }
@@ -25,7 +38,7 @@ void Object::move(double dt)
 {
   this->velocity += this->acceleration * dt;
   this->position += this->velocity * dt;
-  this->renderPosition = this->position * VISUAL_SCALE;
+  this->renderPosition = this->realToVisualPos(this->position);
 
   this->acceleration = glm::dvec3(0.f);
 };

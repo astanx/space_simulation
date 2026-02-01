@@ -12,11 +12,10 @@ class OrbitalObject : public Object
 {
 protected:
   std::unique_ptr<Orbit> orbit;
-  glm::dvec3 orbitalToInertial(double nu);
+  glm::dvec3 orbitalToInertial(double nu = -1.0);
   glm::dmat3 createR3matrix(double angle);
   glm::dmat3 createR1matrix(double angle);
-
-  glm::dvec3 realToVisualPos(glm::dvec3 pos);
+  double calculateEccentricAnomaly(double M, KeplerElements keplerElements);
 
   bool useTrail = true;
 

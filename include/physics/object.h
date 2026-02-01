@@ -15,6 +15,8 @@ protected:
   double mu;
   double radius;
 
+  glm::dvec3 realToVisualPos(glm::dvec3 pos);
+
 public:
   Object(double mass, double radius, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
   virtual ~Object() = default;

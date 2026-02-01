@@ -240,7 +240,7 @@ void Application::loadCircularObject(std::string name, std::string diffuse_name,
 {
   Texture *diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
   this->resourceManager.LoadPhongMaterial(material_name, ambient, diffuse, specular,
-                                          diff, nullptr, 32.f);
+                                          diff, nullptr, shininess);
   auto obj = std::make_unique<Sphere>(segments, radius * VISUAL_RADIUS_SCALE);
   this->resourceManager.LoadMesh(name, std::move(obj), VertexLayout::Full);
 }

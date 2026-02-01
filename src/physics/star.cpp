@@ -25,5 +25,5 @@ void Star::render(Shader *shader)
 void Star::addModel(std::unique_ptr<Model> model)
 {
   this->model = std::move(model);
-  this->model->setPosition(this->position * VISUAL_SCALE);
+  this->model->setPosition(this->renderPosition);
 };
