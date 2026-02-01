@@ -37,6 +37,10 @@ private:
   ResourceManager resourceManager;
   ThreadPool threadPool;
 
+  // Status
+  bool paused;
+  bool enterPressed;
+
   // Scene
   Scene scene;
 

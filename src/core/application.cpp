@@ -163,7 +163,8 @@ void Application::update()
   if (framebufferHeight > 0)
     aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
 
-  this->scene.update(this->deltaTime);
+  if (!this->paused)
+    this->scene.update(this->deltaTime);
   this->scene.updateUBO(aspect);
 
   // Poll events
@@ -229,10 +230,14 @@ void Application::processInput()
   {
     this->scene.processKeyboard(DOWN, this->deltaTime);
   }
-  if (glfwGetKey(this->window, GLFW_KEY_L) == GLFW_PRESS)
+
+  bool enterState = glfwGetKey(this->window, GLFW_KEY_ENTER) == GLFW_PRESS;
+  if (enterState && !this->enterPressed)
   {
-    this->scene.getPointLights()[0]->move(this->scene.getActiveCameraPosition());
+    this->paused = !this->paused;
   }
+
+  this->enterPressed = enterState;
 }
 
 void Application::loadEllipsoidObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name,
