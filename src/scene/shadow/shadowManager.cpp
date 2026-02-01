@@ -47,7 +47,7 @@ void ShadowManager::updatePointUBO(const PointShadow &pointShadow, int enabled)
   pointUBO.lightPos = glm::vec4(lightPos, 1.f);
   pointUBO.far_plane = far;
 
-  std::cout << "Updating Point Shadow UBO with lightPos: " << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << " and far_plane: " << far << std::endl;
+  // std::cout << "Updating Point Shadow UBO with lightPos: " << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << " and far_plane: " << far << std::endl;
   // std::cout << "Shadow Matrices: " << std::endl;
   // for (int i = 0; i < 6; ++i) {
   //   std::cout << "Matrix " << i << ": " << std::endl;

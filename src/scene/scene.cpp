@@ -104,6 +104,8 @@ void Scene::init(float width, float height)
   createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadius, sunPtr, mercuryElements);
   createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadius, sunPtr, venusElements);
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadius, sunPtr, earthElements);
+  std::cout << "Earth position: " << earthPtr->getRenderPosition().x << ", " << earthPtr->getRenderPosition().y << ", "  << earthPtr->getRenderPosition().z << ", " << std::endl;
+
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadius, earthPtr, moonElements);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadius, sunPtr, marsElements);
   createAsteroidSystem(sunPtr, 20000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
@@ -266,6 +268,7 @@ void Scene::update(float dt)
       objects[j]->applyGravitation(*objects[i]);
     }
   }
+
   for (auto &object : this->objects)
   {
     object->update(dt);
@@ -334,12 +337,13 @@ void Scene::renderPointShadow(Shader *shadowShader)
 
   glViewport(0, 0, this->pointShadow->getShadowWidth(), this->pointShadow->getShadowHeight());
 
+  this->pointShadow->bindShadowMapFBO();
+
   glClearDepth(1.0);
   glClear(GL_DEPTH_BUFFER_BIT);
 
   shadowShader->use();
 
-  this->pointShadow->bindShadowMapFBO();
   this->shadowManager->bindPointShadowUBO(shadowShader->getId());
 
   this->renderShadowMap(shadowShader);

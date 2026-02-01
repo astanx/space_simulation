@@ -8,15 +8,19 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // Private functions
-glm::dvec3 OrbitalObject::realToVisualPos(glm::dvec3 pos)
+double OrbitalObject::calculateEccentricAnomaly(double M, KeplerElements keplerElements)
 {
-  return glm::dvec3(
-             pos.x,
-             pos.z, // Z → Y
-             pos.y  // Y → -Z
-             ) *
-         VISUAL_SCALE;
+  double E = M; // initial guess
+  double delta;
+  do
+  {
+    delta = (E - keplerElements.e * sin(E) - M) / (1 - keplerElements.e * cos(E));
+    E = E - delta;
+  } while (abs(delta) > EPS);
+
+  return E;
 }
+
 glm::dmat3 OrbitalObject::createR3matrix(double angle)
 {
   return glm::dmat3(
@@ -36,6 +40,15 @@ glm::dmat3 OrbitalObject::createR1matrix(double angle)
 glm::dvec3 OrbitalObject::orbitalToInertial(double nu)
 {
   KeplerElements keplerElements = this->orbit->getKeplerElements();
+
+  if (nu == -1)
+  {
+    double E = this->calculateEccentricAnomaly(keplerElements.m, keplerElements);
+    double e = keplerElements.e;
+    nu = atan2( sqrt(1-e*e) * sin(E) / (1 - e*cos(E)), (cos(E) - e)/(1 - e*cos(E)) );
+    if (sin(E) < 0) nu = 2 * M_PI - nu;
+  }
+  
   double r = keplerElements.a * (1 - keplerElements.e * keplerElements.e) / (1 + keplerElements.e * cos(nu));
   glm::dvec3 orb(r * cos(nu), r * sin(nu), 0.0);
   return createR3matrix(keplerElements.Omega) * createR1matrix(keplerElements.i) * createR3matrix(keplerElements.omega) * orb;
@@ -47,8 +60,9 @@ OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, cons
   this->mu = mu;
   this->useTrail = useTrail;
   this->orbit = std::make_unique<Orbit>(centralBody, keplerElements);
-  this->position = orbitalToInertial(0.0); // at periapsis
+  this->position = orbitalToInertial();
   this->position += centralBody->getPosition();
+  this->renderPosition = this->realToVisualPos(this->position);
   if (this->orbit)
   {
     this->velocity = this->orbit->calculateOrbitalVelocity(centralBody, this);
@@ -84,9 +98,9 @@ std::unique_ptr<Trail> OrbitalObject::generateTrail()
 
 void OrbitalObject::move(double dt)
 {
-  this->velocity += 0.5 * this->acceleration * dt;
+  // this->velocity += 0.5 * this->acceleration * dt;
   this->keplerDrift(dt);
-  this->velocity += 0.5 * this->acceleration * dt;
+  // this->velocity += 0.5 * this->acceleration * dt;
 
   this->renderPosition = this->realToVisualPos(this->position);
 
@@ -106,13 +120,7 @@ void OrbitalObject::keplerDrift(double dt)
   if (m < 0)
     m += 2 * M_PI;
 
-  double E = m; // initial guess
-  double delta;
-  do
-  {
-    delta = (E - keplerElements.e * sin(E) - m) / (1 - keplerElements.e * cos(E));
-    E = E - delta;
-  } while (abs(delta) > EPS);
+  double E = this->calculateEccentricAnomaly(m, keplerElements);
 
   glm::dvec3 pos(0.0);
 

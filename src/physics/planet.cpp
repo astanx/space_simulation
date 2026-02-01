@@ -41,7 +41,7 @@ void Planet::render(Shader *shader)
 void Planet::addModel(std::unique_ptr<Model> model)
 {
   this->model = std::move(model);
-  this->model->setPosition(this->position * VISUAL_SCALE);
+  this->model->setPosition(this->renderPosition);
 };
 
 void Planet::addMoon(std::unique_ptr<Moon> moon)
