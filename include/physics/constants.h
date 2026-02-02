@@ -11,7 +11,7 @@ extern const double G;
 extern const double AU_TO_METER;
 
 
-extern const double TIME_SCALE;
+// extern const double TIME_SCALE;
 
 extern const double sunMu;
 extern const double mercuryMu;

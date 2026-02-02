@@ -44,7 +44,7 @@ const double EPS = 1e-6;
 const double G = 6.674e-11;
 
 // Time step
-const double TIME_SCALE = 3600.0 * 24;
+// const double TIME_SCALE = 3600.0 * 24;
 
 // SUN
 const double sunMu = 1.3271244004210e20;
@@ -177,5 +177,4 @@ const KeplerElements jupiterElements(
 const MaterialProperties jupiterMaterial(
 		glm::vec3(0.1f),
 		glm::vec3(0.95f, 0.9f, 0.85f),
-		glm::vec3(0.25f),
-		25);
+		glm::vec3(0.25f), 25);

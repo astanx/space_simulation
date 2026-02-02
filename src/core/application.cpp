@@ -92,6 +92,7 @@ Application::Application(
 
   this->deltaTime = 0.f;
   this->lastFrame = 0.f;
+  this->timeScale = 3600 * 24;
 
   // Initialize application
   this->initGLFW();
@@ -167,7 +168,7 @@ void Application::update()
     aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
 
   if (!this->paused)
-    this->scene.update(this->deltaTime);
+    this->scene.update(this->deltaTime * this->timeScale);
   this->scene.updateUBO(aspect);
 
   // Poll events
@@ -207,38 +208,62 @@ void Application::render()
 
 void Application::processInput()
 {
-  if (this->input.isKeyJustPressed(GLFW_KEY_ESCAPE))
+  if (this->input.isKeyPressed(GLFW_KEY_ESCAPE))
   {
     this->setWindowShouldClose();
   }
-  if (this->input.isKeyPressed(GLFW_KEY_W))
+  if (this->input.isKeyHold(GLFW_KEY_W))
   {
     this->scene.processKeyboard(FORWARD, this->deltaTime);
   }
-  if (this->input.isKeyPressed(GLFW_KEY_S))
+  if (this->input.isKeyHold(GLFW_KEY_S))
   {
     this->scene.processKeyboard(BACKWARD, this->deltaTime);
   }
-  if (this->input.isKeyPressed(GLFW_KEY_A))
+  if (this->input.isKeyHold(GLFW_KEY_A))
   {
     this->scene.processKeyboard(LEFT, this->deltaTime);
   }
-  if (this->input.isKeyPressed(GLFW_KEY_D))
+  if (this->input.isKeyHold(GLFW_KEY_D))
   {
     this->scene.processKeyboard(RIGHT, this->deltaTime);
   }
-  if (this->input.isKeyPressed(GLFW_KEY_SPACE))
+  if (this->input.isKeyHold(GLFW_KEY_SPACE))
   {
     this->scene.processKeyboard(UP, this->deltaTime);
   }
-  if (this->input.isKeyPressed(GLFW_KEY_LEFT_SHIFT))
+  if (this->input.isKeyHold(GLFW_KEY_LEFT_SHIFT))
   {
     this->scene.processKeyboard(DOWN, this->deltaTime);
   }
 
-  if (this->input.isKeyJustPressed(GLFW_KEY_ENTER))
+  if (this->input.isKeyPressed(GLFW_KEY_ENTER))
   {
     this->paused = !this->paused;
+  }
+
+  if (this->input.isKeyPressed(GLFW_KEY_UP))
+  {
+    if (this->timeScale * 2 != 0)
+      this->timeScale *= 2;
+  }
+  if (this->input.isKeyPressed(GLFW_KEY_DOWN))
+  {
+    this->timeScale /= 2;
+    if (this->timeScale == 0)
+      this->timeScale = 1;
+  }
+
+  if (this->input.isKeyHold(GLFW_KEY_LEFT))
+  {
+    this->timeScale -= 2;
+    if (this->timeScale == 0)
+      this->timeScale = 1;
+  }
+  if (this->input.isKeyHold(GLFW_KEY_RIGHT))
+  {
+    if (this->timeScale + 2 != 0)
+      this->timeScale += 2;
   }
 }
 

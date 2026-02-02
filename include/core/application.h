@@ -38,8 +38,9 @@ private:
   ResourceManager resourceManager;
   ThreadPool threadPool;
 
-  // Status
+  // State
   bool paused;
+  double timeScale;
 
   // Input
   Input input;

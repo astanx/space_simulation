@@ -257,7 +257,6 @@ void Scene::bindCameraUBO(GLuint programID)
 
 void Scene::update(float dt)
 {
-  dt *= TIME_SCALE;
   for (size_t i = 0; i < objects.size(); ++i)
   {
     for (size_t j = i + 1; j < objects.size(); ++j)
