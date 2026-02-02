@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scene/scene.h"
+#include "core/input.h"
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
 #include "physics/structs/radii.h"
@@ -39,7 +40,9 @@ private:
 
   // Status
   bool paused;
-  bool enterPressed;
+
+  // Input
+  Input input;
 
   // Scene
   Scene scene;

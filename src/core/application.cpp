@@ -81,7 +81,8 @@ Application::Application(
                                                                                                                                    GLminor(GLminor),
                                                                                                                                    resourceManager(),
                                                                                                                                    threadPool(),
-                                                                                                                                   scene(resourceManager, threadPool)
+                                                                                                                                   scene(resourceManager, threadPool),
+                                                                                                                                   input()
 
 {
   // Init variables
@@ -97,6 +98,8 @@ Application::Application(
   this->initWindow(title, resizable);
   this->initGLEW();
   this->initOpenGLSettings();
+
+  this->input.init(this->window);
 
   // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
@@ -170,6 +173,8 @@ void Application::update()
   // Poll events
   glfwPollEvents();
 
+  this->input.update();
+
   this->processInput();
 }
 
@@ -202,42 +207,39 @@ void Application::render()
 
 void Application::processInput()
 {
-  if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+  if (this->input.isKeyJustPressed(GLFW_KEY_ESCAPE))
   {
     this->setWindowShouldClose();
   }
-  if (glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS)
+  if (this->input.isKeyPressed(GLFW_KEY_W))
   {
     this->scene.processKeyboard(FORWARD, this->deltaTime);
   }
-  if (glfwGetKey(this->window, GLFW_KEY_S) == GLFW_PRESS)
+  if (this->input.isKeyPressed(GLFW_KEY_S))
   {
     this->scene.processKeyboard(BACKWARD, this->deltaTime);
   }
-  if (glfwGetKey(this->window, GLFW_KEY_A) == GLFW_PRESS)
+  if (this->input.isKeyPressed(GLFW_KEY_A))
   {
     this->scene.processKeyboard(LEFT, this->deltaTime);
   }
-  if (glfwGetKey(this->window, GLFW_KEY_D) == GLFW_PRESS)
+  if (this->input.isKeyPressed(GLFW_KEY_D))
   {
     this->scene.processKeyboard(RIGHT, this->deltaTime);
   }
-  if (glfwGetKey(this->window, GLFW_KEY_SPACE) == GLFW_PRESS)
+  if (this->input.isKeyPressed(GLFW_KEY_SPACE))
   {
     this->scene.processKeyboard(UP, this->deltaTime);
   }
-  if (glfwGetKey(this->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+  if (this->input.isKeyPressed(GLFW_KEY_LEFT_SHIFT))
   {
     this->scene.processKeyboard(DOWN, this->deltaTime);
   }
 
-  bool enterState = glfwGetKey(this->window, GLFW_KEY_ENTER) == GLFW_PRESS;
-  if (enterState && !this->enterPressed)
+  if (this->input.isKeyJustPressed(GLFW_KEY_ENTER))
   {
     this->paused = !this->paused;
   }
-
-  this->enterPressed = enterState;
 }
 
 void Application::loadEllipsoidObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name,
