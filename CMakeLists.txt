@@ -40,6 +40,7 @@ add_executable(Space
 
     # Core
     src/core/application.cpp
+    src/core/input.cpp
 
     # Camera
     src/camera/camera.cpp
