@@ -20,7 +20,7 @@ public:
   void init(GLFWwindow *window);
   void update();
 
+  bool isKeyHold(int key);
   bool isKeyPressed(int key);
-  bool isKeyJustPressed(int key);
-  bool isKeyJustReleased(int key);
+  bool isKeyReleased(int key);
 };
