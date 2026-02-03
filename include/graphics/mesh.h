@@ -2,24 +2,10 @@
 
 #include <glm/glm.hpp>
 #include <GL/glew.h>
+#include "graphics/vertexLayouts.h"
 
 class Shader;
 class Primitive;
-struct Vertex;
-
-enum class VertexLayout
-{
-  Full,
-  NoColor,
-  PositionOnly,
-  Instanced
-};
-
-struct InstanceData
-{
-  glm::vec3 position;
-  // glm::mat4 ModelMatrix;
-};
 
 class Mesh
 {

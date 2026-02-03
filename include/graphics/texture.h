@@ -12,6 +12,7 @@ private:
 
 public:
   Texture(const char *fileName, GLenum type);
+  Texture(GLsizei width, GLsizei height, GLenum type, const void *pixels = nullptr);
 
   ~Texture();
 
