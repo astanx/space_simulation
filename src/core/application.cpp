@@ -101,6 +101,7 @@ Application::Application(
   this->initOpenGLSettings();
 
   this->input.init(this->window);
+  this->textRenderer.init();
 
   // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
@@ -110,6 +111,7 @@ Application::Application(
   this->resourceManager.LoadShader(Res::TRAIL_SHADER, this->GLmajor, this->GLminor, "assets/shaders/trail/vertex.glsl", "assets/shaders/trail/fragment.glsl");
   this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
   // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
+  this->resourceManager.LoadShader(Res::TEXT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
 
   loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/sun.png", Res::SUN_MATERIAL, sunRadii, sunMaterial);
   loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
@@ -156,11 +158,11 @@ void Application::update()
   float elapsed = currentFrame - lastFpsUpdateTime;
   if (elapsed >= 1.0f)
   {
-    float fps = frames / elapsed;
+    this->fps = frames / elapsed;
     std::cout << "FPS: " << fps << std::endl;
 
-    frames = 0;
-    lastFpsUpdateTime = currentFrame;
+    this->frames = 0;
+    this->lastFpsUpdateTime = currentFrame;
   }
 
   float aspect = 1.0f;
@@ -190,6 +192,7 @@ void Application::render()
   Shader *asteroid = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
   Shader *trail = this->resourceManager.GetShader(Res::TRAIL_SHADER);
   Shader *pointShadow = this->resourceManager.GetShader(Res::POINT_SHADOW_SHADER);
+  Shader *text = this->resourceManager.GetShader(Res::TEXT_SHADER);
 
   // Render shadow map
   this->scene.renderPointShadow(pointShadow);
@@ -201,6 +204,14 @@ void Application::render()
 
   // Render skybox
   this->scene.renderSkybox(skybox, this->framebufferWidth / this->framebufferHeight);
+
+  this->textRenderer.render(*text, "FPS: " + std::to_string(int(this->fps)), 
+    this->framebufferWidth, this->framebufferHeight, 
+    25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+
+    this->textRenderer.render(*text, "Time scale: " + std::to_string(int(this->timeScale)) + " seconds per frame", 
+    this->framebufferWidth, this->framebufferHeight, 
+    25.f, this->framebufferHeight - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
 
   // Swap buffers
   glfwSwapBuffers(this->window);

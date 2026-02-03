@@ -41,6 +41,33 @@ Texture::Texture(const char *fileName, GLenum type)
   stbi_image_free(image);
 }
 
+Texture::Texture(GLsizei width, GLsizei height, GLenum type, const void *pixels)
+{
+  this->type = type;
+
+  glGenTextures(1, &this->id);
+  glBindTexture(type, this->id);
+
+  glTexImage2D(
+      type,
+      0,
+      GL_RED,
+      width,
+      height,
+      0,
+      GL_RED,
+      GL_UNSIGNED_BYTE,
+      pixels);
+
+  glTexParameteri(type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glActiveTexture(0);
+  glBindTexture(type, 0);
+}
+
 Texture::~Texture()
 {
   glDeleteTextures(1, &this->id);

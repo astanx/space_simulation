@@ -23,26 +23,46 @@ void Mesh::initVAO()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), this->indices, GL_STATIC_DRAW);
   }
 
-  // Position attribute
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, position));
-  glEnableVertexAttribArray(0);
-
-  if (this->layout != VertexLayout::PositionOnly)
+  auto it = LAYOUTS.find(this->layout);
+  if (it == LAYOUTS.end())
   {
-    // Texcoord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, texcoord));
-    glEnableVertexAttribArray(1);
+    throw std::runtime_error("ERROR::MESH::Invalid vertex layout");
+  }
+  const auto &layout = it->second;
 
-    // Normal attribute
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, normal));
-    glEnableVertexAttribArray(2);
-  }
-  if (this->layout == VertexLayout::Full)
+  for (size_t i = 0; i < layout.count; ++i)
   {
-    // Color attribute
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, color));
-    glEnableVertexAttribArray(3);
+    const auto &attr = layout.attributes[i];
+    glVertexAttribPointer(
+        attr.index,
+        attr.size,
+        attr.type,
+        attr.normalized,
+        sizeof(Vertex),
+        (void *)attr.offset);
+    glEnableVertexAttribArray(attr.index);
   }
+
+  // // Position attribute
+  // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, position));
+  // glEnableVertexAttribArray(0);
+
+  // if (this->layout != VertexLayout::PositionOnly)
+  // {
+  //   // Texcoord attribute
+  //   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, texcoord));
+  //   glEnableVertexAttribArray(1);
+
+  //   // Normal attribute
+  //   glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, normal));
+  //   glEnableVertexAttribArray(2);
+  // }
+  // if (this->layout == VertexLayout::Full)
+  // {
+  //   // Color attribute
+  //   glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, color));
+  //   glEnableVertexAttribArray(3);
+  // }
 
   glBindVertexArray(0);
 }
@@ -193,7 +213,7 @@ void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
     return; // mapping failed
 
   memcpy(ptr, instanceData.data(), instanceCount * sizeof(InstanceData));
-  
+
   glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 

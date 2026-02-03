@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scene/scene.h"
+#include "scene/textRenderer.h"
 #include "core/input.h"
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
@@ -38,15 +39,17 @@ private:
   ResourceManager resourceManager;
   ThreadPool threadPool;
 
-  // State
+  // Metrics
   bool paused;
   double timeScale;
+  float fps;
 
   // Input
   Input input;
 
   // Scene
   Scene scene;
+  TextRenderer textRenderer;
 
   // Timing
   float deltaTime;

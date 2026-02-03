@@ -12,6 +12,9 @@ if(APPLE)
     set(GLFW_INCLUDE_DIR "/opt/homebrew/include")
     set(GLFW_LIBRARY "/opt/homebrew/lib/libglfw.dylib")
 
+    set(FREETYPE_INCLUDE_DIR "/opt/homebrew/include/freetype2")
+    set(FREETYPE_LIBRARY "/opt/homebrew/lib/libfreetype.dylib")
+
     # GLEW (Homebrew)
     set(GLEW_INCLUDE_DIR "/opt/homebrew/opt/glew/include")
     set(GLEW_LIBRARY "/opt/homebrew/opt/glew/lib/libGLEW.dylib")
@@ -20,19 +23,6 @@ endif()
 # Add GLM (header-only)
 set(GLM_INCLUDE_DIR "/Users/ivanastanin/vs/cpp/glm-1.0.2")
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/include
-    ${GLFW_INCLUDE_DIR}
-    ${GLM_INCLUDE_DIR}
-    ${GLEW_INCLUDE_DIR}
-    ${SOIL2_INCLUDE_DIR}
-)
-
-link_libraries(
-    ${GLFW_LIBRARY}
-    ${GLEW_LIBRARY}
-    ${OPENGL_LIBRARIES}
-)
 
 add_executable(Space 
     # Main
@@ -54,6 +44,7 @@ add_executable(Space
         #Materials
         src/graphics/materials/phongMaterial.cpp
         src/graphics/materials/asteroidMaterial.cpp
+        src/graphics/materials/textMaterial.cpp
     
         # Primitives
         src/graphics/primitives/triangle.cpp
@@ -68,6 +59,7 @@ add_executable(Space
 
     # Scene
     src/scene/scene.cpp
+    src/scene/textRenderer.cpp
         # Light
         src/scene/light/light.cpp
         src/scene/light/pointLight.cpp
@@ -102,11 +94,21 @@ add_executable(Space
     src/maths/random.cpp
 )
 
+include_directories(Space PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${GLFW_INCLUDE_DIR}
+    ${GLM_INCLUDE_DIR}
+    ${GLEW_INCLUDE_DIR}
+    ${SOIL2_INCLUDE_DIR}
+    ${FREETYPE_INCLUDE_DIR}
+)
+
 # Link libraries
-target_link_libraries(Space
+target_link_libraries(Space PRIVATE
     ${OPENGL_LIBRARIES}
     ${GLFW_LIBRARY}
     ${GLEW_LIBRARY}
+    ${FREETYPE_LIBRARY}
     "-framework CoreFoundation"
 )
 

@@ -101,7 +101,6 @@ void OrbitalObject::move(double dt)
   // this->velocity += 0.5 * this->acceleration * dt;
   this->keplerDrift(dt);
   // this->velocity += 0.5 * this->acceleration * dt;
-
   this->renderPosition = this->realToVisualPos(this->position);
 
   // std::cout << "New position: " << renderPosition.x << ' ' << renderPosition.y << ' ' << renderPosition.z << std::endl;
