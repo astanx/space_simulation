@@ -37,11 +37,6 @@ private:
   Camera *activeCamera;
   Skybox *skybox;
 
-  std::unique_ptr<LightManager> lightManager;
-
-  const GLuint shadowRes = 4096;
-  std::unique_ptr<ShadowManager> shadowManager;
-
   std::vector<std::unique_ptr<Model>> models;
 
   std::vector<std::unique_ptr<Object>> objects;
@@ -56,13 +51,6 @@ private:
   std::unique_ptr<DirectionalLight> directionalLight;
 
   std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
-
-  unsigned int dirLightUBO;
-  unsigned int pointLightUBO;
-
-  unsigned int cameraUBO;
-
-  void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
 public:
   Scene(ResourceManager &resourceManager, ThreadPool &threadPool);
@@ -85,15 +73,7 @@ public:
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);
 
-  void updateUBO(float aspectRatio);
-  void bindCameraUBO(GLuint programID);
-
   void update(float dt);
-  void renderDirectionalShadow(Shader *shadowShader);
-  void renderShadowMap(Shader *shadowShader);
-  void renderPointShadow(Shader *shadowShader);
-  void render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader, Shader *asteroidShader, Shader *trailShader);
-  void renderSkybox(Shader *skyboxShader, float aspectRatio);
 
   // Setters
   void addModel(std::unique_ptr<Model> model);

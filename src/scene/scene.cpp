@@ -12,18 +12,6 @@
 
 #include <iostream>
 
-// Private functions
-void Scene::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType)
-{
-  glGenBuffers(1, ubo);
-  glBindBuffer(bufferType, *ubo);
-  glBufferData(
-      bufferType,
-      size,
-      nullptr,
-      GL_DYNAMIC_DRAW);
-}
-
 // Constructor/Destructor
 Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadPool(threadPool), resourceManager(resourceManager)
 {
@@ -160,27 +148,6 @@ void Scene::init(float width, float height)
   auto sb = std::make_unique<Skybox>(faces);
   this->addSkybox(std::move(sb));
   this->skybox = this->skyboxes.back().get();
-
-  this->lightManager = std::make_unique<LightManager>();
-  this->shadowManager = std::make_unique<ShadowManager>();
-
-  this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
-  if (this->directionalLight)
-  {
-    this->initShaderBuffer(&this->lightManager->getDirUBO(), sizeof(DirLightGPU), GL_UNIFORM_BUFFER);
-    this->shadowManager->addDirShadow(std::make_unique<DirectionalShadow>(this->shadowRes, this->shadowRes));
-  }
-  // Multiple-lights(not supported on opengl < 4.2)
-  // this->initShaderBuffer(&this->lightManager->getPointSSBO(), sizeof(PointLightGPU) * this->pointLights.size(), GL_SHADER_STORAGE_BUFFER);
-  if (!this->pointLights.empty())
-  {
-    this->initShaderBuffer(&this->lightManager->getPointUBO(), sizeof(PointLightGPU), GL_UNIFORM_BUFFER);
-    this->initShaderBuffer(&this->shadowManager->getPointUBO(), sizeof(PointShadowGPU), GL_UNIFORM_BUFFER);
-    this->shadowManager->addPointShadow(std::make_unique<PointShadow>(this->shadowRes, this->shadowRes,
-                                                                      this->pointLights[0]->getPosition(),
-                                                                      this->activeCamera->getNearPlane(),
-                                                                      this->activeCamera->getFarPlane()));
-  }
 }
 
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)
@@ -207,55 +174,6 @@ void Scene::processMouseScroll(float yoffset)
   this->activeCamera->processMouseScroll(yoffset);
 }
 
-void Scene::updateUBO(float aspectRatio)
-{
-  if (!this->activeCamera)
-    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
-
-  CameraGPU camUBO{};
-  camUBO.ProjectionMatrix = this->activeCamera->getProjectionMatrix(aspectRatio);
-  camUBO.ViewMatrix = this->activeCamera->getViewMatrix();
-  camUBO.camPosition = glm::vec4(this->activeCamera->getPosition(), 1.0);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, this->cameraUBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-  if (this->directionalLight)
-  {
-    this->lightManager->updateDirUBO(*this->directionalLight.get());
-    this->shadowManager->updateDirUBO();
-  }
-  else
-  {
-    this->lightManager->maskDirUBO();
-    this->shadowManager->maskDirUBO();
-  }
-  if (!this->pointLights.empty())
-  {
-    this->pointLights[0]->move(this->stars[0]->getRenderPosition());
-    this->shadowManager->updatePointShadowLightPosition(this->pointLights[0]->getPosition());
-    this->lightManager->updatePointUBO(*this->pointLights[0].get());
-    this->shadowManager->updatePointUBO();
-  }
-  else
-  {
-    this->lightManager->maskPointUBO();
-    this->shadowManager->maskPointUBO();
-  }
-}
-void Scene::bindCameraUBO(GLuint programID)
-{
-  GLuint blockIndex =
-      glGetUniformBlockIndex(programID, "Camera");
-
-  if (blockIndex != GL_INVALID_INDEX)
-  {
-    glUniformBlockBinding(programID, blockIndex, CAMERA_BINDING);
-  }
-  glBindBufferBase(GL_UNIFORM_BUFFER, CAMERA_BINDING, cameraUBO);
-}
-
 void Scene::update(float dt)
 {
   for (size_t i = 0; i < objects.size(); ++i)
@@ -280,137 +198,6 @@ void Scene::update(float dt)
     }
     asteroidSystem->update(dt);
   }
-}
-
-void Scene::renderSkybox(Shader *skyboxShader, float aspectRatio)
-{
-  skyboxShader->use();
-  GLuint &skyboxID = skyboxShader->getId();
-  this->bindCameraUBO(skyboxID);
-
-  glCullFace(GL_FRONT);
-
-  this->skybox->render(skyboxShader);
-
-  glCullFace(GL_BACK);
-
-  skyboxShader->unuse();
-}
-
-void Scene::renderShadowMap(Shader *shadowShader)
-{
-  for (auto &object : this->objects)
-  {
-    if (dynamic_cast<Star *>(object.get()))
-      continue;
-
-    object->render(shadowShader);
-  }
-}
-
-void Scene::renderDirectionalShadow(Shader *shadowShader)
-{
-  if (!this->directionalLight)
-    return;
-
-  GLint prevViewport[4];
-  glGetIntegerv(GL_VIEWPORT, prevViewport);
-
-  glViewport(0, 0, shadowRes, shadowRes);
-
-  glClearDepth(1.0);
-  glClear(GL_DEPTH_BUFFER_BIT);
-
-  shadowShader->use();
-
-  this->shadowManager->bindDirShadowFBO();
-
-  this->renderShadowMap(shadowShader);
-
-  this->shadowManager->unbindDirShadowFBO();
-
-  shadowShader->unuse();
-
-  glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
-}
-
-void Scene::renderPointShadow(Shader *shadowShader)
-{
-  if (this->pointLights.empty())
-    return;
-
-  GLint prevViewport[4];
-  glGetIntegerv(GL_VIEWPORT, prevViewport);
-
-  glViewport(0, 0, shadowRes, shadowRes);
-
-  this->shadowManager->bindPointShadowFBO();
-
-  glClearDepth(1.0);
-  glClear(GL_DEPTH_BUFFER_BIT);
-
-  shadowShader->use();
-
-  this->shadowManager->bindPointShadowUBO(shadowShader->getId());
-
-  this->renderShadowMap(shadowShader);
-
-  this->shadowManager->unbindPointShadowFBO();
-
-  shadowShader->unuse();
-
-  glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
-}
-
-void Scene::render(Shader *shader, int framebufferWidth, int framebufferHeight, float dt, Shader *skyboxShader, Shader *asteroidShader, Shader *trailShader)
-{
-  if (!activeCamera)
-    return;
-
-  trailShader->use();
-  GLuint &trailID = trailShader->getId();
-  this->bindCameraUBO(trailID);
-
-  for (auto &trail : this->trails)
-  {
-    trail->render();
-  }
-  trailShader->unuse();
-
-  shader->use();
-  GLuint &coreID = shader->getId();
-  this->bindCameraUBO(coreID);
-
-  this->lightManager->bindDirLight(coreID);
-  this->lightManager->bindPointLightUBO(coreID);
-
-  this->shadowManager->bindPointShadowUBO(coreID);
-  this->shadowManager->bindPointShadow(*shader, 5);
-
-  // Render all objects
-  for (auto &object : this->objects)
-  {
-    object->render(shader);
-  }
-
-  shader->unuse();
-
-  asteroidShader->use();
-  GLuint &asteroidID = asteroidShader->getId();
-  this->bindCameraUBO(asteroidID);
-
-  this->lightManager->bindDirLight(asteroidID);
-  this->lightManager->bindPointLightUBO(asteroidID);
-
-  this->shadowManager->bindPointShadowUBO(asteroidID);
-  this->shadowManager->bindPointShadow(*asteroidShader, 5);
-
-  for (auto &asteroidSystem : asteroidSystems)
-  {
-    asteroidSystem->render(asteroidShader);
-  }
-
-  asteroidShader->unuse();
 }
 
 // Setters
