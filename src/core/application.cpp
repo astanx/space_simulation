@@ -82,7 +82,8 @@ Application::Application(
                                                                                                                                    resourceManager(),
                                                                                                                                    threadPool(),
                                                                                                                                    scene(resourceManager, threadPool),
-                                                                                                                                   input()
+                                                                                                                                   input(),
+                                                                                                                                   renderer(resourceManager)
 
 {
   // Init variables
@@ -125,6 +126,7 @@ Application::Application(
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
 
   this->scene.init(windowWidth, windowHeight);
+  this->renderer.init(this->scene);
 }
 
 Application::~Application()
@@ -169,9 +171,12 @@ void Application::update()
   if (framebufferHeight > 0)
     aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
 
-  if (!this->paused)
-    this->scene.update(this->deltaTime * this->timeScale);
-  this->scene.updateUBO(aspect);
+  // if (!this->paused)
+  //   this->scene.update(this->deltaTime * this->timeScale);
+  // this->scene.updateUBO(aspect);
+
+  this->renderer.update(this->scene, this->deltaTime * timeScale,
+                        this->framebufferWidth, this->framebufferHeight, this->paused);
 
   // Poll events
   glfwPollEvents();
@@ -187,31 +192,33 @@ void Application::render()
   glClearColor(1.f, 1.f, 1.f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  Shader *core = this->resourceManager.GetShader(Res::CORE_SHADER);
-  Shader *skybox = this->resourceManager.GetShader(Res::SKYBOX_SHADER);
-  Shader *asteroid = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
-  Shader *trail = this->resourceManager.GetShader(Res::TRAIL_SHADER);
-  Shader *pointShadow = this->resourceManager.GetShader(Res::POINT_SHADOW_SHADER);
-  Shader *text = this->resourceManager.GetShader(Res::TEXT_SHADER);
+  this->renderer.render(this->scene);
 
-  // Render shadow map
-  this->scene.renderPointShadow(pointShadow);
+  // Shader *core = this->resourceManager.GetShader(Res::CORE_SHADER);
+  // Shader *skybox = this->resourceManager.GetShader(Res::SKYBOX_SHADER);
+  // Shader *asteroid = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
+  // Shader *trail = this->resourceManager.GetShader(Res::TRAIL_SHADER);
+  // Shader *pointShadow = this->resourceManager.GetShader(Res::POINT_SHADOW_SHADER);
+  // Shader *text = this->resourceManager.GetShader(Res::TEXT_SHADER);
 
-  glViewport(0, 0, this->framebufferWidth, this->framebufferHeight);
+  // // Render shadow map
+  // this->scene.renderPointShadow(pointShadow);
 
-  // Render scene
-  this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime, skybox, asteroid, trail);
+  // glViewport(0, 0, this->framebufferWidth, this->framebufferHeight);
 
-  // Render skybox
-  this->scene.renderSkybox(skybox, this->framebufferWidth / this->framebufferHeight);
+  // // Render scene
+  // this->scene.render(core, this->framebufferWidth, this->framebufferHeight, this->deltaTime, skybox, asteroid, trail);
 
-  this->textRenderer.render(*text, "FPS: " + std::to_string(int(this->fps)), 
-    this->framebufferWidth, this->framebufferHeight, 
-    25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+  // // Render skybox
+  // this->scene.renderSkybox(skybox, this->framebufferWidth / this->framebufferHeight);
 
-    this->textRenderer.render(*text, "Time scale: " + std::to_string(int(this->timeScale)) + " seconds per frame", 
-    this->framebufferWidth, this->framebufferHeight, 
-    25.f, this->framebufferHeight - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+  // this->textRenderer.render(*text, "FPS: " + std::to_string(int(this->fps)),
+  //   this->framebufferWidth, this->framebufferHeight,
+  //   25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+
+  //   this->textRenderer.render(*text, "Time scale: " + std::to_string(int(this->timeScale)) + " seconds per frame",
+  //   this->framebufferWidth, this->framebufferHeight,
+  //   25.f, this->framebufferHeight - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
 
   // Swap buffers
   glfwSwapBuffers(this->window);

@@ -1,9 +1,8 @@
-#include "scene/textRenderer.h"
+#include "render/textRenderer.h"
 #include "graphics/mesh.h"
 #include "graphics/vertex.h"
 
 #include <iostream>
-#include <OpenGL/gl.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 // Public functions

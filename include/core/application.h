@@ -1,7 +1,8 @@
 #pragma once
 
 #include "scene/scene.h"
-#include "scene/textRenderer.h"
+#include "render/textRenderer.h"
+#include "render/renderer.h"
 #include "core/input.h"
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
@@ -48,6 +49,7 @@ private:
   Input input;
 
   // Scene
+  Renderer renderer;
   Scene scene;
   TextRenderer textRenderer;
 
