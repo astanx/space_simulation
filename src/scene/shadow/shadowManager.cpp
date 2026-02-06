@@ -67,12 +67,10 @@ void ShadowManager::updatePointUBO(int enabled)
 
 void ShadowManager::maskDirUBO()
 {
-  // this->updateDirUBO(DirectionalShadow(0, 0), 0);
   this->updateDirUBO(0);
 }
 void ShadowManager::maskPointUBO()
 {
-  // this->updatePointUBO(PointShadow(0, 0, glm::vec3(0.0), 1.f, 100.f), 0);
   this->updatePointUBO(0);
 }
 void ShadowManager::bindDirShadowUBO(GLuint &programID)

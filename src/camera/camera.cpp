@@ -15,9 +15,16 @@ void Camera::updateCameraVectors()
 }
 
 // Constructor and Destructor
-Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float windowWidth, float windowHeight)
+Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp)
     : position(position), front(front), worldUp(worldUp), up(worldUp)
 {
+
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  float width = static_cast<float>(viewport[2]);
+  float height = static_cast<float>(viewport[3]);
+
   this->mouseSensitivity = 0.2f;
   this->movementSpeed = 250.5f;
 
@@ -28,8 +35,8 @@ Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float win
   this->roll = 0.f;
 
   this->firstMouse = true;
-  this->lastX = static_cast<float>(windowWidth) / 2.f;
-  this->lastY = static_cast<float>(windowHeight) / 2.f;
+  this->lastX = static_cast<float>(width) / 2.f;
+  this->lastY = static_cast<float>(height) / 2.f;
 
   this->fov = 45.f;
   this->nearPlane = 0.1f;

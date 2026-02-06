@@ -86,7 +86,7 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
 }
 
 // Process functions
-void Scene::init(float width, float height)
+void Scene::init()
 {
   Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii.mean, sunPos);
   this->sun = sunPtr;
@@ -128,9 +128,7 @@ void Scene::init(float width, float height)
 
   auto cam = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f),
                                       glm::vec3(0.0f, 0.0f, -1.0f),
-                                      glm::vec3(0.0f, 1.0f, 0.0f),
-                                      width,
-                                      height);
+                                      glm::vec3(0.0f, 1.0f, 0.0f));
 
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();

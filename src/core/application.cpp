@@ -23,7 +23,10 @@ void Application::initWindow(const char *title, GLboolean resizable)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, this->GLmajor);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, this->GLminor);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS
+
+  if (__APPLE__)
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS
+
   glfwWindowHint(GLFW_RESIZABLE, resizable);
 
   GLFWwindow *window = glfwCreateWindow(this->windowWidth, this->windowHeight, title, NULL, NULL);
@@ -102,7 +105,6 @@ Application::Application(
   this->initOpenGLSettings();
 
   this->input.init(this->window);
-  this->textRenderer.init();
 
   // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
@@ -125,7 +127,7 @@ Application::Application(
   Texture *diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
 
-  this->scene.init(windowWidth, windowHeight);
+  this->scene.init();
   this->renderer.init(this->scene);
 }
 
@@ -167,12 +169,7 @@ void Application::update()
     this->lastFpsUpdateTime = currentFrame;
   }
 
-  float aspect = 1.0f;
-  if (framebufferHeight > 0)
-    aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
-
-  this->renderer.update(this->scene, this->deltaTime * timeScale,
-                        this->framebufferWidth, this->framebufferHeight, this->paused);
+  this->renderer.update(this->scene, this->deltaTime * timeScale, this->paused);
 
   // Poll events
   glfwPollEvents();
@@ -189,6 +186,11 @@ void Application::render()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   this->renderer.render(this->scene);
+
+  this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
+                            25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+  this->renderer.renderText("Time scale: " + std::to_string(int(this->timeScale)) + " seconds per frame",
+                            25.f, this->framebufferHeight - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
 
   // Swap buffers
   glfwSwapBuffers(this->window);

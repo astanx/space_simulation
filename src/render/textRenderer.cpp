@@ -49,11 +49,17 @@ void TextRenderer::init()
   FT_Done_FreeType(ft);
 };
 
-void TextRenderer::render(Shader &shader, std::string text, float screenWidth, float screenHeight, float x, float y, float scale, glm::vec3 color)
+void TextRenderer::render(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color)
 {
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  float width = static_cast<float>(viewport[2]);
+  float height = static_cast<float>(viewport[3]);
+
   shader.use();
   // activate corresponding render state
-  glm::mat4 projection = glm::ortho(0.0f, screenWidth, 0.0f, screenHeight);
+  glm::mat4 projection = glm::ortho(0.0f, width, 0.0f, height);
   shader.setVec3f(color, "textColor");
 
   shader.setMat4fv(projection, "projection");

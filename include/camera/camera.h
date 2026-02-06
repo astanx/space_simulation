@@ -40,7 +40,7 @@ private:
   void updateCameraVectors();
 
 public:
-  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float windowWidth, float windowHeight);
+  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp);
   ~Camera() {}
 
   // Getters
