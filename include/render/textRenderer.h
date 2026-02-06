@@ -30,5 +30,5 @@ public:
 
   void init();
 
-  void render(Shader &shader, std::string text, float screenWidth, float screenHeight, float x, float y, float scale = 1.0, glm::vec3 color = glm::vec3(1.0));
+  void render(Shader &shader, std::string text, float x, float y, float scale = 1.0, glm::vec3 color = glm::vec3(1.0));
 };

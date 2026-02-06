@@ -1,5 +1,7 @@
 #pragma once
 
+#include "render/textRenderer.h"
+
 #include <memory>
 #include <GL/glew.h>
 
@@ -13,6 +15,7 @@ class Renderer
 {
 private:
   ResourceManager &resourceManager;
+  TextRenderer textRenderer;
 
   Shader *coreShader;
   Shader *skyboxShader;
@@ -47,6 +50,13 @@ public:
   ~Renderer() = default;
 
   void render(Scene &scene);
-  void update(Scene &scene, float dt, float width, float height, bool paused);
+
+  void renderText(
+      const std::string &text,
+      float x, float y,
+      float scale,
+      glm::vec3 color);
+
+  void update(Scene &scene, float dt, bool paused);
   void init(Scene &scene);
 };

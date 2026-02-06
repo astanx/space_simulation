@@ -68,7 +68,7 @@ public:
   AsteroidSystem *createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge);
 
   // Process functions
-  void init(float width, float height);
+  void init();
   void processKeyboard(CameraMovement direction, float deltaTime);
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);

@@ -244,6 +244,8 @@ void Renderer::init(Scene &scene)
                                                                         activeCamera.getNearPlane(),
                                                                         activeCamera.getFarPlane()));
   }
+
+  this->textRenderer.init();
 }
 
 void Renderer::render(Scene &scene)
@@ -258,8 +260,14 @@ void Renderer::render(Scene &scene)
   this->renderSkybox(scene);
 }
 
-void Renderer::update(Scene &scene, float dt, float width, float height, bool paused)
+void Renderer::update(Scene &scene, float dt, bool paused)
 {
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  float width = static_cast<float>(viewport[2]);
+  float height = static_cast<float>(viewport[3]);
+
   float aspect = 1.f;
   if (height != 0)
     aspect = width / height;
@@ -268,4 +276,9 @@ void Renderer::update(Scene &scene, float dt, float width, float height, bool pa
     scene.update(dt);
 
   this->updateUBO(scene, aspect);
+}
+
+void Renderer::renderText(const std::string &text, float x, float y, float scale, glm::vec3 color)
+{
+  this->textRenderer.render(*this->textShader, text, x, y, scale, color);
 }

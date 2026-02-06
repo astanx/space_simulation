@@ -45,13 +45,14 @@ private:
   double timeScale;
   float fps;
 
+  // Renderer
+  Renderer renderer;
+
   // Input
   Input input;
 
   // Scene
-  Renderer renderer;
   Scene scene;
-  TextRenderer textRenderer;
 
   // Timing
   float deltaTime;
