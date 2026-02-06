@@ -44,26 +44,47 @@ enum ShadowUBOBindingPoints
 
 class DirectionalShadow;
 class PointShadow;
+class Shader;
 
 class ShadowManager
 {
 private:
   GLuint dirUBO = 0;
-  GLuint pointUBO;
+  GLuint pointUBO = 0;
+
+  std::unique_ptr<DirectionalShadow> directionalShadow;
+  std::unique_ptr<PointShadow> pointShadow;
 
 public:
   ShadowManager() = default;
   ~ShadowManager() = default;
 
-  void updateDirUBO(const DirectionalShadow &dirShadow, int enabled = 1);
-  void updatePointUBO(const PointShadow &pointShadow, int enabled = 1);
+  void updateDirUBO(int enabled = 1);
+  void updatePointUBO(int enabled = 1);
 
   void maskDirUBO();
   void maskPointUBO();
 
-  void bindDirShadow(GLuint &programID);
+  void bindDirShadowUBO(GLuint &programID);
   void bindPointShadowUBO(GLuint &programID);
+
+  void bindDirShadow(Shader &shader, int unit);
+  void bindPointShadow(Shader &shader, int unit);
+
+  void bindDirShadowFBO();
+  void bindPointShadowFBO();
+
+  void unbindDirShadowFBO();
+  void unbindPointShadowFBO();
 
   GLuint &getDirUBO() { return this->dirUBO; };
   GLuint &getPointUBO() { return this->pointUBO; };
+
+  std::unique_ptr<DirectionalShadow> &getDirShadow() { return this->directionalShadow; };
+  std::unique_ptr<PointShadow> &getPointShadow() { return this->pointShadow; };
+
+  void addDirShadow(std::unique_ptr<DirectionalShadow> shadow);
+  void addPointShadow(std::unique_ptr<PointShadow> shadow);
+
+  void updatePointShadowLightPosition(glm::vec3 pos);
 };

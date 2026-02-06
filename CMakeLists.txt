@@ -59,7 +59,6 @@ add_executable(Space
 
     # Scene
     src/scene/scene.cpp
-    src/scene/textRenderer.cpp
         # Light
         src/scene/light/light.cpp
         src/scene/light/pointLight.cpp
@@ -72,6 +71,10 @@ add_executable(Space
         src/scene/shadow/pointShadow.cpp
         src/scene/shadow/shadowManager.cpp
 
+    # Render
+    src/render/renderer.cpp
+    src/render/textRenderer.cpp
+    
     # Resources
     src/resources/OBJloader.cpp
     src/resources/resourceManager.cpp

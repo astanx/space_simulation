@@ -45,23 +45,22 @@ private:
   std::vector<std::unique_ptr<Model>> models;
 
   std::vector<std::unique_ptr<Object>> objects;
-  std::vector<Star*> stars;
-  
+  std::vector<Star *> stars;
+  Star *sun;
+
   std::vector<std::unique_ptr<Trail>> trails;
   std::vector<std::unique_ptr<Camera>> cameras;
   std::vector<std::unique_ptr<Skybox>> skyboxes;
 
   std::vector<std::unique_ptr<PointLight>> pointLights;
   std::unique_ptr<DirectionalLight> directionalLight;
-  std::unique_ptr<DirectionalShadow> directionalShadow;
-  std::unique_ptr<PointShadow> pointShadow;
 
   std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
 
   unsigned int dirLightUBO;
   unsigned int pointLightUBO;
+
   unsigned int cameraUBO;
-  unsigned int shadowUBO;
 
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
@@ -106,8 +105,14 @@ public:
   void addSkybox(std::unique_ptr<Skybox> skybox);
 
   // Getters
-  Camera &getActiveCamera();
-  const glm::vec3 getActiveCameraPosition() const;
-  const std::vector<std::unique_ptr<PointLight>> &getPointLights() const;
-  const std::unique_ptr<DirectionalLight> &getDirLight() const;
+  Camera &getActiveCamera() { return *this->activeCamera; };
+  Skybox &getActiveSkybox() { return *this->skybox; };
+  Star &getSun() { return *this->sun; };
+
+  const glm::vec3 getActiveCameraPosition() const { return this->activeCamera->getPosition(); };
+  const std::vector<std::unique_ptr<PointLight>> &getPointLights() const { return this->pointLights; };
+  const std::unique_ptr<DirectionalLight> &getDirLight() const { return this->directionalLight; };
+  const std::vector<std::unique_ptr<Object>> &getObjects() const { return this->objects; };
+  const std::vector<std::unique_ptr<Trail>> &getTrails() const { return this->trails; };
+  const std::vector<std::unique_ptr<AsteroidSystem>> &getAsteroidSystems() const { return this->asteroidSystems; };
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "physics/orbitalObject.h"
-#include "graphics/renderable.h"
+#include "render/renderable.h"
 
 class Model;
 

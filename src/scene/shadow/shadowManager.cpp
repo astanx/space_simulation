@@ -6,46 +6,46 @@
 #include <iostream>
 
 // Public functions
-void ShadowManager::updateDirUBO(const DirectionalShadow &dirShadow, int enabled)
+void ShadowManager::updateDirUBO(int enabled)
 {
-  DirShadowGPU dirUBO{};
+  DirShadowGPU ubo{};
 
-  dirUBO.ambient = glm::vec4(0);
-  dirUBO.diffuse = glm::vec4(0);
-  dirUBO.specular = glm::vec4(0);
-  dirUBO.direction = glm::vec4(0);
-  dirUBO.intensity = 1.0;
-  dirUBO.enabled = enabled;
+  ubo.ambient = glm::vec4(0);
+  ubo.diffuse = glm::vec4(0);
+  ubo.specular = glm::vec4(0);
+  ubo.direction = glm::vec4(0);
+  ubo.intensity = 1.0;
+  ubo.enabled = enabled;
 
   glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirShadowGPU), &dirUBO);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirShadowGPU), &ubo);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void ShadowManager::updatePointUBO(const PointShadow &pointShadow, int enabled)
+void ShadowManager::updatePointUBO(int enabled)
 {
-  PointShadowGPU pointUBO{};
+  PointShadowGPU ubo{};
 
-  float near = pointShadow.getNearPlane();
-  float far = pointShadow.getFarPlane();
-  glm::vec3 lightPos = pointShadow.getLightPos();
-  glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), pointShadow.getAspectRatio(), near, far);
+  float near = this->pointShadow->getNearPlane();
+  float far = this->pointShadow->getFarPlane();
+  glm::vec3 lightPos = this->pointShadow->getLightPos();
+  glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), pointShadow->getAspectRatio(), near, far);
 
-  pointUBO.ShadowMatrices[0] = shadowProj *
-                               glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
-  pointUBO.ShadowMatrices[1] = shadowProj *
-                               glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
-  pointUBO.ShadowMatrices[2] = shadowProj *
-                               glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0));
-  pointUBO.ShadowMatrices[3] = shadowProj *
-                               glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0));
-  pointUBO.ShadowMatrices[4] = shadowProj *
-                               glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0));
-  pointUBO.ShadowMatrices[5] = shadowProj *
-                               glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0));
+  ubo.ShadowMatrices[0] = shadowProj *
+                          glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
+  ubo.ShadowMatrices[1] = shadowProj *
+                          glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
+  ubo.ShadowMatrices[2] = shadowProj *
+                          glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0));
+  ubo.ShadowMatrices[3] = shadowProj *
+                          glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0));
+  ubo.ShadowMatrices[4] = shadowProj *
+                          glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0));
+  ubo.ShadowMatrices[5] = shadowProj *
+                          glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0));
 
-  pointUBO.lightPos = glm::vec4(lightPos, 1.f);
-  pointUBO.far_plane = far;
+  ubo.lightPos = glm::vec4(lightPos, 1.f);
+  ubo.far_plane = far;
 
   // std::cout << "Updating Point Shadow UBO with lightPos: " << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << " and far_plane: " << far << std::endl;
   // std::cout << "Shadow Matrices: " << std::endl;
@@ -61,19 +61,21 @@ void ShadowManager::updatePointUBO(const PointShadow &pointShadow, int enabled)
   // }
 
   glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointShadowGPU), &pointUBO);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointShadowGPU), &ubo);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void ShadowManager::maskDirUBO()
 {
-  this->updateDirUBO(DirectionalShadow(0, 0), 0);
+  // this->updateDirUBO(DirectionalShadow(0, 0), 0);
+  this->updateDirUBO(0);
 }
 void ShadowManager::maskPointUBO()
 {
-  this->updatePointUBO(PointShadow(0, 0, glm::vec3(0.0), 1.f, 100.f), 0);
+  // this->updatePointUBO(PointShadow(0, 0, glm::vec3(0.0), 1.f, 100.f), 0);
+  this->updatePointUBO(0);
 }
-void ShadowManager::bindDirShadow(GLuint &programID)
+void ShadowManager::bindDirShadowUBO(GLuint &programID)
 {
   GLuint blockIndex =
       glGetUniformBlockIndex(programID, "DirectionalShadow");
@@ -94,4 +96,44 @@ void ShadowManager::bindPointShadowUBO(GLuint &programID)
     glUniformBlockBinding(programID, blockIndex, POINT_SHADOW_BINDING);
   }
   glBindBufferBase(GL_UNIFORM_BUFFER, POINT_SHADOW_BINDING, this->pointUBO);
+}
+
+void ShadowManager::bindDirShadow(Shader &shader, int unit)
+{
+  this->directionalShadow->bind(shader, unit);
+}
+void ShadowManager::bindPointShadow(Shader &shader, int unit)
+{
+  this->pointShadow->bind(shader, unit);
+}
+
+void ShadowManager::bindDirShadowFBO()
+{
+  this->directionalShadow->bindShadowMapFBO();
+}
+void ShadowManager::bindPointShadowFBO()
+{
+  this->pointShadow->bindShadowMapFBO();
+}
+
+void ShadowManager::unbindDirShadowFBO()
+{
+  this->directionalShadow->unbindShadowMapFBO();
+}
+void ShadowManager::unbindPointShadowFBO()
+{
+  this->pointShadow->unbindShadowMapFBO();
+}
+
+void ShadowManager::addDirShadow(std::unique_ptr<DirectionalShadow> shadow)
+{
+  this->directionalShadow = std::move(shadow);
+}
+void ShadowManager::addPointShadow(std::unique_ptr<PointShadow> shadow)
+{
+  this->pointShadow = std::move(shadow);
+}
+void ShadowManager::updatePointShadowLightPosition(glm::vec3 pos)
+{
+  this->pointShadow->setLightPos(pos);
 }
