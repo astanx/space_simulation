@@ -234,26 +234,25 @@ void Application::processInput()
 
   if (this->input.isKeyPressed(GLFW_KEY_UP))
   {
-    if (this->timeScale * 2 != 0)
+    if (this->timeScale > 0)
       this->timeScale *= 2;
+    else
+      this->timeScale *= .5;
   }
   if (this->input.isKeyPressed(GLFW_KEY_DOWN))
   {
-    this->timeScale /= 2;
-    if (this->timeScale == 0)
-      this->timeScale = 1;
+    if (this->timeScale > 0)
+      this->timeScale *= .5;
+    else
+      this->timeScale *= 2;
   }
-
   if (this->input.isKeyHold(GLFW_KEY_LEFT))
   {
     this->timeScale -= 2;
-    if (this->timeScale == 0)
-      this->timeScale = 1;
   }
   if (this->input.isKeyHold(GLFW_KEY_RIGHT))
   {
-    if (this->timeScale + 2 != 0)
-      this->timeScale += 2;
+    this->timeScale += 2;
   }
 }
 
