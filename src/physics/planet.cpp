@@ -17,7 +17,7 @@ Planet::Planet(Object *centralBody, double mu, double radius, const KeplerElemen
 // Public functions
 void Planet::update(double dt)
 {
-  this->move(dt);
+  // this->move(dt);
 
   for (auto &moon : this->moons)
   {
@@ -47,4 +47,20 @@ void Planet::addModel(std::unique_ptr<Model> model)
 void Planet::addMoon(std::unique_ptr<Moon> moon)
 {
   this->moons.push_back(std::move(moon));
+}
+
+void Planet::drift(double dt)
+{
+  this->keplerDrift(dt);
+
+  for (auto &moon : this->moons)
+    moon->drift(dt);
+}
+
+void Planet::halfKick(const std::vector<Object *> &bodies, double dt)
+{
+  this->kick(bodies, dt * 0.5);
+
+  for (auto &moon : this->moons)
+    moon->halfKick(bodies, dt);
 }

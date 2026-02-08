@@ -19,6 +19,9 @@ protected:
 
   bool useTrail = true;
 
+  void keplerDrift(double dt);
+  void kick(const std::vector<Object *> &bodies, double dt) override;
+
 public:
   OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements, bool useTrail = true);
   ~OrbitalObject() = default;
@@ -26,9 +29,10 @@ public:
   const Orbit *getOrbit() const;
   const bool getUseTrail() const;
 
-  void keplerDrift(double dt);
+  virtual void drift(double dt) override;
+  virtual void halfKick(const std::vector<Object *> &bodies, double dt) override;
   void renderTrail();
-  void move(double dt) override;
+  // void move(double dt) override;
 
   virtual std::unique_ptr<Trail> generateTrail();
 };

@@ -14,7 +14,7 @@ Moon::Moon(OrbitalObject *centralBody, double mu, double radius, const KeplerEle
 // Public functions
 void Moon::update(double dt)
 {
-  this->move(dt);
+  // this->move(dt);
 
   if (this->model)
     this->model->setPosition(this->renderPosition);

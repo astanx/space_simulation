@@ -17,6 +17,21 @@ glm::dvec3 Object::realToVisualPos(glm::dvec3 pos)
   // return this->position * VISUAL_SCALE;
 }
 
+void Object::kick(const std::vector<Object *> &bodies, double dt)
+{
+  this->acceleration = glm::dvec3(0.0);
+
+  for (auto *other : bodies)
+  {
+    if (other == this)
+      continue;
+
+    this->applyGravitation(*other);
+  }
+
+  this->velocity += dt * this->acceleration; // kick
+}
+
 // Constructor
 Object::Object(double mass, double radius, glm::dvec3 position, glm::dvec3 velocity)
 {
@@ -42,6 +57,17 @@ void Object::move(double dt)
 
   this->acceleration = glm::dvec3(0.f);
 };
+
+void Object::drift(double dt)
+{
+  this->position += this->velocity * dt;
+  this->renderPosition = this->realToVisualPos(this->position);
+}
+
+void Object::halfKick(const std::vector<Object *> &bodies, double dt)
+{
+  this->kick(bodies, dt * 0.5);
+}
 
 // Getters
 glm::dvec3 Object::getPosition() const
@@ -85,6 +111,7 @@ void Object::setVelocity(const glm::dvec3 &velocity)
 void Object::setPosition(const glm::dvec3 &position)
 {
   this->position = position;
+  this->renderPosition = realToVisualPos(position);
 }
 
 // Public Functions

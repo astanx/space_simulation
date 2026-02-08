@@ -162,7 +162,7 @@ void AsteroidSystem::update(double dt)
         for (unsigned j = begin; j < end; j++)
         {
           auto& asteroid = this->asteroids[typeIndex][j];
-          asteroid->update(dt);
+          // asteroid->update(dt);
           this->instances[typeIndex][j].position = asteroid->getRenderPosition();
         } });
     }
@@ -182,7 +182,7 @@ void AsteroidSystem::update(double dt)
 void AsteroidSystem::applyObjectGravitation(Object *object)
 {
   float currentTime = static_cast<float>(glfwGetTime());
-  if (currentTime - this->lastUpdateTime < 0.1f)
+  if (currentTime - this->lastUpdateTime < 0.05f)
     return;
   this->lastUpdateTime = currentTime;
   unsigned threadCount = this->threadPool.getThreadCount();
@@ -205,6 +205,67 @@ void AsteroidSystem::applyObjectGravitation(Object *object)
                                {
         for (unsigned j = begin; j < end; j++) 
           asteroidType[j]->applyGravitation(*object); });
+    }
+  }
+  this->threadPool.wait();
+}
+
+void AsteroidSystem::drift(double dt)
+{
+  float currentTime = static_cast<float>(glfwGetTime());
+  if (currentTime - this->lastUpdateTime < 0.05f)
+    return;
+  this->lastUpdateTime = currentTime;
+  unsigned threadCount = this->threadPool.getThreadCount();
+
+  for (auto &asteroidType : this->asteroids)
+  {
+    unsigned perThread = asteroidType.size() / threadCount;
+    unsigned remaining = asteroidType.size() % threadCount;
+
+    unsigned start = 0;
+    for (unsigned int i = 0; i < threadCount; i++)
+    {
+      unsigned work = perThread + (i < remaining ? 1 : 0);
+
+      unsigned begin = start;
+      unsigned end = begin + work;
+      start = end;
+
+      this->threadPool.enqueue([this, &asteroidType, begin, end, dt]()
+                               {
+        for (unsigned j = begin; j < end; j++) 
+          asteroidType[j]->drift(dt); });
+    }
+  }
+  this->threadPool.wait();
+}
+void AsteroidSystem::halfKick(const std::vector<Object *> &bodies, double dt)
+{
+  float currentTime = static_cast<float>(glfwGetTime());
+  if (currentTime - this->lastUpdateTime < 0.05f)
+    return;
+  this->lastUpdateTime = currentTime;
+  unsigned threadCount = this->threadPool.getThreadCount();
+
+  for (auto &asteroidType : this->asteroids)
+  {
+    unsigned perThread = asteroidType.size() / threadCount;
+    unsigned remaining = asteroidType.size() % threadCount;
+
+    unsigned start = 0;
+    for (unsigned int i = 0; i < threadCount; i++)
+    {
+      unsigned work = perThread + (i < remaining ? 1 : 0);
+
+      unsigned begin = start;
+      unsigned end = begin + work;
+      start = end;
+
+      this->threadPool.enqueue([this, &asteroidType, begin, end, bodies, dt]()
+                               {
+        for (unsigned j = begin; j < end; j++) 
+          asteroidType[j]->halfKick(bodies, dt); });
     }
   }
   this->threadPool.wait();
