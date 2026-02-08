@@ -57,6 +57,6 @@ public:
       float scale,
       glm::vec3 color);
 
-  void update(Scene &scene, float dt, bool paused);
+  void update(Scene &scene, double dt, bool paused);
   void init(Scene &scene);
 };

@@ -13,7 +13,7 @@ Asteroid::Asteroid(Object *centralBody, double mu, double radius, const KeplerEl
 // Public functions
 void Asteroid::update(double dt)
 {
-  this->move(dt);
+  // this->move(dt);
   // if (this->model)
   //   this->model->setPosition(this->renderPosition);
 }

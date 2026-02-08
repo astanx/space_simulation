@@ -37,6 +37,9 @@ public:
   AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool);
   ~AsteroidSystem() = default;
 
+  void drift(double dt);
+  void halfKick(const std::vector<Object *> &bodies, double dt);
+
   void applyObjectGravitation(Object *object);
   void render(Shader *shader);
   void update(double dt);

@@ -17,6 +17,8 @@ protected:
 
   glm::dvec3 realToVisualPos(glm::dvec3 pos);
 
+  virtual void kick(const std::vector<Object *> &bodies, double dt);
+
 public:
   Object(double mass, double radius, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
   virtual ~Object() = default;
@@ -40,4 +42,7 @@ public:
 
   virtual void update(double dt) = 0;
   virtual void render(Shader *shader) = 0;
+
+  virtual void drift(double dt);
+  virtual void halfKick(const std::vector<Object *> &bodies, double dt);
 };

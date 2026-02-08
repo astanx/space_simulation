@@ -15,11 +15,11 @@
 #include "resources/resourceManager.h"
 #include "physics/structs/keplerElements.h"
 #include "physics/asteroidSystem.h"
+#include "physics/star.h"
 #include "resources/threadPool.h"
 
 class Shader;
 class Planet;
-class Star;
 class Moon;
 
 struct CameraGPU
@@ -39,9 +39,12 @@ private:
 
   std::vector<std::unique_ptr<Model>> models;
 
-  std::vector<std::unique_ptr<Object>> objects;
-  std::vector<Star *> stars;
+  std::vector<std::unique_ptr<OrbitalObject>> orbitalObjects;
+  std::vector<std::unique_ptr<Star>> stars;
+  std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
   Star *sun;
+
+  std::vector<Object *> objects;
 
   std::vector<std::unique_ptr<Trail>> trails;
   std::vector<std::unique_ptr<Camera>> cameras;
@@ -50,7 +53,9 @@ private:
   std::vector<std::unique_ptr<PointLight>> pointLights;
   std::unique_ptr<DirectionalLight> directionalLight;
 
-  std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
+  void halfKick(double dt);
+  void drift(double dt);
+  void wisdomHolman(double dt);
 
 public:
   Scene(ResourceManager &resourceManager, ThreadPool &threadPool);
@@ -73,11 +78,14 @@ public:
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);
 
-  void update(float dt);
+  void update(double dt);
 
   // Setters
   void addModel(std::unique_ptr<Model> model);
-  void addObject(std::unique_ptr<Object> object);
+  void addObject(Object *object);
+  void addOrbitalObject(std::unique_ptr<OrbitalObject> orbitalObject);
+  void addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSystem);
+  void addStar(std::unique_ptr<Star> star);
   void addTrail(std::unique_ptr<Trail> trail);
   void addPointLight(std::unique_ptr<PointLight> pointLight);
   void addDirLight(std::unique_ptr<DirectionalLight> directionalLight);
@@ -90,9 +98,9 @@ public:
   Star &getSun() { return *this->sun; };
 
   const glm::vec3 getActiveCameraPosition() const { return this->activeCamera->getPosition(); };
+  const std::vector<Object *> &getObjects() const { return this->objects; };
   const std::vector<std::unique_ptr<PointLight>> &getPointLights() const { return this->pointLights; };
   const std::unique_ptr<DirectionalLight> &getDirLight() const { return this->directionalLight; };
-  const std::vector<std::unique_ptr<Object>> &getObjects() const { return this->objects; };
   const std::vector<std::unique_ptr<Trail>> &getTrails() const { return this->trails; };
   const std::vector<std::unique_ptr<AsteroidSystem>> &getAsteroidSystems() const { return this->asteroidSystems; };
 };

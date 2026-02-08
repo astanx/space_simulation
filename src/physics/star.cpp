@@ -11,7 +11,7 @@ Star::Star(double mu, double radius, glm::dvec3 position, glm::dvec3 velocity) :
 // Public functions
 void Star::update(double dt)
 {
-  this->move(dt);
+  // this->move(dt);
   if (this->model)
     this->model->setPosition(this->renderPosition);
 }

@@ -12,6 +12,42 @@
 
 #include <iostream>
 
+// Private functions
+void Scene::halfKick(double dt)
+{
+  for (auto &object : this->objects)
+  {
+    object->halfKick(this->objects, dt);
+  }
+
+  for (auto &asteroidSystem : this->asteroidSystems)
+  {
+    asteroidSystem->halfKick(this->objects, dt);
+  }
+}
+
+void Scene::drift(double dt)
+{
+  for (auto &object : this->objects)
+  {
+    object->drift(dt);
+  }
+
+  for (auto &asteroidSystem : this->asteroidSystems)
+  {
+    asteroidSystem->drift(dt);
+  }
+}
+
+void Scene::wisdomHolman(double dt)
+{
+  this->halfKick(dt);
+
+  this->drift(dt);
+
+  this->halfKick(dt);
+}
+
 // Constructor/Destructor
 Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadPool(threadPool), resourceManager(resourceManager)
 {
@@ -34,7 +70,9 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   Planet *ptr = planet.get();
   if (planet->getUseTrail())
     this->addTrail(planet->generateTrail());
-  this->addObject(std::move(planet));
+  this->addOrbitalObject(std::move(planet));
+  this->addObject(ptr);
+
   return ptr;
 }
 
@@ -50,8 +88,9 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
   star->addModel(std::move(model));
 
   Star *ptr = star.get();
-  this->addObject(std::move(star));
-  this->stars.push_back(ptr);
+  this->addStar(std::move(star));
+  this->addObject(ptr);
+
   return ptr;
 }
 
@@ -81,7 +120,7 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
                                                                             innerEdge, outerEdge,
                                                                             this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
   AsteroidSystem *ptr = system.get();
-  this->asteroidSystems.push_back(std::move(system));
+  this->addAsteroidSystem(std::move(system));
   return ptr;
 }
 
@@ -172,16 +211,18 @@ void Scene::processMouseScroll(float yoffset)
   this->activeCamera->processMouseScroll(yoffset);
 }
 
-void Scene::update(float dt)
+void Scene::update(double dt)
 {
-  for (size_t i = 0; i < objects.size(); ++i)
-  {
-    for (size_t j = i + 1; j < objects.size(); ++j)
-    {
-      objects[i]->applyGravitation(*objects[j]);
-      objects[j]->applyGravitation(*objects[i]);
-    }
-  }
+  this->wisdomHolman(dt);
+
+  // for (size_t i = 0; i < objects.size(); ++i)
+  // {
+  //   for (size_t j = i + 1; j < objects.size(); ++j)
+  //   {
+  //     objects[i]->applyGravitation(*objects[j]);
+  //     objects[j]->applyGravitation(*objects[i]);
+  //   }
+  // }
 
   for (auto &object : this->objects)
   {
@@ -190,12 +231,10 @@ void Scene::update(float dt)
 
   for (auto &asteroidSystem : this->asteroidSystems)
   {
-    for (size_t i = 0; i < objects.size(); ++i)
-    {
-      asteroidSystem->applyObjectGravitation(objects[i].get());
-    }
     asteroidSystem->update(dt);
   }
+
+  this->pointLights[0]->move(this->sun->getRenderPosition()); // move sun light
 }
 
 // Setters
@@ -212,9 +251,19 @@ void Scene::addModel(std::unique_ptr<Model> model)
   this->models.push_back(std::move(model));
 }
 
-void Scene::addObject(std::unique_ptr<Object> object)
+void Scene::addObject(Object *object)
 {
-  this->objects.push_back(std::move(object));
+  this->objects.push_back(object);
+}
+
+void Scene::addOrbitalObject(std::unique_ptr<OrbitalObject> orbitalObject)
+{
+  this->orbitalObjects.push_back(std::move(orbitalObject));
+}
+
+void Scene::addStar(std::unique_ptr<Star> star)
+{
+  this->stars.push_back(std::move(star));
 }
 
 void Scene::addTrail(std::unique_ptr<Trail> trail)
@@ -234,4 +283,9 @@ void Scene::addDirLight(std::unique_ptr<DirectionalLight> directionalLight)
 void Scene::addSkybox(std::unique_ptr<Skybox> skybox)
 {
   this->skyboxes.push_back(std::move(skybox));
+}
+
+void Scene::addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSystem)
+{
+  this->asteroidSystems.push_back(std::move(asteroidSystem));
 }

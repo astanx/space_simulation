@@ -140,7 +140,7 @@ void Renderer::renderShadowMap(Scene &scene, Shader &shader) // +
 {
   for (auto &object : scene.getObjects())
   {
-    if (dynamic_cast<Star *>(object.get()))
+    if (dynamic_cast<Star *>(object))
       continue;
 
     object->render(&shader);
@@ -260,7 +260,7 @@ void Renderer::render(Scene &scene)
   this->renderSkybox(scene);
 }
 
-void Renderer::update(Scene &scene, float dt, bool paused)
+void Renderer::update(Scene &scene, double dt, bool paused)
 {
   GLint viewport[4];
   glGetIntegerv(GL_VIEWPORT, viewport);
