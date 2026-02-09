@@ -40,31 +40,31 @@ enum LightUBOBindingPoints
 
 class DirectionalLight;
 class PointLight;
+class Scene;
 
 class LightManager
 {
 private:
   GLuint dirUBO = 0;
-  GLuint pointUBO;
-  GLuint pointSSBO = 0;
+  GLuint pointUBO = 0;
+  // GLuint pointSSBO = 0;
+
+  void initDirUBO();
+  void initPointUBO();
 
 public:
-  LightManager() = default;
+  LightManager(Scene& scene);
   ~LightManager() = default;
 
-  void updateDirUBO(const DirectionalLight &dirLight, int enabled = 1);
-  void updatePointUBO(const PointLight &pointLight, int enabled = 1);
+  void updateDirUBO(const DirectionalLight *dirLight, int enabled = 1);
+  void updatePointUBO(const PointLight *pointLight, int enabled = 1);
 
   void maskDirUBO();
   void maskPointUBO();
 
-  void updateSSBO(std::vector<PointLight> &pointLights);
+  // void updateSSBO(std::vector<PointLight> &pointLights);
 
   void bindDirLight(GLuint &programID);
   void bindPointLightUBO(GLuint &programID);
-  void bindPointLightSSBO(GLuint &programID);
-
-  GLuint &getDirUBO() { return this->dirUBO; };
-  GLuint &getPointSSBO() { return this->pointSSBO; };
-  GLuint &getPointUBO() { return this->pointUBO; };
+  // void bindPointLightSSBO(GLuint &programID);
 };

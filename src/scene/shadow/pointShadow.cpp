@@ -1,4 +1,5 @@
 #include "scene/shadow/pointShadow.h"
+#include "debug/logger.h"
 
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,9 +28,7 @@ void PointShadow::init()
   glReadBuffer(GL_NONE);
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-  {
-    std::cerr << "ERROR::POINT_SHADOW::FRAMEBUFFER_NOT_COMPLETE" << std::endl;
-  }
+    Logger::logError("Point shadow", "Point shadow map FBO is not complete");
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 };
@@ -40,22 +39,34 @@ PointShadow::PointShadow(const GLuint width, const GLuint height, glm::vec3 ligh
   this->lightPos = lightPos;
   this->nearPlane = nearPlane;
   this->farPlane = farPlane;
-  this->aspectRatio = 1.f;
+  this->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+
   this->init();
 };
 
 // Public functions
 void PointShadow::bindShadowMapFBO() const
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, this->shadowMapFBO);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->shadowMapTexture, 0);
+  if (glIsFramebuffer(this->shadowMapFBO))
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, this->shadowMapFBO);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->shadowMapTexture, 0);
+  }
+  else
+    Logger::logWarning("Point shadow", "Point shadow map FBO is not initialized");
+
   // glDrawBuffer(GL_NONE);
   // glReadBuffer(GL_NONE);
 }
 
 void PointShadow::bind(Shader &shader, int textureUnit) const
 {
-  glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, this->shadowMapTexture);
-  shader.set1i(textureUnit, "depthMap");
+  if (glIsTexture(this->shadowMapTexture))
+  {
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, this->shadowMapTexture);
+    shader.set1i(textureUnit, "depthMap");
+  }
+  else
+    Logger::logWarning("Point shadow", "Point shadow map texture is not initialized");
 }

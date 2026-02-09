@@ -14,7 +14,7 @@ public:
   ~Asteroid() = default;
 
   void update(double dt) override;
-  void render(Shader *shader) override;
+  void render(Shader &shader) override;
   void renderInstanced();
   void addModel(std::unique_ptr<Model> m) override;
 

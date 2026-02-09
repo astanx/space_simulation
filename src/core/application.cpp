@@ -4,6 +4,7 @@
 #include "graphics/shader.h"
 #include "physics/constants.h"
 #include "scene/scene.h"
+#include "debug/logger.h"
 
 #include <iostream>
 
@@ -12,9 +13,8 @@ void Application::initGLFW()
 {
   if (!glfwInit())
   {
-    std::cerr << "ERROR::GLFW_INIT_FAILED" << std::endl;
     glfwTerminate();
-    return;
+    throw std::runtime_error("[Application] RUNTIME ERROR: GLFW init failed");
   }
 }
 void Application::initWindow(const char *title, GLboolean resizable)
@@ -32,9 +32,8 @@ void Application::initWindow(const char *title, GLboolean resizable)
   GLFWwindow *window = glfwCreateWindow(this->windowWidth, this->windowHeight, title, NULL, NULL);
   if (!window)
   {
-    std::cerr << "ERROR::GLFW_WINDOW_CREATION_FAILED" << std::endl;
     glfwTerminate();
-    return;
+    throw std::runtime_error("[Application] RUNTIME ERROR: GLFW window creation failed");
   }
 
   glfwGetFramebufferSize(window, &this->framebufferWidth, &this->framebufferHeight);
@@ -53,10 +52,9 @@ void Application::initGLEW()
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK)
   {
-    std::cerr << "ERROR::GLEW_INIT_FAILED" << std::endl;
     glfwDestroyWindow(this->window);
     glfwTerminate();
-    return;
+    throw std::runtime_error("[Application] RUNTIME ERROR: GLEW init failed");
   }
 }
 void Application::initOpenGLSettings()
@@ -124,7 +122,7 @@ Application::Application(
   loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/mars.png", Res::MARS_MATERIAL, marsRadii, marsMaterial);
   loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, "assets/textures/jupiter.png", Res::JUPITER_MATERIAL, jupiterRadii, jupiterMaterial);
 
-  Texture *diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/asteroid.png", GL_TEXTURE_2D);
+  Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
 
   this->scene.init();
@@ -163,7 +161,8 @@ void Application::update()
   if (elapsed >= 1.0f)
   {
     this->fps = frames / elapsed;
-    std::cout << "FPS: " << fps << std::endl;
+
+    Logger::logInfo("FPS", std::to_string(fps));
 
     this->frames = 0;
     this->lastFpsUpdateTime = currentFrame;
@@ -260,13 +259,14 @@ void Application::loadEllipsoidObject(std::string name, std::string diffuse_name
                                       Radii radii, MaterialProperties material,
                                       std::string specular_name, const char *specularPath, int segments)
 {
-  Texture *diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
+  Texture &diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
 
   Texture *spec = nullptr;
+  
   if (specularPath)
-    spec = this->resourceManager.LoadTexture(specular_name, specularPath, GL_TEXTURE_2D);
+    spec = &this->resourceManager.LoadTexture(specular_name, specularPath, GL_TEXTURE_2D);
 
-  this->resourceManager.LoadPhongMaterial(material_name, material, diff, spec);
+  this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec);
   auto obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE));
   this->resourceManager.LoadMesh(name, std::move(obj), VertexLayout::Full);
 }

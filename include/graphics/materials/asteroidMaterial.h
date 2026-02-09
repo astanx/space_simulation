@@ -10,7 +10,7 @@ class AsteroidMaterial : public Material
 protected:
   Texture* diffuseTexture;
 public:
-  AsteroidMaterial(Texture* diffuseTexture);
+  AsteroidMaterial(Texture& diffuseTexture);
   ~AsteroidMaterial() = default;
   void sendToShader(Shader& shader) override;
 };

@@ -1,4 +1,5 @@
 #include "graphics/shader.h"
+#include "debug/logger.h"
 
 #include <iostream>
 #include <fstream>
@@ -33,9 +34,7 @@ std::string Shader::loadShaderSrc(const char *fileName, bool isInclude)
     }
   }
   else
-  {
-    std::cerr << "ERROR::SHADER::COULD_NOT_OPEN_SHADER_FILE: " << fileName << std::endl;
-  }
+    std::cerr << "[Shader] RUNTIME ERROR: Could not open shader file - " << fileName << std::endl;
 
   inFile.close();
 
@@ -64,7 +63,7 @@ GLuint Shader::loadShader(GLenum type, char *fileName)
 
   if (!success)
   {
-    std::cerr << "ERROR::SHADER::COMPILATION_FAILED_FOR: " << fileName << std::endl;
+    std::cerr << "[Shader] RUNTIME ERROR: Compilation failed for - " << fileName << std::endl;
     glGetShaderInfoLog(shader, 512, NULL, infoLog);
     std::cout << infoLog << std::endl;
   }
@@ -78,9 +77,7 @@ void Shader::linkProgram(GLuint vertexShader, GLuint geometryShader, GLuint frag
 
   this->id = glCreateProgram();
   if (!this->id)
-  {
-    std::cerr << "ERROR::SHADER::FAILED_TO_CREATE_PROGRAM" << std::endl;
-  }
+    Logger::logFatal("Shader", "Failed to create program");
 
   glAttachShader(this->id, vertexShader);
   if (geometryShader)
@@ -92,7 +89,7 @@ void Shader::linkProgram(GLuint vertexShader, GLuint geometryShader, GLuint frag
   glGetProgramiv(this->id, GL_LINK_STATUS, &success);
   if (!success)
   {
-    std::cerr << "ERROR::SHADER::PROGRAM_LINKING_FAILED" << std::endl;
+    Logger::logFatal("Shader", "Failed to link program");
     glGetProgramInfoLog(this->id, 512, NULL, infoLog);
     std::cout << infoLog << std::endl;
   }
@@ -196,7 +193,10 @@ void Shader::setMat4fv(glm::mat4 value, const GLchar *name, GLboolean transpose)
 // Public functions
 void Shader::use()
 {
-  glUseProgram(this->id);
+  if (glIsProgram(this->id))
+    glUseProgram(this->id);
+  else
+    Logger::logFatal("Shader", "No program to use");
 }
 
 void Shader::unuse()

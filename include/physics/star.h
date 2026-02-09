@@ -13,6 +13,6 @@ public:
   ~Star() = default;
 
   void update(double dt) override;
-  void render(Shader *shader) override;
+  void render(Shader &shader) override;
   void addModel(std::unique_ptr<Model> m) override;
 };

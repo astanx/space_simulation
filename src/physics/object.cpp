@@ -11,7 +11,7 @@ glm::dvec3 Object::realToVisualPos(glm::dvec3 pos)
   return glm::dvec3(
              pos.x,
              -pos.z, // Z → Y
-             pos.y  // Y → -Z
+             pos.y   // Y → -Z
              ) *
          VISUAL_SCALE;
   // return this->position * VISUAL_SCALE;
@@ -94,7 +94,7 @@ double Object::getMu() const
 {
   if (!this->mu)
   {
-    std::cerr << "ERROR:OBJECT:NO_MU" << std::endl;
+    return this->mass * G;
   }
   return this->mu;
 }

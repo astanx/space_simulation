@@ -2,38 +2,44 @@
 #include "scene/scene.h"
 #include "resources/resourceManager.h"
 #include "physics/star.h"
+#include "debug/logger.h"
 
 #include <iostream>
 
 // Private functions
 void Renderer::updateUBO(Scene &scene, float aspectRatio)
 {
-  Camera &activeCamera = scene.getActiveCamera();
+  const Camera &activeCamera = scene.getActiveCamera();
 
-  CameraGPU camUBO{};
-  camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix(aspectRatio);
-  camUBO.ViewMatrix = activeCamera.getViewMatrix();
-  camUBO.camPosition = glm::vec4(activeCamera.getPosition(), 1.0);
+  if (!glIsBuffer(this->cameraUBO))
+    Logger::logWarning("Renderer", "No camera UBO to update");
+  else
+  {
+    CameraGPU camUBO{};
+    camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix(aspectRatio);
+    camUBO.ViewMatrix = activeCamera.getViewMatrix();
+    camUBO.camPosition = glm::vec4(activeCamera.getPosition(), 1.0);
 
-  glBindBuffer(GL_UNIFORM_BUFFER, this->cameraUBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBuffer(GL_UNIFORM_BUFFER, this->cameraUBO);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  }
 
-  const std::unique_ptr<DirectionalLight> &directionalLight = scene.getDirLight();
+  const DirectionalLight *directionalLight = scene.getDirLight();
   if (directionalLight)
-    this->lightManager->updateDirUBO(*directionalLight.get());
+    this->lightManager->updateDirUBO(directionalLight);
   else
     this->lightManager->maskDirUBO();
 
   this->shadowManager->updateDirUBO();
 
-  const std::vector<std::unique_ptr<PointLight>> &pointLights = scene.getPointLights();
+  const std::vector<PointLight *> &pointLights = scene.getPointLights();
   if (!pointLights.empty())
   {
     this->shadowManager->updatePointShadowLightPosition(scene.getSun().getRenderPosition());
     for (size_t i = 0; i < pointLights.size(); i++)
     {
-      this->lightManager->updatePointUBO(*pointLights[i].get());
+      this->lightManager->updatePointUBO(pointLights[i]);
     }
   }
   else
@@ -44,6 +50,9 @@ void Renderer::updateUBO(Scene &scene, float aspectRatio)
 
 void Renderer::bindCameraUBO(GLuint programID)
 {
+  if (!glIsBuffer(this->cameraUBO))
+    Logger::logWarning("Renderer", "No camera UBO to bind");
+
   GLuint blockIndex =
       glGetUniformBlockIndex(programID, "Camera");
 
@@ -51,7 +60,7 @@ void Renderer::bindCameraUBO(GLuint programID)
   {
     glUniformBlockBinding(programID, blockIndex, CAMERA_BINDING);
   }
-  glBindBufferBase(GL_UNIFORM_BUFFER, CAMERA_BINDING, cameraUBO);
+  glBindBufferBase(GL_UNIFORM_BUFFER, CAMERA_BINDING, this->cameraUBO);
 }
 
 void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType)
@@ -67,14 +76,16 @@ void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferTy
 
 void Renderer::renderAsteroidSystems(Scene &scene)
 {
-  this->asteroidShader->use();
-  GLuint &asteroidID = asteroidShader->getId();
+  Shader &asteroidShader = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
+
+  asteroidShader.use();
+  GLuint &asteroidID = asteroidShader.getId();
   this->bindCameraUBO(asteroidID);
 
   this->lightManager->bindDirLight(asteroidID);
   this->lightManager->bindPointLightUBO(asteroidID);
 
-  this->shadowManager->bindPointShadow(*asteroidShader, 5);
+  this->shadowManager->bindPointShadow(asteroidShader, 5);
   this->shadowManager->bindPointShadowUBO(asteroidID);
 
   for (auto &asteroidSystem : scene.getAsteroidSystems())
@@ -82,72 +93,78 @@ void Renderer::renderAsteroidSystems(Scene &scene)
     asteroidSystem->render(asteroidShader);
   }
 
-  this->asteroidShader->unuse();
+  asteroidShader.unuse();
 }
 
 void Renderer::renderObjects(Scene &scene)
 {
-  this->coreShader->use();
+  Shader &coreShader = this->resourceManager.GetShader(Res::CORE_SHADER);
 
-  GLuint &coreID = this->coreShader->getId();
+  coreShader.use();
+
+  GLuint &coreID = coreShader.getId();
   this->bindCameraUBO(coreID);
 
   this->lightManager->bindDirLight(coreID);
   this->lightManager->bindPointLightUBO(coreID);
 
-  this->shadowManager->bindPointShadow(*this->coreShader, 5);
+  this->shadowManager->bindPointShadow(coreShader, 5);
   this->shadowManager->bindPointShadowUBO(coreID);
 
   // Render all objects
   for (auto &object : scene.getObjects())
   {
-    object->render(this->coreShader);
+    object->render(coreShader);
   }
 
-  this->coreShader->unuse();
+  coreShader.unuse();
 }
 void Renderer::renderTrails(Scene &scene)
 {
-  this->trailShader->use();
-  GLuint &trailID = trailShader->getId();
+  Shader &trailShader = this->resourceManager.GetShader(Res::TRAIL_SHADER);
+
+  trailShader.use();
+  GLuint &trailID = trailShader.getId();
   this->bindCameraUBO(trailID);
 
   for (auto &trail : scene.getTrails())
   {
     trail->render();
   }
-  this->trailShader->unuse();
+  trailShader.unuse();
 }
 
 void Renderer::renderSkybox(Scene &scene)
 {
-  Skybox &skybox = scene.getActiveSkybox();
+  const Skybox &skybox = scene.getActiveSkybox();
 
-  this->skyboxShader->use();
-  GLuint &skyboxID = skyboxShader->getId();
+  Shader &skyboxShader = this->resourceManager.GetShader(Res::SKYBOX_SHADER);
+
+  skyboxShader.use();
+  GLuint &skyboxID = skyboxShader.getId();
   this->bindCameraUBO(skyboxID);
 
   glCullFace(GL_FRONT);
 
-  skybox.render(this->skyboxShader);
+  skybox.render(skyboxShader);
 
   glCullFace(GL_BACK);
 
-  this->skyboxShader->unuse();
+  skyboxShader.unuse();
 }
 
-void Renderer::renderShadowMap(Scene &scene, Shader &shader) // +
+void Renderer::renderShadowMap(Scene &scene, Shader &shader)
 {
   for (auto &object : scene.getObjects())
   {
     if (dynamic_cast<Star *>(object))
       continue;
 
-    object->render(&shader);
+    object->render(shader);
   }
 }
 
-void Renderer::renderDirectionalShadow(Scene &scene) // +
+void Renderer::renderDirectionalShadow(Scene &scene)
 {
   if (!scene.getDirLight())
     return;
@@ -162,19 +179,21 @@ void Renderer::renderDirectionalShadow(Scene &scene) // +
   glClearDepth(1.0);
   glClear(GL_DEPTH_BUFFER_BIT);
 
-  this->dirShadowShader->use();
+  Shader &dirShadowShader = this->resourceManager.GetShader(Res::DIRECTIONAL_SHADOW_SHADER);
 
-  this->renderShadowMap(scene, *dirShadowShader);
+  dirShadowShader.use();
+
+  this->renderShadowMap(scene, dirShadowShader);
 
   this->shadowManager->unbindPointShadowFBO();
-  this->dirShadowShader->unuse();
+  dirShadowShader.unuse();
 
   glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
 }
 
 void Renderer::renderPointShadow(Scene &scene) // +
 {
-  const std::vector<std::unique_ptr<PointLight>> &pointLights = scene.getPointLights();
+  const std::vector<PointLight *> &pointLights = scene.getPointLights();
 
   GLint prevViewport[4];
   glGetIntegerv(GL_VIEWPORT, prevViewport);
@@ -184,20 +203,22 @@ void Renderer::renderPointShadow(Scene &scene) // +
 
   glViewport(0, 0, shadowRes, shadowRes);
 
+  Shader &pointShadowShader = this->resourceManager.GetShader(Res::POINT_SHADOW_SHADER);
+
   this->shadowManager->bindPointShadowFBO();
 
   glClearDepth(1.0);
   glClear(GL_DEPTH_BUFFER_BIT);
 
-  this->pointShadowShader->use();
+  pointShadowShader.use();
 
-  this->shadowManager->bindPointShadowUBO(this->pointShadowShader->getId());
+  this->shadowManager->bindPointShadowUBO(pointShadowShader.getId());
 
-  this->renderShadowMap(scene, *this->pointShadowShader);
+  this->renderShadowMap(scene, pointShadowShader);
 
   this->shadowManager->unbindPointShadowFBO();
 
-  this->pointShadowShader->unuse();
+  pointShadowShader.unuse();
 
   glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
 }
@@ -208,35 +229,23 @@ Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceM
 // Public functions
 void Renderer::init(Scene &scene)
 {
-  this->coreShader = this->resourceManager.GetShader(Res::CORE_SHADER);
-  this->asteroidShader = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
-  this->trailShader = this->resourceManager.GetShader(Res::TRAIL_SHADER);
-  this->pointShadowShader = this->resourceManager.GetShader(Res::POINT_SHADOW_SHADER);
-  this->textShader = this->resourceManager.GetShader(Res::TEXT_SHADER);
-  this->skyboxShader = this->resourceManager.GetShader(Res::SKYBOX_SHADER);
-
-  this->lightManager = std::make_unique<LightManager>();
-  this->shadowManager = std::make_unique<ShadowManager>();
+  this->lightManager = std::make_unique<LightManager>(scene);
+  this->shadowManager = std::make_unique<ShadowManager>(scene);
 
   this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
 
-  const std::unique_ptr<DirectionalLight> &directionalLight = scene.getDirLight();
-  const std::vector<std::unique_ptr<PointLight>> &pointLights = scene.getPointLights();
+  const DirectionalLight *directionalLight = scene.getDirLight();
+  const std::vector<PointLight *> &pointLights = scene.getPointLights();
 
   if (directionalLight)
   {
-    this->initShaderBuffer(&this->lightManager->getDirUBO(), sizeof(DirLightGPU), GL_UNIFORM_BUFFER);
-    this->initShaderBuffer(&this->shadowManager->getDirUBO(), sizeof(DirShadowGPU), GL_UNIFORM_BUFFER);
     this->shadowManager->addDirShadow(std::make_unique<DirectionalShadow>(this->shadowRes, this->shadowRes));
   }
   // Multiple-lights(not supported on opengl < 4.2)
   // this->initShaderBuffer(&this->lightManager->getPointSSBO(), sizeof(PointLightGPU) * this->pointLights.size(), GL_SHADER_STORAGE_BUFFER);
   if (!pointLights.empty())
   {
-    Camera &activeCamera = scene.getActiveCamera();
-
-    this->initShaderBuffer(&this->lightManager->getPointUBO(), sizeof(PointLightGPU), GL_UNIFORM_BUFFER);
-    this->initShaderBuffer(&this->shadowManager->getPointUBO(), sizeof(PointShadowGPU), GL_UNIFORM_BUFFER);
+    const Camera &activeCamera = scene.getActiveCamera();
 
     for (auto &light : pointLights)
       this->shadowManager->addPointShadow(std::make_unique<PointShadow>(this->shadowRes, this->shadowRes,
@@ -280,5 +289,6 @@ void Renderer::update(Scene &scene, double dt, bool paused)
 
 void Renderer::renderText(const std::string &text, float x, float y, float scale, glm::vec3 color)
 {
-  this->textRenderer.render(*this->textShader, text, x, y, scale, color);
+  Shader &textShader = this->resourceManager.GetShader(Res::TEXT_SHADER);
+  this->textRenderer.render(textShader, text, x, y, scale, color);
 }

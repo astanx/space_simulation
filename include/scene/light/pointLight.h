@@ -1,3 +1,5 @@
+#pragma once
+
 #include "scene/light/light.h"
 
 class PointLight : public Light

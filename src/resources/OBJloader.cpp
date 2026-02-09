@@ -1,4 +1,5 @@
 #include "resources/OBJloader.h"
+#include "debug/logger.h"
 
 #include <iostream>
 #include <string>
@@ -16,7 +17,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-std::vector<Vertex> loadOBJmodel(const char *filename)
+std::vector<Vertex> loadOBJmodel(const std::string &filename)
 {
   std::vector<glm::fvec3> vertex_positions;
   std::vector<glm::fvec2> vertex_texcoords;
@@ -30,9 +31,10 @@ std::vector<Vertex> loadOBJmodel(const char *filename)
 
   std::ifstream inFile(filename);
 
-  if (!inFile.is_open())
+  if (!inFile)
   {
-    throw std::runtime_error(std::string("ERROR:OBJLOADER::Could not open file: ") + filename);
+    throw std::runtime_error(
+        std::string("[OBJ loader] ERROR: Could not open file: ") + filename);
   }
 
   std::stringstream ss;
@@ -103,14 +105,14 @@ std::vector<Vertex> loadOBJmodel(const char *filename)
   }
 
   if (vertex_positions.empty() || vertex_texcoords.empty() || vertex_normals.empty())
-    std::cerr << "ERROR::OBJ_LOADER::OBJ_DATA_INCOMPLETE" << std::endl;
+    Logger::logError("OBJ loader", "OBJ data incomplete");
 
   vertices.resize(vertex_position_indices.size());
 
   for (size_t i = 0; i < vertices.size(); i++)
   {
     if (vertex_position_indices[i] < 0 || vertex_position_indices[i] >= vertex_positions.size())
-      throw std::runtime_error("OBJ position index out of range");
+      assert(false && "[OBJ loader] ASSERT: OBJ position index out of range");
 
     vertices[i].position = vertex_positions[vertex_position_indices[i]];
 
@@ -127,7 +129,7 @@ std::vector<Vertex> loadOBJmodel(const char *filename)
     vertices[i].color = glm::vec3(1.f);
   }
 
-  std::cout << "Nr of vertices: " << vertices.size() << std::endl;
+  Logger::logInfo("OBJ loader", "Nr of vertices: " + std::to_string(vertices.size()));
 
   return vertices;
 }

@@ -95,6 +95,9 @@ add_executable(Space
     # Maths
     src/maths/rk4.cpp
     src/maths/random.cpp
+
+    # Debug
+    src/debug/logger.cpp
 )
 
 include_directories(Space PRIVATE

@@ -6,6 +6,7 @@
 #include "graphics/materials/asteroidMaterial.h"
 #include "graphics/model.h"
 #include "maths/random.h"
+#include "debug/logger.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
@@ -120,7 +121,7 @@ void AsteroidSystem::createAsteroids(unsigned amount)
       Mesh *mesh = this->meshes[type].get();
       mesh->setInstanceBuffer(this->instances[type]);
 
-      std::cout << "Asteroids of type " << type << ": " << this->instances[type].size() << std::endl;
+      Logger::logInfo("Asteroid system", "Asteroids of type \"" + std::to_string(type) + "\" created - " + std::to_string(this->instances[type].size()));
     }
   }
 }
@@ -271,9 +272,9 @@ void AsteroidSystem::halfKick(const std::vector<Object *> &bodies, double dt)
   this->threadPool.wait();
 }
 
-void AsteroidSystem::render(Shader *shader)
+void AsteroidSystem::render(Shader &shader)
 {
-  this->asteroid_material->sendToShader(*shader);
+  this->asteroid_material->sendToShader(shader);
 
   for (auto &mesh : this->meshes)
   {

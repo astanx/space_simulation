@@ -1,6 +1,7 @@
 #include "render/textRenderer.h"
 #include "graphics/mesh.h"
 #include "graphics/vertex.h"
+#include "debug/logger.h"
 
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,16 +10,19 @@
 void TextRenderer::init()
 {
   FT_Library ft;
+
   if (FT_Init_FreeType(&ft))
   {
-    throw std::runtime_error("ERROR::TextRenderer::Could not init FreeType Library");
+    Logger::logFatal("Text renderer", "Could not init FreeType Library");
+    return;
   }
 
   FT_Face face;
   if (FT_New_Face(ft, "assets/fonts/arial.ttf", 0, &face))
   {
     FT_Done_FreeType(ft);
-    throw std::runtime_error("ERROR::TextRenderer::Failed to load font");
+    Logger::logFatal("Text renderer", "Failed to load font");
+    return;
   }
   else
   {
@@ -31,7 +35,7 @@ void TextRenderer::init()
       // load character glyph
       if (FT_Load_Char(face, c, FT_LOAD_RENDER))
       {
-        std::cout << "ERROR::TextRenderer::Failed to load Glyph" << std::endl;
+        Logger::logError("Text renderer", "Failed to load glyph");
         continue;
       }
 
@@ -70,7 +74,10 @@ void TextRenderer::render(Shader &shader, std::string text, float x, float y, fl
   {
     auto it = characters.find(*c);
     if (it == characters.end())
+    {
+      Logger::logWarning("Text renderer", "Character is not found");
       continue;
+    }
     Character &ch = it->second;
 
     float xpos = x + ch.bearing.x * scale;

@@ -30,21 +30,21 @@ public:
   ~ResourceManager() = default;
 
   // Loaders
-  Shader *LoadShader(const std::string &name, const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile = nullptr);
-  Texture *LoadTexture(const std::string &name, const char *filePath, GLenum type);
-  Material *LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
+  Shader &LoadShader(const std::string &name, const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile = nullptr);
+  Texture &LoadTexture(const std::string &name, const char *filePath, GLenum type);
+  Material &LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
                               Texture *diffuseTexture, Texture *specularTexture, float shininess);
-  Material *LoadPhongMaterial(const std::string &name, MaterialProperties material, Texture *diffuseTexture, Texture *specularTexture);
+  Material &LoadPhongMaterial(const std::string &name, MaterialProperties material, Texture *diffuseTexture, Texture *specularTexture);
 
-  Material *LoadAsteroidMaterial(const std::string &name, Texture *diffuseTexture);
+  Material &LoadAsteroidMaterial(const std::string &name, Texture &diffuseTexture);
 
-  Mesh *LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
-  Mesh *LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
-  Mesh *LoadMesh(const std::string &name, const Mesh &obj);
+  Mesh &LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
+  Mesh &LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
+  Mesh &LoadMesh(const std::string &name, const Mesh &obj);
 
   // Getters
-  Shader *GetShader(const std::string &name);
-  Texture *GetTexture(const std::string &name);
-  Material *GetMaterial(const std::string &name);
-  Mesh *GetMesh(const std::string &name);
+  Shader &GetShader(const std::string &name);
+  Texture &GetTexture(const std::string &name);
+  Material &GetMaterial(const std::string &name);
+  Mesh &GetMesh(const std::string &name);
 };

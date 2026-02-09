@@ -3,8 +3,8 @@
 
 // Constructor/Descructor
 DirectionalLight::DirectionalLight(glm::vec3 direction, glm::vec3 ambient,
-                       glm::vec3 diffuse,
-                       glm::vec3 specular, float intensity) : Light(ambient, diffuse, specular, intensity)
+                                   glm::vec3 diffuse,
+                                   glm::vec3 specular, float intensity) : Light(ambient, diffuse, specular, intensity)
 {
   this->direction = direction;
 };

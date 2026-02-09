@@ -16,8 +16,8 @@ private:
   unsigned nrOfIndices;
 
   std::unordered_map<VertexLayout, GLuint> VAOS;
-  GLuint VBO;
-  GLuint EBO;
+  GLuint VBO = 0;
+  GLuint EBO = 0;
 
   GLuint instanceVBO = 0;
   unsigned int instanceCount = 0;
@@ -39,8 +39,8 @@ public:
   Mesh(const Mesh &obj);
   ~Mesh();
 
-  void render();
-  void renderInstanced();
+  void render() const;
+  void renderInstanced() const;
 
-  double calculateVolume();
+  const double calculateVolume() const;
 };

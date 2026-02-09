@@ -20,7 +20,7 @@ void Moon::update(double dt)
     this->model->setPosition(this->renderPosition);
 }
 
-void Moon::render(Shader *shader)
+void Moon::render(Shader &shader)
 {
   if (model)
     model->render(shader);

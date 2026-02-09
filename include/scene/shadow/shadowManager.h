@@ -45,6 +45,7 @@ enum ShadowUBOBindingPoints
 class DirectionalShadow;
 class PointShadow;
 class Shader;
+class Scene;
 
 class ShadowManager
 {
@@ -55,9 +56,13 @@ private:
   std::unique_ptr<DirectionalShadow> directionalShadow;
   std::unique_ptr<PointShadow> pointShadow;
 
+  void initDirUBO();
+  void initPointUBO();
+
 public:
+  ShadowManager(Scene &scene);
   ShadowManager() = default;
-  ~ShadowManager() = default;
+  ~ShadowManager();
 
   void updateDirUBO(int enabled = 1);
   void updatePointUBO(int enabled = 1);
@@ -71,17 +76,14 @@ public:
   void bindDirShadow(Shader &shader, int unit);
   void bindPointShadow(Shader &shader, int unit);
 
-  void bindDirShadowFBO();
-  void bindPointShadowFBO();
+  void bindDirShadowFBO() const;
+  void bindPointShadowFBO() const;
 
-  void unbindDirShadowFBO();
-  void unbindPointShadowFBO();
+  void unbindDirShadowFBO() const;
+  void unbindPointShadowFBO() const;
 
-  GLuint &getDirUBO() { return this->dirUBO; };
-  GLuint &getPointUBO() { return this->pointUBO; };
-
-  std::unique_ptr<DirectionalShadow> &getDirShadow() { return this->directionalShadow; };
-  std::unique_ptr<PointShadow> &getPointShadow() { return this->pointShadow; };
+  DirectionalShadow *getDirShadow() const;
+  PointShadow *getPointShadow() const;
 
   void addDirShadow(std::unique_ptr<DirectionalShadow> shadow);
   void addPointShadow(std::unique_ptr<PointShadow> shadow);

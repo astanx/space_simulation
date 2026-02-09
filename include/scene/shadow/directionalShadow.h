@@ -9,7 +9,8 @@ protected:
 
 public:
   DirectionalShadow(const GLuint width, const GLuint height);
+  ~DirectionalShadow() = default;
 
   void bindShadowMapFBO() const override;
-  void bind(Shader& shader, int textureUnit) const override;
+  void bind(Shader &shader, int textureUnit) const override;
 };
