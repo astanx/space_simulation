@@ -7,12 +7,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // Private functions
-void Model::updateUniforms(Shader *shader)
+void Model::updateUniforms(Shader &shader)
 {
   if (this->material)
-    this->material->sendToShader(*shader);
-  shader->setMat4fv(this->ModelMatrix, "ModelMatrix");
-  shader->set1i(1, "useModelMatrix");
+    this->material->sendToShader(shader);
+  shader.setMat4fv(this->ModelMatrix, "ModelMatrix");
+  shader.set1i(1, "useModelMatrix");
 }
 
 void Model::updateModelMatrix()
@@ -26,13 +26,13 @@ void Model::updateModelMatrix()
   this->ModelMatrix = glm::scale(this->ModelMatrix, this->scale);
 }
 // Constructor/Descructor
-Model::Model(glm::vec3 position, Material *material,
+Model::Model(glm::vec3 position, Material &material,
              std::vector<Mesh *> meshes,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
              glm::vec3 rotation, glm::vec3 scale, glm::vec3 rotationOrigin)
 {
   this->position = position;
-  this->material = material;
+  this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
   this->rotation = rotation;
@@ -48,13 +48,13 @@ Model::Model(glm::vec3 position, Material *material,
   }
 }
 
-Model::Model(glm::vec3 position, Material *material,
-             Mesh *mesh,
+Model::Model(glm::vec3 position, Material &material,
+             Mesh &mesh,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
              glm::vec3 rotation, glm::vec3 scale, glm::vec3 rotationOrigin)
 {
   this->position = position;
-  this->material = material;
+  this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
   this->rotation = rotation;
@@ -64,7 +64,7 @@ Model::Model(glm::vec3 position, Material *material,
           ? position
           : rotationOrigin;
 
-  this->meshes.push_back(mesh);
+  this->meshes.push_back(&mesh);
 }
 
 Model::Model(const Model &model)
@@ -79,13 +79,13 @@ Model::Model(const Model &model)
   this->meshes = model.meshes;
 }
 
-Model::Model(glm::vec3 position, Material *material,
-             const char *OBJfile,
+Model::Model(glm::vec3 position, Material &material,
+             const std::string &OBJfile,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
              glm::vec3 rotation, glm::vec3 scale, glm::vec3 rotationOrigin)
 {
   this->position = position;
-  this->material = material;
+  this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
   this->rotation = rotation;
@@ -106,7 +106,7 @@ Model::~Model()
 }
 
 // Public functions
-void Model::render(Shader *shader)
+void Model::render(Shader &shader)
 {
   // Update uniforms
   this->updateModelMatrix();

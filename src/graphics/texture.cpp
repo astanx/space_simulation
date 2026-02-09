@@ -1,4 +1,5 @@
 #include "graphics/texture.h"
+#include "debug/logger.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
@@ -76,8 +77,13 @@ Texture::~Texture()
 // Public functions
 void Texture::bind(const GLint textureUnit)
 {
-  glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(this->type, this->id);
+  if (glIsTexture(this->id))
+  {
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(this->type, this->id);
+  }
+  else
+    Logger::logError("Texture", "No texture to bind");
 }
 
 void Texture::unbind()
@@ -107,7 +113,8 @@ void Texture::loadFromFile(const char *fileName)
   }
   else
   {
-    std::cerr << "ERROR::TEXTURE::FAILED_TO_LOAD_FROM_FILE: " << fileName << std::endl;
+    std::cerr << "[Texture] FATAL ERROR: Failed to load from file - " << fileName << std::endl;
+    return;
   }
 
   glActiveTexture(0);

@@ -41,6 +41,6 @@ public:
   void halfKick(const std::vector<Object *> &bodies, double dt);
 
   void applyObjectGravitation(Object *object);
-  void render(Shader *shader);
+  void render(Shader &shader);
   void update(double dt);
 };

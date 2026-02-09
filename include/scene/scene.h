@@ -40,17 +40,28 @@ private:
   std::vector<std::unique_ptr<Model>> models;
 
   std::vector<std::unique_ptr<OrbitalObject>> orbitalObjects;
+  std::vector<OrbitalObject *> orbitalObjectViews;
+
   std::vector<std::unique_ptr<Star>> stars;
-  std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
   Star *sun;
+
+  std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
+  std::vector<AsteroidSystem *> asteroidSystemViews;
 
   std::vector<Object *> objects;
 
   std::vector<std::unique_ptr<Trail>> trails;
+  std::vector<Trail *> trailViews;
+
   std::vector<std::unique_ptr<Camera>> cameras;
+  std::vector<Camera *> cameraViews;
+
   std::vector<std::unique_ptr<Skybox>> skyboxes;
+  std::vector<Skybox *> skyboxesViews;
 
   std::vector<std::unique_ptr<PointLight>> pointLights;
+  std::vector<PointLight *> pointLightViews;
+
   std::unique_ptr<DirectionalLight> directionalLight;
 
   void halfKick(double dt);
@@ -93,14 +104,14 @@ public:
   void addSkybox(std::unique_ptr<Skybox> skybox);
 
   // Getters
-  Camera &getActiveCamera() { return *this->activeCamera; };
-  Skybox &getActiveSkybox() { return *this->skybox; };
-  Star &getSun() { return *this->sun; };
+  const Camera &getActiveCamera() const;
+  const Skybox &getActiveSkybox() const;
+  const Star &getSun() const;
 
-  const glm::vec3 getActiveCameraPosition() const { return this->activeCamera->getPosition(); };
-  const std::vector<Object *> &getObjects() const { return this->objects; };
-  const std::vector<std::unique_ptr<PointLight>> &getPointLights() const { return this->pointLights; };
-  const std::unique_ptr<DirectionalLight> &getDirLight() const { return this->directionalLight; };
-  const std::vector<std::unique_ptr<Trail>> &getTrails() const { return this->trails; };
-  const std::vector<std::unique_ptr<AsteroidSystem>> &getAsteroidSystems() const { return this->asteroidSystems; };
+  const glm::vec3 getActiveCameraPosition() const;
+  const std::vector<Object *> &getObjects() const;
+  const std::vector<PointLight *> &getPointLights() const;
+  const DirectionalLight *getDirLight() const;
+  const std::vector<Trail *> &getTrails() const;
+  const std::vector<AsteroidSystem *> &getAsteroidSystems() const;
 };

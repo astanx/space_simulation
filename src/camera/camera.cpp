@@ -46,11 +46,11 @@ Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp)
 }
 
 // Getters
-const glm::mat4 Camera::getViewMatrix()
+const glm::mat4 Camera::getViewMatrix() const
 {
   return glm::lookAt(this->position, this->position + this->front, this->up);
 }
-const glm::mat4 Camera::getProjectionMatrix(float aspectRatio, float overrideFov)
+const glm::mat4 Camera::getProjectionMatrix(float aspectRatio, float overrideFov) const
 {
   float fov = overrideFov == -1.0f ? this->fov : overrideFov;
   return glm::perspective(glm::radians(fov), aspectRatio, this->nearPlane, this->farPlane);

@@ -17,14 +17,6 @@ private:
   ResourceManager &resourceManager;
   TextRenderer textRenderer;
 
-  Shader *coreShader;
-  Shader *skyboxShader;
-  Shader *asteroidShader;
-  Shader *trailShader;
-  Shader *pointShadowShader;
-  Shader *dirShadowShader;
-  Shader *textShader;
-
   unsigned int cameraUBO;
 
   std::unique_ptr<LightManager> lightManager;

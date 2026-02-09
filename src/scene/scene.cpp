@@ -8,6 +8,8 @@
 #include "physics/moon.h"
 #include "physics/constants.h"
 #include "resources/resourceManager.h"
+#include "debug/logger.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
@@ -59,8 +61,8 @@ Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadP
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
                             double radius, Object *centralBody, const KeplerElements keplerElements)
 {
-  Mesh *mesh = this->resourceManager.GetMesh(name);
-  Material *mat = this->resourceManager.GetMaterial(material_name);
+  Mesh &mesh = this->resourceManager.GetMesh(name);
+  Material &mat = this->resourceManager.GetMaterial(material_name);
   auto model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
   std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radius, keplerElements);
@@ -68,8 +70,10 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   planet->addModel(std::move(model));
 
   Planet *ptr = planet.get();
+
   if (planet->getUseTrail())
     this->addTrail(planet->generateTrail());
+
   this->addOrbitalObject(std::move(planet));
   this->addObject(ptr);
 
@@ -79,8 +83,8 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
 Star *Scene::createStar(std::string name, std::string material_name, double mu,
                         double radius, glm::dvec3 position, glm::dvec3 velocity)
 {
-  Mesh *mesh = this->resourceManager.GetMesh(name);
-  Material *mat = this->resourceManager.GetMaterial(material_name);
+  Mesh &mesh = this->resourceManager.GetMesh(name);
+  Material &mat = this->resourceManager.GetMaterial(material_name);
   auto model = std::make_unique<Model>(position, mat, mesh);
 
   std::unique_ptr<Star> star = std::make_unique<Star>(mu, radius, position, velocity);
@@ -97,8 +101,8 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
                         double radius, Planet *centralBody, const KeplerElements keplerElements)
 {
-  Mesh *mesh = this->resourceManager.GetMesh(name);
-  Material *mat = this->resourceManager.GetMaterial(material_name);
+  Mesh &mesh = this->resourceManager.GetMesh(name);
+  Material &mat = this->resourceManager.GetMaterial(material_name);
   auto model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
   std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, keplerElements);
@@ -109,6 +113,8 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
 
   Moon *ptr = moon.get();
 
+  assert(centralBody && "[Scene] ASSERT: No central body for moon");
+
   centralBody->addMoon(std::move(moon));
 
   return ptr;
@@ -118,7 +124,7 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
 {
   std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(centralBody, amount,
                                                                             innerEdge, outerEdge,
-                                                                            this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
+                                                                            &this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
   AsteroidSystem *ptr = system.get();
   this->addAsteroidSystem(std::move(system));
   return ptr;
@@ -189,24 +195,21 @@ void Scene::init()
 
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)
 {
-  if (!this->activeCamera)
-    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
+  assert(this->activeCamera && "[Scene] ASSERT: No active camera to process keyboard");
 
   this->activeCamera->processKeyboard(direction, deltaTime);
 }
 
 void Scene::processMouseMovement(const float &xpos, const float &ypos)
 {
-  if (!this->activeCamera)
-    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
+  assert(this->activeCamera && "[Scene] ASSERT: No active camera to process mouse movement");
 
   this->activeCamera->processMouseMovement(xpos, ypos);
 }
 
 void Scene::processMouseScroll(float yoffset)
 {
-  if (!this->activeCamera)
-    throw std::runtime_error("ERROR:SCENE:NO_ACTIVE_CAMERA");
+  assert(this->activeCamera && "[Scene] ASSERT: No active camera to process mouse scroll");
 
   this->activeCamera->processMouseScroll(yoffset);
 }
@@ -234,7 +237,10 @@ void Scene::update(double dt)
     asteroidSystem->update(dt);
   }
 
-  this->pointLights[0]->move(this->sun->getRenderPosition()); // move sun light
+  if (this->pointLights[0])
+    this->pointLights[0]->move(this->sun->getRenderPosition()); // move sun light
+  else
+    assert(this->pointLights[0] && "[Scene] ASSERT: No sun to update position");
 }
 
 // Setters
@@ -258,6 +264,7 @@ void Scene::addObject(Object *object)
 
 void Scene::addOrbitalObject(std::unique_ptr<OrbitalObject> orbitalObject)
 {
+  this->orbitalObjectViews.push_back(orbitalObject.get());
   this->orbitalObjects.push_back(std::move(orbitalObject));
 }
 
@@ -268,11 +275,13 @@ void Scene::addStar(std::unique_ptr<Star> star)
 
 void Scene::addTrail(std::unique_ptr<Trail> trail)
 {
+  this->trailViews.push_back(trail.get());
   this->trails.push_back(std::move(trail));
 }
 
 void Scene::addPointLight(std::unique_ptr<PointLight> pointLight)
 {
+  this->pointLightViews.push_back(pointLight.get());
   this->pointLights.push_back(std::move(pointLight));
 }
 
@@ -282,10 +291,77 @@ void Scene::addDirLight(std::unique_ptr<DirectionalLight> directionalLight)
 }
 void Scene::addSkybox(std::unique_ptr<Skybox> skybox)
 {
+  this->skyboxesViews.push_back(skybox.get());
   this->skyboxes.push_back(std::move(skybox));
 }
 
 void Scene::addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSystem)
 {
+  this->asteroidSystemViews.push_back(asteroidSystem.get());
   this->asteroidSystems.push_back(std::move(asteroidSystem));
 }
+
+// Getters
+const Camera &Scene::getActiveCamera() const
+{
+  if (!this->activeCamera)
+    throw std::runtime_error("[Scene] RUNTIME ERROR: No active camera");
+
+  return *this->activeCamera;
+};
+const Skybox &Scene::getActiveSkybox() const
+{
+  if (!this->skybox)
+    throw std::runtime_error("[Scene] RUNTIME ERROR: No active skybox");
+
+  return *this->skybox;
+};
+const Star &Scene::getSun() const
+{
+  if (!this->sun)
+    throw std::runtime_error("[Scene] RUNTIME ERROR: No sun");
+
+  return *this->sun;
+};
+const glm::vec3 Scene::getActiveCameraPosition() const
+{
+  if (!this->activeCamera)
+    throw std::runtime_error("[Scene] RUNTIME ERROR: No active camera, can not get position");
+
+  return this->activeCamera->getPosition();
+};
+const std::vector<Object *> &Scene::getObjects() const
+{
+  if (this->objects.empty())
+    Logger::logWarning("Scene", "Objects are empty");
+
+  return this->objects;
+};
+const std::vector<PointLight *> &Scene::getPointLights() const
+{
+  if (this->pointLightViews.empty())
+    Logger::logWarning("Scene", "Point light views are empty");
+
+  return this->pointLightViews;
+};
+const DirectionalLight *Scene::getDirLight() const
+{
+  if (!this->directionalLight)
+    Logger::logWarning("Scene", "No directional light");
+
+  return this->directionalLight.get();
+};
+const std::vector<Trail *> &Scene::getTrails() const
+{
+  if (this->trails.empty())
+    Logger::logWarning("Scene", "Trails are empty");
+
+  return this->trailViews;
+};
+const std::vector<AsteroidSystem *> &Scene::getAsteroidSystems() const
+{
+  if (this->asteroidSystemViews.empty())
+    Logger::logWarning("Scene", "Asteroid systems are empty");
+
+  return this->asteroidSystemViews;
+};

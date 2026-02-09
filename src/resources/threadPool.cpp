@@ -1,4 +1,5 @@
 #include "resources/threadPool.h"
+#include "debug/logger.h"
 
 #include <iostream>
 
@@ -8,9 +9,12 @@ ThreadPool::ThreadPool(size_t threads)
   if (threads == 0)
   {
     threads = std::thread::hardware_concurrency();
-    std::cout << "Threads supported: " << threads << std::endl;
+    Logger::logInfo("Thread pool", "Supported " + std::to_string(threads) + " threads");
     if (threads == 0)
+    {
+      Logger::logInfo("Thread pool", "0 threads supported, setting to 4");
       threads = 4;
+    }
   }
   this->workers.reserve(threads);
 

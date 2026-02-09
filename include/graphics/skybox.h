@@ -22,8 +22,8 @@ public:
   Skybox(std::vector<const char *>& faces);
   ~Skybox();
 
-  void render(Shader* shader);
+  void render(Shader& shader) const;
 
-  void bind(const GLint textureUnit);
-  void unbind();
+  void bind(const GLint textureUnit) const;
+  void unbind() const;
 };

@@ -4,6 +4,7 @@
 #include "graphics/shader.h"
 #include "graphics/vertex.h"
 #include "graphics/mesh.h"
+#include "debug/logger.h"
 
 #include <iostream>
 
@@ -31,7 +32,7 @@ Object *Orbit::getCentralBody()
 glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, const OrbitalObject *orbitBody)
 {
   if (!centralBody || !orbitBody)
-    throw std::runtime_error("ERROR:ORBIT:CALCULATE_VELOCITY:NO_BODY");
+    throw std::runtime_error("[Orbit] RUNTIME ERROR: no body to calculate velocity");
 
   glm::dvec3 normal(0.0);
   glm::dvec3 velocity(0.0);
@@ -49,7 +50,7 @@ glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, const Orbi
   double r = glm::length(dp);
   if (r < EPS)
   {
-    std::cerr << "ERROR::ORBIT::CALCULATE_VELOCITY: r is too small" << std::endl;
+    Logger::logError("Orbit", "r is too small, setting velocity to 0");
     return glm::dvec3(0.0);
   }
 

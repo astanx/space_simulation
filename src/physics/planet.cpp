@@ -27,15 +27,15 @@ void Planet::update(double dt)
     this->model->setPosition(this->renderPosition);
 }
 
-void Planet::render(Shader *shader)
+void Planet::render(Shader &shader)
 {
   for (auto &moon : this->moons)
   {
     moon->render(shader);
   }
 
-  if (model)
-    model->render(shader);
+  if (this->model)
+    this->model->render(shader);
 };
 
 void Planet::addModel(std::unique_ptr<Model> model)

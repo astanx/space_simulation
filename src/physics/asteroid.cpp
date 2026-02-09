@@ -18,7 +18,7 @@ void Asteroid::update(double dt)
   //   this->model->setPosition(this->renderPosition);
 }
 
-void Asteroid::render(Shader *shader)
+void Asteroid::render(Shader &shader)
 {
   if (model)
     model->render(shader);

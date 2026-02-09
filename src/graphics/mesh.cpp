@@ -1,33 +1,37 @@
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
 #include "graphics/primitives/primitives.h"
-#include "graphics/mesh.h"
 #include "graphics/vertex.h"
+#include "debug/logger.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 // Private functions
 void Mesh::initVAO()
 {
-  glGenVertexArrays(1, &this->VAOS[this->layout]);
+  if (!glIsVertexArray(this->VAOS[this->layout]))
+    glGenVertexArrays(1, &this->VAOS[this->layout]);
+
   glBindVertexArray(this->VAOS[this->layout]);
 
-  glGenBuffers(1, &this->VBO);
+  if (!glIsBuffer(this->VBO))
+    glGenBuffers(1, &this->VBO);
+
   glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
   glBufferData(GL_ARRAY_BUFFER, this->nrOfVertices * sizeof(Vertex), this->vertices, GL_STATIC_DRAW);
 
   if (this->nrOfIndices > 0)
   {
-    glGenBuffers(1, &this->EBO);
+    if (!glIsBuffer(this->EBO))
+      glGenBuffers(1, &this->EBO);
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), this->indices, GL_STATIC_DRAW);
   }
 
   auto it = LAYOUTS.find(this->layout);
   if (it == LAYOUTS.end())
-  {
-    throw std::runtime_error("ERROR::MESH::Invalid vertex layout");
-  }
+    throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid vertex layout");
   const auto &layout = it->second;
 
   for (size_t i = 0; i < layout.count; ++i)
@@ -141,11 +145,16 @@ Mesh::Mesh(const Mesh &obj)
 
 Mesh::~Mesh()
 {
-  glDeleteVertexArrays(1, &this->VAOS[this->layout]);
-  glDeleteBuffers(1, &this->VBO);
-  if (this->nrOfIndices > 0)
+  if (glIsVertexArray(this->VAOS[this->layout]))
+    glDeleteVertexArrays(1, &this->VAOS[this->layout]);
+
+  if (glIsBuffer(this->VBO))
+    glDeleteBuffers(1, &this->VBO);
+
+  if (glIsBuffer(this->EBO))
     glDeleteBuffers(1, &this->EBO);
-  if (instancingInitialized)
+
+  if (glIsBuffer(this->instanceVBO))
     glDeleteBuffers(1, &instanceVBO);
 
   delete[] this->vertices;
@@ -163,7 +172,13 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
 
   this->instanceCount = static_cast<unsigned int>(instanceData.size());
 
-  glBindVertexArray(this->VAOS[this->layout]);
+  GLuint vao = this->VAOS.at(this->layout);
+
+  if (glIsVertexArray(vao))
+    glBindVertexArray(vao);
+  else
+    Logger::logError("Mesh", "No instanced VAO to set buffer");
+
   glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
 
   glBufferData(
@@ -172,7 +187,12 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
       instanceData.data(),
       GL_DYNAMIC_DRAW);
 
-  constexpr GLuint INSTANCE_ATTRIB_START = 3;
+  auto it = LAYOUTS.find(this->layout);
+  if (it == LAYOUTS.end())
+    throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid vertex layout");
+  const auto &layout = it->second;
+
+  GLuint start = layout.count;
 
   // for (int i = 0; i < 4; i++)
   // {
@@ -187,21 +207,31 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
   //   glVertexAttribDivisor(INSTANCE_ATTRIB_START + i, 1);
   // }
 
-  glEnableVertexAttribArray(INSTANCE_ATTRIB_START);
+  glEnableVertexAttribArray(start);
   glVertexAttribPointer(
-      INSTANCE_ATTRIB_START,
+      start,
       3,
       GL_FLOAT,
       GL_FALSE,
       sizeof(InstanceData), 0);
-  glVertexAttribDivisor(INSTANCE_ATTRIB_START, 1);
+  glVertexAttribDivisor(start, 1);
 
   glBindVertexArray(0);
 }
 
 void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
 {
-  glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
+  if (!instancingInitialized)
+  {
+    setInstanceBuffer(instanceData);
+    Logger::logWarning("Mesh", "Update buffer called before buffer is set, setting buffer");
+    return;
+  }
+
+  if (glIsBuffer(this->instanceVBO))
+    glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
+  else
+    Logger::logError("Mesh", "No instance VBO to update buffer");
 
   void *ptr = glMapBufferRange(
       GL_ARRAY_BUFFER,
@@ -217,9 +247,14 @@ void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
   glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
-void Mesh::render()
+void Mesh::render() const
 {
-  glBindVertexArray(this->VAOS[this->layout]);
+  GLuint vao = this->VAOS.at(this->layout);
+
+  if (glIsVertexArray(vao))
+    glBindVertexArray(vao);
+  else
+    Logger::logError("Mesh", "No VAO to render");
 
   if (this->nrOfIndices == 0)
     glDrawArrays(this->drawMode, 0, this->nrOfVertices);
@@ -227,12 +262,17 @@ void Mesh::render()
     glDrawElements(this->drawMode, this->nrOfIndices, GL_UNSIGNED_INT, 0);
 };
 
-void Mesh::renderInstanced()
+void Mesh::renderInstanced() const
 {
   if (!this->instancingInitialized || this->instanceCount == 0)
     return;
 
-  glBindVertexArray(this->VAOS[this->layout]);
+  GLuint vao = this->VAOS.at(this->layout);
+
+  if (glIsVertexArray(vao))
+    glBindVertexArray(vao);
+  else
+    Logger::logError("Mesh", "No instanced VAO to render");
 
   if (this->nrOfIndices == 0)
     glDrawArraysInstanced(this->drawMode, 0, this->nrOfVertices, this->instanceCount);
@@ -247,7 +287,7 @@ void Mesh::renderInstanced()
   glBindVertexArray(0);
 }
 
-double Mesh::calculateVolume()
+const double Mesh::calculateVolume() const
 {
   double volume = 0.0;
 

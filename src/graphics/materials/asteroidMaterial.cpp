@@ -3,9 +3,9 @@
 #include "graphics/texture.h"
 
 // Constructor
-AsteroidMaterial::AsteroidMaterial(Texture *diffuseTexture)
+AsteroidMaterial::AsteroidMaterial(Texture &diffuseTexture)
 {
-  this->diffuseTexture = diffuseTexture;
+  this->diffuseTexture = &diffuseTexture;
 }
 
 // Public functions

@@ -16,7 +16,7 @@ void Star::update(double dt)
     this->model->setPosition(this->renderPosition);
 }
 
-void Star::render(Shader *shader)
+void Star::render(Shader &shader)
 {
   if (model)
     model->render(shader);

@@ -44,9 +44,9 @@ public:
   ~Camera() {}
 
   // Getters
-  const glm::mat4 getViewMatrix();
+  const glm::mat4 getViewMatrix() const;
 
-  const glm::mat4 getProjectionMatrix(float aspectRatio, float overrideFov = -1.0f);
+  const glm::mat4 getProjectionMatrix(float aspectRatio, float overrideFov = -1.0f) const;
 
   const glm::vec3 getPosition() const;
 

@@ -2,6 +2,7 @@
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
 #include "graphics/primitives/cube.h"
+#include "debug/logger.h"
 
 #include <GL/glew.h>
 
@@ -18,7 +19,7 @@ void Skybox::loadCubemap(std::vector<const char *> faces)
   for (unsigned int i = 0; i < faces.size(); i++)
   {
     int channels;
-    unsigned char* image = stbi_load(faces[i], &width, &height, &channels, 4);
+    unsigned char *image = stbi_load(faces[i], &width, &height, &channels, 4);
     if (image)
     {
       glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
@@ -26,14 +27,12 @@ void Skybox::loadCubemap(std::vector<const char *> faces)
       stbi_image_free(image);
 
       GLenum err = glGetError();
-      if (err != GL_NO_ERROR)
-      {
-        std::cerr << "ERROR::SKYBOX::ERROR_LOADING_FACE " << i << ": " << err << std::endl;
-      }
+      if (err != GL_NO_ERROR && i != 0)
+        Logger::logError("Skybox", "Error loading face - " + std::to_string(i));
     }
     else
     {
-      std::cout << "ERROR:SKYBOX:CUBEMAP_TEX_FAILED_TO_LOAD_AT_PATH: " << faces[i] << std::endl;
+      std::cout << "[Skybox] ERROR: Cubemap texture failed to load at path - " << faces[i] << std::endl;
       stbi_image_free(image);
     }
   }
@@ -53,7 +52,7 @@ void Skybox::loadCubemap(std::vector<const char *> faces)
 Skybox::Skybox(std::vector<const char *> &faces) : mesh(std::make_unique<Cube>(), VertexLayout::PositionOnly)
 {
   if (faces.size() != 6)
-    std::cerr << "ERROR::SKYBOX::CONSTRUCTOR::REQUIRED_6_FACES" << std::endl;
+    Logger::logFatal("Skybox", "Constructor requires 6 faces");
 
   this->loadCubemap(faces);
 }
@@ -64,26 +63,31 @@ Skybox::~Skybox()
 }
 
 // Public functions
-void Skybox::render(Shader *shader)
+void Skybox::render(Shader &shader) const
 {
   glDepthFunc(GL_LEQUAL);
   glDepthMask(GL_FALSE);
 
   this->bind(0);
-  shader->set1i(0, "skybox");
+  shader.set1i(0, "skybox");
   this->mesh.render();
   this->unbind();
 
   glDepthMask(GL_TRUE);
   glDepthFunc(GL_LESS);
 }
-void Skybox::bind(const GLint textureUnit)
+void Skybox::bind(const GLint textureUnit) const
 {
-  glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, this->id);
+  if (glIsTexture(this->id))
+  {
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, this->id);
+  }
+  else
+    Logger::logError("Skybox", "No texture to bind");
 }
 
-void Skybox::unbind()
+void Skybox::unbind() const
 {
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
