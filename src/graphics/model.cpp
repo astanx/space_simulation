@@ -1,4 +1,5 @@
 #include "graphics/model.h"
+#include "graphics/mesh.h"
 #include "graphics/materials/material.h"
 #include "graphics/texture.h"
 #include "graphics/shader.h"

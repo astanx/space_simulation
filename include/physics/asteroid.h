@@ -3,14 +3,13 @@
 #include "physics/orbitalObject.h"
 #include "render/renderable.h"
 
-
 class Model;
 
 class Asteroid : public OrbitalObject, public Renderable
 {
 protected:
 public:
-  Asteroid(Object *centralBody, double mu, double radius, const KeplerElements& elements);
+  Asteroid(Object *centralBody, double mu, double radius, const KeplerElements &elements);
   ~Asteroid() = default;
 
   void update(double dt) override;

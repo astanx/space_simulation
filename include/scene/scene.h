@@ -1,26 +1,22 @@
 #pragma once
 
 #include "graphics/model.h"
-#include "graphics/mesh.h"
 #include "graphics/skybox.h"
-#include "physics/object.h"
 #include "physics/orbitalObject.h"
 #include "camera/camera.h"
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
-#include "scene/light/lightManager.h"
-#include "scene/shadow/directionalShadow.h"
-#include "scene/shadow/pointShadow.h"
-#include "scene/shadow/shadowManager.h"
-#include "resources/resourceManager.h"
-#include "physics/structs/keplerElements.h"
 #include "physics/asteroidSystem.h"
 #include "physics/star.h"
-#include "resources/threadPool.h"
 
 class Shader;
 class Planet;
 class Moon;
+class Object;
+class ResourceManager;
+class ThreadPool;
+
+struct KeplerElements;
 
 struct CameraGPU
 {

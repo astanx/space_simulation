@@ -2,7 +2,7 @@
 
 #include "graphics/vertex.h"
 
-#include <OpenGL/gl.h>
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <map>
 

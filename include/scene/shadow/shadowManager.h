@@ -1,8 +1,10 @@
 #pragma once
 
+#include "scene/shadow/pointShadow.h"
+#include "scene/shadow/directionalShadow.h"
+
 #include <GL/glew.h>
-#include "glm/glm.hpp"
-#include <vector>
+#include <glm/glm.hpp>
 
 // make dir shadow
 struct DirShadowGPU
@@ -42,8 +44,6 @@ enum ShadowUBOBindingPoints
   POINT_SHADOW_BINDING = 4
 };
 
-class DirectionalShadow;
-class PointShadow;
 class Shader;
 class Scene;
 

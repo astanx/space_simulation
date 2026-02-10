@@ -1,7 +1,8 @@
 #pragma once
 
 #include "graphics/primitives/primitives.h"
-#include "physics/structs/radii.h"
+
+struct Radii;
 
 class Ellipsoid : public Primitive
 {

@@ -1,19 +1,12 @@
 #pragma once
 
 #include "scene/scene.h"
-#include "render/textRenderer.h"
 #include "render/renderer.h"
 #include "core/input.h"
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
-#include "physics/structs/radii.h"
 
-#include <vector>
-#include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 class Shader;
 class Texture;
@@ -21,6 +14,8 @@ class Material;
 class Mesh;
 class Light;
 class Model;
+
+struct Radii;
 
 class Application
 {

@@ -2,6 +2,7 @@
 #include "scene/scene.h"
 #include "resources/resourceManager.h"
 #include "physics/star.h"
+#include "resources/resources.h"
 #include "debug/logger.h"
 
 #include <iostream>

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "render/textRenderer.h"
+#include "scene/light/lightManager.h"
+#include "scene/shadow/shadowManager.h"
 
 #include <memory>
 #include <GL/glew.h>
@@ -8,8 +10,6 @@
 class Scene;
 class ResourceManager;
 class Shader;
-class LightManager;
-class ShadowManager;
 
 class Renderer
 {

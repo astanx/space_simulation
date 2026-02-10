@@ -1,5 +1,6 @@
 #include "graphics/primitives/ellipsoid.h"
 #include "graphics/vertex.h"
+#include "physics/structs/radii.h"
 
 #include <vector>
 #include <cmath>

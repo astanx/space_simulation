@@ -1,4 +1,5 @@
 #pragma once
+
 #include "graphics/model.h"
 
 class Shader;

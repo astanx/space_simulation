@@ -4,6 +4,7 @@
 #include "graphics/shader.h"
 #include "physics/constants.h"
 #include "scene/scene.h"
+#include "resources/resources.h"
 #include "debug/logger.h"
 
 #include <iostream>
@@ -262,7 +263,7 @@ void Application::loadEllipsoidObject(std::string name, std::string diffuse_name
   Texture &diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
 
   Texture *spec = nullptr;
-  
+
   if (specularPath)
     spec = &this->resourceManager.LoadTexture(specular_name, specularPath, GL_TEXTURE_2D);
 

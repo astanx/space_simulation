@@ -19,10 +19,10 @@ private:
   void loadCubemap(std::vector<const char *> faces);
 
 public:
-  Skybox(std::vector<const char *>& faces);
+  Skybox(std::vector<const char *> &faces);
   ~Skybox();
 
-  void render(Shader& shader) const;
+  void render(Shader &shader) const;
 
   void bind(const GLint textureUnit) const;
   void unbind() const;

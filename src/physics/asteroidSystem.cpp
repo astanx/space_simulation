@@ -6,6 +6,7 @@
 #include "graphics/materials/asteroidMaterial.h"
 #include "graphics/model.h"
 #include "maths/random.h"
+#include "resources/threadPool.h"
 #include "debug/logger.h"
 
 #include <glm/gtc/matrix_transform.hpp>

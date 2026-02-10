@@ -1,11 +1,12 @@
 #pragma once
 
 #include "physics/orbitalObject.h"
-#include "physics/structs/keplerElements.h"
 #include "physics/moon.h"
 #include "render/renderable.h"
 
 class Model;
+
+struct KeplerElements;
 
 class Planet : public OrbitalObject, public Renderable
 {

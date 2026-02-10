@@ -1,14 +1,13 @@
 #pragma once
 
 #include "physics/asteroid.h"
-#include "resources/threadPool.h"
 
 #include <vector>
 
 class Model;
 class Material;
 class Shader;
-class Asteroid;
+class ThreadPool;
 
 class AsteroidSystem
 {

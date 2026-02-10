@@ -1,8 +1,9 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <GL/glew.h>
 #include "graphics/vertexLayouts.h"
+#include "graphics/vertex.h"
+
+#include <GL/glew.h>
 
 class Shader;
 class Primitive;

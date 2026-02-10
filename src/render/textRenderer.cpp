@@ -2,6 +2,8 @@
 #include "graphics/mesh.h"
 #include "graphics/vertex.h"
 #include "debug/logger.h"
+#include "graphics/shader.h"
+
 
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
