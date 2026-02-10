@@ -1,4 +1,5 @@
 #include "graphics/texture.h"
+
 #include "debug/logger.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -9,9 +10,8 @@
 #define STBI_ONLY_HDR
 #define STBI_ONLY_TIFF
 #include "external/stb_image.h"
-#include <iostream>
 
-// Private functions
+#include <iostream>
 
 // Constructor and Destructor
 Texture::Texture(const char *fileName, GLenum type)

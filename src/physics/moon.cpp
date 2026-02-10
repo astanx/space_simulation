@@ -1,5 +1,7 @@
 #include "physics/moon.h"
+
 #include "physics/constants.h"
+
 #include "graphics/vertex.h"
 
 #include <iostream>

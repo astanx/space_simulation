@@ -1,10 +1,13 @@
 #include "scene/shadow/shadowManager.h"
-#include "scene/shadow/directionalShadow.h"
-#include "scene/shadow/pointShadow.h"
-#include "scene/scene.h"
+
 #include "debug/logger.h"
 
+#include "scene/scene.h"
+#include "scene/shadow/directionalShadow.h"
+#include "scene/shadow/pointShadow.h"
+
 #include <glm/gtc/matrix_transform.hpp>
+
 #include <iostream>
 
 // Private functions

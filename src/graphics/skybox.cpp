@@ -1,11 +1,13 @@
 #include "graphics/skybox.h"
-#include "graphics/mesh.h"
-#include "graphics/shader.h"
-#include "graphics/primitives/cube.h"
+
 #include "debug/logger.h"
 
-#include <GL/glew.h>
+#include "graphics/mesh.h"
+#include "graphics/shader.h"
 
+#include "graphics/primitives/cube.h"
+
+#include <GL/glew.h>
 #include "external/stb_image.h"
 
 #include <iostream>

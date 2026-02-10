@@ -1,5 +1,7 @@
 #include "physics/constants.h"
+
 #include "physics/object.h"
+
 #include "maths/rk4.h"
 
 #include <cmath>

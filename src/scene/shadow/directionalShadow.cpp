@@ -1,6 +1,8 @@
 #include "scene/shadow/directionalShadow.h"
-#include "graphics/shader.h"
+
 #include "debug/logger.h"
+
+#include "graphics/shader.h"
 
 #include <iostream>
 

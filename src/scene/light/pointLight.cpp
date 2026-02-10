@@ -1,4 +1,5 @@
 #include "scene/light/pointLight.h"
+
 #include "graphics/shader.h"
 
 // Constructor/Descructor

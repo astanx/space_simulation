@@ -1,12 +1,15 @@
 #include "physics/planet.h"
+
 #include "physics/object.h"
 #include "physics/constants.h"
 #include "physics/orbit.h"
+
 #include "graphics/model.h"
 #include "graphics/shader.h"
 #include "graphics/vertex.h"
 
 #include <glm/glm.hpp>
+
 #include <iostream>
 
 // Constructor

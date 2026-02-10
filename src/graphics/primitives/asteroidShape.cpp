@@ -1,4 +1,5 @@
 #include "graphics/primitives/asteroidShape.h"
+
 #include "graphics/vertex.h"
 
 #include <vector>

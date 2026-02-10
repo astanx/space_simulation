@@ -1,8 +1,10 @@
 #include "scene/light/lightManager.h"
+
+#include "debug/logger.h"
+
+#include "scene/scene.h"
 #include "scene/light/directionalLight.h"
 #include "scene/light/pointLight.h"
-#include "scene/scene.h"
-#include "debug/logger.h"
 
 // Private functions
 void LightManager::initDirUBO()

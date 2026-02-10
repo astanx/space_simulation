@@ -1,11 +1,14 @@
 #include "physics/orbitalObject.h"
+
 #include "physics/constants.h"
+
 #include "graphics/vertex.h"
 #include "graphics/shader.h"
 #include "graphics/mesh.h"
 
-#include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <iostream>
 
 // Private functions
 double OrbitalObject::calculateEccentricAnomaly(double M, KeplerElements keplerElements)

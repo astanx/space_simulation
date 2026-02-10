@@ -1,4 +1,5 @@
 #include "graphics/primitives/circle.h"
+
 #include "graphics/vertex.h"
 
 #include <vector>
@@ -31,7 +32,7 @@ Circle::Circle(unsigned segments, float radius) : Primitive()
     indices.push_back(i);
     indices.push_back(i + 1);
   }
-  
+
   indices[indices.size() - 1] = 1;
 
   this->set(vertices.data(), vertices.size(), indices.data(), indices.size());

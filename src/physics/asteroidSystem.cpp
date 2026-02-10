@@ -1,18 +1,25 @@
 #include "physics/asteroidSystem.h"
-#include "physics/constants.h"
-#include "graphics/primitives/asteroidShape.h"
-#include "graphics/mesh.h"
-#include "graphics/shader.h"
-#include "graphics/materials/asteroidMaterial.h"
-#include "graphics/model.h"
-#include "maths/random.h"
-#include "resources/threadPool.h"
+
 #include "debug/logger.h"
 
+#include "physics/constants.h"
+
+#include "graphics/mesh.h"
+#include "graphics/shader.h"
+
+#include "graphics/primitives/asteroidShape.h"
+
+#include "graphics/materials/asteroidMaterial.h"
+
+#include "maths/random.h"
+
+#include "resources/threadPool.h"
+
 #include <glm/gtc/matrix_transform.hpp>
+#include <GLFW/glfw3.h>
+
 #include <iostream>
 #include <thread>
-#include <GLFW/glfw3.h>
 
 // Private functions
 KeplerElements AsteroidSystem::createRandomKeplerElements()

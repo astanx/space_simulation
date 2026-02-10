@@ -1,4 +1,5 @@
 #include "physics/trail.h"
+
 #include "graphics/vertex.h"
 #include "graphics/shader.h"
 

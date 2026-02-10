@@ -1,8 +1,11 @@
 #include "graphics/mesh.h"
-#include "graphics/shader.h"
-#include "graphics/primitives/primitives.h"
-#include "graphics/vertex.h"
+
 #include "debug/logger.h"
+
+#include "graphics/shader.h"
+#include "graphics/vertex.h"
+
+#include "graphics/primitives/primitives.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
