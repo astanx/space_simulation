@@ -271,7 +271,7 @@ void Application::loadEllipsoidObject(std::string name, std::string diffuse_name
     spec = &this->resourceManager.LoadTexture(specular_name, specularPath, GL_TEXTURE_2D);
 
   this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec);
-  auto obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE));
+  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE));
   this->resourceManager.LoadMesh(name, std::move(obj), VertexLayout::Full);
 }
 

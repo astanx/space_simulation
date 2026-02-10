@@ -20,12 +20,12 @@
 // Private functions
 void Scene::halfKick(double dt)
 {
-  for (auto &object : this->objects)
+  for (Object *&object : this->objects)
   {
     object->halfKick(this->objects, dt);
   }
 
-  for (auto &asteroidSystem : this->asteroidSystems)
+  for (std::unique_ptr<AsteroidSystem> &asteroidSystem : this->asteroidSystems)
   {
     asteroidSystem->halfKick(this->objects, dt);
   }
@@ -33,12 +33,12 @@ void Scene::halfKick(double dt)
 
 void Scene::drift(double dt)
 {
-  for (auto &object : this->objects)
+  for (Object *&object : this->objects)
   {
     object->drift(dt);
   }
 
-  for (auto &asteroidSystem : this->asteroidSystems)
+  for (std::unique_ptr<AsteroidSystem> &asteroidSystem : this->asteroidSystems)
   {
     asteroidSystem->drift(dt);
   }
@@ -66,7 +66,7 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
-  auto model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
+  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
   std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radius, keplerElements);
 
@@ -88,7 +88,7 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
-  auto model = std::make_unique<Model>(position, mat, mesh);
+  std::unique_ptr<Model> model = std::make_unique<Model>(position, mat, mesh);
 
   std::unique_ptr<Star> star = std::make_unique<Star>(mu, radius, position, velocity);
 
@@ -106,7 +106,7 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
-  auto model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
+  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
   std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, keplerElements);
 
@@ -146,7 +146,7 @@ void Scene::init()
   createAsteroidSystem(sunPtr, 20000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii.mean, sunPtr, jupiterElements);
 
-  // auto pointLight = std::make_unique<PointLight>(
+  // std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
   //     sunPos,
   //     glm::vec3(0.05f),
   //     glm::vec3(1.0f),
@@ -156,7 +156,7 @@ void Scene::init()
   //     0.00009f,
   //     0.0000032f);
 
-  auto pointLight = std::make_unique<PointLight>(
+  std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
       sunPos,
       glm::vec3(0.08f),
       glm::vec3(1.00f, 0.96f, 0.90f),
@@ -167,16 +167,16 @@ void Scene::init()
       0.0000008f);
   this->addPointLight(std::move(pointLight));
 
-  // auto dirLight = std::make_unique<DirectionalLight>(
+  // std::unique_ptr<DirectionalLight> dirLight = std::make_unique<DirectionalLight>(
   //     glm::vec3(1.2f, 1.0f, 2.0f),
   //     glm::vec3(0.5f),
   //     glm::vec3(1.0f),
   //     glm::vec3(1.0f), 1.f);
   // this->addDirLight(std::move(dirLight));
 
-  auto cam = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f),
-                                      glm::vec3(0.0f, 0.0f, -1.0f),
-                                      glm::vec3(0.0f, 1.0f, 0.0f));
+  std::unique_ptr<Camera> cam = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f),
+                                                         glm::vec3(0.0f, 0.0f, -1.0f),
+                                                         glm::vec3(0.0f, 1.0f, 0.0f));
 
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();
@@ -191,7 +191,7 @@ void Scene::init()
           "assets/skybox/front.png",
           "assets/skybox/back.png"};
 
-  auto sb = std::make_unique<Skybox>(faces);
+  std::unique_ptr<Skybox> sb = std::make_unique<Skybox>(faces);
   this->addSkybox(std::move(sb));
   this->skybox = this->skyboxes.back().get();
 }
@@ -230,12 +230,12 @@ void Scene::update(double dt)
   //   }
   // }
 
-  for (auto &object : this->objects)
+  for (Object *&object : this->objects)
   {
     object->update(dt);
   }
 
-  for (auto &asteroidSystem : this->asteroidSystems)
+  for (std::unique_ptr<AsteroidSystem> &asteroidSystem : this->asteroidSystems)
   {
     asteroidSystem->update(dt);
   }

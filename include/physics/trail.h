@@ -17,5 +17,5 @@ public:
   Trail(const std::vector<glm::dvec3> &trailVec);
   ~Trail() = default;
 
-  void render();
+  void render() const;
 };

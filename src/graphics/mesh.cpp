@@ -35,11 +35,11 @@ void Mesh::initVAO()
   auto it = LAYOUTS.find(this->layout);
   if (it == LAYOUTS.end())
     throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid vertex layout");
-  const auto &layout = it->second;
+  const LayoutDesc &layout = it->second;
 
   for (size_t i = 0; i < layout.count; ++i)
   {
-    const auto &attr = layout.attributes[i];
+    const VertexAttribute &attr = layout.attributes[i];
     glVertexAttribPointer(
         attr.index,
         attr.size,
@@ -193,7 +193,7 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
   auto it = LAYOUTS.find(this->layout);
   if (it == LAYOUTS.end())
     throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid vertex layout");
-  const auto &layout = it->second;
+  const LayoutDesc &layout = it->second;
 
   GLuint start = layout.count;
 

@@ -46,7 +46,7 @@ Model::Model(glm::vec3 position, Material &material,
           ? position
           : rotationOrigin;
 
-  for (auto &mesh : meshes)
+  for (Mesh *&mesh : meshes)
   {
     this->meshes.push_back(mesh);
   }
@@ -122,7 +122,7 @@ void Model::render(Shader &shader)
   if (this->overrideTextureSpecular != nullptr)
     this->overrideTextureSpecular->bind(1);
 
-  for (auto &mesh : this->meshes)
+  for (Mesh *&mesh : this->meshes)
   {
     mesh->render();
   }
@@ -137,7 +137,7 @@ void Model::render(Shader &shader)
 
 void Model::renderInstanced()
 {
-  for (auto &mesh : this->meshes)
+  for (Mesh *&mesh : this->meshes)
   {
     mesh->renderInstanced();
   }

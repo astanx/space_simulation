@@ -41,7 +41,7 @@ public:
   static int handleCollisions(Object &object, Object &object2);
 
   virtual void update(double dt) = 0;
-  virtual void render(Shader &shader) = 0;
+  virtual void render(Shader &shader) const = 0;
 
   virtual void drift(double dt);
   virtual void halfKick(const std::vector<Object *> &bodies, double dt);
