@@ -8,9 +8,10 @@ class Texture;
 class AsteroidMaterial : public Material
 {
 protected:
-  Texture* diffuseTexture;
+  Texture *diffuseTexture;
+
 public:
-  AsteroidMaterial(Texture& diffuseTexture);
+  AsteroidMaterial(Texture &diffuseTexture);
   ~AsteroidMaterial() = default;
-  void sendToShader(Shader& shader) override;
+  void sendToShader(Shader &shader) override;
 };

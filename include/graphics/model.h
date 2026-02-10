@@ -1,12 +1,12 @@
 #pragma once
 
-#include "graphics/mesh.h"
 #include <vector>
 #include <glm/glm.hpp>
 
 class Material;
 class Shader;
 class Texture;
+class Mesh;
 
 class Model
 {

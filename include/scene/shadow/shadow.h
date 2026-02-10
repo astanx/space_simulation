@@ -14,13 +14,12 @@ protected:
 
   virtual void init() = 0;
 
-
 public:
   Shadow(const GLuint width, const GLuint height);
   virtual ~Shadow();
 
   virtual void bindShadowMapFBO() const = 0;
-  virtual void bind(Shader& shader, int textureUnit) const = 0;
+  virtual void bind(Shader &shader, int textureUnit) const = 0;
 
   void unbindShadowMapFBO() const;
 

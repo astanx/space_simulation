@@ -13,7 +13,7 @@ class Orbit
 private:
   KeplerElements keplerElements;
   Object *centralBody;
-  
+
 public:
   Orbit(Object *centralBody, const KeplerElements &KeplerElements);
   ~Orbit() = default;

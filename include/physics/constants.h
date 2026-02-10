@@ -10,7 +10,6 @@ extern const double EPS;
 extern const double G;
 extern const double AU_TO_METER;
 
-
 // extern const double TIME_SCALE;
 
 extern const double sunMu;
@@ -35,7 +34,6 @@ extern const KeplerElements jupiterElements;
 extern const KeplerElements saturnElements;
 extern const KeplerElements uranusElements;
 extern const KeplerElements neptuneElements;
-
 
 extern const MaterialProperties sunMaterial;
 extern const MaterialProperties mercuryMaterial;

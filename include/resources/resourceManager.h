@@ -1,21 +1,19 @@
 #pragma once
 
-#include "resources/resources.h"
 #include "graphics/shader.h"
 #include "graphics/texture.h"
 #include "graphics/materials/material.h"
 #include "graphics/mesh.h"
-#include "graphics/vertex.h"
-#include "physics/structs/materialProperties.h"
 
 #include <unordered_map>
 #include <string>
-#include <memory>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
 class Primitive;
 class AsteroidMaterial;
+
+struct MaterialProperties;
 
 class ResourceManager
 {

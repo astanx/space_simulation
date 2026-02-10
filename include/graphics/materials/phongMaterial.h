@@ -1,13 +1,13 @@
 #pragma once
 
 #include "graphics/materials/material.h"
-#include "physics/structs/materialProperties.h"
 
 #include <glm/glm.hpp>
-#include <GL/glew.h>
 
 class Shader;
 class Texture;
+
+struct MaterialProperties;
 
 class PhongMaterial : public Material
 {

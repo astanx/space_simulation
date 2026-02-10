@@ -1,6 +1,5 @@
 #include "physics/trail.h"
 #include "graphics/vertex.h"
-#include "graphics/mesh.h"
 #include "graphics/shader.h"
 
 // Private functions

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "scene/shadow/shadow.h"
-#include "graphics/shader.h"
 
-#include <vector>
 #include <glm/glm.hpp>
+
+class Shader;
 
 class PointShadow : public Shadow
 {

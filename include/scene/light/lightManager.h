@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 #include "glm/glm.hpp"
-#include <vector>
+// #include <vector>
 
 struct DirLightGPU
 {
@@ -53,7 +53,7 @@ private:
   void initPointUBO();
 
 public:
-  LightManager(Scene& scene);
+  LightManager(Scene &scene);
   ~LightManager() = default;
 
   void updateDirUBO(const DirectionalLight *dirLight, int enabled = 1);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "graphics/texture.h"
-#include "graphics/shader.h"
 #include "graphics/materials/textMaterial.h"
 
 #include "ft2build.h"
@@ -9,6 +8,8 @@
 
 #include <glm/glm.hpp>
 #include <map>
+
+class Shader;
 
 struct Character
 {

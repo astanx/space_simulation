@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <GL/glew.h>
+
 struct Vertex;
 
 class Primitive

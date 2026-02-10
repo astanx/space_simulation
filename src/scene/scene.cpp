@@ -7,6 +7,7 @@
 #include "physics/star.h"
 #include "physics/moon.h"
 #include "physics/constants.h"
+#include "resources/resources.h"
 #include "resources/resourceManager.h"
 #include "debug/logger.h"
 

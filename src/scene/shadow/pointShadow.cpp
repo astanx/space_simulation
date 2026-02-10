@@ -1,4 +1,5 @@
 #include "scene/shadow/pointShadow.h"
+#include "graphics/shader.h"
 #include "debug/logger.h"
 
 #include <iostream>

@@ -2,6 +2,7 @@
 #include "graphics/primitives/primitives.h"
 #include "graphics/materials/asteroidMaterial.h"
 #include "graphics/materials/phongMaterial.h"
+#include "physics/structs/materialProperties.h"
 #include "debug/logger.h"
 
 #include <iostream>

@@ -1,10 +1,11 @@
 #pragma once
 
+#include "graphics/mesh.h"
+
 #include <vector>
 #include <glm/glm.hpp>
 
 class Shader;
-class Mesh;
 
 class Trail
 {
