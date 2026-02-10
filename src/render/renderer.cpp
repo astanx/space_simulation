@@ -93,7 +93,7 @@ void Renderer::renderAsteroidSystems(Scene &scene)
   this->shadowManager->bindPointShadow(asteroidShader, 5);
   this->shadowManager->bindPointShadowUBO(asteroidID);
 
-  for (auto &asteroidSystem : scene.getAsteroidSystems())
+  for (const AsteroidSystem *asteroidSystem : scene.getAsteroidSystems())
   {
     asteroidSystem->render(asteroidShader);
   }
@@ -117,7 +117,7 @@ void Renderer::renderObjects(Scene &scene)
   this->shadowManager->bindPointShadowUBO(coreID);
 
   // Render all objects
-  for (auto &object : scene.getObjects())
+  for (const Object *object : scene.getObjects())
   {
     object->render(coreShader);
   }
@@ -132,7 +132,7 @@ void Renderer::renderTrails(Scene &scene)
   GLuint &trailID = trailShader.getId();
   this->bindCameraUBO(trailID);
 
-  for (auto &trail : scene.getTrails())
+  for (const Trail *trail : scene.getTrails())
   {
     trail->render();
   }
@@ -160,9 +160,9 @@ void Renderer::renderSkybox(Scene &scene)
 
 void Renderer::renderShadowMap(Scene &scene, Shader &shader)
 {
-  for (auto &object : scene.getObjects())
+  for (const Object *object : scene.getObjects())
   {
-    if (dynamic_cast<Star *>(object))
+    if (dynamic_cast<const Star *>(object))
       continue;
 
     object->render(shader);
@@ -252,7 +252,7 @@ void Renderer::init(Scene &scene)
   {
     const Camera &activeCamera = scene.getActiveCamera();
 
-    for (auto &light : pointLights)
+    for (PointLight *light : pointLights)
       this->shadowManager->addPointShadow(std::make_unique<PointShadow>(this->shadowRes, this->shadowRes,
                                                                         light->getPosition(),
                                                                         activeCamera.getNearPlane(),

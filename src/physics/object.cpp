@@ -23,7 +23,7 @@ void Object::kick(const std::vector<Object *> &bodies, double dt)
 {
   this->acceleration = glm::dvec3(0.0);
 
-  for (auto *other : bodies)
+  for (Object *other : bodies)
   {
     if (other == this)
       continue;

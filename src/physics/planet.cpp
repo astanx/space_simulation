@@ -22,7 +22,7 @@ void Planet::update(double dt)
 {
   // this->move(dt);
 
-  for (auto &moon : this->moons)
+  for (std::unique_ptr<Moon> &moon : this->moons)
   {
     moon->update(dt);
   }
@@ -32,7 +32,7 @@ void Planet::update(double dt)
 
 void Planet::render(Shader &shader)
 {
-  for (auto &moon : this->moons)
+  for (std::unique_ptr<Moon> &moon : this->moons)
   {
     moon->render(shader);
   }
@@ -56,7 +56,7 @@ void Planet::drift(double dt)
 {
   this->keplerDrift(dt);
 
-  for (auto &moon : this->moons)
+  for (std::unique_ptr<Moon> &moon : this->moons)
     moon->drift(dt);
 }
 
@@ -64,6 +64,6 @@ void Planet::halfKick(const std::vector<Object *> &bodies, double dt)
 {
   this->kick(bodies, dt * 0.5);
 
-  for (auto &moon : this->moons)
+  for (std::unique_ptr<Moon> &moon : this->moons)
     moon->halfKick(bodies, dt);
 }

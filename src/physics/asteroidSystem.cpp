@@ -68,25 +68,25 @@ Asteroid *AsteroidSystem::createAsteroid()
 }
 void AsteroidSystem::createAsteroids(unsigned amount)
 {
-  std::vector<std::unique_ptr<AsteroidShape>> asteroids;
-  asteroids.push_back(std::make_unique<AsteroidShape>(24, 12, 2.0, 1.0, 1.0, 0.75, 0.85, 0.65));
-  asteroids.push_back(std::make_unique<AsteroidShape>(20, 10, 2.2, 1.0, 1.1, 0.70, 0.80, 0.60));
-  asteroids.push_back(std::make_unique<AsteroidShape>(16, 8, 3.0, 1.0, 1.2, 0.65, 0.75, 0.55));
-  asteroids.push_back(std::make_unique<AsteroidShape>(4, 7, 2.5, 1.1, 1.3, 0.60, 0.70, 0.50));
-  asteroids.push_back(std::make_unique<AsteroidShape>(12, 6, 4.0, 1.2, 1.4, 0.55, 0.65, 0.45));
+  std::vector<std::unique_ptr<AsteroidShape>> asteroidShapes;
+  asteroidShapes.push_back(std::make_unique<AsteroidShape>(24, 12, 2.0, 1.0, 1.0, 0.75, 0.85, 0.65));
+  asteroidShapes.push_back(std::make_unique<AsteroidShape>(20, 10, 2.2, 1.0, 1.1, 0.70, 0.80, 0.60));
+  asteroidShapes.push_back(std::make_unique<AsteroidShape>(16, 8, 3.0, 1.0, 1.2, 0.65, 0.75, 0.55));
+  asteroidShapes.push_back(std::make_unique<AsteroidShape>(4, 7, 2.5, 1.1, 1.3, 0.60, 0.70, 0.50));
+  asteroidShapes.push_back(std::make_unique<AsteroidShape>(12, 6, 4.0, 1.2, 1.4, 0.55, 0.65, 0.45));
 
-  const size_t typeCount = asteroids.size();
+  const size_t typeCount = asteroidShapes.size();
 
   this->instances.resize(typeCount);
   this->asteroids.resize(typeCount);
   this->meshes.reserve(typeCount);
 
-  for (auto &asteroid : asteroids)
+  for (std::unique_ptr<AsteroidShape> &asteroid : asteroidShapes)
   {
     this->meshes.push_back(std::make_unique<Mesh>(std::move(asteroid), VertexLayout::Instanced));
   }
 
-  for (auto &mesh : meshes)
+  for (std::unique_ptr<Mesh> &mesh : meshes)
   {
     meshVolumes.push_back(mesh->calculateVolume());
   }
@@ -170,7 +170,7 @@ void AsteroidSystem::update(double dt)
                                {
         for (unsigned j = begin; j < end; j++)
         {
-          auto& asteroid = this->asteroids[typeIndex][j];
+          std::unique_ptr<Asteroid>& asteroid = this->asteroids[typeIndex][j];
           // asteroid->update(dt);
           this->instances[typeIndex][j].position = asteroid->getRenderPosition();
         } });
@@ -196,7 +196,7 @@ void AsteroidSystem::applyObjectGravitation(Object *object)
   this->lastUpdateTime = currentTime;
   unsigned threadCount = this->threadPool.getThreadCount();
 
-  for (auto &asteroidType : this->asteroids)
+  for (std::vector<std::unique_ptr<Asteroid>> &asteroidType : this->asteroids)
   {
     unsigned perThread = asteroidType.size() / threadCount;
     unsigned remaining = asteroidType.size() % threadCount;
@@ -227,7 +227,7 @@ void AsteroidSystem::drift(double dt)
   this->lastUpdateTime = currentTime;
   unsigned threadCount = this->threadPool.getThreadCount();
 
-  for (auto &asteroidType : this->asteroids)
+  for (std::vector<std::unique_ptr<Asteroid>> &asteroidType : this->asteroids)
   {
     unsigned perThread = asteroidType.size() / threadCount;
     unsigned remaining = asteroidType.size() % threadCount;
@@ -257,7 +257,7 @@ void AsteroidSystem::halfKick(const std::vector<Object *> &bodies, double dt)
   this->lastUpdateTime = currentTime;
   unsigned threadCount = this->threadPool.getThreadCount();
 
-  for (auto &asteroidType : this->asteroids)
+  for (std::vector<std::unique_ptr<Asteroid>> &asteroidType : this->asteroids)
   {
     unsigned perThread = asteroidType.size() / threadCount;
     unsigned remaining = asteroidType.size() % threadCount;
@@ -280,11 +280,11 @@ void AsteroidSystem::halfKick(const std::vector<Object *> &bodies, double dt)
   this->threadPool.wait();
 }
 
-void AsteroidSystem::render(Shader &shader)
+void AsteroidSystem::render(Shader &shader) const
 {
   this->asteroid_material->sendToShader(shader);
 
-  for (auto &mesh : this->meshes)
+  for (const std::unique_ptr<Mesh> &mesh : this->meshes)
   {
     mesh->renderInstanced();
   }

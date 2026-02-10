@@ -7,7 +7,7 @@
 void Trail::generateTrail(const std::vector<glm::dvec3> &trailVec)
 {
   std::vector<Vertex> vertices;
-  for (auto &p : trailVec)
+  for (const glm::dvec3 &p : trailVec)
   {
     Vertex v{};
     v.position = p;
@@ -27,7 +27,7 @@ Trail::Trail(const std::vector<glm::dvec3> &trailVec)
 }
 
 // Public functions
-void Trail::render()
+void Trail::render() const
 {
   this->trail->render();
 }

@@ -26,8 +26,8 @@ std::string Shader::loadShaderSrc(const char *fileName, bool isInclude)
 
       if (temp.find("#include") == 0)
       {
-        auto start = temp.find("\"") + 1;
-        auto end = temp.find("\"", start);
+        long start = temp.find("\"") + 1;
+        long end = temp.find("\"", start);
         std::string includePath = temp.substr(start, end - start);
         src += this->loadShaderSrc(("assets/shaders/" + includePath).c_str(), true) + "\n";
       }

@@ -15,7 +15,7 @@ void Input::update()
 {
   previous = current;
 
-  for (auto &key : keys)
+  for (int &key : keys)
     this->current[key] = glfwGetKey(this->window, key) == GLFW_PRESS;
 }
 
