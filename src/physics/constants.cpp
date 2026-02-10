@@ -1,7 +1,9 @@
 #include "physics/constants.h"
+
 #include "physics/structs/keplerElements.h"
 #include "physics/structs/materialProperties.h"
 #include "physics/structs/radii.h"
+
 #include <glm/glm.hpp>
 
 const double AU_TO_METER = 1.49597870700e11;

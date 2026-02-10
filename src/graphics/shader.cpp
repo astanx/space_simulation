@@ -1,9 +1,11 @@
 #include "graphics/shader.h"
+
 #include "debug/logger.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
 #include <fstream>
-#include <glm/gtc/type_ptr.hpp>
 
 // Private functions
 std::string Shader::loadShaderSrc(const char *fileName, bool isInclude)

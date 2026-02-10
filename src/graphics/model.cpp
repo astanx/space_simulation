@@ -1,10 +1,13 @@
 #include "graphics/model.h"
+
 #include "graphics/mesh.h"
-#include "graphics/materials/material.h"
 #include "graphics/texture.h"
 #include "graphics/shader.h"
 
+#include "graphics/materials/material.h"
+
 #include "resources/OBJloader.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 // Private functions

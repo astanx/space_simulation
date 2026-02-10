@@ -1,15 +1,17 @@
 #include "scene/scene.h"
+
+#include "debug/logger.h"
+
 #include "graphics/shader.h"
-#include "graphics/primitives/sphere.h"
 #include "graphics/mesh.h"
 #include "physics/planet.h"
 #include "physics/orbit.h"
 #include "physics/star.h"
 #include "physics/moon.h"
 #include "physics/constants.h"
+
 #include "resources/resources.h"
 #include "resources/resourceManager.h"
-#include "debug/logger.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 

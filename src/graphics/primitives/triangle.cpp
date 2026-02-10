@@ -1,4 +1,5 @@
 #include "graphics/primitives/triangle.h"
+
 #include "graphics/vertex.h"
 
 // Constructor and Destructor

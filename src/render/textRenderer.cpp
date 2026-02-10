@@ -1,12 +1,14 @@
 #include "render/textRenderer.h"
+
+#include "debug/logger.h"
+
 #include "graphics/mesh.h"
 #include "graphics/vertex.h"
-#include "debug/logger.h"
 #include "graphics/shader.h"
 
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
-#include <glm/gtc/matrix_transform.hpp>
 
 // Public functions
 void TextRenderer::init()

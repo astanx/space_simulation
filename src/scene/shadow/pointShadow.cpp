@@ -1,9 +1,12 @@
 #include "scene/shadow/pointShadow.h"
-#include "graphics/shader.h"
+
 #include "debug/logger.h"
 
-#include <iostream>
+#include "graphics/shader.h"
+
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <iostream>
 
 // Private functions
 void PointShadow::init()

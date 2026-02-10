@@ -1,7 +1,9 @@
 #include "graphics/materials/phongMaterial.h"
-#include "physics/structs/materialProperties.h"
+
 #include "graphics/shader.h"
 #include "graphics/texture.h"
+
+#include "physics/structs/materialProperties.h"
 
 #include <iostream>
 

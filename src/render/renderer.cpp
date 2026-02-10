@@ -1,9 +1,13 @@
 #include "render/renderer.h"
-#include "scene/scene.h"
-#include "resources/resourceManager.h"
-#include "physics/star.h"
-#include "resources/resources.h"
+
 #include "debug/logger.h"
+
+#include "scene/scene.h"
+
+#include "resources/resourceManager.h"
+#include "resources/resources.h"
+
+#include "physics/star.h"
 
 #include <iostream>
 

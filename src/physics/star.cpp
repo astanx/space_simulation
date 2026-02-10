@@ -1,5 +1,7 @@
 #include <physics/star.h>
+
 #include <physics/constants.h>
+
 #include <graphics/model.h>
 
 // Constructor

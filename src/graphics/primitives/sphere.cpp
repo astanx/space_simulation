@@ -1,4 +1,5 @@
 #include "graphics/primitives/sphere.h"
+
 #include "graphics/vertex.h"
 
 #include <vector>

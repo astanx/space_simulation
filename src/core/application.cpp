@@ -1,11 +1,14 @@
 #include "core/application.h"
-#include "graphics/primitives/sphere.h"
-#include "graphics/primitives/ellipsoid.h"
-#include "graphics/shader.h"
-#include "physics/constants.h"
-#include "scene/scene.h"
-#include "resources/resources.h"
+
 #include "debug/logger.h"
+
+#include "scene/scene.h"
+
+#include "resources/resources.h"
+
+#include "graphics/primitives/ellipsoid.h"
+
+#include "physics/constants.h"
 
 #include <iostream>
 

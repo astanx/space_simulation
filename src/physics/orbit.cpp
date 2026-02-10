@@ -1,10 +1,13 @@
 #include "physics/orbit.h"
+
+#include "debug/logger.h"
+
 #include "physics/constants.h"
 #include "physics/planet.h"
+
 #include "graphics/shader.h"
 #include "graphics/vertex.h"
 #include "graphics/mesh.h"
-#include "debug/logger.h"
 
 #include <iostream>
 

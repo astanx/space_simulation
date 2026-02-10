@@ -1,4 +1,5 @@
 #include "graphics/primitives/cube.h"
+
 #include "graphics/vertex.h"
 
 // Constructor and Destructor
