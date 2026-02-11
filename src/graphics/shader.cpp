@@ -59,7 +59,7 @@ GLuint Shader::loadShader(GLenum type, char *fileName)
   std::string str_src = this->loadShaderSrc(fileName);
   const GLchar *src = str_src.c_str();
   glShaderSource(shader, 1, &src, NULL);
-  glCompileShader(shader);
+  GL_CALL(glCompileShader(shader));
 
   glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
@@ -86,7 +86,7 @@ void Shader::linkProgram(GLuint vertexShader, GLuint geometryShader, GLuint frag
     glAttachShader(this->id, geometryShader);
   glAttachShader(this->id, fragmentShader);
 
-  glLinkProgram(this->id);
+  GL_CALL(glLinkProgram(this->id));
 
   glGetProgramiv(this->id, GL_LINK_STATUS, &success);
   if (!success)

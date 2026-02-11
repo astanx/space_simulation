@@ -30,9 +30,9 @@ void Planet::update(double dt)
     this->model->setPosition(this->renderPosition);
 }
 
-void Planet::render(Shader &shader)
+void Planet::render(Shader &shader) const
 {
-  for (std::unique_ptr<Moon> &moon : this->moons)
+  for (const std::unique_ptr<Moon> &moon : this->moons)
   {
     moon->render(shader);
   }

@@ -21,7 +21,7 @@ void Mesh::initVAO()
     glGenBuffers(1, &this->VBO);
 
   glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-  glBufferData(GL_ARRAY_BUFFER, this->nrOfVertices * sizeof(Vertex), this->vertices, GL_STATIC_DRAW);
+  GL_CALL(glBufferData(GL_ARRAY_BUFFER, this->nrOfVertices * sizeof(Vertex), this->vertices, GL_STATIC_DRAW));
 
   if (this->nrOfIndices > 0)
   {
@@ -29,7 +29,7 @@ void Mesh::initVAO()
       glGenBuffers(1, &this->EBO);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), this->indices, GL_STATIC_DRAW);
+    GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), this->indices, GL_STATIC_DRAW));
   }
 
   auto it = LAYOUTS.find(this->layout);
@@ -184,11 +184,11 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
 
   glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
 
-  glBufferData(
+  GL_CALL(glBufferData(
       GL_ARRAY_BUFFER,
       this->instanceCount * sizeof(InstanceData),
       instanceData.data(),
-      GL_DYNAMIC_DRAW);
+      GL_DYNAMIC_DRAW));
 
   auto it = LAYOUTS.find(this->layout);
   if (it == LAYOUTS.end())
@@ -247,7 +247,7 @@ void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
 
   memcpy(ptr, instanceData.data(), instanceCount * sizeof(InstanceData));
 
-  glUnmapBuffer(GL_ARRAY_BUFFER);
+  GL_CALL(glUnmapBuffer(GL_ARRAY_BUFFER));
 }
 
 void Mesh::render() const
@@ -260,9 +260,9 @@ void Mesh::render() const
     Logger::logError("Mesh", "No VAO to render");
 
   if (this->nrOfIndices == 0)
-    glDrawArrays(this->drawMode, 0, this->nrOfVertices);
+    GL_CALL(glDrawArrays(this->drawMode, 0, this->nrOfVertices));
   else
-    glDrawElements(this->drawMode, this->nrOfIndices, GL_UNSIGNED_INT, 0);
+    GL_CALL(glDrawElements(this->drawMode, this->nrOfIndices, GL_UNSIGNED_INT, 0));
 };
 
 void Mesh::renderInstanced() const
@@ -278,14 +278,14 @@ void Mesh::renderInstanced() const
     Logger::logError("Mesh", "No instanced VAO to render");
 
   if (this->nrOfIndices == 0)
-    glDrawArraysInstanced(this->drawMode, 0, this->nrOfVertices, this->instanceCount);
+    GL_CALL(glDrawArraysInstanced(this->drawMode, 0, this->nrOfVertices, this->instanceCount));
   else
-    glDrawElementsInstanced(
+    GL_CALL(glDrawElementsInstanced(
         this->drawMode,
         this->nrOfIndices,
         GL_UNSIGNED_INT,
         0,
-        this->instanceCount);
+        this->instanceCount));
 
   glBindVertexArray(0);
 }
@@ -304,4 +304,27 @@ const double Mesh::calculateVolume() const
   }
 
   return std::abs(volume) / 6.0;
+}
+
+void Mesh::updateBuffers(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices)
+{
+  delete[] this->vertices;
+  delete[] this->indices;
+
+  this->nrOfVertices = nrOfVertices;
+  this->nrOfIndices = nrOfIndices;
+
+  this->vertices = new Vertex[this->nrOfVertices];
+  for (size_t i = 0; i < this->nrOfVertices; i++)
+  {
+    this->vertices[i] = vertexArray[i];
+  }
+
+  this->indices = new GLuint[this->nrOfIndices];
+  for (size_t i = 0; i < this->nrOfIndices; i++)
+  {
+    this->indices[i] = indexArray[i];
+  }
+
+  this->initVAO();
 }

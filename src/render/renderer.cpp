@@ -26,7 +26,7 @@ void Renderer::updateUBO(Scene &scene, float aspectRatio)
     camUBO.camPosition = glm::vec4(activeCamera.getPosition(), 1.0);
 
     glBindBuffer(GL_UNIFORM_BUFFER, this->cameraUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO);
+    GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 
@@ -72,11 +72,11 @@ void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferTy
 {
   glGenBuffers(1, ubo);
   glBindBuffer(bufferType, *ubo);
-  glBufferData(
+  GL_CALL(glBufferData(
       bufferType,
       size,
       nullptr,
-      GL_DYNAMIC_DRAW);
+      GL_DYNAMIC_DRAW));
 }
 
 void Renderer::renderAsteroidSystems(Scene &scene)

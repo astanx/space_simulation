@@ -55,6 +55,8 @@ void TextRenderer::init()
 
   FT_Done_Face(face);
   FT_Done_FreeType(ft);
+
+  this->text = std::make_unique<Mesh>(nullptr, 0, nullptr, 0, VertexLayout::PositionTexcoord);
 };
 
 void TextRenderer::render(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color)
@@ -104,9 +106,10 @@ void TextRenderer::render(Shader &shader, std::string text, float x, float y, fl
 
     shader.set1i(0, "text");
 
-    Mesh mesh = Mesh(vertices.data(), vertices.size(), nullptr, 0, VertexLayout::PositionTexcoord);
+    this->text->updateBuffers(vertices.data(), vertices.size(), nullptr, 0);
 
-    mesh.render();
+    this->text->render();
+
     // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
     x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
 

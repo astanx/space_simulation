@@ -34,6 +34,8 @@ public:
 
   Mesh(std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
 
+  void updateBuffers(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices);
+
   void setInstanceBuffer(const std::vector<InstanceData> &instanceData);
   void updateInstanceBuffer(const std::vector<InstanceData> &instanceData);
 

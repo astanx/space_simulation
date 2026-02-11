@@ -15,6 +15,7 @@
 // Private functions
 void Skybox::loadCubemap(std::vector<const char *> faces)
 {
+
   glGenTextures(1, &this->id);
   glBindTexture(GL_TEXTURE_CUBE_MAP, this->id);
 
@@ -24,13 +25,9 @@ void Skybox::loadCubemap(std::vector<const char *> faces)
     unsigned char *image = stbi_load(faces[i], &width, &height, &channels, 4);
     if (image)
     {
-      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                   0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+      GL_CALL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                           0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image));
       stbi_image_free(image);
-
-      GLenum err = glGetError();
-      if (err != GL_NO_ERROR && i != 0)
-        Logger::logError("Skybox", "Error loading face - " + std::to_string(i));
     }
     else
     {
@@ -45,7 +42,7 @@ void Skybox::loadCubemap(std::vector<const char *> faces)
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-  glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+  GL_CALL(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));
 
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 };
