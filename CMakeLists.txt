@@ -4,30 +4,68 @@ project(Space)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(FetchContent)
+
 # Find OpenGL
 find_package(OpenGL REQUIRED)
 
-# Paths for Homebrew packages
-if(APPLE)
-    set(GLFW_INCLUDE_DIR "/opt/homebrew/include")
-    set(GLFW_LIBRARY "/opt/homebrew/lib/libglfw.dylib")
-
-    set(FREETYPE_INCLUDE_DIR "/opt/homebrew/include/freetype2")
-    set(FREETYPE_LIBRARY "/opt/homebrew/lib/libfreetype.dylib")
-
-    # GLEW (Homebrew)
-    set(GLEW_INCLUDE_DIR "/opt/homebrew/opt/glew/include")
-    set(GLEW_LIBRARY "/opt/homebrew/opt/glew/lib/libGLEW.dylib")
+# GLM (header-only)
+find_package(glm QUIET)
+if(NOT glm_FOUND)
+    FetchContent_Declare(
+        glm
+        GIT_REPOSITORY https://github.com/g-truc/glm.git
+        GIT_TAG 1.0.1
+    )
+    FetchContent_MakeAvailable(glm)
 endif()
 
-# Add GLM (header-only)
-set(GLM_INCLUDE_DIR "/Users/ivanastanin/vs/cpp/glm-1.0.2")
+# GLFW
+find_package(glfw3 QUIET)
+if(NOT glfw3_FOUND)
+    FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.4
+    )
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(glfw)
+endif()
 
+# GLEW
+find_package(GLEW QUIET)
+if(NOT GLEW_FOUND)
+    FetchContent_Declare(
+        glew
+        GIT_REPOSITORY https://github.com/Perlmint/glew-cmake.git
+        GIT_TAG glew-cmake-2.2.0
+    )
+    set(glew-cmake_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(glew)
+endif()
 
-add_executable(Space 
+# FreeType
+find_package(Freetype QUIET)
+if(NOT Freetype_FOUND)
+    FetchContent_Declare(
+        freetype
+        GIT_REPOSITORY https://github.com/freetype/freetype.git
+        GIT_TAG VER-2-13-2
+    )
+    set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
+    set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
+    set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
+    set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
+    set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(freetype)
+endif()
+
+add_executable(Space
     # Main
     src/main.cpp
-
+    
     # Core
     src/core/application.cpp
     src/core/input.cpp
@@ -41,11 +79,10 @@ add_executable(Space
     src/graphics/skybox.cpp
     src/graphics/mesh.cpp
     src/graphics/model.cpp
-        #Materials
+        # Materials
         src/graphics/materials/phongMaterial.cpp
         src/graphics/materials/asteroidMaterial.cpp
         src/graphics/materials/textMaterial.cpp
-    
         # Primitives
         src/graphics/primitives/triangle.cpp
         src/graphics/primitives/primitives.cpp
@@ -56,7 +93,7 @@ add_executable(Space
         src/graphics/primitives/sphere.cpp
         src/graphics/primitives/asteroidShape.cpp
         src/graphics/primitives/ellipsoid.cpp
-
+    
     # Scene
     src/scene/scene.cpp
         # Light
@@ -64,13 +101,12 @@ add_executable(Space
         src/scene/light/pointLight.cpp
         src/scene/light/directionalLight.cpp
         src/scene/light/lightManager.cpp
-
         # Shadow
         src/scene/shadow/shadow.cpp
         src/scene/shadow/directionalShadow.cpp
         src/scene/shadow/pointShadow.cpp
         src/scene/shadow/shadowManager.cpp
-
+    
     # Render
     src/render/renderer.cpp
     src/render/textRenderer.cpp
@@ -95,34 +131,29 @@ add_executable(Space
     # Maths
     src/maths/rk4.cpp
     src/maths/random.cpp
-
+    
     # Debug
     src/debug/logger.cpp
 )
 
-include_directories(Space PRIVATE
+target_include_directories(Space PRIVATE
     ${CMAKE_SOURCE_DIR}/include
-    ${GLFW_INCLUDE_DIR}
-    ${GLM_INCLUDE_DIR}
-    ${GLEW_INCLUDE_DIR}
-    ${SOIL2_INCLUDE_DIR}
-    ${FREETYPE_INCLUDE_DIR}
 )
 
 # Link libraries
 target_link_libraries(Space PRIVATE
-    ${OPENGL_LIBRARIES}
-    ${GLFW_LIBRARY}
-    ${GLEW_LIBRARY}
-    ${FREETYPE_LIBRARY}
-    "-framework CoreFoundation"
+    OpenGL::GL
+    glm::glm
+    glfw
+    GLEW::GLEW
+    Freetype::Freetype
 )
 
 # ---- Copy runtime resources (shaders, assets) next to the executable ----
 add_custom_command(TARGET Space POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Space>/assets
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/assets
-            $<TARGET_FILE_DIR:Space>/assets
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:Space>/assets
     COMMENT "Copying assets/ to output directory"
 )

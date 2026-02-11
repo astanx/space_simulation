@@ -3,6 +3,8 @@
 #include "scene/shadow/pointShadow.h"
 #include "scene/shadow/directionalShadow.h"
 
+#include <memory>
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
