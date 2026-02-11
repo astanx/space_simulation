@@ -29,8 +29,8 @@ Texture::Texture(const char *fileName, GLenum type)
 
   if (image)
   {
-    glTexImage2D(type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    glGenerateMipmap(type);
+    GL_CALL(glTexImage2D(type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image));
+    GL_CALL(glGenerateMipmap(type));
   }
   else
   {
@@ -49,7 +49,7 @@ Texture::Texture(GLsizei width, GLsizei height, GLenum type, const void *pixels)
   glGenTextures(1, &this->id);
   glBindTexture(type, this->id);
 
-  glTexImage2D(
+  GL_CALL(glTexImage2D(
       type,
       0,
       GL_RED,
@@ -58,7 +58,7 @@ Texture::Texture(GLsizei width, GLsizei height, GLenum type, const void *pixels)
       0,
       GL_RED,
       GL_UNSIGNED_BYTE,
-      pixels);
+      pixels));
 
   glTexParameteri(type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -108,8 +108,8 @@ void Texture::loadFromFile(const char *fileName)
 
   if (image)
   {
-    glTexImage2D(this->type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    glGenerateMipmap(this->type);
+    GL_CALL(glTexImage2D(this->type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image));
+    GL_CALL(glGenerateMipmap(this->type));
   }
   else
   {

@@ -13,7 +13,7 @@ public:
   virtual ~Renderable() = default;
 
   virtual void update(double dt) = 0;
-  virtual void render(Shader &shader) = 0;
+  virtual void render(Shader &shader) const = 0;
 
   virtual void addModel(std::unique_ptr<Model> m) { model = std::move(m); }
   Model *getModel() const { return model.get(); }

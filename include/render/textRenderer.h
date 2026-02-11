@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/texture.h"
+#include "graphics/mesh.h"
 #include "graphics/materials/textMaterial.h"
 
 #include "ft2build.h"
@@ -22,6 +23,8 @@ class TextRenderer
 private:
   std::map<char, Character> characters;
   std::optional<TextMaterial> mat;
+
+  std::unique_ptr<Mesh> text;
 
 public:
   TextRenderer() = default;

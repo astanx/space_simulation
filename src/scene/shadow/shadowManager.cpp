@@ -17,7 +17,7 @@ void ShadowManager::initDirUBO()
   {
     glGenBuffers(1, &this->dirUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(DirShadowGPU), nullptr, GL_DYNAMIC_DRAW);
+    GL_CALL(glBufferData(GL_UNIFORM_BUFFER, sizeof(DirShadowGPU), nullptr, GL_DYNAMIC_DRAW));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 }
@@ -27,7 +27,7 @@ void ShadowManager::initPointUBO()
   {
     glGenBuffers(1, &this->pointUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(PointShadowGPU), nullptr, GL_DYNAMIC_DRAW);
+    GL_CALL(glBufferData(GL_UNIFORM_BUFFER, sizeof(PointShadowGPU), nullptr, GL_DYNAMIC_DRAW));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 }
@@ -63,7 +63,7 @@ void ShadowManager::updateDirUBO(int enabled)
     ubo.enabled = enabled;
 
     glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirShadowGPU), &ubo);
+    GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirShadowGPU), &ubo));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
   else
@@ -114,7 +114,7 @@ void ShadowManager::updatePointUBO(int enabled)
     // }
 
     glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointShadowGPU), &ubo);
+    GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointShadowGPU), &ubo));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
   else
@@ -126,18 +126,31 @@ void ShadowManager::updatePointUBO(int enabled)
 
 void ShadowManager::maskDirUBO()
 {
+  if (!glIsBuffer(this->dirUBO))
+  {
+    Logger::logWarning("Shadow manager", "No directional UBO to mask");
+    return;
+  }
+
   DirShadowGPU ubo{};
+
   ubo.enabled = 0;
   glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirShadowGPU), &ubo);
+  GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirShadowGPU), &ubo));
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 void ShadowManager::maskPointUBO()
 {
+  if (!glIsBuffer(this->pointUBO))
+  {
+    Logger::logWarning("Shadow manager", "No point UBO to mask");
+    return;
+  }
+
   PointShadowGPU ubo{};
   // ubo.enabled = 0;
   glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointShadowGPU), &ubo);
+  GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointShadowGPU), &ubo));
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

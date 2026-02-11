@@ -13,7 +13,7 @@ void LightManager::initDirUBO()
   {
     glGenBuffers(1, &this->dirUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(DirLightGPU), nullptr, GL_DYNAMIC_DRAW);
+    GL_CALL(glBufferData(GL_UNIFORM_BUFFER, sizeof(DirLightGPU), nullptr, GL_DYNAMIC_DRAW));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 }
@@ -21,10 +21,9 @@ void LightManager::initPointUBO()
 {
   if (!glIsBuffer(this->pointUBO))
   {
-
     glGenBuffers(1, &this->pointUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(PointLightGPU), nullptr, GL_DYNAMIC_DRAW);
+    GL_CALL(glBufferData(GL_UNIFORM_BUFFER, sizeof(PointLightGPU), nullptr, GL_DYNAMIC_DRAW));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 }
@@ -53,7 +52,7 @@ void LightManager::updateDirUBO(const DirectionalLight *dirLight, int enabled)
     ubo.enabled = enabled;
 
     glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirLightGPU), &ubo);
+    GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirLightGPU), &ubo));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
   else
@@ -80,7 +79,7 @@ void LightManager::updatePointUBO(const PointLight *pointLight, int enabled)
     ubo.enabled = enabled;
 
     glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo);
+    GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
   else
@@ -92,22 +91,34 @@ void LightManager::updatePointUBO(const PointLight *pointLight, int enabled)
 
 void LightManager::maskDirUBO()
 {
+  if (!glIsBuffer(this->dirUBO))
+  {
+    Logger::logWarning("Light manager", "No directional UBO to mask");
+    return;
+  }
+
   DirLightGPU ubo{};
 
   ubo.enabled = 0;
 
   glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirLightGPU), &ubo);
+  GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirLightGPU), &ubo));
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
+
 void LightManager::maskPointUBO()
 {
+  if (!glIsBuffer(this->pointUBO))
+  {
+    Logger::logWarning("Light manager", "No point UBO to mask");
+    return;
+  }
+
   PointLightGPU ubo{};
 
   ubo.enabled = 0;
-
   glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo);
+  GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo));
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
