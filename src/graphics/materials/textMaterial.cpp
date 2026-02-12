@@ -1,5 +1,7 @@
 #include "graphics/materials/textMaterial.h"
 
+#include "graphics/bindings/texture.h"
+
 #include "graphics/shader.h"
 #include "graphics/texture.h"
 
@@ -12,6 +14,6 @@ TextMaterial::TextMaterial(Texture *diffuseTexture)
 // Public functions
 void TextMaterial::sendToShader(Shader &program)
 {
-  this->diffuseTexture->bind(0);
+  this->diffuseTexture->bind(TextureBindingPoints::Diffuse);
   program.set1i(0, "text");
 }

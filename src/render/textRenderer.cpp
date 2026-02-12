@@ -6,6 +6,8 @@
 #include "graphics/vertex.h"
 #include "graphics/shader.h"
 
+#include "graphics/bindings/texture.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
@@ -102,7 +104,7 @@ void TextRenderer::render(Shader &shader, std::string text, float x, float y, fl
         {{xpos + w, ypos + h, 0.0f}, {}, {1.0f, 0.0f}}};
 
     // render glyph texture over quad
-    ch.texture->bind(0);
+    ch.texture->bind(TextureBindingPoints::Diffuse);
 
     shader.set1i(0, "text");
 

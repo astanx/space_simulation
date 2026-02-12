@@ -40,12 +40,6 @@ struct PointShadowGPU
   glm::vec3 _pad0;
 };
 
-enum ShadowUBOBindingPoints
-{
-  DIR_SHADOW_BINDING = 3,
-  POINT_SHADOW_BINDING = 4
-};
-
 class Shader;
 class Scene;
 
@@ -75,8 +69,8 @@ public:
   void bindDirShadowUBO(GLuint &programID);
   void bindPointShadowUBO(GLuint &programID);
 
-  void bindDirShadow(Shader &shader, int unit);
-  void bindPointShadow(Shader &shader, int unit);
+  void bindDirShadow(Shader &shader);
+  void bindPointShadow(Shader &shader);
 
   void bindDirShadowFBO() const;
   void bindPointShadowFBO() const;

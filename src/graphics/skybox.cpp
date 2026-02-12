@@ -5,6 +5,8 @@
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
 
+#include "graphics/bindings/texture.h"
+
 #include "graphics/primitives/cube.h"
 
 #include <GL/glew.h>
@@ -67,7 +69,7 @@ void Skybox::render(Shader &shader) const
   glDepthFunc(GL_LEQUAL);
   glDepthMask(GL_FALSE);
 
-  this->bind(0);
+  this->bind(TextureBindingPoints::Diffuse);
   shader.set1i(0, "skybox");
   this->mesh.render();
   this->unbind();

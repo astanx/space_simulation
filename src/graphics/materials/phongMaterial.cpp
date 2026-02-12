@@ -1,5 +1,7 @@
 #include "graphics/materials/phongMaterial.h"
 
+#include "graphics/bindings/texture.h"
+
 #include "graphics/shader.h"
 #include "graphics/texture.h"
 
@@ -43,7 +45,7 @@ void PhongMaterial::sendToShader(Shader &program)
 
   if (this->diffuseTexture)
   {
-    this->diffuseTexture->bind(0);
+    this->diffuseTexture->bind(TextureBindingPoints::Diffuse);
     program.set1i(0, "material.diffuseTexture");
     isTexture = 1;
   }
@@ -55,7 +57,7 @@ void PhongMaterial::sendToShader(Shader &program)
 
   if (this->specularTexture)
   {
-    this->specularTexture->bind(1);
+    this->specularTexture->bind(TextureBindingPoints::Specular);
     program.set1i(1, "material.specularTexture");
     isTexture = 1;
   }

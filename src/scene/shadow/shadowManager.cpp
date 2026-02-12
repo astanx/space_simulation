@@ -6,6 +6,9 @@
 #include "scene/shadow/directionalShadow.h"
 #include "scene/shadow/pointShadow.h"
 
+#include "graphics/bindings/ubo.h"
+#include "graphics/bindings/texture.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
@@ -164,9 +167,9 @@ void ShadowManager::bindDirShadowUBO(GLuint &programID)
 
   if (blockIndex != GL_INVALID_INDEX)
   {
-    glUniformBlockBinding(programID, blockIndex, DIR_SHADOW_BINDING);
+    glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::DirectionalShadow);
   }
-  glBindBufferBase(GL_UNIFORM_BUFFER, DIR_SHADOW_BINDING, this->dirUBO);
+  glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::DirectionalShadow, this->dirUBO);
 }
 void ShadowManager::bindPointShadowUBO(GLuint &programID)
 {
@@ -178,28 +181,28 @@ void ShadowManager::bindPointShadowUBO(GLuint &programID)
 
   if (blockIndex != GL_INVALID_INDEX)
   {
-    glUniformBlockBinding(programID, blockIndex, POINT_SHADOW_BINDING);
+    glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::PointShadow);
   }
-  glBindBufferBase(GL_UNIFORM_BUFFER, POINT_SHADOW_BINDING, this->pointUBO);
+  glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::PointShadow, this->pointUBO);
 }
 
-void ShadowManager::bindDirShadow(Shader &shader, int unit)
+void ShadowManager::bindDirShadow(Shader &shader)
 {
   assert(this->directionalShadow && "[Shadow manager] ASSERT: No directional shadow to bind");
 
   if (!this->directionalShadow)
     return;
 
-  this->directionalShadow->bind(shader, unit);
+  this->directionalShadow->bind(shader, TextureBindingPoints::DirectionalShadow);
 }
-void ShadowManager::bindPointShadow(Shader &shader, int unit)
+void ShadowManager::bindPointShadow(Shader &shader)
 {
   assert(this->pointShadow && "[Shadow manager] ASSERT: No point shadow to bind");
 
   if (!this->pointShadow)
     return;
 
-  this->pointShadow->bind(shader, unit);
+  this->pointShadow->bind(shader, TextureBindingPoints::PointShadow);
 }
 
 void ShadowManager::bindDirShadowFBO() const

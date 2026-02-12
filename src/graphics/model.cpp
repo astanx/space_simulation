@@ -4,6 +4,8 @@
 #include "graphics/texture.h"
 #include "graphics/shader.h"
 
+#include "graphics/bindings/texture.h"
+
 #include "graphics/materials/material.h"
 
 #include "resources/OBJloader.h"
@@ -118,9 +120,9 @@ void Model::render(Shader &shader)
 
   // Render objects
   if (this->overrideTextureDiffuse != nullptr)
-    this->overrideTextureDiffuse->bind(0);
+    this->overrideTextureDiffuse->bind(TextureBindingPoints::Diffuse);
   if (this->overrideTextureSpecular != nullptr)
-    this->overrideTextureSpecular->bind(1);
+    this->overrideTextureSpecular->bind(TextureBindingPoints::Specular);
 
   for (Mesh *&mesh : this->meshes)
   {

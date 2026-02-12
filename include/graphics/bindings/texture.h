@@ -1,0 +1,11 @@
+#pragma once
+
+namespace TextureBindingPoints
+{
+  constexpr unsigned int Diffuse = 0;
+  constexpr unsigned int Specular = 1;
+  constexpr unsigned int Normal = 2;
+  constexpr unsigned int Skybox = 3;
+  constexpr unsigned int PointShadow = 4;
+  constexpr unsigned int DirectionalShadow = 5;
+}
