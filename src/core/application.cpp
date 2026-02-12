@@ -11,6 +11,7 @@
 #include "physics/constants.h"
 
 #include <iostream>
+#include <filesystem>
 
 // Private functions
 void Application::initGLFW()
@@ -118,13 +119,13 @@ Application::Application(
   // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
   this->resourceManager.LoadShader(Res::TEXT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
 
-  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/diffuse/sun.png", Res::SUN_MATERIAL, sunRadii, sunMaterial);
-  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/diffuse/mercury.png", Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
-  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, "assets/textures/diffuse/venus.png", Res::VENUS_MATERIAL, venusRadii, venusMaterial);
-  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/diffuse/earth.png", Res::EARTH_MATERIAL, earthRadii, earthMaterial, Res::EARTH_SPECULAR, "assets/textures/specular/earth.png");
-  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, "assets/textures/diffuse/moon.png", Res::MOON_MATERIAL, moonRadii, moonMaterial);
-  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/diffuse/mars.png", Res::MARS_MATERIAL, marsRadii, marsMaterial);
-  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, "assets/textures/diffuse/jupiter.png", Res::JUPITER_MATERIAL, jupiterRadii, jupiterMaterial);
+  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, sunMaterial);
+  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
+  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, venusMaterial);
+  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, earthMaterial, Res::EARTH_SPECULAR, Res::EARTH_NORMAL);
+  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, moonMaterial);
+  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, marsMaterial);
+  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, jupiterMaterial);
 
   Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/diffuse/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
@@ -259,18 +260,38 @@ void Application::processInput()
   }
 }
 
-void Application::loadEllipsoidObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name,
+void Application::loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
                                       Radii radii, MaterialProperties material,
-                                      std::string specular_name, const char *specularPath, int segments)
+                                      const std::string &specular_name, const std::string &normal_name, int segments)
 {
+  const std::string format = ".png";
+
+  const std::string diffusePath = BASE_TEXTURE_PATH + "diffuse/" + name + format;
+
+  if (!std::filesystem::exists(diffusePath))
+  {
+    Logger::logFatal("Application", "Diffuse texture is not found, skipping the object - " + name);
+    return;
+  }
   Texture &diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
 
   Texture *spec = nullptr;
-
-  if (specularPath)
+  const std::string specularPath = BASE_TEXTURE_PATH + "specular/" + name + format;
+  if (std::filesystem::exists(specularPath))
+  {
+    Logger::logInfo("Application", "Found specular texture for object - " + name);
     spec = &this->resourceManager.LoadTexture(specular_name, specularPath, GL_TEXTURE_2D);
+  }
 
-  this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec);
+  Texture *normal = nullptr;
+  const std::string normalPath = BASE_TEXTURE_PATH + "normal/" + name + format;
+  if (std::filesystem::exists(specularPath))
+  {
+    Logger::logInfo("Application", "Found normal texture for object - " + name);
+    normal = &this->resourceManager.LoadTexture(normal_name, normalPath, GL_TEXTURE_2D);
+  }
+
+  this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
   std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE));
   this->resourceManager.LoadMesh(name, std::move(obj), VertexLayout::NoColor);
 }

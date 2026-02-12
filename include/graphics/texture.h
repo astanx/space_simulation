@@ -2,6 +2,8 @@
 
 #include <GL/glew.h>
 
+#include <string>
+
 class Texture
 {
 private:
@@ -11,7 +13,7 @@ private:
   unsigned int type;
 
 public:
-  Texture(const char *fileName, GLenum type);
+  Texture(const std::string &fileName, GLenum type);
   Texture(GLsizei width, GLsizei height, GLenum type, const void *pixels = nullptr);
 
   ~Texture();
@@ -22,5 +24,5 @@ public:
 
   void unbind();
 
-  void loadFromFile(const char *fileName);
+  void loadFromFile(const std::string &fileName);
 };

@@ -15,5 +15,5 @@ TextMaterial::TextMaterial(Texture *diffuseTexture)
 void TextMaterial::sendToShader(Shader &program)
 {
   this->diffuseTexture->bind(TextureBindingPoints::Diffuse);
-  program.set1i(0, "text");
+  program.set1i(TextureBindingPoints::Diffuse, "text");
 }

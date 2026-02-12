@@ -17,22 +17,22 @@ Shader &ResourceManager::LoadShader(const std::string &name, const int GLSLmajor
   return *this->shaders[name];
 }
 
-Texture &ResourceManager::LoadTexture(const std::string &name, const char *filePath, GLenum type)
+Texture &ResourceManager::LoadTexture(const std::string &name, const std::string &filePath, GLenum type)
 {
   this->textures[name] = std::make_unique<Texture>(filePath, type);
   return *this->textures[name];
 }
 
 Material &ResourceManager::LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
-                                             Texture *diffuseTexture, Texture *specularTexture, float shininess)
+                                             Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess)
 {
-  this->materials[name] = std::make_unique<PhongMaterial>(ambient, diffuse, specular, diffuseTexture, specularTexture, shininess);
+  this->materials[name] = std::make_unique<PhongMaterial>(ambient, diffuse, specular, diffuseTexture, specularTexture, normalTexture, shininess);
   return *this->materials[name];
 }
 Material &ResourceManager::LoadPhongMaterial(const std::string &name, MaterialProperties material,
-                                             Texture *diffuseTexture, Texture *specularTexture)
+                                             Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture)
 {
-  this->materials[name] = std::make_unique<PhongMaterial>(material, diffuseTexture, specularTexture);
+  this->materials[name] = std::make_unique<PhongMaterial>(material, diffuseTexture, specularTexture, normalTexture);
   return *this->materials[name];
 }
 Material &ResourceManager::LoadAsteroidMaterial(const std::string &name, Texture &diffuseTexture)

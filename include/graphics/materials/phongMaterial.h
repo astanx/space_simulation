@@ -17,15 +17,16 @@ protected:
   glm::vec3 specular;
   Texture *diffuseTexture;
   Texture *specularTexture;
+  Texture *normalTexture;
   float shininess;
 
 public:
   PhongMaterial(
       glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
-      Texture *diffuseTexture, Texture *specularTexture, float shininess);
+      Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess);
   PhongMaterial(
       MaterialProperties material,
-      Texture *diffuseTexture, Texture *specularTexture);
+      Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture);
   ~PhongMaterial() = default;
 
   void sendToShader(Shader &program) override;

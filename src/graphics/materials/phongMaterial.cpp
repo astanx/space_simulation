@@ -12,24 +12,26 @@
 // Constructor and Destructor
 PhongMaterial::PhongMaterial(
     glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
-    Texture *diffuseTexture, Texture *specularTexture, float shininess)
+    Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess)
 {
   this->ambient = ambient;
   this->diffuse = diffuse;
   this->specular = specular;
   this->diffuseTexture = diffuseTexture;
   this->specularTexture = specularTexture;
+  this->normalTexture = normalTexture;
   this->shininess = shininess;
 }
 PhongMaterial::PhongMaterial(
     MaterialProperties material,
-    Texture *diffuseTexture, Texture *specularTexture)
+    Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture)
 {
   this->ambient = material.ambient;
   this->diffuse = material.diffuse;
   this->specular = material.specular;
   this->diffuseTexture = diffuseTexture;
   this->specularTexture = specularTexture;
+  this->normalTexture = normalTexture;
   this->shininess = material.shininess;
 }
 
@@ -46,24 +48,36 @@ void PhongMaterial::sendToShader(Shader &program)
   if (this->diffuseTexture)
   {
     this->diffuseTexture->bind(TextureBindingPoints::Diffuse);
-    program.set1i(0, "material.diffuseTexture");
+    program.set1i(TextureBindingPoints::Diffuse, "material.diffuseTexture");
     // isTexture = 1;
   }
   else
   {
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::Diffuse);
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
   if (this->specularTexture)
   {
     this->specularTexture->bind(TextureBindingPoints::Specular);
-    program.set1i(1, "material.specularTexture");
+    program.set1i(TextureBindingPoints::Specular, "material.specularTexture");
     // isTexture = 1;
   }
   else
   {
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::Specular);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+  if (this->normalTexture)
+  {
+    this->normalTexture->bind(TextureBindingPoints::Normal);
+    program.set1i(TextureBindingPoints::Normal, "material.normalTexture");
+    // isTexture = 1;
+  }
+  else
+  {
+    glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::Normal);
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 

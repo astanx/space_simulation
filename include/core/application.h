@@ -17,6 +17,8 @@ class Model;
 
 struct Radii;
 
+const std::string BASE_TEXTURE_PATH = "assets/textures/";
+
 class Application
 {
 private:
@@ -74,8 +76,8 @@ public:
   static void mouseCallback(GLFWwindow *window, double xpos, double ypos);
   static void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
   static void framebuffer_resize_callback(GLFWwindow *window, int width, int height);
-  void loadEllipsoidObject(std::string name, std::string diffuse_name, const char *diffusePath, std::string material_name,
+  void loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
                            Radii radii, MaterialProperties material,
-                           std::string specular_name = "", const char *specularPath = nullptr, int segments = 32);
+                           const std::string &specular_name = "", const std::string &normal_name = "", int segments = 32);
   void processInput();
 };

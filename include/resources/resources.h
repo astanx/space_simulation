@@ -59,6 +59,19 @@ namespace Res
   const std::string URANUS_SPECULAR = "uranus_specular";
   const std::string NEPTUNE_SPECULAR = "neptune_specular";
 
+  const std::string ASTEROID_NORMAL = "asteroid_normal";
+
+  const std::string SUN_NORMAL = "sun_normal";
+  const std::string MERCURY_NORMAL = "mercury_normal";
+  const std::string VENUS_NORMAL = "venus_normal";
+  const std::string EARTH_NORMAL = "earth_normal";
+  const std::string MOON_NORMAL = "moon_normal";
+  const std::string MARS_NORMAL = "mars_normal";
+  const std::string JUPITER_NORMAL = "jupiter_normal";
+  const std::string SATURN_NORMAL = "saturn_normal";
+  const std::string URANUS_NORMAL = "uranus_normal";
+  const std::string NEPTUNE_NORMAL = "neptune_normal";
+
   // Material
   const std::string ASTEROID_MATERIAL = "asteroid_material";
 
