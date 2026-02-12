@@ -13,7 +13,6 @@ out vec4 fs_color;
 
 in VS_OUT {
   vec3 vs_position;
-  vec3 vs_color;
   vec2 vs_texcoord;
   vec3 vs_normal;
 } fs_in;
@@ -21,15 +20,15 @@ in VS_OUT {
 uniform Material material;
 
 uniform samplerCube depthMap;
-uniform bool isTexture;
+//uniform bool isTexture;
 
 void main()
 {
   vec3 normal = normalize(fs_in.vs_normal);
   vec3 viewDir = normalize(camPosition.xyz - fs_in.vs_position);
 
-  vec3 albedo = getAlbedo(isTexture, material, fs_in.vs_texcoord, fs_in.vs_color);
-  vec3 specularMap = getSpecularMap(isTexture, material, fs_in.vs_texcoord);
+  vec3 albedo = getAlbedo(material, fs_in.vs_texcoord);
+  vec3 specularMap = getSpecularMap(material, fs_in.vs_texcoord);
 /*
 
   vec4 result = CalcDirLight(dirLight, normal, viewDir, material, albedo, specularMap);

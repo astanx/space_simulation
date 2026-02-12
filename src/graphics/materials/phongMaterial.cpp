@@ -41,13 +41,13 @@ void PhongMaterial::sendToShader(Shader &program)
   program.setVec3f(this->specular, "material.specular");
   program.set1f(this->shininess, "material.shininess");
 
-  int isTexture = 0;
+  // int isTexture = 0;
 
   if (this->diffuseTexture)
   {
     this->diffuseTexture->bind(TextureBindingPoints::Diffuse);
     program.set1i(0, "material.diffuseTexture");
-    isTexture = 1;
+    // isTexture = 1;
   }
   else
   {
@@ -59,7 +59,7 @@ void PhongMaterial::sendToShader(Shader &program)
   {
     this->specularTexture->bind(TextureBindingPoints::Specular);
     program.set1i(1, "material.specularTexture");
-    isTexture = 1;
+    // isTexture = 1;
   }
   else
   {
@@ -67,5 +67,5 @@ void PhongMaterial::sendToShader(Shader &program)
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
-  program.set1i(isTexture, "isTexture");
+  // program.set1i(isTexture, "isTexture");
 }
