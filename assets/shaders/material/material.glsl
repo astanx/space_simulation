@@ -21,12 +21,23 @@ vec3 getAlbedo(bool isTexture, Material mat, vec2 texcoord, vec3 color)
 
   return srgbToLinear(vec4(albedo, 1.0)).rgb;
 }
+vec3 getAlbedo(Material mat, vec2 texcoord)
+{
+  vec3 albedo = texture(mat.diffuseTexture, texcoord).rgb;
+
+  return srgbToLinear(vec4(albedo, 1.0)).rgb;
+}
 
 vec3 getSpecularMap(bool isTexture, Material mat, vec2 texcoord)
 {
   return isTexture
   ? texture(mat.specularTexture, texcoord).rgb
   : vec3(1.0);
+}
+
+vec3 getSpecularMap(Material mat, vec2 texcoord)
+{
+  return texture(mat.specularTexture, texcoord).rgb;
 }
 
 #endif
