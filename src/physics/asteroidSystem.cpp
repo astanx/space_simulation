@@ -109,8 +109,6 @@ void AsteroidSystem::createAsteroids(unsigned amount)
 
   this->threadPool.wait();
 
-  std::cout << "Finished creating asteroids." << std::endl;
-
   // for (size_t i = 0; i < amount; i++)
   // {
 

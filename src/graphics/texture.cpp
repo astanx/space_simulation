@@ -33,9 +33,7 @@ Texture::Texture(const char *fileName, GLenum type)
     GL_CALL(glGenerateMipmap(type));
   }
   else
-  {
-    std::cerr << "ERROR::TEXTURE::FAILED_TO_LOAD: " << fileName << std::endl;
-  }
+    std::cerr << "[TEXTURE] RUNTIME ERROR: Failed to load file -" << fileName << std::endl;
 
   glActiveTexture(0);
   glBindTexture(type, 0);

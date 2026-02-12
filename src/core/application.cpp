@@ -118,15 +118,15 @@ Application::Application(
   // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
   this->resourceManager.LoadShader(Res::TEXT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
 
-  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/sun.png", Res::SUN_MATERIAL, sunRadii, sunMaterial);
-  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/mercury.png", Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
-  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, "assets/textures/venus.png", Res::VENUS_MATERIAL, venusRadii, venusMaterial);
-  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/earth.png", Res::EARTH_MATERIAL, earthRadii, earthMaterial, Res::EARTH_SPECULAR, "assets/textures/earth_specular.png");
-  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, "assets/textures/moon.png", Res::MOON_MATERIAL, moonRadii, moonMaterial);
-  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/mars.png", Res::MARS_MATERIAL, marsRadii, marsMaterial);
-  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, "assets/textures/jupiter.png", Res::JUPITER_MATERIAL, jupiterRadii, jupiterMaterial);
+  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, "assets/textures/diffuse/sun.png", Res::SUN_MATERIAL, sunRadii, sunMaterial);
+  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, "assets/textures/diffuse/mercury.png", Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
+  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, "assets/textures/diffuse/venus.png", Res::VENUS_MATERIAL, venusRadii, venusMaterial);
+  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, "assets/textures/diffuse/earth.png", Res::EARTH_MATERIAL, earthRadii, earthMaterial, Res::EARTH_SPECULAR, "assets/textures/specular/earth.png");
+  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, "assets/textures/diffuse/moon.png", Res::MOON_MATERIAL, moonRadii, moonMaterial);
+  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, "assets/textures/diffuse/mars.png", Res::MARS_MATERIAL, marsRadii, marsMaterial);
+  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, "assets/textures/diffuse/jupiter.png", Res::JUPITER_MATERIAL, jupiterRadii, jupiterMaterial);
 
-  Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/asteroid.png", GL_TEXTURE_2D);
+  Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/diffuse/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
 
   this->scene.init();
