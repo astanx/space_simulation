@@ -2,6 +2,8 @@
 
 #include "debug/logger.h"
 
+#include "graphics/bindings/ubo.h"
+
 #include "scene/scene.h"
 #include "scene/light/directionalLight.h"
 #include "scene/light/pointLight.h"
@@ -161,9 +163,9 @@ void LightManager::bindDirLight(GLuint &programID)
 
   if (blockIndex != GL_INVALID_INDEX)
   {
-    glUniformBlockBinding(programID, blockIndex, DIR_LIGHT_BINDING);
+    glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::DirectionalLight);
   }
-  glBindBufferBase(GL_UNIFORM_BUFFER, DIR_LIGHT_BINDING, this->dirUBO);
+  glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::DirectionalLight, this->dirUBO);
 }
 void LightManager::bindPointLightUBO(GLuint &programID)
 {
@@ -175,9 +177,9 @@ void LightManager::bindPointLightUBO(GLuint &programID)
 
   if (blockIndex != GL_INVALID_INDEX)
   {
-    glUniformBlockBinding(programID, blockIndex, POINT_LIGHT_BINDING);
+    glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::PointLight);
   }
-  glBindBufferBase(GL_UNIFORM_BUFFER, POINT_LIGHT_BINDING, this->pointUBO);
+  glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::PointLight, this->pointUBO);
 }
 
 // void LightManager::bindPointLightSSBO(GLuint &programID)

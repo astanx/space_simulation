@@ -4,6 +4,9 @@
 
 #include "scene/scene.h"
 
+#include "graphics/bindings/ubo.h"
+#include "graphics/bindings/texture.h"
+
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
 
@@ -63,9 +66,9 @@ void Renderer::bindCameraUBO(GLuint programID)
 
   if (blockIndex != GL_INVALID_INDEX)
   {
-    glUniformBlockBinding(programID, blockIndex, CAMERA_BINDING);
+    glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::Camera);
   }
-  glBindBufferBase(GL_UNIFORM_BUFFER, CAMERA_BINDING, this->cameraUBO);
+  glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::Camera, this->cameraUBO);
 }
 
 void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType)
@@ -90,7 +93,7 @@ void Renderer::renderAsteroidSystems(Scene &scene)
   this->lightManager->bindDirLight(asteroidID);
   this->lightManager->bindPointLightUBO(asteroidID);
 
-  this->shadowManager->bindPointShadow(asteroidShader, 5);
+  this->shadowManager->bindPointShadow(asteroidShader);
   this->shadowManager->bindPointShadowUBO(asteroidID);
 
   for (const AsteroidSystem *asteroidSystem : scene.getAsteroidSystems())
@@ -113,7 +116,7 @@ void Renderer::renderObjects(Scene &scene)
   this->lightManager->bindDirLight(coreID);
   this->lightManager->bindPointLightUBO(coreID);
 
-  this->shadowManager->bindPointShadow(coreShader, 5);
+  this->shadowManager->bindPointShadow(coreShader);
   this->shadowManager->bindPointShadowUBO(coreID);
 
   // Render all objects

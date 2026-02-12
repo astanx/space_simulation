@@ -31,13 +31,6 @@ struct PointLightGPU
   glm::vec3 _pad0;
 };
 
-enum LightUBOBindingPoints
-{
-  CAMERA_BINDING = 0,
-  DIR_LIGHT_BINDING = 1,
-  POINT_LIGHT_BINDING = 2
-};
-
 class DirectionalLight;
 class PointLight;
 class Scene;
