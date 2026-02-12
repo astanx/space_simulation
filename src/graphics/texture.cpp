@@ -14,10 +14,10 @@
 #include <iostream>
 
 // Constructor and Destructor
-Texture::Texture(const char *fileName, GLenum type)
+Texture::Texture(const std::string &fileName, GLenum type)
 {
   this->type = type;
-  unsigned char *image = stbi_load(fileName, &this->width, &this->height, 0, 4);
+  unsigned char *image = stbi_load(fileName.c_str(), &this->width, &this->height, 0, 4);
 
   glGenTextures(1, &this->id);
   glBindTexture(type, this->id);
@@ -90,11 +90,11 @@ void Texture::unbind()
   glBindTexture(this->type, 0);
 }
 
-void Texture::loadFromFile(const char *fileName)
+void Texture::loadFromFile(const std::string &fileName)
 {
   if (this->id)
     glDeleteTextures(1, &this->id);
-  unsigned char *image = stbi_load(fileName, &this->width, &this->height, 0, 4);
+  unsigned char *image = stbi_load(fileName.c_str(), &this->width, &this->height, 0, 4);
 
   glGenTextures(1, &this->id);
   glBindTexture(this->type, this->id);

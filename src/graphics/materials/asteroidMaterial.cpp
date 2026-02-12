@@ -15,5 +15,5 @@ AsteroidMaterial::AsteroidMaterial(Texture &diffuseTexture)
 void AsteroidMaterial::sendToShader(Shader &program)
 {
   this->diffuseTexture->bind(TextureBindingPoints::Diffuse);
-  program.set1i(0, "diffuseTexture");
+  program.set1i(TextureBindingPoints::Diffuse, "diffuseTexture");
 }

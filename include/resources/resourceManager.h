@@ -29,10 +29,10 @@ public:
 
   // Loaders
   Shader &LoadShader(const std::string &name, const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile = nullptr);
-  Texture &LoadTexture(const std::string &name, const char *filePath, GLenum type);
+  Texture &LoadTexture(const std::string &name, const std::string &filePath, GLenum type);
   Material &LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
-                              Texture *diffuseTexture, Texture *specularTexture, float shininess);
-  Material &LoadPhongMaterial(const std::string &name, MaterialProperties material, Texture *diffuseTexture, Texture *specularTexture);
+                              Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess);
+  Material &LoadPhongMaterial(const std::string &name, MaterialProperties material, Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture);
 
   Material &LoadAsteroidMaterial(const std::string &name, Texture &diffuseTexture);
 
