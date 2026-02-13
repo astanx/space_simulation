@@ -10,6 +10,7 @@ struct Material
   vec3 specular;
   sampler2D diffuseTexture;
   sampler2D specularTexture;
+  sampler2D normalTexture;
   float shininess;
 };
 

@@ -22,7 +22,7 @@ public:
 
   void bind(const GLint textureUnit);
 
-  void unbind();
+  void unbind(const GLint textureUnit);
 
   void loadFromFile(const std::string &fileName);
 };

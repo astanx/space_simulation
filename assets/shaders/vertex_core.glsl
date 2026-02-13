@@ -13,8 +13,8 @@ out VS_OUT {
   vec2 vs_texcoord;
   vec3 vs_normal;
 
-  vec4 vs_tangentLightPos;
-  vec4 vs_tangentCamPos;
+  vec3 vs_tangentLightPos;
+  vec3 vs_tangentCamPos;
   vec3 vs_tangentPos;
 } vs_out;
 
@@ -51,8 +51,8 @@ void main()
 
     mat3 TBN = transpose(mat3(T, B, N));
 
-    vs_out.vs_tangentLightPos = TBN * pointLight.position;
-    vs_out.vs_tangentCamPos  = TBN * camPosition;
+    vs_out.vs_tangentLightPos = TBN * pointLight.position.xyz;
+    vs_out.vs_tangentCamPos  = TBN * camPosition.xyz;
     vs_out.vs_tangentPos  = TBN * vs_out.vs_position;
   }
 

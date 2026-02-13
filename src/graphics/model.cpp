@@ -132,9 +132,9 @@ void Model::render(Shader &shader)
   // Unbind everything
   glBindVertexArray(0);
   if (this->overrideTextureDiffuse != nullptr)
-    this->overrideTextureDiffuse->unbind();
+    this->overrideTextureDiffuse->unbind(TextureBindingPoints::Diffuse);
   if (this->overrideTextureSpecular != nullptr)
-    this->overrideTextureSpecular->unbind();
+    this->overrideTextureSpecular->unbind(TextureBindingPoints::Specular);
 }
 
 void Model::renderInstanced()

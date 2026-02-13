@@ -35,7 +35,7 @@ Texture::Texture(const std::string &fileName, GLenum type)
   else
     std::cerr << "[TEXTURE] RUNTIME ERROR: Failed to load file -" << fileName << std::endl;
 
-  glActiveTexture(0);
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(type, 0);
   stbi_image_free(image);
 }
@@ -63,7 +63,7 @@ Texture::Texture(GLsizei width, GLsizei height, GLenum type, const void *pixels)
   glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  glActiveTexture(0);
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(type, 0);
 }
 
@@ -84,9 +84,9 @@ void Texture::bind(const GLint textureUnit)
     Logger::logError("Texture", "No texture to bind");
 }
 
-void Texture::unbind()
+void Texture::unbind(const GLint textureUnit)
 {
-  glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0 + textureUnit);
   glBindTexture(this->type, 0);
 }
 
@@ -115,7 +115,7 @@ void Texture::loadFromFile(const std::string &fileName)
     return;
   }
 
-  glActiveTexture(0);
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(this->type, 0);
   stbi_image_free(image);
 }
