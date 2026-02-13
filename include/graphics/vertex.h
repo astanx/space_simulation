@@ -8,11 +8,13 @@ struct Vertex
   glm::vec3 color;
   glm::vec2 texcoord;
   glm::vec3 normal;
+  glm::vec3 tangent;
 
   Vertex(
       glm::vec3 position = glm::vec3(0.f),
       glm::vec3 color = glm::vec3(0.f),
       glm::vec2 texcoord = glm::vec2(0.f),
-      glm::vec3 normal = glm::vec3(0.f))
-      : position(position), color(color), texcoord(texcoord), normal(normal) {};
+      glm::vec3 normal = glm::vec3(0.f),
+      glm::vec3 tangent = glm::vec3(0.f))
+      : position(position), color(color), texcoord(texcoord), normal(normal), tangent(tangent) {};
 };
