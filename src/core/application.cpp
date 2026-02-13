@@ -277,24 +277,26 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
 
   Texture *spec = nullptr;
   const std::string specularPath = BASE_TEXTURE_PATH + "specular/" + name + format;
-  if (std::filesystem::exists(specularPath))
+  if (std::filesystem::exists(specularPath) && specular_name != "")
   {
     Logger::logInfo("Application", "Found specular texture for object - " + name);
     spec = &this->resourceManager.LoadTexture(specular_name, specularPath, GL_TEXTURE_2D);
   }
 
+  bool isNormal = normal_name != "";
+
   Texture *normal = nullptr;
   const std::string normalPath = BASE_TEXTURE_PATH + "normal/" + name + format;
-  if (std::filesystem::exists(specularPath))
+  if (std::filesystem::exists(normalPath) && isNormal)
   {
     Logger::logInfo("Application", "Found normal texture for object - " + name);
     normal = &this->resourceManager.LoadTexture(normal_name, normalPath, GL_TEXTURE_2D);
   }
 
   this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
-  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE));
+  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE), isNormal);
   this->resourceManager.LoadMesh(name, std::move(obj),
-                                 normal_name != "" ? VertexLayout::PositionNormalTangent : VertexLayout::NoColor);
+                                 isNormal ? VertexLayout::PositionNormalTangent : VertexLayout::NoColor);
 }
 
 // Static functions

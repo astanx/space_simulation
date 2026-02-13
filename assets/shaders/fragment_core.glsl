@@ -16,8 +16,8 @@ in VS_OUT {
   vec2 vs_texcoord;
   vec3 vs_normal;
 
-  vec4 vs_tangentLightPos;
-  vec4 vs_tangentCamPos;
+  vec3 vs_tangentLightPos;
+  vec3 vs_tangentCamPos;
   vec3 vs_tangentPos;
 } fs_in;
 
@@ -30,8 +30,29 @@ uniform samplerCube depthMap;
 
 void main()
 {
-  vec3 normal = normalize(fs_in.vs_normal);
-  vec3 viewDir = normalize(camPosition.xyz - fs_in.vs_position);
+
+  PointLight localPointLight = pointLight;
+
+  vec3 normal;
+  vec3 viewDir;
+  vec3 position;
+
+  if (useTBN)
+  {
+    normal = texture(material.normalTexture, fs_in.vs_texcoord).rgb;
+    normal = normalize(normal * 2.0 - 1.0);
+
+    position = fs_in.vs_tangentPos;
+    viewDir = normalize(fs_in.vs_tangentCamPos - position);
+
+    localPointLight.position.xyz = fs_in.vs_tangentLightPos;
+  }
+  else
+  {
+    normal = normalize(fs_in.vs_normal);
+    position = fs_in.vs_position;
+    viewDir = normalize(camPosition.xyz - position);
+  }
 
   vec3 albedo = getAlbedo(material, fs_in.vs_texcoord);
   vec3 specularMap = getSpecularMap(material, fs_in.vs_texcoord);
@@ -52,12 +73,12 @@ void main()
 
   vec4 dir = CalcDirLight(dirLight, normal, viewDir, material, albedo, specularMap);
   
-  float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, far_plane, normal);
+  float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, far_plane, fs_in.vs_normal);
 
   vec4 point = CalcPointLight(
-    pointLight,
+    localPointLight,
     normal,
-    fs_in.vs_position,
+    position,
     viewDir,
     material,
     albedo,

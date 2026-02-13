@@ -25,5 +25,5 @@ public:
   void render(Shader &shader) const;
 
   void bind(const GLint textureUnit) const;
-  void unbind() const;
+  void unbind(const GLint textureUnit) const;
 };

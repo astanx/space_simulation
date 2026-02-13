@@ -69,10 +69,10 @@ void Skybox::render(Shader &shader) const
   glDepthFunc(GL_LEQUAL);
   glDepthMask(GL_FALSE);
 
-  this->bind(TextureBindingPoints::Diffuse);
-  shader.set1i(0, "skybox");
+  this->bind(TextureBindingPoints::Skybox);
+  shader.set1i(TextureBindingPoints::Skybox, "skybox");
   this->mesh.render();
-  this->unbind();
+  this->unbind(TextureBindingPoints::Skybox);
 
   glDepthMask(GL_TRUE);
   glDepthFunc(GL_LESS);
@@ -88,8 +88,8 @@ void Skybox::bind(const GLint textureUnit) const
     Logger::logError("Skybox", "No texture to bind");
 }
 
-void Skybox::unbind() const
+void Skybox::unbind(const GLint textureUnit) const
 {
-  glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0 + textureUnit);
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }

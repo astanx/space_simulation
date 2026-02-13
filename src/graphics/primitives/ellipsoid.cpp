@@ -10,13 +10,10 @@
 // Prviate function
 void Ellipsoid::computeTangents(std::vector<Vertex> &vertices, const std::vector<GLuint> &indices)
 {
-  std::vector<glm::vec3> tan;
-  std::vector<glm::vec3> bitan;
+  std::vector<glm::vec3> tan(vertices.size(), glm::vec3(0));
+  std::vector<glm::vec3> bitan(vertices.size(), glm::vec3(0));
 
-  tan.reserve(vertices.size());
-  bitan.reserve(vertices.size());
-
-  for (size_t i = 0; i < indices.size(); i++)
+  for (size_t i = 0; i < indices.size(); i += 3)
   {
     GLuint i0 = indices[i];
     GLuint i1 = indices[i + 1];

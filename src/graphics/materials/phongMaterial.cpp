@@ -73,12 +73,14 @@ void PhongMaterial::sendToShader(Shader &program)
   {
     this->normalTexture->bind(TextureBindingPoints::Normal);
     program.set1i(TextureBindingPoints::Normal, "material.normalTexture");
+    program.set1i(1, "useTBN");
     // isTexture = 1;
   }
   else
   {
     glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::Normal);
     glBindTexture(GL_TEXTURE_2D, 0);
+    program.set1i(0, "useTBN");
   }
 
   // program.set1i(isTexture, "isTexture");
