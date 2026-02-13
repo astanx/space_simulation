@@ -12,7 +12,8 @@ enum class VertexLayout
   NoColor,
   PositionOnly,
   Instanced,
-  PositionTexcoord
+  PositionTexcoord,
+  PositionNormalTangent
 };
 
 struct VertexAttribute
@@ -48,6 +49,11 @@ constexpr std::array<VertexAttribute, 3> INSTANCED = {{{0, 3, GL_FLOAT, GL_FALSE
 constexpr std::array<VertexAttribute, 2> POSITION_TEXCOORD = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
                                                                {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)}}};
 
+constexpr std::array<VertexAttribute, 4> POSITION_NORMAL_TANGENT = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
+                                                                     {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)},
+                                                                     {2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal)},
+                                                                     {3, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, tangent)}}};
+
 struct LayoutDesc
 {
   const VertexAttribute *attributes;
@@ -59,4 +65,5 @@ inline const std::map<VertexLayout, LayoutDesc> LAYOUTS = {
     {VertexLayout::NoColor, {NO_COLOR.data(), NO_COLOR.size()}},
     {VertexLayout::PositionOnly, {POSITION_ONLY.data(), POSITION_ONLY.size()}},
     {VertexLayout::Instanced, {INSTANCED.data(), INSTANCED.size()}},
-    {VertexLayout::PositionTexcoord, {POSITION_TEXCOORD.data(), POSITION_TEXCOORD.size()}}};
+    {VertexLayout::PositionTexcoord, {POSITION_TEXCOORD.data(), POSITION_TEXCOORD.size()}},
+    {VertexLayout::PositionNormalTangent, {POSITION_NORMAL_TANGENT.data(), POSITION_NORMAL_TANGENT.size()}}};

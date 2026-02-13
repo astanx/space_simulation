@@ -293,7 +293,8 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
 
   this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
   std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE));
-  this->resourceManager.LoadMesh(name, std::move(obj), VertexLayout::NoColor);
+  this->resourceManager.LoadMesh(name, std::move(obj),
+                                 normal_name != "" ? VertexLayout::PositionNormalTangent : VertexLayout::NoColor);
 }
 
 // Static functions

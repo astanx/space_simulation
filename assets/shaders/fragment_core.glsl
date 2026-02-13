@@ -15,9 +15,15 @@ in VS_OUT {
   vec3 vs_position;
   vec2 vs_texcoord;
   vec3 vs_normal;
+
+  vec4 vs_tangentLightPos;
+  vec4 vs_tangentCamPos;
+  vec3 vs_tangentPos;
 } fs_in;
 
 uniform Material material;
+
+uniform bool useTBN;
 
 uniform samplerCube depthMap;
 //uniform bool isTexture;
