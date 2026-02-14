@@ -1,7 +1,12 @@
 #pragma once
 
 #include "render/textRenderer.h"
+
+#include "graphics/texture.h"
+#include "graphics/mesh.h"
+
 #include "scene/light/lightManager.h"
+
 #include "scene/shadow/shadowManager.h"
 
 #include <memory>
@@ -24,10 +29,17 @@ private:
   const GLuint shadowRes = 4096;
   std::unique_ptr<ShadowManager> shadowManager;
 
+  // HDR
+  GLuint hdrFBO = 0;
+  GLuint rboDepth = 0;
+  std::unique_ptr<Texture> hdrColorBufferTexture;
+  std::unique_ptr<Mesh> fullscreenQuad;
+
   void updateUBO(Scene &scene, float aspectRatio);
   void bindCameraUBO(GLuint programID);
 
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
+  void initHDR();
 
   void renderDirectionalShadow(Scene &scene);
   void renderShadowMap(Scene &scene, Shader &shader);
@@ -36,6 +48,8 @@ private:
   void renderAsteroidSystems(Scene &scene);
   void renderObjects(Scene &scene);
   void renderTrails(Scene &scene);
+
+  void renderFullscreenQuad();
 
 public:
   Renderer(ResourceManager &resourceManager);

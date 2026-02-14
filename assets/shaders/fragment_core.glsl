@@ -88,5 +88,5 @@ void main()
 
   vec4 result = dir + point;
 
-  fs_color = gammaCorrection(result);
+  fs_color = result;
 }

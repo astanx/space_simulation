@@ -44,5 +44,5 @@ void main()
     );
   }
 
-  fs_color = gammaCorrection(result);
+  fs_color = result;
 }

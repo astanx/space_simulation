@@ -14,57 +14,57 @@
 #include <iostream>
 
 // Constructor and Destructor
-Texture::Texture(const std::string &fileName, GLenum type)
+Texture::Texture(const std::string &fileName, GLenum target)
 {
-  this->type = type;
+  this->target = target;
   unsigned char *image = stbi_load(fileName.c_str(), &this->width, &this->height, 0, 4);
 
   glGenTextures(1, &this->id);
-  glBindTexture(type, this->id);
+  glBindTexture(target, this->id);
 
-  glTexParameteri(type, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(type, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
   if (image)
   {
-    GL_CALL(glTexImage2D(type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image));
-    GL_CALL(glGenerateMipmap(type));
+    GL_CALL(glTexImage2D(target, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image));
+    GL_CALL(glGenerateMipmap(target));
   }
   else
     std::cerr << "[TEXTURE] RUNTIME ERROR: Failed to load file -" << fileName << std::endl;
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(type, 0);
+  glBindTexture(target, 0);
   stbi_image_free(image);
 }
 
-Texture::Texture(GLsizei width, GLsizei height, GLenum type, const void *pixels)
+Texture::Texture(GLsizei width, GLsizei height, GLenum target, GLint internalFormat, GLenum format, GLenum type, const void *pixels)
 {
-  this->type = type;
+  this->target = target;
 
   glGenTextures(1, &this->id);
-  glBindTexture(type, this->id);
+  glBindTexture(target, this->id);
 
   GL_CALL(glTexImage2D(
-      type,
+      target,
       0,
-      GL_RED,
+      internalFormat,
       width,
       height,
       0,
-      GL_RED,
-      GL_UNSIGNED_BYTE,
+      format,
+      type,
       pixels));
 
-  glTexParameteri(type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(type, 0);
+  glBindTexture(target, 0);
 }
 
 Texture::~Texture()
@@ -78,7 +78,7 @@ void Texture::bind(const GLint textureUnit)
   if (glIsTexture(this->id))
   {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glBindTexture(this->type, this->id);
+    glBindTexture(this->target, this->id);
   }
   else
     Logger::logError("Texture", "No texture to bind");
@@ -87,7 +87,7 @@ void Texture::bind(const GLint textureUnit)
 void Texture::unbind(const GLint textureUnit)
 {
   glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(this->type, 0);
+  glBindTexture(this->target, 0);
 }
 
 void Texture::loadFromFile(const std::string &fileName)
@@ -97,17 +97,17 @@ void Texture::loadFromFile(const std::string &fileName)
   unsigned char *image = stbi_load(fileName.c_str(), &this->width, &this->height, 0, 4);
 
   glGenTextures(1, &this->id);
-  glBindTexture(this->type, this->id);
+  glBindTexture(this->target, this->id);
 
-  glTexParameteri(this->type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(this->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(this->type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(this->type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(this->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(this->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(this->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(this->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
   if (image)
   {
-    GL_CALL(glTexImage2D(this->type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image));
-    GL_CALL(glGenerateMipmap(this->type));
+    GL_CALL(glTexImage2D(this->target, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image));
+    GL_CALL(glGenerateMipmap(this->target));
   }
   else
   {
@@ -116,6 +116,6 @@ void Texture::loadFromFile(const std::string &fileName)
   }
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(this->type, 0);
+  glBindTexture(this->target, 0);
   stbi_image_free(image);
 }
