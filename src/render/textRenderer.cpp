@@ -46,7 +46,8 @@ void TextRenderer::init()
       }
 
       Character character = {
-          std::make_unique<Texture>(face->glyph->bitmap.width, face->glyph->bitmap.rows, GL_TEXTURE_2D, face->glyph->bitmap.buffer),
+          std::make_unique<Texture>(face->glyph->bitmap.width, face->glyph->bitmap.rows,
+                                    GL_TEXTURE_2D, GL_RED, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer),
           glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
           glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
           static_cast<unsigned int>(face->glyph->advance.x)};

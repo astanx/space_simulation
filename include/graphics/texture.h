@@ -7,14 +7,14 @@
 class Texture
 {
 private:
-  GLuint id;
+  GLuint id = 0;
   int width;
   int height;
-  unsigned int type;
+  GLenum target;
 
 public:
-  Texture(const std::string &fileName, GLenum type);
-  Texture(GLsizei width, GLsizei height, GLenum type, const void *pixels = nullptr);
+  Texture(const std::string &fileName, GLenum target);
+  Texture(GLsizei width, GLsizei height, GLenum target, GLint internalFormat, GLenum format, GLenum type, const void *pixels = nullptr);
 
   ~Texture();
 

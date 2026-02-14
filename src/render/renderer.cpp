@@ -7,6 +7,8 @@
 #include "graphics/bindings/ubo.h"
 #include "graphics/bindings/texture.h"
 
+#include "graphics/primitives/quad.h"
+
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
 
@@ -82,6 +84,36 @@ void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferTy
       GL_DYNAMIC_DRAW));
 }
 
+void Renderer::initHDR()
+{
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  float width = static_cast<float>(viewport[2]);
+  float height = static_cast<float>(viewport[3]);
+
+  glGenFramebuffers(1, &this->hdrFBO);
+
+  this->hdrColorBufferTexture = std::make_unique<Texture>(width, height, GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA, GL_FLOAT);
+
+  // create depth buffer (renderbuffer)
+  unsigned int rboDepth;
+  glGenRenderbuffers(1, &rboDepth);
+  glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+
+  // attach buffers
+  glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+  GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBufferTexture->getId(), 0));
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  std::unique_ptr<Quad> obj = std::make_unique<Quad>();
+
+  this->fullscreenQuad = std::make_unique<Mesh>(std::move(obj), VertexLayout::PositionTexcoord);
+}
+
 void Renderer::renderAsteroidSystems(Scene &scene)
 {
   Shader &asteroidShader = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
@@ -153,10 +185,12 @@ void Renderer::renderSkybox(Scene &scene)
   this->bindCameraUBO(skyboxID);
 
   glCullFace(GL_FRONT);
+  glDepthMask(GL_FALSE);
 
   skybox.render(skyboxShader);
 
   glCullFace(GL_BACK);
+  glDepthMask(GL_TRUE);
 
   skyboxShader.unuse();
 }
@@ -199,7 +233,7 @@ void Renderer::renderDirectionalShadow(Scene &scene)
   glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
 }
 
-void Renderer::renderPointShadow(Scene &scene) // +
+void Renderer::renderPointShadow(Scene &scene)
 {
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
 
@@ -231,6 +265,28 @@ void Renderer::renderPointShadow(Scene &scene) // +
   glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
 }
 
+void Renderer::renderFullscreenQuad()
+{
+  glDepthMask(GL_FALSE);
+  glDisable(GL_DEPTH_TEST);
+
+  Shader &hdrShader = this->resourceManager.GetShader(Res::HDR_SHADER);
+
+  hdrShader.use();
+
+  hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
+  hdrShader.set1f(0.45f, "exposure");
+
+  this->hdrColorBufferTexture->bind(TextureBindingPoints::HDRColorBuffer);
+
+  this->fullscreenQuad->render();
+
+  hdrShader.unuse();
+
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+}
+
 // Constructor
 Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager) {}
 
@@ -241,6 +297,7 @@ void Renderer::init(Scene &scene)
   this->shadowManager = std::make_unique<ShadowManager>(scene);
 
   this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
+  this->initHDR();
 
   const DirectionalLight *directionalLight = scene.getDirLight();
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
@@ -270,11 +327,22 @@ void Renderer::render(Scene &scene)
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
 
+  glBindFramebuffer(GL_FRAMEBUFFER, this->hdrFBO);
+  glDisable(GL_BLEND);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // ← important: clear alpha = 1 !
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   this->renderTrails(scene);
   this->renderObjects(scene);
   this->renderAsteroidSystems(scene);
 
   this->renderSkybox(scene);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glEnable(GL_BLEND);
+
+  this->renderFullscreenQuad();
 }
 
 void Renderer::update(Scene &scene, double dt, bool paused)

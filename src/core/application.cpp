@@ -118,6 +118,7 @@ Application::Application(
   this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
   // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
   this->resourceManager.LoadShader(Res::TEXT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
+  this->resourceManager.LoadShader(Res::HDR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/hdr/vertex.glsl", "assets/shaders/hdr/fragment.glsl");
 
   loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, sunMaterial);
   loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
@@ -283,20 +284,20 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
     spec = &this->resourceManager.LoadTexture(specular_name, specularPath, GL_TEXTURE_2D);
   }
 
-  bool isNormal = normal_name != "";
-
   Texture *normal = nullptr;
   const std::string normalPath = BASE_TEXTURE_PATH + "normal/" + name + format;
-  if (std::filesystem::exists(normalPath) && isNormal)
+  if (std::filesystem::exists(normalPath) && normal_name != "")
   {
     Logger::logInfo("Application", "Found normal texture for object - " + name);
     normal = &this->resourceManager.LoadTexture(normal_name, normalPath, GL_TEXTURE_2D);
   }
 
+  bool isTangent = normal_name != "";
+
   this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
-  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE), isNormal);
+  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE), isTangent);
   this->resourceManager.LoadMesh(name, std::move(obj),
-                                 isNormal ? VertexLayout::PositionNormalTangent : VertexLayout::NoColor);
+                                 isTangent ? VertexLayout::PositionNormalTangent : VertexLayout::NoColor);
 }
 
 // Static functions
