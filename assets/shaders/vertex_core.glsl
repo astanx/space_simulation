@@ -34,7 +34,8 @@ void main()
 {
   mat4 model = getModelMatrix();
   vs_out.vs_position = vec3(model * vec4(vertex_position, 1.0));
-  vs_out.vs_texcoord = vec2(vertex_texcoord.x, vertex_texcoord.y * -1);
+  //vs_out.vs_texcoord = vec2(vertex_texcoord.x, vertex_texcoord.y * -1);
+  vs_out.vs_texcoord = vec2(vertex_texcoord.x, vertex_texcoord.y);
   
   mat3 normalMatrix = transpose(inverse(mat3(model)));
   vs_out.vs_normal = normalize(normalMatrix * vertex_normal);
