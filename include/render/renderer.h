@@ -39,7 +39,6 @@ private:
   void bindCameraUBO(GLuint programID);
 
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
-  void initHDR();
 
   void renderDirectionalShadow(Scene &scene);
   void renderShadowMap(Scene &scene, Shader &shader);
@@ -49,7 +48,10 @@ private:
   void renderObjects(Scene &scene);
   void renderTrails(Scene &scene);
 
+  void initHDR();
   void renderFullscreenQuad();
+  void bindHDRFBO();
+  void unbindHDRFBO();
 
 public:
   Renderer(ResourceManager &resourceManager);

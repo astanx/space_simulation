@@ -275,7 +275,7 @@ void Renderer::renderFullscreenQuad()
   hdrShader.use();
 
   hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
-  hdrShader.set1f(0.45f, "exposure");
+  hdrShader.set1f(0.3f, "exposure");
 
   this->hdrColorBufferTexture->bind(TextureBindingPoints::HDRColorBuffer);
 
@@ -285,6 +285,20 @@ void Renderer::renderFullscreenQuad()
 
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
+}
+
+void Renderer::bindHDRFBO()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, this->hdrFBO);
+  glDisable(GL_BLEND);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+void Renderer::unbindHDRFBO()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glEnable(GL_BLEND);
 }
 
 // Constructor
@@ -327,10 +341,7 @@ void Renderer::render(Scene &scene)
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, this->hdrFBO);
-  glDisable(GL_BLEND);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // ← important: clear alpha = 1 !
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  this->bindHDRFBO();
 
   this->renderTrails(scene);
   this->renderObjects(scene);
@@ -338,9 +349,7 @@ void Renderer::render(Scene &scene)
 
   this->renderSkybox(scene);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glEnable(GL_BLEND);
+  this->unbindHDRFBO();
 
   this->renderFullscreenQuad();
 }
