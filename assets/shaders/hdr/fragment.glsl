@@ -19,13 +19,22 @@ vec3 RRTAndODTFit(vec3 v) {
   return a / b;
 }
 
+vec3 ACESFilm(vec3 x) {
+  const float a = 2.51f;
+  const float b = 0.03f;
+  const float c = 2.43f;
+  const float d = 0.59f;
+  const float e = 0.14f;
+  return clamp((x*(a*x + b)) / (x*(c*x + d) + e), 0.0, 1.0);
+}
+
 void main()
 {             
   vec3 hdrColor = texture(hdrBuffer, vs_texcoord).rgb;
   
   hdrColor *= exposure;
 
-  vec4 mapped = vec4(RRTAndODTFit(hdrColor), 1.0);
+  vec4 mapped = vec4(ACESFilm(hdrColor), 1.0);
   mapped = gammaCorrection(mapped);
   
   fs_color = mapped;
