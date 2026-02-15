@@ -7,6 +7,7 @@ out vec4 fs_color;
 in vec2 vs_texcoord;
 
 uniform sampler2D hdrBuffer;
+uniform sampler2D bloomBlur;
 uniform float exposure;
 
 vec3 reinhard(vec3 x) {
@@ -31,6 +32,9 @@ vec3 ACESFilm(vec3 x) {
 void main()
 {             
   vec3 hdrColor = texture(hdrBuffer, vs_texcoord).rgb;
+  vec3 bloomColor = texture(bloomBlur, vs_texcoord).rgb;
+
+  hdrColor += bloomColor;
   
   hdrColor *= exposure;
 

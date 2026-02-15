@@ -14,6 +14,8 @@ namespace Res
   const std::string DIRECTIONAL_SHADOW_SHADER = "directional_shadow";
   const std::string TEXT_SHADER = "text";
   const std::string HDR_SHADER = "hdr";
+  const std::string BLOOM_SHADER = "bloom";
+  const std::string BLUR_SHADER = "blur";
 
   // Mesh
   const std::string CUBE_MESH = "cube";

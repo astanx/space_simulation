@@ -9,4 +9,5 @@ namespace TextureBindingPoints
   constexpr unsigned int PointShadow = 4;
   constexpr unsigned int DirectionalShadow = 5;
   constexpr unsigned int HDRColorBuffer = 6;
+  constexpr unsigned int BloomBlur = 7;
 }

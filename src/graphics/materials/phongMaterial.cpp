@@ -12,7 +12,7 @@
 // Constructor and Destructor
 PhongMaterial::PhongMaterial(
     glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
-    Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess)
+    Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess, glm::vec3 emissive)
 {
   this->ambient = ambient;
   this->diffuse = diffuse;
@@ -21,6 +21,7 @@ PhongMaterial::PhongMaterial(
   this->specularTexture = specularTexture;
   this->normalTexture = normalTexture;
   this->shininess = shininess;
+  this->emissive = emissive;
 }
 PhongMaterial::PhongMaterial(
     MaterialProperties material,
@@ -33,6 +34,7 @@ PhongMaterial::PhongMaterial(
   this->specularTexture = specularTexture;
   this->normalTexture = normalTexture;
   this->shininess = material.shininess;
+  this->emissive = material.emissive;
 }
 
 // Public functions
@@ -42,6 +44,7 @@ void PhongMaterial::sendToShader(Shader &program)
   program.setVec3f(this->diffuse, "material.diffuse");
   program.setVec3f(this->specular, "material.specular");
   program.set1f(this->shininess, "material.shininess");
+  program.setVec3f(this->emissive, "material.emissive");
 
   // int isTexture = 0;
 

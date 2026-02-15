@@ -12,6 +12,7 @@ struct Material
   sampler2D specularTexture;
   sampler2D normalTexture;
   float shininess;
+  //vec3 emissive;
 };
 
 vec3 getAlbedo(bool isTexture, Material mat, vec2 texcoord, vec3 color)
