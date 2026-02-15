@@ -23,6 +23,13 @@ struct PointLight
 vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material mat, vec3 albedo, vec3 specularMap, float shadow)
 {
   if (light.enabled == 0) return vec4(0.0);
+
+/*
+  vec4 lightAmbientLinear = srgbToLinear(light.ambient);
+  vec4 lightDiffuseLinear = srgbToLinear(light.ambient);
+  vec4 lightSpecularLinear = srgbToLinear(light.ambient);
+  */
+
   vec3 lightDir = normalize(light.position.xyz - fragPos);
   float diff = max(dot(normal, lightDir), 0.0);
 

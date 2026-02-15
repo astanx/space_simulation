@@ -275,9 +275,11 @@ void Renderer::renderFullscreenQuad()
   hdrShader.use();
 
   hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
+  hdrShader.set1i(TextureBindingPoints::BloomBlur, "bloomBlur");
   hdrShader.set1f(0.3f, "exposure");
 
   this->hdrColorBufferTexture->bind(TextureBindingPoints::HDRColorBuffer);
+  this->pingpongBuffers[0]->bind(TextureBindingPoints::BloomBlur);
 
   this->fullscreenQuad->render();
 
@@ -301,6 +303,77 @@ void Renderer::unbindHDRFBO()
   glEnable(GL_BLEND);
 }
 
+void Renderer::initBloom()
+{
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  float width = static_cast<float>(viewport[2]);
+  float height = static_cast<float>(viewport[3]);
+
+  glGenFramebuffers(2, this->pingpongFBOs.data());
+
+  for (unsigned int i = 0; i < 2; i++)
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, this->pingpongFBOs[i]);
+
+    this->pingpongBuffers[i] = std::make_unique<Texture>(width, height, GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA, GL_FLOAT);
+
+    GL_CALL(glFramebufferTexture2D(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->pingpongBuffers[i]->getId(), 0));
+  }
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::renderBloom()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBOs[0]);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  Shader &bloomShader = this->resourceManager.GetShader(Res::BLOOM_SHADER);
+  bloomShader.use();
+
+  bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
+  bloomShader.set1f(4.f, "threshold");
+
+  this->fullscreenQuad->render();
+
+  bloomShader.unuse();
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::blurBloom()
+{
+  bool horizontal = true, first_iteration = true;
+  int amount = 10;
+
+  Shader &blurShader = this->resourceManager.GetShader(Res::BLUR_SHADER);
+
+  blurShader.use();
+  for (unsigned int i = 0; i < amount; i++)
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBOs[horizontal]);
+
+    blurShader.set1i(horizontal, "horizontal");
+
+    if (first_iteration)
+      this->pingpongBuffers[0]->bind(TextureBindingPoints::BloomBlur);
+    else
+      this->pingpongBuffers[!horizontal]->bind(TextureBindingPoints::BloomBlur);
+
+    blurShader.set1i(TextureBindingPoints::BloomBlur, "image");
+
+    this->fullscreenQuad->render();
+
+    horizontal = !horizontal;
+    if (first_iteration)
+      first_iteration = false;
+  }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  blurShader.unuse();
+}
+
 // Constructor
 Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager) {}
 
@@ -312,6 +385,7 @@ void Renderer::init(Scene &scene)
 
   this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
   this->initHDR();
+  this->initBloom();
 
   const DirectionalLight *directionalLight = scene.getDirLight();
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
@@ -350,6 +424,9 @@ void Renderer::render(Scene &scene)
   this->renderSkybox(scene);
 
   this->unbindHDRFBO();
+
+  this->renderBloom();
+  this->blurBloom();
 
   this->renderFullscreenQuad();
 }

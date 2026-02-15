@@ -58,9 +58,10 @@ const glm::dvec3 sunPos = glm::dvec3(0.0f, 0.0f, 0.0f);
 
 const MaterialProperties sunMaterial(
 		glm::vec3(0.f),
-		glm::vec3(1.f),
 		glm::vec3(0.f),
-		5);
+		glm::vec3(0.f),
+		1,
+		glm::vec3(45.0f, 35.0f, 25.0f));
 
 // MERCURY
 const double mercuryMu = 2.2031870799860e13;

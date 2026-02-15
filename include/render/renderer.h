@@ -35,6 +35,9 @@ private:
   std::unique_ptr<Texture> hdrColorBufferTexture;
   std::unique_ptr<Mesh> fullscreenQuad;
 
+  std::array<GLuint, 2> pingpongFBOs;
+  std::array<std::unique_ptr<Texture>, 2> pingpongBuffers;
+
   void updateUBO(Scene &scene, float aspectRatio);
   void bindCameraUBO(GLuint programID);
 
@@ -52,6 +55,10 @@ private:
   void renderFullscreenQuad();
   void bindHDRFBO();
   void unbindHDRFBO();
+
+  void initBloom();
+  void renderBloom();
+  void blurBloom();
 
 public:
   Renderer(ResourceManager &resourceManager);
