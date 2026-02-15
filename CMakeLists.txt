@@ -93,6 +93,13 @@ add_executable(Space
         src/graphics/primitives/sphere.cpp
         src/graphics/primitives/asteroidShape.cpp
         src/graphics/primitives/ellipsoid.cpp
+        # State
+        src/graphics/state/scopedBlending.cpp
+        src/graphics/state/scopedDepthFunc.cpp
+        src/graphics/state/scopedDepthMask.cpp
+        src/graphics/state/scopedDepthTest.cpp
+        src/graphics/state/scopedCullFace.cpp
+        src/graphics/state/scopedViewport.cpp
     
     # Scene
     src/scene/scene.cpp

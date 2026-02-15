@@ -7,6 +7,12 @@
 #include "graphics/bindings/ubo.h"
 #include "graphics/bindings/texture.h"
 
+#include "graphics/state/scopedBlending.h"
+#include "graphics/state/scopedDepthMask.h"
+#include "graphics/state/scopedDepthTest.h"
+#include "graphics/state/scopedCullFace.h"
+#include "graphics/state/scopedViewport.h"
+
 #include "graphics/primitives/quad.h"
 
 #include "resources/resourceManager.h"
@@ -184,13 +190,10 @@ void Renderer::renderSkybox(Scene &scene)
   GLuint &skyboxID = skyboxShader.getId();
   this->bindCameraUBO(skyboxID);
 
-  glCullFace(GL_FRONT);
-  glDepthMask(GL_FALSE);
+  ScopedCullFace cullFace(GL_FRONT);
+  ScopedDepthMask depthMask(GL_FALSE);
 
   skybox.render(skyboxShader);
-
-  glCullFace(GL_BACK);
-  glDepthMask(GL_TRUE);
 
   skyboxShader.unuse();
 }
@@ -211,10 +214,7 @@ void Renderer::renderDirectionalShadow(Scene &scene)
   if (!scene.getDirLight())
     return;
 
-  GLint prevViewport[4];
-  glGetIntegerv(GL_VIEWPORT, prevViewport);
-
-  glViewport(0, 0, shadowRes, shadowRes);
+  ScopedViewport viewport(0, 0, shadowRes, shadowRes);
 
   this->shadowManager->bindDirShadowFBO();
 
@@ -229,21 +229,16 @@ void Renderer::renderDirectionalShadow(Scene &scene)
 
   this->shadowManager->unbindPointShadowFBO();
   dirShadowShader.unuse();
-
-  glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
 }
 
 void Renderer::renderPointShadow(Scene &scene)
 {
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
 
-  GLint prevViewport[4];
-  glGetIntegerv(GL_VIEWPORT, prevViewport);
+  ScopedViewport viewport(0, 0, shadowRes, shadowRes);
 
   if (pointLights.empty())
     return;
-
-  glViewport(0, 0, shadowRes, shadowRes);
 
   Shader &pointShadowShader = this->resourceManager.GetShader(Res::POINT_SHADOW_SHADER);
 
@@ -261,14 +256,12 @@ void Renderer::renderPointShadow(Scene &scene)
   this->shadowManager->unbindPointShadowFBO();
 
   pointShadowShader.unuse();
-
-  glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
 }
 
 void Renderer::renderFullscreenQuad()
 {
-  glDepthMask(GL_FALSE);
-  glDisable(GL_DEPTH_TEST);
+  ScopedDepthMask depthMask(false);
+  ScopedDepthTest depthTest(false);
 
   Shader &hdrShader = this->resourceManager.GetShader(Res::HDR_SHADER);
 
@@ -279,20 +272,16 @@ void Renderer::renderFullscreenQuad()
   hdrShader.set1f(0.3f, "exposure");
 
   this->hdrColorBufferTexture->bind(TextureBindingPoints::HDRColorBuffer);
-  this->pingpongBuffers[0]->bind(TextureBindingPoints::BloomBlur);
+  this->finalBloomTexture->bind(TextureBindingPoints::BloomBlur);
 
   this->fullscreenQuad->render();
 
   hdrShader.unuse();
-
-  glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
 }
 
 void Renderer::bindHDRFBO()
 {
   glBindFramebuffer(GL_FRAMEBUFFER, this->hdrFBO);
-  glDisable(GL_BLEND);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -300,7 +289,6 @@ void Renderer::unbindHDRFBO()
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glEnable(GL_BLEND);
 }
 
 void Renderer::initBloom()
@@ -327,6 +315,7 @@ void Renderer::initBloom()
 
 void Renderer::renderBloom()
 {
+  // todo - framebuffer class, glDisable, etc. in one class, emissive
   glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBOs[0]);
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -369,6 +358,8 @@ void Renderer::blurBloom()
     if (first_iteration)
       first_iteration = false;
   }
+
+  this->finalBloomTexture = pingpongBuffers[horizontal].get();
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   blurShader.unuse();
@@ -415,15 +406,19 @@ void Renderer::render(Scene &scene)
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
 
-  this->bindHDRFBO();
+  {
+    ScopedBlending blendingDisabled(false);
 
-  this->renderTrails(scene);
-  this->renderObjects(scene);
-  this->renderAsteroidSystems(scene);
+    this->bindHDRFBO();
 
-  this->renderSkybox(scene);
+    this->renderTrails(scene);
+    this->renderObjects(scene);
+    this->renderAsteroidSystems(scene);
 
-  this->unbindHDRFBO();
+    this->renderSkybox(scene);
+
+    this->unbindHDRFBO();
+  }
 
   this->renderBloom();
   this->blurBloom();

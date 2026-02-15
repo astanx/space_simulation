@@ -8,6 +8,8 @@
 
 #include "graphics/bindings/texture.h"
 
+#include "graphics/state/scopedBlending.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
@@ -64,6 +66,8 @@ void TextRenderer::init()
 
 void TextRenderer::render(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color)
 {
+  ScopedBlending enableBlending(true);
+
   GLint viewport[4];
   glGetIntegerv(GL_VIEWPORT, viewport);
 

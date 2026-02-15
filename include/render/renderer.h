@@ -37,6 +37,7 @@ private:
 
   std::array<GLuint, 2> pingpongFBOs;
   std::array<std::unique_ptr<Texture>, 2> pingpongBuffers;
+  Texture* finalBloomTexture;
 
   void updateUBO(Scene &scene, float aspectRatio);
   void bindCameraUBO(GLuint programID);

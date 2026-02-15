@@ -7,6 +7,9 @@
 
 #include "graphics/bindings/texture.h"
 
+#include "graphics/state/scopedDepthMask.h"
+#include "graphics/state/scopedDepthFunc.h"
+
 #include "graphics/primitives/cube.h"
 
 #include <GL/glew.h>
@@ -66,16 +69,13 @@ Skybox::~Skybox()
 // Public functions
 void Skybox::render(Shader &shader) const
 {
-  glDepthFunc(GL_LEQUAL);
-  glDepthMask(GL_FALSE);
+  ScopedDepthFunc depthLequal(GL_LEQUAL);
+  ScopedDepthMask depthMask(GL_FALSE);
 
   this->bind(TextureBindingPoints::Skybox);
   shader.set1i(TextureBindingPoints::Skybox, "skybox");
   this->mesh.render();
   this->unbind(TextureBindingPoints::Skybox);
-
-  glDepthMask(GL_TRUE);
-  glDepthFunc(GL_LESS);
 }
 void Skybox::bind(const GLint textureUnit) const
 {
