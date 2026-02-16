@@ -28,9 +28,8 @@ public:
 
   inline GLuint &getId() { return this->id; }
 
-  void use();
-
-  void unuse();
+  void use() const;
+  void unuse() const;
 
   void set1i(GLint value, const GLchar *name);
 

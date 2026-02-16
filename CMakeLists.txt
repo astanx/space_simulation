@@ -100,6 +100,11 @@ add_executable(Space
         src/graphics/state/scopedDepthTest.cpp
         src/graphics/state/scopedCullFace.cpp
         src/graphics/state/scopedViewport.cpp
+        src/graphics/state/scopedFramebuffer.cpp
+        src/graphics/state/scopedTexture.cpp
+        src/graphics/state/scopedShader.cpp
+        # Buffers
+        src/graphics/buffers/framebuffer.cpp
     
     # Scene
     src/scene/scene.cpp

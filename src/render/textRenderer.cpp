@@ -9,6 +9,8 @@
 #include "graphics/bindings/texture.h"
 
 #include "graphics/state/scopedBlending.h"
+#include "graphics/state/scopedTexture.h"
+#include "graphics/state/scopedShader.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -74,12 +76,15 @@ void TextRenderer::render(Shader &shader, std::string text, float x, float y, fl
   float width = static_cast<float>(viewport[2]);
   float height = static_cast<float>(viewport[3]);
 
-  shader.use();
+  ScopedShader textShader(shader);
+
   // activate corresponding render state
   glm::mat4 projection = glm::ortho(0.0f, width, 0.0f, height);
   shader.setVec3f(color, "textColor");
 
   shader.setMat4fv(projection, "projection");
+
+  shader.set1i(TextureBindingPoints::Diffuse, "text");
 
   // iterate through all characters
   std::string::const_iterator c;
@@ -109,18 +114,15 @@ void TextRenderer::render(Shader &shader, std::string text, float x, float y, fl
         {{xpos + w, ypos + h, 0.0f}, {}, {1.0f, 0.0f}}};
 
     // render glyph texture over quad
-    ch.texture->bind(TextureBindingPoints::Diffuse);
+    {
+      ScopedTexture charTexture(*ch.texture, TextureBindingPoints::Diffuse);
 
-    shader.set1i(TextureBindingPoints::Diffuse, "text");
+      this->text->updateBuffers(vertices.data(), vertices.size(), nullptr, 0);
 
-    this->text->updateBuffers(vertices.data(), vertices.size(), nullptr, 0);
-
-    this->text->render();
+      this->text->render();
+    }
 
     // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
     x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
-
-    ch.texture->unbind(TextureBindingPoints::Diffuse);
   }
-  shader.unuse();
 }

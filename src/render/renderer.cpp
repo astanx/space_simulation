@@ -10,8 +10,12 @@
 #include "graphics/state/scopedBlending.h"
 #include "graphics/state/scopedDepthMask.h"
 #include "graphics/state/scopedDepthTest.h"
+#include "graphics/state/scopedDepthFunc.h"
 #include "graphics/state/scopedCullFace.h"
 #include "graphics/state/scopedViewport.h"
+#include "graphics/state/scopedFramebuffer.h"
+#include "graphics/state/scopedTexture.h"
+#include "graphics/state/scopedShader.h"
 
 #include "graphics/primitives/quad.h"
 
@@ -98,7 +102,7 @@ void Renderer::initHDR()
   float width = static_cast<float>(viewport[2]);
   float height = static_cast<float>(viewport[3]);
 
-  glGenFramebuffers(1, &this->hdrFBO);
+  this->hdrFBO = std::make_unique<Framebuffer>();
 
   this->hdrColorBufferTexture = std::make_unique<Texture>(width, height, GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA, GL_FLOAT);
 
@@ -109,11 +113,15 @@ void Renderer::initHDR()
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 
   // attach buffers
-  glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-  GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBufferTexture->getId(), 0));
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+  {
+    ScopedFramebuffer hdr(*this->hdrFBO, GL_FRAMEBUFFER);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    this->hdrFBO->attachTexture2D(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBufferTexture->getId(), 0);
+
+    this->hdrFBO->attachRenderBuffer(GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+    this->hdrFBO->checkComplete();
+  }
 
   std::unique_ptr<Quad> obj = std::make_unique<Quad>();
 
@@ -124,8 +132,10 @@ void Renderer::renderAsteroidSystems(Scene &scene)
 {
   Shader &asteroidShader = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
 
-  asteroidShader.use();
   GLuint &asteroidID = asteroidShader.getId();
+
+  ScopedShader asteroid(asteroidID);
+
   this->bindCameraUBO(asteroidID);
 
   this->lightManager->bindDirLight(asteroidID);
@@ -138,17 +148,16 @@ void Renderer::renderAsteroidSystems(Scene &scene)
   {
     asteroidSystem->render(asteroidShader);
   }
-
-  asteroidShader.unuse();
 }
 
 void Renderer::renderObjects(Scene &scene)
 {
   Shader &coreShader = this->resourceManager.GetShader(Res::CORE_SHADER);
 
-  coreShader.use();
-
   GLuint &coreID = coreShader.getId();
+
+  ScopedShader core(coreID);
+
   this->bindCameraUBO(coreID);
 
   this->lightManager->bindDirLight(coreID);
@@ -162,22 +171,21 @@ void Renderer::renderObjects(Scene &scene)
   {
     object->render(coreShader);
   }
-
-  coreShader.unuse();
 }
 void Renderer::renderTrails(Scene &scene)
 {
   Shader &trailShader = this->resourceManager.GetShader(Res::TRAIL_SHADER);
 
-  trailShader.use();
   GLuint &trailID = trailShader.getId();
+
+  ScopedShader trail(trailID);
+
   this->bindCameraUBO(trailID);
 
   for (const Trail *trail : scene.getTrails())
   {
     trail->render();
   }
-  trailShader.unuse();
 }
 
 void Renderer::renderSkybox(Scene &scene)
@@ -186,16 +194,16 @@ void Renderer::renderSkybox(Scene &scene)
 
   Shader &skyboxShader = this->resourceManager.GetShader(Res::SKYBOX_SHADER);
 
-  skyboxShader.use();
   GLuint &skyboxID = skyboxShader.getId();
+
+  ScopedShader skyboxSd(skyboxID);
+
   this->bindCameraUBO(skyboxID);
 
   ScopedCullFace cullFace(GL_FRONT);
   ScopedDepthMask depthMask(GL_FALSE);
 
   skybox.render(skyboxShader);
-
-  skyboxShader.unuse();
 }
 
 void Renderer::renderShadowMap(Scene &scene, Shader &shader)
@@ -215,20 +223,16 @@ void Renderer::renderDirectionalShadow(Scene &scene)
     return;
 
   ScopedViewport viewport(0, 0, shadowRes, shadowRes);
-
-  this->shadowManager->bindDirShadowFBO();
+  ScopedFramebuffer dirShadowBuff(this->shadowManager->getDirShadow()->getShadowFramebuffer(), GL_FRAMEBUFFER);
 
   glClearDepth(1.0);
   glClear(GL_DEPTH_BUFFER_BIT);
 
   Shader &dirShadowShader = this->resourceManager.GetShader(Res::DIRECTIONAL_SHADOW_SHADER);
 
-  dirShadowShader.use();
+  ScopedShader dirShadowSd(dirShadowShader);
 
   this->renderShadowMap(scene, dirShadowShader);
-
-  this->shadowManager->unbindPointShadowFBO();
-  dirShadowShader.unuse();
 }
 
 void Renderer::renderPointShadow(Scene &scene)
@@ -236,26 +240,23 @@ void Renderer::renderPointShadow(Scene &scene)
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
 
   ScopedViewport viewport(0, 0, shadowRes, shadowRes);
+  ScopedFramebuffer pointShadowBuff(this->shadowManager->getPointShadow()->getShadowFramebuffer(), GL_FRAMEBUFFER);
 
   if (pointLights.empty())
     return;
 
   Shader &pointShadowShader = this->resourceManager.GetShader(Res::POINT_SHADOW_SHADER);
 
-  this->shadowManager->bindPointShadowFBO();
+  GLuint &pointShadowID = pointShadowShader.getId();
 
   glClearDepth(1.0);
   glClear(GL_DEPTH_BUFFER_BIT);
 
-  pointShadowShader.use();
+  ScopedShader pointShadowSd(pointShadowID);
 
-  this->shadowManager->bindPointShadowUBO(pointShadowShader.getId());
+  this->shadowManager->bindPointShadowUBO(pointShadowID);
 
   this->renderShadowMap(scene, pointShadowShader);
-
-  this->shadowManager->unbindPointShadowFBO();
-
-  pointShadowShader.unuse();
 }
 
 void Renderer::renderFullscreenQuad()
@@ -265,30 +266,19 @@ void Renderer::renderFullscreenQuad()
 
   Shader &hdrShader = this->resourceManager.GetShader(Res::HDR_SHADER);
 
-  hdrShader.use();
+  ScopedShader hdr(hdrShader);
+
+  this->hdrColorBufferTexture->activate(TextureBindingPoints::HDRColorBuffer);
+  this->hdrColorBufferTexture->bind();
+
+  this->finalBloomTexture->activate(TextureBindingPoints::BloomBlur);
+  this->finalBloomTexture->bind();
 
   hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
   hdrShader.set1i(TextureBindingPoints::BloomBlur, "bloomBlur");
   hdrShader.set1f(0.3f, "exposure");
 
-  this->hdrColorBufferTexture->bind(TextureBindingPoints::HDRColorBuffer);
-  this->finalBloomTexture->bind(TextureBindingPoints::BloomBlur);
-
   this->fullscreenQuad->render();
-
-  hdrShader.unuse();
-}
-
-void Renderer::bindHDRFBO()
-{
-  glBindFramebuffer(GL_FRAMEBUFFER, this->hdrFBO);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-void Renderer::unbindHDRFBO()
-{
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::initBloom()
@@ -299,36 +289,34 @@ void Renderer::initBloom()
   float width = static_cast<float>(viewport[2]);
   float height = static_cast<float>(viewport[3]);
 
-  glGenFramebuffers(2, this->pingpongFBOs.data());
-
   for (unsigned int i = 0; i < 2; i++)
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, this->pingpongFBOs[i]);
+    this->pingpongFBOs[i] = std::make_unique<Framebuffer>();
+
+    ScopedFramebuffer pingpong(*this->pingpongFBOs[i], GL_FRAMEBUFFER, true);
 
     this->pingpongBuffers[i] = std::make_unique<Texture>(width, height, GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA, GL_FLOAT);
 
-    GL_CALL(glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->pingpongBuffers[i]->getId(), 0));
+    this->pingpongFBOs[i]->attachTexture2D(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->pingpongBuffers[i]->getId(), 0);
+
+    this->pingpongFBOs[i]->checkComplete();
   }
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::renderBloom()
 {
-  // todo - framebuffer class, glDisable, etc. in one class, emissive
-  glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBOs[0]);
+  // todo - framebuffer class, emissive & sun hdr does not work
+  ScopedFramebuffer pingpong(*this->pingpongFBOs[0], GL_FRAMEBUFFER);
   glClear(GL_COLOR_BUFFER_BIT);
 
   Shader &bloomShader = this->resourceManager.GetShader(Res::BLOOM_SHADER);
-  bloomShader.use();
+
+  ScopedShader bloom(bloomShader);
 
   bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
   bloomShader.set1f(4.f, "threshold");
 
   this->fullscreenQuad->render();
-
-  bloomShader.unuse();
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::blurBloom()
@@ -338,17 +326,19 @@ void Renderer::blurBloom()
 
   Shader &blurShader = this->resourceManager.GetShader(Res::BLUR_SHADER);
 
-  blurShader.use();
+  ScopedShader blur(blurShader);
+
   for (unsigned int i = 0; i < amount; i++)
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBOs[horizontal]);
+    ScopedFramebuffer pingpong(*this->pingpongFBOs[horizontal], GL_FRAMEBUFFER, true);
 
     blurShader.set1i(horizontal, "horizontal");
+    std::unique_ptr<ScopedTexture> pingpongBuffScope;
 
     if (first_iteration)
-      this->pingpongBuffers[0]->bind(TextureBindingPoints::BloomBlur);
+      pingpongBuffScope = std::make_unique<ScopedTexture>(*this->pingpongBuffers[0], TextureBindingPoints::BloomBlur);
     else
-      this->pingpongBuffers[!horizontal]->bind(TextureBindingPoints::BloomBlur);
+      pingpongBuffScope = std::make_unique<ScopedTexture>(*this->pingpongBuffers[!horizontal], TextureBindingPoints::BloomBlur);
 
     blurShader.set1i(TextureBindingPoints::BloomBlur, "image");
 
@@ -360,9 +350,6 @@ void Renderer::blurBloom()
   }
 
   this->finalBloomTexture = pingpongBuffers[horizontal].get();
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  blurShader.unuse();
 }
 
 // Constructor
@@ -409,21 +396,31 @@ void Renderer::render(Scene &scene)
   {
     ScopedBlending blendingDisabled(false);
 
-    this->bindHDRFBO();
+    ScopedFramebuffer hdr(*this->hdrFBO, GL_FRAMEBUFFER);
 
-    this->renderTrails(scene);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     this->renderObjects(scene);
     this->renderAsteroidSystems(scene);
-
-    this->renderSkybox(scene);
-
-    this->unbindHDRFBO();
   }
 
   this->renderBloom();
   this->blurBloom();
 
   this->renderFullscreenQuad();
+
+  {
+    ScopedFramebuffer hdrRead(*this->hdrFBO, GL_READ_FRAMEBUFFER);
+    ScopedFramebuffer draw(0, GL_DRAW_FRAMEBUFFER);
+
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glBlitFramebuffer(0, 0, viewport[2], viewport[3], 0, 0, viewport[2], viewport[3], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+  }
+
+  this->renderSkybox(scene);
+  this->renderTrails(scene);
 }
 
 void Renderer::update(Scene &scene, double dt, bool paused)

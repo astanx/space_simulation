@@ -205,44 +205,6 @@ void ShadowManager::bindPointShadow(Shader &shader)
   this->pointShadow->bind(shader, TextureBindingPoints::PointShadow);
 }
 
-void ShadowManager::bindDirShadowFBO() const
-{
-  assert(this->directionalShadow && "[Shadow manager] ASSERT: No directional shadow to bind FBO");
-
-  if (!this->directionalShadow)
-    return;
-
-  this->directionalShadow->bindShadowMapFBO();
-}
-void ShadowManager::bindPointShadowFBO() const
-{
-  assert(this->pointShadow && "[Shadow manager] ASSERT: No point shadow to bind FBO");
-
-  if (!this->pointShadow)
-    return;
-
-  this->pointShadow->bindShadowMapFBO();
-}
-
-void ShadowManager::unbindDirShadowFBO() const
-{
-  assert(this->directionalShadow && "[Shadow manager] ASSERT: No directional shadow to unbind FBO");
-
-  if (!this->directionalShadow)
-    return;
-
-  this->directionalShadow->unbindShadowMapFBO();
-}
-void ShadowManager::unbindPointShadowFBO() const
-{
-  assert(this->pointShadow && "[Shadow manager] ASSERT: No point shadow to unbind FBO");
-
-  if (!this->pointShadow)
-    return;
-
-  this->pointShadow->unbindShadowMapFBO();
-}
-
 // Setters
 void ShadowManager::addDirShadow(std::unique_ptr<DirectionalShadow> shadow)
 {

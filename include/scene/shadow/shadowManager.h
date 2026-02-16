@@ -72,12 +72,6 @@ public:
   void bindDirShadow(Shader &shader);
   void bindPointShadow(Shader &shader);
 
-  void bindDirShadowFBO() const;
-  void bindPointShadowFBO() const;
-
-  void unbindDirShadowFBO() const;
-  void unbindPointShadowFBO() const;
-
   DirectionalShadow *getDirShadow() const;
   PointShadow *getPointShadow() const;
 
