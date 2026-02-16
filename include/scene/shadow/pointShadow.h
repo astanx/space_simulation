@@ -20,7 +20,6 @@ public:
   PointShadow(const GLuint width, const GLuint height, glm::vec3 lightPos, float nearPlane, float farPlane);
   ~PointShadow() = default;
 
-  void bindShadowMapFBO() const override;
   void bind(Shader &shader, int textureUnit) const override;
 
   glm::vec3 getLightPos() const { return this->lightPos; };

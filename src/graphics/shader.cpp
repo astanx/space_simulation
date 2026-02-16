@@ -193,7 +193,7 @@ void Shader::setMat4fv(glm::mat4 value, const GLchar *name, GLboolean transpose)
   glUniformMatrix4fv(position, 1, transpose, glm::value_ptr(value));
 }
 // Public functions
-void Shader::use()
+void Shader::use() const
 {
   if (glIsProgram(this->id))
     glUseProgram(this->id);
@@ -201,7 +201,7 @@ void Shader::use()
     Logger::logFatal("Shader", "No program to use");
 }
 
-void Shader::unuse()
+void Shader::unuse() const
 {
   glUseProgram(0);
 }

@@ -6,6 +6,8 @@
 
 #include "graphics/bindings/texture.h"
 
+#include "graphics/state/scopedTexture.h"
+
 #include "graphics/materials/material.h"
 
 #include "resources/OBJloader.h"
@@ -119,10 +121,16 @@ void Model::render(Shader &shader)
   this->updateUniforms(shader);
 
   // Render objects
-  if (this->overrideTextureDiffuse != nullptr)
-    this->overrideTextureDiffuse->bind(TextureBindingPoints::Diffuse);
-  if (this->overrideTextureSpecular != nullptr)
-    this->overrideTextureSpecular->bind(TextureBindingPoints::Specular);
+  std::optional<ScopedTexture> diffuseScope;
+  std::optional<ScopedTexture> specularScope;
+
+  if (this->overrideTextureDiffuse)
+    diffuseScope.emplace(*this->overrideTextureDiffuse,
+                         TextureBindingPoints::Diffuse);
+
+  if (this->overrideTextureSpecular)
+    specularScope.emplace(*this->overrideTextureSpecular,
+                          TextureBindingPoints::Specular);
 
   for (Mesh *&mesh : this->meshes)
   {
@@ -131,10 +139,6 @@ void Model::render(Shader &shader)
 
   // Unbind everything
   glBindVertexArray(0);
-  if (this->overrideTextureDiffuse != nullptr)
-    this->overrideTextureDiffuse->unbind(TextureBindingPoints::Diffuse);
-  if (this->overrideTextureSpecular != nullptr)
-    this->overrideTextureSpecular->unbind(TextureBindingPoints::Specular);
 }
 
 void Model::renderInstanced()

@@ -2,6 +2,8 @@
 
 #include "debug/logger.h"
 
+#include "graphics/state/scopedFramebuffer.h"
+
 #include "graphics/shader.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,7 +13,6 @@
 // Private functions
 void PointShadow::init()
 {
-  glGenFramebuffers(1, &this->shadowMapFBO);
   glGenTextures(1, &this->shadowMapTexture);
 
   glBindTexture(GL_TEXTURE_CUBE_MAP, this->shadowMapTexture);
@@ -26,15 +27,16 @@ void PointShadow::init()
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, this->shadowMapFBO);
-  GL_CALL(glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->shadowMapTexture, 0));
-  glDrawBuffer(GL_NONE);
-  glReadBuffer(GL_NONE);
+  {
+    ScopedFramebuffer shadowMap(*this->shadowMapFBO, GL_FRAMEBUFFER);
 
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    Logger::logError("Point shadow", "Point shadow map FBO is not complete");
+    this->shadowMapFBO->attachTexture(GL_DEPTH_ATTACHMENT, this->shadowMapTexture, 0);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    this->shadowMapFBO->checkComplete();
+  }
 };
 
 // Constructor
@@ -49,20 +51,6 @@ PointShadow::PointShadow(const GLuint width, const GLuint height, glm::vec3 ligh
 };
 
 // Public functions
-void PointShadow::bindShadowMapFBO() const
-{
-  if (glIsFramebuffer(this->shadowMapFBO))
-  {
-    glBindFramebuffer(GL_FRAMEBUFFER, this->shadowMapFBO);
-    GL_CALL(glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->shadowMapTexture, 0));
-  }
-  else
-    Logger::logWarning("Point shadow", "Point shadow map FBO is not initialized");
-
-  // glDrawBuffer(GL_NONE);
-  // glReadBuffer(GL_NONE);
-}
-
 void PointShadow::bind(Shader &shader, int textureUnit) const
 {
   if (glIsTexture(this->shadowMapTexture))

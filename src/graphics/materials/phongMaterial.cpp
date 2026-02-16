@@ -50,7 +50,8 @@ void PhongMaterial::sendToShader(Shader &program)
 
   if (this->diffuseTexture)
   {
-    this->diffuseTexture->bind(TextureBindingPoints::Diffuse);
+    this->diffuseTexture->activate(TextureBindingPoints::Diffuse);
+    this->diffuseTexture->bind();
     program.set1i(TextureBindingPoints::Diffuse, "material.diffuseTexture");
     // isTexture = 1;
   }
@@ -62,7 +63,8 @@ void PhongMaterial::sendToShader(Shader &program)
 
   if (this->specularTexture)
   {
-    this->specularTexture->bind(TextureBindingPoints::Specular);
+    this->specularTexture->activate(TextureBindingPoints::Specular);
+    this->specularTexture->bind();
     program.set1i(TextureBindingPoints::Specular, "material.specularTexture");
     // isTexture = 1;
   }
@@ -74,7 +76,8 @@ void PhongMaterial::sendToShader(Shader &program)
 
   if (this->normalTexture)
   {
-    this->normalTexture->bind(TextureBindingPoints::Normal);
+    this->normalTexture->activate(TextureBindingPoints::Normal);
+    this->normalTexture->bind();
     program.set1i(TextureBindingPoints::Normal, "material.normalTexture");
     program.set1i(1, "useTBN");
     // isTexture = 1;

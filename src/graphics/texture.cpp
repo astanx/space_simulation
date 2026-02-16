@@ -1,5 +1,7 @@
 #include "graphics/texture.h"
 
+#include "graphics/state/scopedTexture.h"
+
 #include "debug/logger.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -33,7 +35,7 @@ Texture::Texture(const std::string &fileName, GLenum target)
     GL_CALL(glGenerateMipmap(target));
   }
   else
-    std::cerr << "[TEXTURE] RUNTIME ERROR: Failed to load file -" << fileName << std::endl;
+    Logger::logError("Texture", "Failed to load file - " + fileName);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(target, 0);
@@ -45,6 +47,7 @@ Texture::Texture(GLsizei width, GLsizei height, GLenum target, GLint internalFor
   this->target = target;
 
   glGenTextures(1, &this->id);
+
   glBindTexture(target, this->id);
 
   GL_CALL(glTexImage2D(
@@ -67,27 +70,37 @@ Texture::Texture(GLsizei width, GLsizei height, GLenum target, GLint internalFor
   glBindTexture(target, 0);
 }
 
+Texture::Texture(GLenum target)
+{
+  glGenTextures(1, &this->id);
+  this->target = target;
+}
+
 Texture::~Texture()
 {
   glDeleteTextures(1, &this->id);
 }
 
 // Public functions
-void Texture::bind(const GLint textureUnit)
+void Texture::bind() const
 {
   if (glIsTexture(this->id))
   {
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
     glBindTexture(this->target, this->id);
   }
   else
     Logger::logError("Texture", "No texture to bind");
 }
 
-void Texture::unbind(const GLint textureUnit)
+void Texture::unbind(const GLint textureUnit) const
 {
   glActiveTexture(GL_TEXTURE0 + textureUnit);
   glBindTexture(this->target, 0);
+}
+
+void Texture::activate(const GLint textureUnit) const
+{
+  glActiveTexture(GL_TEXTURE0 + textureUnit);
 }
 
 void Texture::loadFromFile(const std::string &fileName)
@@ -111,7 +124,7 @@ void Texture::loadFromFile(const std::string &fileName)
   }
   else
   {
-    std::cerr << "[Texture] FATAL ERROR: Failed to load from file - " << fileName << std::endl;
+    Logger::logError("Texture", "Failed to load from file - " + fileName);
     return;
   }
 

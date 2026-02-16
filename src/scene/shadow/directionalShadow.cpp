@@ -2,6 +2,9 @@
 
 #include "debug/logger.h"
 
+#include "graphics/state/scopedFramebuffer.h"
+#include "graphics/state/scopedTexture.h"
+
 #include "graphics/shader.h"
 
 #include <iostream>
@@ -9,7 +12,6 @@
 // Private functions
 void DirectionalShadow::init()
 {
-  glGenFramebuffers(1, &this->shadowMapFBO);
   glGenTextures(1, &this->shadowMapTexture);
 
   glBindTexture(GL_TEXTURE_2D, this->shadowMapTexture);
@@ -19,21 +21,24 @@ void DirectionalShadow::init()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
   float borderColor[] = {1.0, 1.0, 1.0, 1.0};
   glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, this->shadowMapFBO);
-  GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->shadowMapTexture, 0));
-  glDrawBuffer(GL_NONE);
-  glReadBuffer(GL_NONE);
+  {
+    ScopedFramebuffer shadowMap(*this->shadowMapFBO, GL_FRAMEBUFFER);
 
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    Logger::logError("Directional shadow", "Directional shadow map FBO is not complete");
+    this->shadowMapFBO->attachTexture2D(GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->shadowMapTexture, 0);
+
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    this->shadowMapFBO->checkComplete();
+  }
 
   glBindTexture(GL_TEXTURE_2D, 0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 };
 
 // Constructor
@@ -43,14 +48,6 @@ DirectionalShadow::DirectionalShadow(const GLuint width, const GLuint height) : 
 };
 
 // Public functions
-void DirectionalShadow::bindShadowMapFBO() const
-{
-  if (glIsFramebuffer(this->shadowMapFBO))
-    glBindFramebuffer(GL_FRAMEBUFFER, this->shadowMapFBO);
-  else
-    Logger::logWarning("Directional shadow", "Directional shadow map FBO is not initialized");
-}
-
 void DirectionalShadow::bind(Shader &shader, int textureUnit) const
 {
   if (glIsTexture(this->shadowMapTexture))

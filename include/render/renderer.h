@@ -5,6 +5,8 @@
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
 
+#include "graphics/buffers/framebuffer.h"
+
 #include "scene/light/lightManager.h"
 
 #include "scene/shadow/shadowManager.h"
@@ -30,14 +32,14 @@ private:
   std::unique_ptr<ShadowManager> shadowManager;
 
   // HDR
-  GLuint hdrFBO = 0;
+  std::unique_ptr<Framebuffer> hdrFBO;
   GLuint rboDepth = 0;
   std::unique_ptr<Texture> hdrColorBufferTexture;
   std::unique_ptr<Mesh> fullscreenQuad;
 
-  std::array<GLuint, 2> pingpongFBOs;
-  std::array<std::unique_ptr<Texture>, 2> pingpongBuffers;
-  Texture* finalBloomTexture;
+  std::unique_ptr<Framebuffer> pingpongFBOs[2];
+  std::unique_ptr<Texture> pingpongBuffers[2];
+  Texture *finalBloomTexture;
 
   void updateUBO(Scene &scene, float aspectRatio);
   void bindCameraUBO(GLuint programID);
@@ -54,8 +56,6 @@ private:
 
   void initHDR();
   void renderFullscreenQuad();
-  void bindHDRFBO();
-  void unbindHDRFBO();
 
   void initBloom();
   void renderBloom();

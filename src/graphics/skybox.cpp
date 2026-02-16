@@ -9,6 +9,7 @@
 
 #include "graphics/state/scopedDepthMask.h"
 #include "graphics/state/scopedDepthFunc.h"
+#include "graphics/state/scopedTexture.h"
 
 #include "graphics/primitives/cube.h"
 
@@ -20,7 +21,6 @@
 // Private functions
 void Skybox::loadCubemap(std::vector<const char *> faces)
 {
-
   glGenTextures(1, &this->id);
   glBindTexture(GL_TEXTURE_CUBE_MAP, this->id);
 
@@ -71,25 +71,9 @@ void Skybox::render(Shader &shader) const
 {
   ScopedDepthFunc depthLequal(GL_LEQUAL);
   ScopedDepthMask depthMask(GL_FALSE);
+  ScopedTexture skyboxText(this->id, static_cast<GLenum>(GL_TEXTURE_CUBE_MAP), TextureBindingPoints::Skybox);
 
-  this->bind(TextureBindingPoints::Skybox);
   shader.set1i(TextureBindingPoints::Skybox, "skybox");
-  this->mesh.render();
-  this->unbind(TextureBindingPoints::Skybox);
-}
-void Skybox::bind(const GLint textureUnit) const
-{
-  if (glIsTexture(this->id))
-  {
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, this->id);
-  }
-  else
-    Logger::logError("Skybox", "No texture to bind");
-}
 
-void Skybox::unbind(const GLint textureUnit) const
-{
-  glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  this->mesh.render();
 }
