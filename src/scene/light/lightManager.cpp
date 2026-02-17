@@ -4,29 +4,32 @@
 
 #include "graphics/bindings/ubo.h"
 
+#include "graphics/state/scopedBuffer.h"
+
 #include "scene/scene.h"
+
 #include "scene/light/directionalLight.h"
 #include "scene/light/pointLight.h"
 
 // Private functions
 void LightManager::initDirUBO()
 {
-  if (!glIsBuffer(this->dirUBO))
+  if (!this->dirUBO)
   {
-    glGenBuffers(1, &this->dirUBO);
-    glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
+    this->dirUBO = std::make_unique<Buffer>();
+
+    ScopedBuffer uboScope(*this->dirUBO, GL_UNIFORM_BUFFER);
     GL_CALL(glBufferData(GL_UNIFORM_BUFFER, sizeof(DirLightGPU), nullptr, GL_DYNAMIC_DRAW));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 }
 void LightManager::initPointUBO()
 {
-  if (!glIsBuffer(this->pointUBO))
+  if (!this->pointUBO)
   {
-    glGenBuffers(1, &this->pointUBO);
-    glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
+    this->pointUBO = std::make_unique<Buffer>();
+
+    ScopedBuffer uboScope(*this->pointUBO, GL_UNIFORM_BUFFER);
     GL_CALL(glBufferData(GL_UNIFORM_BUFFER, sizeof(PointLightGPU), nullptr, GL_DYNAMIC_DRAW));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 }
 
@@ -42,7 +45,7 @@ LightManager::LightManager(Scene &scene)
 // Public functions
 void LightManager::updateDirUBO(const DirectionalLight *dirLight, int enabled)
 {
-  if (dirLight && glIsBuffer(this->dirUBO) && enabled)
+  if (dirLight && this->dirUBO && enabled)
   {
     DirLightGPU ubo{};
 
@@ -53,9 +56,8 @@ void LightManager::updateDirUBO(const DirectionalLight *dirLight, int enabled)
     ubo.intensity = dirLight->getIntensity();
     ubo.enabled = enabled;
 
-    glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
+    ScopedBuffer uboScope(*this->dirUBO, GL_UNIFORM_BUFFER);
     GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirLightGPU), &ubo));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
   else
   {
@@ -66,7 +68,7 @@ void LightManager::updateDirUBO(const DirectionalLight *dirLight, int enabled)
 
 void LightManager::updatePointUBO(const PointLight *pointLight, int enabled)
 {
-  if (pointLight && glIsBuffer(this->pointUBO) && enabled)
+  if (pointLight && this->pointUBO && enabled)
   {
     PointLightGPU ubo{};
 
@@ -80,9 +82,8 @@ void LightManager::updatePointUBO(const PointLight *pointLight, int enabled)
     ubo.linear = pointLight->getLinear();
     ubo.enabled = enabled;
 
-    glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
+    ScopedBuffer uboScope(*this->pointUBO, GL_UNIFORM_BUFFER);
     GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
   else
   {
@@ -93,7 +94,7 @@ void LightManager::updatePointUBO(const PointLight *pointLight, int enabled)
 
 void LightManager::maskDirUBO()
 {
-  if (!glIsBuffer(this->dirUBO))
+  if (!this->dirUBO)
   {
     Logger::logWarning("Light manager", "No directional UBO to mask");
     return;
@@ -103,14 +104,13 @@ void LightManager::maskDirUBO()
 
   ubo.enabled = 0;
 
-  glBindBuffer(GL_UNIFORM_BUFFER, this->dirUBO);
+  ScopedBuffer uboScope(*this->dirUBO, GL_UNIFORM_BUFFER);
   GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DirLightGPU), &ubo));
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void LightManager::maskPointUBO()
 {
-  if (!glIsBuffer(this->pointUBO))
+  if (!this->pointUBO)
   {
     Logger::logWarning("Light manager", "No point UBO to mask");
     return;
@@ -119,9 +119,9 @@ void LightManager::maskPointUBO()
   PointLightGPU ubo{};
 
   ubo.enabled = 0;
-  glBindBuffer(GL_UNIFORM_BUFFER, this->pointUBO);
+
+  ScopedBuffer uboScope(*this->pointUBO, GL_UNIFORM_BUFFER);
   GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo));
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 // void LightManager::updateSSBO(std::vector<PointLight> &pointLights)
@@ -155,8 +155,11 @@ void LightManager::maskPointUBO()
 
 void LightManager::bindDirLight(GLuint &programID)
 {
-  if (!glIsBuffer(this->dirUBO))
+  if (!this->dirUBO)
+  {
     Logger::logWarning("Light manager", "No directional UBO to bind");
+    return;
+  }
 
   GLuint blockIndex =
       glGetUniformBlockIndex(programID, "DirectionalLight");
@@ -165,12 +168,15 @@ void LightManager::bindDirLight(GLuint &programID)
   {
     glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::DirectionalLight);
   }
-  glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::DirectionalLight, this->dirUBO);
+  this->dirUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::DirectionalLight);
 }
 void LightManager::bindPointLightUBO(GLuint &programID)
 {
-  if (!glIsBuffer(this->pointUBO))
+  if (!this->pointUBO)
+  {
     Logger::logWarning("Light manager", "No point UBO to bind");
+    return;
+  }
 
   GLuint blockIndex =
       glGetUniformBlockIndex(programID, "PointLightBuffer");
@@ -179,7 +185,7 @@ void LightManager::bindPointLightUBO(GLuint &programID)
   {
     glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::PointLight);
   }
-  glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::PointLight, this->pointUBO);
+  this->pointUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::PointLight);
 }
 
 // void LightManager::bindPointLightSSBO(GLuint &programID)

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "graphics/buffers/framebuffer.h"
+#include "graphics/framebuffers/framebuffer.h"
 
 class ScopedFramebuffer
 {
 private:
   GLint prevFBO = 0;
-  GLenum binding;
+  GLenum target;
 
   static GLenum getBindingEnumForTarget(GLenum target);
 

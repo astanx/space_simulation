@@ -5,7 +5,7 @@
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
 
-#include "graphics/buffers/framebuffer.h"
+#include "graphics/framebuffers/framebuffer.h"
 
 #include "scene/light/lightManager.h"
 

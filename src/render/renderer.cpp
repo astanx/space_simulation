@@ -268,11 +268,8 @@ void Renderer::renderFullscreenQuad()
 
   ScopedShader hdr(hdrShader);
 
-  this->hdrColorBufferTexture->activate(TextureBindingPoints::HDRColorBuffer);
-  this->hdrColorBufferTexture->bind();
-
-  this->finalBloomTexture->activate(TextureBindingPoints::BloomBlur);
-  this->finalBloomTexture->bind();
+  ScopedTexture hdrColor(*this->hdrColorBufferTexture, TextureBindingPoints::HDRColorBuffer);
+  ScopedTexture bloom(*this->finalBloomTexture, TextureBindingPoints::BloomBlur);
 
   hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
   hdrShader.set1i(TextureBindingPoints::BloomBlur, "bloomBlur");
@@ -301,17 +298,21 @@ void Renderer::initBloom()
 
     this->pingpongFBOs[i]->checkComplete();
   }
+
+  this->finalBloomTexture = this->pingpongBuffers[0].get();
 }
 
 void Renderer::renderBloom()
 {
-  // todo - framebuffer class, emissive & sun hdr does not work
+  // todo - emissive & sun hdr does not work, bloom turn on/off
   ScopedFramebuffer pingpong(*this->pingpongFBOs[0], GL_FRAMEBUFFER);
   glClear(GL_COLOR_BUFFER_BIT);
 
   Shader &bloomShader = this->resourceManager.GetShader(Res::BLOOM_SHADER);
 
   ScopedShader bloom(bloomShader);
+
+  ScopedTexture hdrColorBuffer(*this->hdrColorBufferTexture, TextureBindingPoints::HDRColorBuffer);
 
   bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
   bloomShader.set1f(4.f, "threshold");
@@ -332,7 +333,6 @@ void Renderer::blurBloom()
   {
     ScopedFramebuffer pingpong(*this->pingpongFBOs[horizontal], GL_FRAMEBUFFER, true);
 
-    blurShader.set1i(horizontal, "horizontal");
     std::unique_ptr<ScopedTexture> pingpongBuffScope;
 
     if (first_iteration)
@@ -340,6 +340,7 @@ void Renderer::blurBloom()
     else
       pingpongBuffScope = std::make_unique<ScopedTexture>(*this->pingpongBuffers[!horizontal], TextureBindingPoints::BloomBlur);
 
+    blurShader.set1i(horizontal, "horizontal");
     blurShader.set1i(TextureBindingPoints::BloomBlur, "image");
 
     this->fullscreenQuad->render();

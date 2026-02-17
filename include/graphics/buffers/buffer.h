@@ -8,13 +8,13 @@ protected:
   GLuint id = 0;
 
 public:
-  Buffer() = default;
-  ~Buffer() = default;
+  Buffer();
+  ~Buffer();
 
   inline GLuint getId() const { return this->id; };
 
-  virtual void bind(GLenum target) const = 0;
-  virtual void unbind(GLenum target) const = 0;
+  void bind(GLenum target) const;
+  void unbind(GLenum target) const;
 
-  virtual bool checkComplete() const = 0;
+  void bindBufferBase(GLenum target, GLint binding) const;
 };

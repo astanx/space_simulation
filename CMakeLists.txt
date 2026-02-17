@@ -101,10 +101,16 @@ add_executable(Space
         src/graphics/state/scopedCullFace.cpp
         src/graphics/state/scopedViewport.cpp
         src/graphics/state/scopedFramebuffer.cpp
+        src/graphics/state/scopedVertexArray.cpp
+        src/graphics/state/scopedBuffer.cpp
         src/graphics/state/scopedTexture.cpp
         src/graphics/state/scopedShader.cpp
+        # Framebuffers
+        src/graphics/framebuffers/framebuffer.cpp
         # Buffers
-        src/graphics/buffers/framebuffer.cpp
+        src/graphics/buffers/buffer.cpp
+        # Arrays
+        src/graphics/arrays/vertexArray.cpp
     
     # Scene
     src/scene/scene.cpp

@@ -74,6 +74,9 @@ Texture::Texture(GLenum target)
 {
   glGenTextures(1, &this->id);
   this->target = target;
+
+  glBindTexture(this->target, this->id);
+  glBindTexture(this->target, 0);
 }
 
 Texture::~Texture()

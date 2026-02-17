@@ -1,9 +1,9 @@
-#include "graphics/buffers/framebuffer.h"
+#include "graphics/framebuffers/framebuffer.h"
 
 #include "debug/logger.h"
 
 // Constructor and Destructor
-Framebuffer::Framebuffer() : Buffer()
+Framebuffer::Framebuffer()
 {
   glGenFramebuffers(1, &this->id);
 }

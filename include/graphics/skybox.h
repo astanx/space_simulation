@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/mesh.h"
+#include "graphics/texture.h"
 
 #include <vector>
 #include <GL/glew.h>
@@ -10,7 +11,7 @@ class Shader;
 class Skybox
 {
 private:
-  GLuint id;
+  std::unique_ptr<Texture> texture;
   int width;
   int height;
 
@@ -20,7 +21,7 @@ private:
 
 public:
   Skybox(std::vector<const char *> &faces);
-  ~Skybox();
+  ~Skybox() = default;
 
   void render(Shader &shader) const;
 };
