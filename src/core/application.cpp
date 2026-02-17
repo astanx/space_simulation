@@ -101,6 +101,8 @@ Application::Application(
   this->lastFrame = 0.f;
   this->timeScale = 3600 * 24;
 
+  this->paused = false;
+
   // Initialize application
   this->initGLFW();
   this->initWindow(title, resizable);

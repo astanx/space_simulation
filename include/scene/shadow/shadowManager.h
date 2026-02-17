@@ -3,6 +3,8 @@
 #include "scene/shadow/pointShadow.h"
 #include "scene/shadow/directionalShadow.h"
 
+#include "graphics/buffers/buffer.h"
+
 #include <memory>
 
 #include <GL/glew.h>
@@ -46,8 +48,8 @@ class Scene;
 class ShadowManager
 {
 private:
-  GLuint dirUBO = 0;
-  GLuint pointUBO = 0;
+  std::unique_ptr<Buffer> dirUBO;
+  std::unique_ptr<Buffer> pointUBO;
 
   std::unique_ptr<DirectionalShadow> directionalShadow;
   std::unique_ptr<PointShadow> pointShadow;
@@ -58,7 +60,7 @@ private:
 public:
   ShadowManager(Scene &scene);
   ShadowManager() = default;
-  ~ShadowManager();
+  ~ShadowManager() = default;
 
   void updateDirUBO(int enabled = 1);
   void updatePointUBO(int enabled = 1);

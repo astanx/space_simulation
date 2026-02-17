@@ -8,9 +8,3 @@ Shadow::Shadow(GLuint width, GLuint height)
 
   this->shadowMapFBO = std::make_unique<Framebuffer>();
 }
-
-Shadow::~Shadow()
-{
-  if (glIsTexture(this->shadowMapTexture))
-    glDeleteTextures(1, &this->shadowMapTexture);
-}

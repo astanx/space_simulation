@@ -3,6 +3,7 @@
 #include "debug/logger.h"
 
 #include "graphics/state/scopedFramebuffer.h"
+#include "graphics/state/scopedTexture.h"
 
 #include "graphics/shader.h"
 
@@ -13,9 +14,7 @@
 // Private functions
 void PointShadow::init()
 {
-  glGenTextures(1, &this->shadowMapTexture);
-
-  glBindTexture(GL_TEXTURE_CUBE_MAP, this->shadowMapTexture);
+  this->shadowMapTexture->bind();
 
   for (unsigned i = 0; i < 6; i++)
     GL_CALL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
@@ -30,7 +29,7 @@ void PointShadow::init()
   {
     ScopedFramebuffer shadowMap(*this->shadowMapFBO, GL_FRAMEBUFFER);
 
-    this->shadowMapFBO->attachTexture(GL_DEPTH_ATTACHMENT, this->shadowMapTexture, 0);
+    this->shadowMapFBO->attachTexture(GL_DEPTH_ATTACHMENT, this->shadowMapTexture->getId(), 0);
 
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
@@ -47,18 +46,15 @@ PointShadow::PointShadow(const GLuint width, const GLuint height, glm::vec3 ligh
   this->farPlane = farPlane;
   this->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
+  this->shadowMapTexture = std::make_unique<Texture>(GL_TEXTURE_CUBE_MAP);
+
   this->init();
 };
 
 // Public functions
 void PointShadow::bind(Shader &shader, int textureUnit) const
 {
-  if (glIsTexture(this->shadowMapTexture))
-  {
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, this->shadowMapTexture);
-    shader.set1i(textureUnit, "depthMap");
-  }
-  else
-    Logger::logWarning("Point shadow", "Point shadow map texture is not initialized");
+  this->shadowMapTexture->activate(textureUnit);
+  this->shadowMapTexture->bind();
+  shader.set1i(textureUnit, "depthMap");
 }

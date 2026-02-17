@@ -5,6 +5,9 @@
 #include "graphics/shader.h"
 #include "graphics/vertex.h"
 
+#include "graphics/state/scopedBuffer.h"
+#include "graphics/state/scopedVertexArray.h"
+
 #include "graphics/primitives/primitives.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,23 +15,25 @@
 // Private functions
 void Mesh::initVAO()
 {
-  if (!glIsVertexArray(this->VAOS[this->layout]))
-    glGenVertexArrays(1, &this->VAOS[this->layout]);
+  if (!this->VAOS[this->layout])
+    this->VAOS[this->layout] = std::make_unique<VertexArray>();
 
-  glBindVertexArray(this->VAOS[this->layout]);
+  ScopedVertexArray vao(*this->VAOS[this->layout]);
 
-  if (!glIsBuffer(this->VBO))
-    glGenBuffers(1, &this->VBO);
+  if (!this->VBO)
+    this->VBO = std::make_unique<Buffer>();
 
-  glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+  this->VBO->bind(GL_ARRAY_BUFFER);
+
   GL_CALL(glBufferData(GL_ARRAY_BUFFER, this->nrOfVertices * sizeof(Vertex), this->vertices, GL_STATIC_DRAW));
 
   if (this->nrOfIndices > 0)
   {
-    if (!glIsBuffer(this->EBO))
-      glGenBuffers(1, &this->EBO);
+    if (!this->EBO)
+      this->EBO = std::make_unique<Buffer>();
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
+    this->EBO->bind(GL_ELEMENT_ARRAY_BUFFER);
+
     GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), this->indices, GL_STATIC_DRAW));
   }
 
@@ -70,8 +75,6 @@ void Mesh::initVAO()
   //   glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, color));
   //   glEnableVertexAttribArray(3);
   // }
-
-  glBindVertexArray(0);
 }
 
 // Constructor and Destructor
@@ -148,18 +151,6 @@ Mesh::Mesh(const Mesh &obj)
 
 Mesh::~Mesh()
 {
-  if (glIsVertexArray(this->VAOS[this->layout]))
-    glDeleteVertexArrays(1, &this->VAOS[this->layout]);
-
-  if (glIsBuffer(this->VBO))
-    glDeleteBuffers(1, &this->VBO);
-
-  if (glIsBuffer(this->EBO))
-    glDeleteBuffers(1, &this->EBO);
-
-  if (glIsBuffer(this->instanceVBO))
-    glDeleteBuffers(1, &instanceVBO);
-
   delete[] this->vertices;
   delete[] this->indices;
 }
@@ -169,20 +160,22 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
 {
   if (!instancingInitialized)
   {
-    glGenBuffers(1, &this->instanceVBO);
+    this->instanceVBO = std::make_unique<Buffer>();
     instancingInitialized = true;
   }
 
   this->instanceCount = static_cast<unsigned int>(instanceData.size());
 
-  GLuint vao = this->VAOS.at(this->layout);
+  const std::unique_ptr<VertexArray> &vao = this->VAOS.at(this->layout);
 
-  if (glIsVertexArray(vao))
-    glBindVertexArray(vao);
+  std::optional<ScopedVertexArray> vaoScope;
+
+  if (vao)
+    vaoScope.emplace(*vao);
   else
     Logger::logError("Mesh", "No instanced VAO to set buffer");
 
-  glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
+  this->instanceVBO->bind(GL_ARRAY_BUFFER);
 
   GL_CALL(glBufferData(
       GL_ARRAY_BUFFER,
@@ -218,8 +211,6 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
       GL_FALSE,
       sizeof(InstanceData), 0);
   glVertexAttribDivisor(start, 1);
-
-  glBindVertexArray(0);
 }
 
 void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
@@ -231,10 +222,7 @@ void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
     return;
   }
 
-  if (glIsBuffer(this->instanceVBO))
-    glBindBuffer(GL_ARRAY_BUFFER, this->instanceVBO);
-  else
-    Logger::logError("Mesh", "No instance VBO to update buffer");
+  ScopedBuffer vbo(*this->instanceVBO, GL_ARRAY_BUFFER);
 
   void *ptr = glMapBufferRange(
       GL_ARRAY_BUFFER,
@@ -252,10 +240,12 @@ void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
 
 void Mesh::render() const
 {
-  GLuint vao = this->VAOS.at(this->layout);
+  const std::unique_ptr<VertexArray> &vao = this->VAOS.at(this->layout);
 
-  if (glIsVertexArray(vao))
-    glBindVertexArray(vao);
+  std::optional<ScopedVertexArray> vaoScope;
+
+  if (vao)
+    vaoScope.emplace(*vao);
   else
     Logger::logError("Mesh", "No VAO to render");
 
@@ -270,10 +260,12 @@ void Mesh::renderInstanced() const
   if (!this->instancingInitialized || this->instanceCount == 0)
     return;
 
-  GLuint vao = this->VAOS.at(this->layout);
+  const std::unique_ptr<VertexArray> &vao = this->VAOS.at(this->layout);
 
-  if (glIsVertexArray(vao))
-    glBindVertexArray(vao);
+  std::optional<ScopedVertexArray> vaoScope;
+
+  if (vao)
+    vaoScope.emplace(*vao);
   else
     Logger::logError("Mesh", "No instanced VAO to render");
 
@@ -286,8 +278,6 @@ void Mesh::renderInstanced() const
         GL_UNSIGNED_INT,
         0,
         this->instanceCount));
-
-  glBindVertexArray(0);
 }
 
 const double Mesh::calculateVolume() const

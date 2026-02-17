@@ -12,9 +12,8 @@
 // Private functions
 void DirectionalShadow::init()
 {
-  glGenTextures(1, &this->shadowMapTexture);
+  this->shadowMapTexture->bind();
 
-  glBindTexture(GL_TEXTURE_2D, this->shadowMapTexture);
   GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
                        this->shadowWidth, this->shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -30,7 +29,7 @@ void DirectionalShadow::init()
   {
     ScopedFramebuffer shadowMap(*this->shadowMapFBO, GL_FRAMEBUFFER);
 
-    this->shadowMapFBO->attachTexture2D(GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->shadowMapTexture, 0);
+    this->shadowMapFBO->attachTexture2D(GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->shadowMapTexture->getId(), 0);
 
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
@@ -44,20 +43,16 @@ void DirectionalShadow::init()
 // Constructor
 DirectionalShadow::DirectionalShadow(const GLuint width, const GLuint height) : Shadow(width, height)
 {
+  this->shadowMapTexture = std::make_unique<Texture>(GL_TEXTURE_2D);
+
   this->init();
 };
 
 // Public functions
 void DirectionalShadow::bind(Shader &shader, int textureUnit) const
 {
-  if (glIsTexture(this->shadowMapTexture))
-  {
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glBindTexture(GL_TEXTURE_2D, this->shadowMapTexture);
-
-    // change
-    shader.set1i(textureUnit, "directionalShadowMap");
-  }
-  else
-    Logger::logWarning("Directional shadow", "Directional shadow map texture is not initialized");
+  this->shadowMapTexture->activate(textureUnit);
+  this->shadowMapTexture->bind();
+  // change
+  shader.set1i(textureUnit, "directionalShadowMap");
 }

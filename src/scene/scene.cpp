@@ -88,7 +88,7 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
-  std::unique_ptr<Model> model = std::make_unique<Model>(position, mat, mesh);
+  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
   std::unique_ptr<Star> star = std::make_unique<Star>(mu, radius, position, velocity);
 
@@ -157,7 +157,7 @@ void Scene::init()
   //     0.0000032f);
 
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
-      sunPos,
+      this->sun->getRenderPosition(),
       glm::vec3(0.08f),
       glm::vec3(1.00f, 0.96f, 0.90f),
       glm::vec3(1.00f, 0.92f, 0.80f),

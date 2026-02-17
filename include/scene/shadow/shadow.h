@@ -1,6 +1,8 @@
 #pragma once
 
-#include "graphics/buffers/framebuffer.h"
+#include "graphics/framebuffers/framebuffer.h"
+
+#include "graphics/texture.h"
 
 #include <GL/glew.h>
 
@@ -12,7 +14,7 @@ class Shadow
 {
 protected:
   std::unique_ptr<Framebuffer> shadowMapFBO;
-  GLuint shadowMapTexture;
+  std::unique_ptr<Texture> shadowMapTexture;
   GLuint shadowWidth;
   GLuint shadowHeight;
 
@@ -20,7 +22,7 @@ protected:
 
 public:
   Shadow(const GLuint width, const GLuint height);
-  virtual ~Shadow();
+  virtual ~Shadow() = default;
 
   virtual void bind(Shader &shader, int textureUnit) const = 0;
 

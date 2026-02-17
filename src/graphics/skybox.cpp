@@ -21,8 +21,9 @@
 // Private functions
 void Skybox::loadCubemap(std::vector<const char *> faces)
 {
-  glGenTextures(1, &this->id);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, this->id);
+  this->texture = std::make_unique<Texture>(GL_TEXTURE_CUBE_MAP);
+
+  this->texture->bind();
 
   for (unsigned int i = 0; i < faces.size(); i++)
   {
@@ -61,17 +62,12 @@ Skybox::Skybox(std::vector<const char *> &faces) : mesh(std::make_unique<Cube>()
   this->loadCubemap(faces);
 }
 
-Skybox::~Skybox()
-{
-  glDeleteTextures(1, &this->id);
-}
-
 // Public functions
 void Skybox::render(Shader &shader) const
 {
   ScopedDepthFunc depthLequal(GL_LEQUAL);
   ScopedDepthMask depthMask(GL_FALSE);
-  ScopedTexture skyboxText(this->id, static_cast<GLenum>(GL_TEXTURE_CUBE_MAP), TextureBindingPoints::Skybox);
+  ScopedTexture skyboxText(*this->texture, TextureBindingPoints::Skybox);
 
   shader.set1i(TextureBindingPoints::Skybox, "skybox");
 

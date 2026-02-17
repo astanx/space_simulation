@@ -3,6 +3,10 @@
 #include "graphics/vertexLayouts.h"
 #include "graphics/vertex.h"
 
+#include "graphics/buffers/buffer.h"
+
+#include "graphics/arrays/vertexArray.h"
+
 #include <GL/glew.h>
 
 class Shader;
@@ -16,11 +20,11 @@ private:
   GLuint *indices;
   unsigned nrOfIndices;
 
-  std::unordered_map<VertexLayout, GLuint> VAOS;
-  GLuint VBO = 0;
-  GLuint EBO = 0;
+  std::unordered_map<VertexLayout, std::unique_ptr<VertexArray>> VAOS;
+  std::unique_ptr<Buffer> VBO;
+  std::unique_ptr<Buffer> EBO;
 
-  GLuint instanceVBO = 0;
+  std::unique_ptr<Buffer> instanceVBO;
   unsigned int instanceCount = 0;
   bool instancingInitialized = false;
 

@@ -1,8 +1,11 @@
 #pragma once
 
+#include "graphics/buffers/buffer.h"
+
 #include <GL/glew.h>
 #include "glm/glm.hpp"
-// #include <vector>
+
+#include <memory>
 
 struct DirLightGPU
 {
@@ -38,8 +41,8 @@ class Scene;
 class LightManager
 {
 private:
-  GLuint dirUBO = 0;
-  GLuint pointUBO = 0;
+  std::unique_ptr<Buffer> dirUBO;
+  std::unique_ptr<Buffer> pointUBO;
   // GLuint pointSSBO = 0;
 
   void initDirUBO();
