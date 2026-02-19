@@ -39,6 +39,7 @@ private:
 
   // Metrics
   bool paused;
+  bool useBloom;
   double timeScale;
   float fps;
 

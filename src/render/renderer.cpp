@@ -17,6 +17,8 @@
 #include "graphics/state/scopedTexture.h"
 #include "graphics/state/scopedShader.h"
 
+#include "graphics/buffers/renderBuffer.h"
+
 #include "graphics/primitives/quad.h"
 
 #include "resources/resourceManager.h"
@@ -58,9 +60,7 @@ void Renderer::updateUBO(Scene &scene, float aspectRatio)
   {
     this->shadowManager->updatePointShadowLightPosition(scene.getSun().getRenderPosition());
     for (size_t i = 0; i < pointLights.size(); i++)
-    {
       this->lightManager->updatePointUBO(pointLights[i]);
-    }
   }
   else
     this->lightManager->maskPointUBO();
@@ -92,40 +92,6 @@ void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferTy
       size,
       nullptr,
       GL_DYNAMIC_DRAW));
-}
-
-void Renderer::initHDR()
-{
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-
-  float width = static_cast<float>(viewport[2]);
-  float height = static_cast<float>(viewport[3]);
-
-  this->hdrFBO = std::make_unique<Framebuffer>();
-
-  this->hdrColorBufferTexture = std::make_unique<Texture>(width, height, GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA, GL_FLOAT);
-
-  // create depth buffer (renderbuffer)
-  unsigned int rboDepth;
-  glGenRenderbuffers(1, &rboDepth);
-  glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-
-  // attach buffers
-  {
-    ScopedFramebuffer hdr(*this->hdrFBO, GL_FRAMEBUFFER);
-
-    this->hdrFBO->attachTexture2D(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBufferTexture->getId(), 0);
-
-    this->hdrFBO->attachRenderBuffer(GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-
-    this->hdrFBO->checkComplete();
-  }
-
-  std::unique_ptr<Quad> obj = std::make_unique<Quad>();
-
-  this->fullscreenQuad = std::make_unique<Mesh>(std::move(obj), VertexLayout::PositionTexcoord);
 }
 
 void Renderer::renderAsteroidSystems(Scene &scene)
@@ -259,102 +225,31 @@ void Renderer::renderPointShadow(Scene &scene)
   this->renderShadowMap(scene, pointShadowShader);
 }
 
-void Renderer::renderFullscreenQuad()
+void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer)
 {
-  ScopedDepthMask depthMask(false);
-  ScopedDepthTest depthTest(false);
+  ScopedBlending blendingDisabled(false);
 
-  Shader &hdrShader = this->resourceManager.GetShader(Res::HDR_SHADER);
+  ScopedFramebuffer framebufferScope(framebuffer, GL_FRAMEBUFFER);
 
-  ScopedShader hdr(hdrShader);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  ScopedTexture hdrColor(*this->hdrColorBufferTexture, TextureBindingPoints::HDRColorBuffer);
-  ScopedTexture bloom(*this->finalBloomTexture, TextureBindingPoints::BloomBlur);
-
-  hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
-  hdrShader.set1i(TextureBindingPoints::BloomBlur, "bloomBlur");
-  hdrShader.set1f(0.3f, "exposure");
-
-  this->fullscreenQuad->render();
+  this->renderObjects(scene);
+  this->renderAsteroidSystems(scene);
 }
 
-void Renderer::initBloom()
+void Renderer::blitDepthToDefault(const Framebuffer &framebuffer)
 {
+  ScopedFramebuffer hdrRead(framebuffer, GL_READ_FRAMEBUFFER);
+  ScopedFramebuffer draw(0, GL_DRAW_FRAMEBUFFER);
+
   GLint viewport[4];
   glGetIntegerv(GL_VIEWPORT, viewport);
-
-  float width = static_cast<float>(viewport[2]);
-  float height = static_cast<float>(viewport[3]);
-
-  for (unsigned int i = 0; i < 2; i++)
-  {
-    this->pingpongFBOs[i] = std::make_unique<Framebuffer>();
-
-    ScopedFramebuffer pingpong(*this->pingpongFBOs[i], GL_FRAMEBUFFER, true);
-
-    this->pingpongBuffers[i] = std::make_unique<Texture>(width, height, GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA, GL_FLOAT);
-
-    this->pingpongFBOs[i]->attachTexture2D(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->pingpongBuffers[i]->getId(), 0);
-
-    this->pingpongFBOs[i]->checkComplete();
-  }
-
-  this->finalBloomTexture = this->pingpongBuffers[0].get();
-}
-
-void Renderer::renderBloom()
-{
-  // todo - emissive & sun hdr does not work, bloom turn on/off
-  ScopedFramebuffer pingpong(*this->pingpongFBOs[0], GL_FRAMEBUFFER);
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  Shader &bloomShader = this->resourceManager.GetShader(Res::BLOOM_SHADER);
-
-  ScopedShader bloom(bloomShader);
-
-  ScopedTexture hdrColorBuffer(*this->hdrColorBufferTexture, TextureBindingPoints::HDRColorBuffer);
-
-  bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
-  bloomShader.set1f(4.f, "threshold");
-
-  this->fullscreenQuad->render();
-}
-
-void Renderer::blurBloom()
-{
-  bool horizontal = true, first_iteration = true;
-  int amount = 10;
-
-  Shader &blurShader = this->resourceManager.GetShader(Res::BLUR_SHADER);
-
-  ScopedShader blur(blurShader);
-
-  for (unsigned int i = 0; i < amount; i++)
-  {
-    ScopedFramebuffer pingpong(*this->pingpongFBOs[horizontal], GL_FRAMEBUFFER, true);
-
-    std::unique_ptr<ScopedTexture> pingpongBuffScope;
-
-    if (first_iteration)
-      pingpongBuffScope = std::make_unique<ScopedTexture>(*this->pingpongBuffers[0], TextureBindingPoints::BloomBlur);
-    else
-      pingpongBuffScope = std::make_unique<ScopedTexture>(*this->pingpongBuffers[!horizontal], TextureBindingPoints::BloomBlur);
-
-    blurShader.set1i(horizontal, "horizontal");
-    blurShader.set1i(TextureBindingPoints::BloomBlur, "image");
-
-    this->fullscreenQuad->render();
-
-    horizontal = !horizontal;
-    if (first_iteration)
-      first_iteration = false;
-  }
-
-  this->finalBloomTexture = pingpongBuffers[horizontal].get();
+  glBlitFramebuffer(0, 0, viewport[2], viewport[3], 0, 0, viewport[2], viewport[3], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
 // Constructor
-Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager) {}
+Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager), postProcess(resourceManager) {}
 
 // Public functions
 void Renderer::init(Scene &scene)
@@ -363,8 +258,6 @@ void Renderer::init(Scene &scene)
   this->shadowManager = std::make_unique<ShadowManager>(scene);
 
   this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
-  this->initHDR();
-  this->initBloom();
 
   const DirectionalLight *directionalLight = scene.getDirLight();
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
@@ -387,38 +280,21 @@ void Renderer::init(Scene &scene)
   }
 
   this->textRenderer.init();
+  this->postProcess.init();
 }
 
-void Renderer::render(Scene &scene)
+void Renderer::render(Scene &scene, bool useBloom)
 {
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
 
-  {
-    ScopedBlending blendingDisabled(false);
+  const Framebuffer &hdrFramebuffer = this->postProcess.getHDRFramebuffer();
 
-    ScopedFramebuffer hdr(*this->hdrFBO, GL_FRAMEBUFFER);
+  this->renderToFramebuffer(scene, hdrFramebuffer);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  this->postProcess.process(useBloom);
 
-    this->renderObjects(scene);
-    this->renderAsteroidSystems(scene);
-  }
-
-  this->renderBloom();
-  this->blurBloom();
-
-  this->renderFullscreenQuad();
-
-  {
-    ScopedFramebuffer hdrRead(*this->hdrFBO, GL_READ_FRAMEBUFFER);
-    ScopedFramebuffer draw(0, GL_DRAW_FRAMEBUFFER);
-
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    glBlitFramebuffer(0, 0, viewport[2], viewport[3], 0, 0, viewport[2], viewport[3], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-  }
+  this->blitDepthToDefault(hdrFramebuffer);
 
   this->renderSkybox(scene);
   this->renderTrails(scene);

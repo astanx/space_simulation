@@ -9,6 +9,7 @@ in vec2 vs_texcoord;
 uniform sampler2D hdrBuffer;
 uniform sampler2D bloomBlur;
 uniform float exposure;
+uniform float bloomPower;
 
 vec3 reinhard(vec3 x) {
   return x / (x + 1.0);
@@ -34,7 +35,7 @@ void main()
   vec3 hdrColor = texture(hdrBuffer, vs_texcoord).rgb;
   vec3 bloomColor = texture(bloomBlur, vs_texcoord).rgb;
 
-  hdrColor += bloomColor;
+  hdrColor += bloomColor * bloomPower;
   
   hdrColor *= exposure;
 

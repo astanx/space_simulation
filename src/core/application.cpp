@@ -102,6 +102,7 @@ Application::Application(
   this->timeScale = 3600 * 24;
 
   this->paused = false;
+  this->useBloom = true;
 
   // Initialize application
   this->initGLFW();
@@ -194,7 +195,7 @@ void Application::render()
   glClearColor(1.f, 1.f, 1.f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  this->renderer.render(this->scene);
+  this->renderer.render(this->scene, this->useBloom);
 
   this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
                             25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
@@ -234,6 +235,11 @@ void Application::processInput()
   if (this->input.isKeyHold(GLFW_KEY_LEFT_SHIFT))
   {
     this->scene.processKeyboard(DOWN, this->deltaTime);
+  }
+
+  if (this->input.isKeyPressed(GLFW_KEY_B))
+  {
+    this->useBloom = !this->useBloom;
   }
 
   if (this->input.isKeyPressed(GLFW_KEY_ENTER))

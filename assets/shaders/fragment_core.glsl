@@ -85,8 +85,10 @@ void main()
     specularMap,
     shadow
   );
-
+ 
   vec4 result = dir + point;
+
+  result += vec4(material.emissive * albedo, 0.0);
 
   fs_color = result;
 }
