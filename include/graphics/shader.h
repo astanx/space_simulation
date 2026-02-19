@@ -31,17 +31,19 @@ public:
   void use() const;
   void unuse() const;
 
-  void set1i(GLint value, const GLchar *name);
+  void set1i(GLint value, const std::string &name);
 
-  void set1f(GLfloat value, const GLchar *name);
+  void set1f(GLfloat value, const std::string &name);
 
-  void setVec2f(glm::fvec2 value, const GLchar *name);
+  void setVec1f(const GLfloat *value, GLsizei size, const std::string &name);
 
-  void setVec3f(glm::fvec3 value, const GLchar *name);
+  void setVec2f(glm::fvec2 value, const std::string &name);
 
-  void setVec4f(glm::fvec4 value, const GLchar *name);
+  void setVec3f(glm::fvec3 value, const std::string &name);
 
-  void setMat3fv(glm::mat3 value, const GLchar *name, GLboolean transpose = GL_FALSE);
+  void setVec4f(glm::fvec4 value, const std::string &name);
 
-  void setMat4fv(glm::mat4 value, const GLchar *name, GLboolean transpose = GL_FALSE);
+  void setMat3fv(glm::mat3 value, const std::string &name, GLboolean transpose = GL_FALSE);
+
+  void setMat4fv(glm::mat4 value, const std::string &name, GLboolean transpose = GL_FALSE);
 };

@@ -1,11 +1,14 @@
 #pragma once
 
 #include "render/textRenderer.h"
+#include "render/postProcess.h"
 
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
 
 #include "graphics/framebuffers/framebuffer.h"
+
+#include "graphics/buffers/renderBuffer.h"
 
 #include "scene/light/lightManager.h"
 
@@ -23,6 +26,7 @@ class Renderer
 private:
   ResourceManager &resourceManager;
   TextRenderer textRenderer;
+  PostProcess postProcess;
 
   unsigned int cameraUBO;
 
@@ -30,16 +34,6 @@ private:
 
   const GLuint shadowRes = 4096;
   std::unique_ptr<ShadowManager> shadowManager;
-
-  // HDR
-  std::unique_ptr<Framebuffer> hdrFBO;
-  GLuint rboDepth = 0;
-  std::unique_ptr<Texture> hdrColorBufferTexture;
-  std::unique_ptr<Mesh> fullscreenQuad;
-
-  std::unique_ptr<Framebuffer> pingpongFBOs[2];
-  std::unique_ptr<Texture> pingpongBuffers[2];
-  Texture *finalBloomTexture;
 
   void updateUBO(Scene &scene, float aspectRatio);
   void bindCameraUBO(GLuint programID);
@@ -54,18 +48,14 @@ private:
   void renderObjects(Scene &scene);
   void renderTrails(Scene &scene);
 
-  void initHDR();
-  void renderFullscreenQuad();
-
-  void initBloom();
-  void renderBloom();
-  void blurBloom();
+  void renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer);
+  void blitDepthToDefault(const Framebuffer &framebuffer);
 
 public:
   Renderer(ResourceManager &resourceManager);
   ~Renderer() = default;
 
-  void render(Scene &scene);
+  void render(Scene &scene, bool useBloom = true);
 
   void renderText(
       const std::string &text,

@@ -137,7 +137,7 @@ Shader::~Shader()
 }
 
 // Setters
-void Shader::set1i(GLint value, const GLchar *name)
+void Shader::set1i(GLint value, const std::string &name)
 {
   GLint position = getUniformLocation(name);
   if (position == -1)
@@ -145,7 +145,7 @@ void Shader::set1i(GLint value, const GLchar *name)
   glUniform1i(position, value);
 }
 
-void Shader::set1f(GLfloat value, const GLchar *name)
+void Shader::set1f(GLfloat value, const std::string &name)
 {
   GLint position = getUniformLocation(name);
   if (position == -1)
@@ -153,7 +153,15 @@ void Shader::set1f(GLfloat value, const GLchar *name)
   glUniform1f(position, value);
 }
 
-void Shader::setVec2f(glm::fvec2 value, const GLchar *name)
+void Shader::setVec1f(const GLfloat *value, GLsizei size, const std::string &name)
+{
+  GLint position = getUniformLocation(name);
+  if (position == -1)
+    return;
+  glUniform1fv(position, size, value);
+}
+
+void Shader::setVec2f(glm::fvec2 value, const std::string &name)
 {
   GLint position = getUniformLocation(name);
   if (position == -1)
@@ -161,7 +169,7 @@ void Shader::setVec2f(glm::fvec2 value, const GLchar *name)
   glUniform2fv(position, 1, glm::value_ptr(value));
 }
 
-void Shader::setVec3f(glm::fvec3 value, const GLchar *name)
+void Shader::setVec3f(glm::fvec3 value, const std::string &name)
 {
   GLint position = getUniformLocation(name);
   if (position == -1)
@@ -169,7 +177,7 @@ void Shader::setVec3f(glm::fvec3 value, const GLchar *name)
   glUniform3fv(position, 1, glm::value_ptr(value));
 }
 
-void Shader::setVec4f(glm::fvec4 value, const GLchar *name)
+void Shader::setVec4f(glm::fvec4 value, const std::string &name)
 {
   GLint position = getUniformLocation(name);
   if (position == -1)
@@ -177,7 +185,7 @@ void Shader::setVec4f(glm::fvec4 value, const GLchar *name)
   glUniform4fv(position, 1, glm::value_ptr(value));
 }
 
-void Shader::setMat3fv(glm::mat3 value, const GLchar *name, GLboolean transpose)
+void Shader::setMat3fv(glm::mat3 value, const std::string &name, GLboolean transpose)
 {
   GLint position = getUniformLocation(name);
   if (position == -1)
@@ -185,7 +193,7 @@ void Shader::setMat3fv(glm::mat3 value, const GLchar *name, GLboolean transpose)
   glUniformMatrix3fv(position, 1, transpose, glm::value_ptr(value));
 }
 
-void Shader::setMat4fv(glm::mat4 value, const GLchar *name, GLboolean transpose)
+void Shader::setMat4fv(glm::mat4 value, const std::string &name, GLboolean transpose)
 {
   GLint position = getUniformLocation(name);
   if (position == -1)

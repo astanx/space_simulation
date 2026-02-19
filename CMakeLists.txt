@@ -109,6 +109,7 @@ add_executable(Space
         src/graphics/framebuffers/framebuffer.cpp
         # Buffers
         src/graphics/buffers/buffer.cpp
+        src/graphics/buffers/renderBuffer.cpp
         # Arrays
         src/graphics/arrays/vertexArray.cpp
     
@@ -128,6 +129,7 @@ add_executable(Space
     # Render
     src/render/renderer.cpp
     src/render/textRenderer.cpp
+    src/render/postProcess.cpp
     
     # Resources
     src/resources/OBJloader.cpp
