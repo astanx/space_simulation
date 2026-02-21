@@ -68,8 +68,11 @@ public:
   void maskDirUBO();
   void maskPointUBO();
 
-  void bindDirShadowUBO(GLuint &programID);
-  void bindPointShadowUBO(GLuint &programID);
+  void initDirShadowUBOBinding(GLuint &programID);
+  void initPointShadowUBOBinding(GLuint &programID);
+
+  void bindDirShadowUBO();
+  void bindPointShadowUBO();
 
   void bindDirShadow(Shader &shader);
   void bindPointShadow(Shader &shader);

@@ -89,3 +89,12 @@ Mesh &ResourceManager::GetMesh(const std::string &name)
 
   return *it->second;
 }
+std::vector<Shader *> ResourceManager::GetAllShaders()
+{
+  std::vector<Shader *> shaders;
+
+  for (const auto &pair : this->shaders)
+    shaders.push_back(pair.second.get());
+
+  return shaders;
+}

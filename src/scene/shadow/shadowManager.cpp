@@ -150,11 +150,11 @@ void ShadowManager::maskPointUBO()
   GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointShadowGPU), &ubo));
 }
 
-void ShadowManager::bindDirShadowUBO(GLuint &programID)
+void ShadowManager::initDirShadowUBOBinding(GLuint &programID)
 {
   if (!this->dirUBO)
   {
-    Logger::logWarning("Shadow manager", "No dir UBO to bind");
+    Logger::logWarning("Shadow manager", "No dir UBO to init binding");
     return;
   }
 
@@ -164,15 +164,16 @@ void ShadowManager::bindDirShadowUBO(GLuint &programID)
   if (blockIndex != GL_INVALID_INDEX)
   {
     glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::DirectionalShadow);
+    Logger::logInfo("Shadow manager", "Directional shadow UBO successfully binded");
   }
 
-  this->dirUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::DirectionalShadow);
+  // no dir shadow supported rn
 }
-void ShadowManager::bindPointShadowUBO(GLuint &programID)
+void ShadowManager::initPointShadowUBOBinding(GLuint &programID)
 {
   if (!this->pointUBO)
   {
-    Logger::logWarning("Shadow manager", "No point UBO to bind");
+    Logger::logWarning("Shadow manager", "No point UBO to init binding");
     return;
   }
 
@@ -182,6 +183,26 @@ void ShadowManager::bindPointShadowUBO(GLuint &programID)
   if (blockIndex != GL_INVALID_INDEX)
   {
     glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::PointShadow);
+    Logger::logInfo("Shadow manager", "Point shadow UBO successfully binded");
+  }
+}
+
+void ShadowManager::bindDirShadowUBO()
+{
+  if (!this->dirUBO)
+  {
+    Logger::logWarning("Shadow manager", "No dir UBO to bind");
+    return;
+  }
+
+  this->dirUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::DirectionalShadow);
+}
+void ShadowManager::bindPointShadowUBO()
+{
+  if (!this->pointUBO)
+  {
+    Logger::logWarning("Shadow manager", "No point UBO to bind");
+    return;
   }
 
   this->pointUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::PointShadow);
