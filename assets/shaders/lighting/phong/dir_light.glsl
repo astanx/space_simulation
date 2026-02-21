@@ -1,7 +1,7 @@
 #ifndef DIRLIGHT_GLSL
 #define DIRLIGHT_GLSL
 
-#include "material/material.glsl"
+#include "material/phongMaterial.glsl"
 
 struct DirLight {
   vec4 direction;
@@ -14,7 +14,7 @@ struct DirLight {
   vec2 _pad0;
 };  
 
-vec4 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material mat, vec3 albedo, vec3 specularMap)
+vec4 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, PhongMaterial mat, vec3 albedo, vec3 specularMap)
 {
   if (light.enabled == 0) return vec4(0.0);
 

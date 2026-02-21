@@ -162,7 +162,7 @@ void LightManager::initDirLightUBOBinding(GLuint &programID)
   }
 
   GLuint blockIndex =
-      glGetUniformBlockIndex(programID, "DirectionalLight");
+      glGetUniformBlockIndex(programID, "PhongDirectionalLight");
 
   if (blockIndex != GL_INVALID_INDEX)
   {
@@ -179,7 +179,7 @@ void LightManager::initPointLightUBOBinding(GLuint &programID)
   }
 
   GLuint blockIndex =
-      glGetUniformBlockIndex(programID, "PointLightBuffer");
+      glGetUniformBlockIndex(programID, "PhongPointLightBuffer");
 
   if (blockIndex != GL_INVALID_INDEX)
   {
