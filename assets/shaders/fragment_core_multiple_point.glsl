@@ -1,8 +1,8 @@
 #version 410
 
-#include "material/material.glsl"
+#include "material/phongMaterial.glsl"
 #include "gamma/gamma_correction.glsl"
-#include "ubo/dir_light.glsl"
+#include "ubo/phong_dir_light.glsl"
 #include "ssbo/point_light.glsl"
 
 #include "ubo/camera.glsl"
@@ -18,7 +18,7 @@ in VS_OUT {
   vec3 vs_normal;
 } fs_in;
 
-uniform Material material;
+uniform PhongMaterial material;
 uniform bool isTexture;
 
 void main()

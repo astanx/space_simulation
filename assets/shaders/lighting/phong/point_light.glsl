@@ -1,7 +1,7 @@
 #ifndef POINTLIGHT_GLSL
 #define POINTLIGHT_GLSL
 
-#include "material/material.glsl"
+#include "material/phongMaterial.glsl"
 
 struct PointLight
 {
@@ -20,7 +20,7 @@ struct PointLight
   vec3 _pad0;
 };
 
-vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material mat, vec3 albedo, vec3 specularMap, float shadow)
+vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, PhongMaterial mat, vec3 albedo, vec3 specularMap, float shadow)
 {
   if (light.enabled == 0) return vec4(0.0);
 
