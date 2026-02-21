@@ -67,20 +67,37 @@ void Renderer::updateUBO(Scene &scene, float aspectRatio)
 
   this->shadowManager->updatePointUBO();
 }
-
-void Renderer::bindCameraUBO(GLuint programID)
+void Renderer::initShaderUBOBindings()
 {
-  if (!glIsBuffer(this->cameraUBO))
-    Logger::logWarning("Renderer", "No camera UBO to bind");
-
-  GLuint blockIndex =
-      glGetUniformBlockIndex(programID, "Camera");
-
-  if (blockIndex != GL_INVALID_INDEX)
+  std::vector<Shader *> shaders = this->resourceManager.GetAllShaders();
+  
+  for (Shader *shader : shaders)
   {
-    glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::Camera);
+    if (!shader) continue;
+
+    GLuint programID = shader->getId();
+
+    GLuint blockIndex = glGetUniformBlockIndex(programID, "Camera");
+    if (blockIndex != GL_INVALID_INDEX)
+      glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::Camera);
+
+    this->lightManager->initDirLightUBOBinding(programID);
+    this->lightManager->initPointLightUBOBinding(programID);
+
+    this->shadowManager->initDirShadowUBOBinding(programID);
+    this->shadowManager->initPointShadowUBOBinding(programID);
   }
+}
+
+void Renderer::bindUBOs()
+{
   glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::Camera, this->cameraUBO);
+
+  this->lightManager->bindDirLightUBO();
+  this->lightManager->bindPointLightUBO();
+
+  this->shadowManager->bindDirShadowUBO();
+  this->shadowManager->bindPointShadowUBO();
 }
 
 void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType)
@@ -102,18 +119,10 @@ void Renderer::renderAsteroidSystems(Scene &scene)
 
   ScopedShader asteroid(asteroidID);
 
-  this->bindCameraUBO(asteroidID);
-
-  this->lightManager->bindDirLight(asteroidID);
-  this->lightManager->bindPointLightUBO(asteroidID);
-
   this->shadowManager->bindPointShadow(asteroidShader);
-  this->shadowManager->bindPointShadowUBO(asteroidID);
 
   for (const AsteroidSystem *asteroidSystem : scene.getAsteroidSystems())
-  {
     asteroidSystem->render(asteroidShader);
-  }
 }
 
 void Renderer::renderObjects(Scene &scene)
@@ -124,19 +133,11 @@ void Renderer::renderObjects(Scene &scene)
 
   ScopedShader core(coreID);
 
-  this->bindCameraUBO(coreID);
-
-  this->lightManager->bindDirLight(coreID);
-  this->lightManager->bindPointLightUBO(coreID);
-
   this->shadowManager->bindPointShadow(coreShader);
-  this->shadowManager->bindPointShadowUBO(coreID);
 
   // Render all objects
   for (const Object *object : scene.getObjects())
-  {
     object->render(coreShader);
-  }
 }
 void Renderer::renderTrails(Scene &scene)
 {
@@ -146,12 +147,8 @@ void Renderer::renderTrails(Scene &scene)
 
   ScopedShader trail(trailID);
 
-  this->bindCameraUBO(trailID);
-
   for (const Trail *trail : scene.getTrails())
-  {
     trail->render();
-  }
 }
 
 void Renderer::renderSkybox(Scene &scene)
@@ -163,8 +160,6 @@ void Renderer::renderSkybox(Scene &scene)
   GLuint &skyboxID = skyboxShader.getId();
 
   ScopedShader skyboxSd(skyboxID);
-
-  this->bindCameraUBO(skyboxID);
 
   ScopedCullFace cullFace(GL_FRONT);
   ScopedDepthMask depthMask(GL_FALSE);
@@ -219,8 +214,6 @@ void Renderer::renderPointShadow(Scene &scene)
   glClear(GL_DEPTH_BUFFER_BIT);
 
   ScopedShader pointShadowSd(pointShadowID);
-
-  this->shadowManager->bindPointShadowUBO(pointShadowID);
 
   this->renderShadowMap(scene, pointShadowShader);
 }
@@ -281,10 +274,14 @@ void Renderer::init(Scene &scene)
 
   this->textRenderer.init();
   this->postProcess.init();
+
+  this->initShaderUBOBindings();
 }
 
 void Renderer::render(Scene &scene, bool useBloom)
 {
+  this->bindUBOs();
+
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
 

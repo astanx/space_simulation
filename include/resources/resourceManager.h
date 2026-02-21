@@ -45,4 +45,5 @@ public:
   Texture &GetTexture(const std::string &name);
   Material &GetMaterial(const std::string &name);
   Mesh &GetMesh(const std::string &name);
+  std::vector<Shader *> GetAllShaders();
 };

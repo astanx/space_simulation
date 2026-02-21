@@ -153,11 +153,11 @@ void LightManager::maskPointUBO()
 //   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 // }
 
-void LightManager::bindDirLight(GLuint &programID)
+void LightManager::initDirLightUBOBinding(GLuint &programID)
 {
   if (!this->dirUBO)
   {
-    Logger::logWarning("Light manager", "No directional UBO to bind");
+    Logger::logWarning("Light manager", "No directional UBO to init binding");
     return;
   }
 
@@ -167,14 +167,14 @@ void LightManager::bindDirLight(GLuint &programID)
   if (blockIndex != GL_INVALID_INDEX)
   {
     glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::DirectionalLight);
+    Logger::logInfo("Light manager", "Directional light UBO successfully binded");
   }
-  this->dirUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::DirectionalLight);
 }
-void LightManager::bindPointLightUBO(GLuint &programID)
+void LightManager::initPointLightUBOBinding(GLuint &programID)
 {
   if (!this->pointUBO)
   {
-    Logger::logWarning("Light manager", "No point UBO to bind");
+    Logger::logWarning("Light manager", "No point UBO to init binding");
     return;
   }
 
@@ -184,7 +184,28 @@ void LightManager::bindPointLightUBO(GLuint &programID)
   if (blockIndex != GL_INVALID_INDEX)
   {
     glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::PointLight);
+    Logger::logInfo("Light manager", "Point light UBO successfully binded");
   }
+}
+
+void LightManager::bindDirLightUBO()
+{
+  if (!this->dirUBO)
+  {
+    Logger::logWarning("Light manager", "No directional UBO to bind");
+    return;
+  }
+
+  this->dirUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::DirectionalLight);
+}
+void LightManager::bindPointLightUBO()
+{
+  if (!this->pointUBO)
+  {
+    Logger::logWarning("Light manager", "No point UBO to bind");
+    return;
+  }
+
   this->pointUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::PointLight);
 }
 

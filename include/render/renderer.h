@@ -36,7 +36,6 @@ private:
   std::unique_ptr<ShadowManager> shadowManager;
 
   void updateUBO(Scene &scene, float aspectRatio);
-  void bindCameraUBO(GLuint programID);
 
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
@@ -47,6 +46,9 @@ private:
   void renderAsteroidSystems(Scene &scene);
   void renderObjects(Scene &scene);
   void renderTrails(Scene &scene);
+
+  void initShaderUBOBindings();
+  void bindUBOs();
 
   void renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer);
   void blitDepthToDefault(const Framebuffer &framebuffer);

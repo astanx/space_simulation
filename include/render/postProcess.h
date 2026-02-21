@@ -37,9 +37,6 @@ private:
 
   void sendWeights(Shader &shader);
 
-  float gaussian(float x, float mean, float stddev);
-  std::vector<float> create_gaussian_blur_weights(size_t kernel_size, float stddev);
-
 public:
   PostProcess(ResourceManager &resourceManager);
   ~PostProcess() = default;

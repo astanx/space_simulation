@@ -60,7 +60,10 @@ public:
 
   // void updateSSBO(std::vector<PointLight> &pointLights);
 
-  void bindDirLight(GLuint &programID);
-  void bindPointLightUBO(GLuint &programID);
+  void initDirLightUBOBinding(GLuint &programID);
+  void initPointLightUBOBinding(GLuint &programID);
+
+  void bindDirLightUBO();
+  void bindPointLightUBO();
   // void bindPointLightSSBO(GLuint &programID);
 };
