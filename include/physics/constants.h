@@ -35,16 +35,16 @@ extern const KeplerElements saturnElements;
 extern const KeplerElements uranusElements;
 extern const KeplerElements neptuneElements;
 
-extern const MaterialProperties sunMaterial;
-extern const MaterialProperties mercuryMaterial;
-extern const MaterialProperties venusMaterial;
-extern const MaterialProperties earthMaterial;
-extern const MaterialProperties moonMaterial;
-extern const MaterialProperties marsMaterial;
-extern const MaterialProperties jupiterMaterial;
-extern const MaterialProperties saturnMaterial;
-extern const MaterialProperties uranusMaterial;
-extern const MaterialProperties neptuneMaterial;
+extern const PhongMaterialProperties sunMaterial;
+extern const PhongMaterialProperties mercuryMaterial;
+extern const PhongMaterialProperties venusMaterial;
+extern const PhongMaterialProperties earthMaterial;
+extern const PhongMaterialProperties moonMaterial;
+extern const PhongMaterialProperties marsMaterial;
+extern const PhongMaterialProperties jupiterMaterial;
+extern const PhongMaterialProperties saturnMaterial;
+extern const PhongMaterialProperties uranusMaterial;
+extern const PhongMaterialProperties neptuneMaterial;
 
 extern const Radii sunRadii;
 extern const Radii mercuryRadii;

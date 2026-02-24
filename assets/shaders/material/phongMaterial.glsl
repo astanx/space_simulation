@@ -1,5 +1,5 @@
-#ifndef MATERIAL_GLSL
-#define MATERIAL_GLSL
+#ifndef PHONG_MATERIAL_GLSL
+#define PHONG_MATERIAL_GLSL
 
 #include "gamma/gamma_correction.glsl"
 

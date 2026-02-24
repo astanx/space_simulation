@@ -1,9 +1,9 @@
-#ifndef POINTLIGHT_GLSL
-#define POINTLIGHT_GLSL
+#ifndef PHONG_POINTLIGHT_GLSL
+#define PHONG_POINTLIGHT_GLSL
 
 #include "material/phongMaterial.glsl"
 
-struct PointLight
+struct PhongPointLight
 {
   vec4 position;
   
@@ -20,7 +20,7 @@ struct PointLight
   vec3 _pad0;
 };
 
-vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, PhongMaterial mat, vec3 albedo, vec3 specularMap, float shadow)
+vec4 CalcPointLight(PhongPointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, PhongMaterial mat, vec3 albedo, vec3 specularMap, float shadow)
 {
   if (light.enabled == 0) return vec4(0.0);
 

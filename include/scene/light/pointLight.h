@@ -1,27 +1,26 @@
 #pragma once
 
-#include "scene/light/light.h"
+#include "graphics/shader.h"
 
-class PointLight : public Light
+#include <glm/glm.hpp>
+
+class PointLight
 {
 protected:
   glm::vec3 position;
-  float constant;
-  float linear;
-  float quadratic;
+  glm::vec3 color;
+  float luminosity;
+  float radius;
 
 public:
-  PointLight(glm::vec3 position, glm::vec3 ambient,
-             glm::vec3 diffuse,
-             glm::vec3 specular, float intensity = 1.f,
-             float constant = 1.f, float linear = 0.045f, float quadratic = 0.0075f);
+  PointLight(glm::vec3 position, glm::vec3 color, float luminosity, float radius);
   ~PointLight() = default;
 
-  void sendToShader(Shader &program) override;
+  void sendToShader(Shader &program);
   void move(glm::vec3 position);
 
   inline const glm::vec3 &getPosition() const { return this->position; }
-  inline float getConstant() const { return this->constant; }
-  inline float getLinear() const { return this->linear; }
-  inline float getQuadratic() const { return this->quadratic; }
+  inline const glm::vec3 &getColor() const { return this->color; }
+  inline float getLuminosity() const { return this->luminosity; }
+  inline float getRadius() const { return this->radius; }
 };

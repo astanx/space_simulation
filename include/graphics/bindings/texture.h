@@ -10,4 +10,7 @@ namespace TextureBindingPoints
   constexpr unsigned int DirectionalShadow = 5;
   constexpr unsigned int HDRColorBuffer = 6;
   constexpr unsigned int BloomBlur = 7;
+  constexpr unsigned int AoMap = 8;
+  constexpr unsigned int RoughnessMap = 9;
+  constexpr unsigned int MetallicMap = 10;
 }

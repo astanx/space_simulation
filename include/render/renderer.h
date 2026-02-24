@@ -50,14 +50,14 @@ private:
   void initShaderUBOBindings();
   void bindUBOs();
 
-  void renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer);
+  void renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, bool useFramebuffer);
   void blitDepthToDefault(const Framebuffer &framebuffer);
 
 public:
   Renderer(ResourceManager &resourceManager);
   ~Renderer() = default;
 
-  void render(Scene &scene, bool useBloom = true);
+  void render(Scene &scene, bool useBloom = true, bool useHDR = true);
 
   void renderText(
       const std::string &text,

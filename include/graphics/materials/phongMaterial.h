@@ -7,7 +7,7 @@
 class Shader;
 class Texture;
 
-struct MaterialProperties;
+struct PhongMaterialProperties;
 
 class PhongMaterial : public Material
 {
@@ -26,7 +26,7 @@ public:
       glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
       Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess, glm::vec3 emissive = glm::vec3(0.f));
   PhongMaterial(
-      MaterialProperties material,
+      PhongMaterialProperties material,
       Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture);
   ~PhongMaterial() = default;
 

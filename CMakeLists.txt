@@ -80,6 +80,8 @@ add_executable(Space
     src/graphics/mesh.cpp
     src/graphics/model.cpp
         # Materials
+        src/graphics/materials/material.cpp
+        src/graphics/materials/pbrMaterial.cpp
         src/graphics/materials/phongMaterial.cpp
         src/graphics/materials/asteroidMaterial.cpp
         src/graphics/materials/textMaterial.cpp
@@ -118,6 +120,7 @@ add_executable(Space
         # Light
         src/scene/light/light.cpp
         src/scene/light/pointLight.cpp
+        src/scene/light/phongPointLight.cpp
         src/scene/light/directionalLight.cpp
         src/scene/light/lightManager.cpp
         # Shadow

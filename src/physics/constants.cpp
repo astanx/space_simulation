@@ -56,7 +56,7 @@ const Radii sunRadii(
 		6.957e8);
 const glm::dvec3 sunPos = glm::dvec3(0.0f, 0.0f, 0.0f);
 
-const MaterialProperties sunMaterial(
+const PhongMaterialProperties sunMaterial(
 		glm::vec3(0.f),
 		glm::vec3(0.f),
 		glm::vec3(0.f),
@@ -77,7 +77,7 @@ const KeplerElements mercuryElements(
 		glm::radians(77.45779628),
 		glm::radians(174.796));
 
-const MaterialProperties mercuryMaterial(
+const PhongMaterialProperties mercuryMaterial(
 		glm::vec3(0.05f),
 		glm::vec3(0.7f, 0.6f, 0.55f),
 		glm::vec3(0.15f),
@@ -97,7 +97,7 @@ const KeplerElements venusElements(
 		glm::radians(131.60246718),
 		glm::radians(50.115));
 
-const MaterialProperties venusMaterial(
+const PhongMaterialProperties venusMaterial(
 		glm::vec3(0.12f),
 		glm::vec3(0.95f, 0.85f, 0.65f),
 		glm::vec3(0.4f, 0.35f, 0.25f),
@@ -117,7 +117,7 @@ const KeplerElements earthElements(
 		glm::radians(114.20783),
 		glm::radians(358.617));
 
-const MaterialProperties earthMaterial(
+const PhongMaterialProperties earthMaterial(
 		glm::vec3(0.08f),
 		glm::vec3(0.9f, 0.95f, 1.f),
 		glm::vec3(0.6f),
@@ -137,7 +137,7 @@ const KeplerElements moonElements(
 		glm::radians(318.15),
 		glm::radians(115.3684));
 
-const MaterialProperties moonMaterial(
+const PhongMaterialProperties moonMaterial(
 		glm::vec3(0.04f),
 		glm::vec3(0.55f),
 		glm::vec3(0.08f),
@@ -157,7 +157,7 @@ const KeplerElements marsElements(
 		glm::radians(286.5),
 		glm::radians(19.412));
 
-const MaterialProperties marsMaterial(
+const PhongMaterialProperties marsMaterial(
 		glm::vec3(0.06f),
 		glm::vec3(0.85f, 0.5f, 0.3f),
 		glm::vec3(0.12f),
@@ -177,7 +177,7 @@ const KeplerElements jupiterElements(
 		glm::radians(273.867),
 		glm::radians(20.02));
 
-const MaterialProperties jupiterMaterial(
+const PhongMaterialProperties jupiterMaterial(
 		glm::vec3(0.1f),
 		glm::vec3(0.95f, 0.9f, 0.85f),
 		glm::vec3(0.25f), 25);

@@ -103,6 +103,7 @@ Application::Application(
 
   this->paused = false;
   this->useBloom = true;
+  this->useHDR = true;
 
   // Initialize application
   this->initGLFW();
@@ -125,10 +126,10 @@ Application::Application(
   this->resourceManager.LoadShader(Res::BLOOM_SHADER, this->GLmajor, this->GLminor, "assets/shaders/bloom/vertex.glsl", "assets/shaders/bloom/fragment.glsl");
   this->resourceManager.LoadShader(Res::BLUR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/vertex.glsl", "assets/shaders/blur/fragment.glsl");
 
-  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, sunMaterial);
+  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, sunMaterial, 1.2e5f);
   loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
   loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, venusMaterial);
-  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, earthMaterial, Res::EARTH_SPECULAR, Res::EARTH_NORMAL);
+  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, earthMaterial, 0.0f, Res::EARTH_NORMAL);
   loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, moonMaterial);
   loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, marsMaterial);
   loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, jupiterMaterial);
@@ -195,7 +196,7 @@ void Application::render()
   glClearColor(1.f, 1.f, 1.f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  this->renderer.render(this->scene, this->useBloom);
+  this->renderer.render(this->scene, this->useBloom, this->useHDR);
 
   this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
                             25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
@@ -241,6 +242,10 @@ void Application::processInput()
   {
     this->useBloom = !this->useBloom;
   }
+  if (this->input.isKeyPressed(GLFW_KEY_H))
+  {
+    this->useHDR = !this->useHDR;
+  }
 
   if (this->input.isKeyPressed(GLFW_KEY_ENTER))
   {
@@ -272,8 +277,8 @@ void Application::processInput()
 }
 
 void Application::loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
-                                      Radii radii, MaterialProperties material,
-                                      const std::string &specular_name, const std::string &normal_name, int segments)
+                                      Radii radii, PhongMaterialProperties material, float emissiveStrength, const std::string &normal_name,
+                                      const std::string &specular_name, int segments)
 {
   const std::string format = ".png";
 
@@ -304,7 +309,8 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
 
   bool isTangent = normal_name != "";
 
-  this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
+  // this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
+  this->resourceManager.LoadPBRMaterial(material_name, &diff, normal, nullptr, nullptr, nullptr, emissiveStrength);
   std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE), isTangent);
   this->resourceManager.LoadMesh(name, std::move(obj),
                                  isTangent ? VertexLayout::PositionNormalTangent : VertexLayout::NoColor);
