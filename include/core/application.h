@@ -16,6 +16,7 @@ class Light;
 class Model;
 
 struct Radii;
+struct PhongMaterialProperties;
 
 const std::string BASE_TEXTURE_PATH = "assets/textures/";
 
@@ -40,6 +41,7 @@ private:
   // Metrics
   bool paused;
   bool useBloom;
+  bool useHDR;
   double timeScale;
   float fps;
 
@@ -78,7 +80,7 @@ public:
   static void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
   static void framebuffer_resize_callback(GLFWwindow *window, int width, int height);
   void loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
-                           Radii radii, MaterialProperties material,
-                           const std::string &specular_name = "", const std::string &normal_name = "", int segments = 32);
+                           Radii radii, PhongMaterialProperties material, float emissiveStrength = 0.0f,
+                           const std::string &normal_name = "", const std::string &specular_name = "", int segments = 32);
   void processInput();
 };

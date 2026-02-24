@@ -158,13 +158,9 @@ void Scene::init()
 
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
       this->sun->getRenderPosition(),
-      glm::vec3(0.08f),
-      glm::vec3(1.00f, 0.96f, 0.90f),
-      glm::vec3(1.00f, 0.92f, 0.80f),
-      50.0f,
-      1.0f,
-      0.00002f,
-      0.0000008f);
+      glm::vec3(1.0f),
+      3.826e26f * VISUAL_SCALE * VISUAL_SCALE, // sun luminosity
+      1.f);
   this->addPointLight(std::move(pointLight));
 
   // std::unique_ptr<DirectionalLight> dirLight = std::make_unique<DirectionalLight>(

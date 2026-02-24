@@ -1,7 +1,7 @@
 #version 410
 
 #include "ubo/camera.glsl"
-#include "ubo/phong_point_light.glsl"
+#include "ubo/pbr_point_light.glsl"
 
 layout (location = 0) in vec3 vertex_position;
 layout (location = 1) in vec2 vertex_texcoord;
@@ -52,7 +52,7 @@ void main()
 
     mat3 TBN = transpose(mat3(T, B, N));
 
-    vs_out.vs_tangentLightPos = TBN * pointLight.position.xyz;
+    vs_out.vs_tangentLightPos = TBN * pbrPointLight.position;
     vs_out.vs_tangentCamPos  = TBN * camPosition.xyz;
     vs_out.vs_tangentPos  = TBN * vs_out.vs_position;
   }

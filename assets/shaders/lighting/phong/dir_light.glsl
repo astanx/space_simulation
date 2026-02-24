@@ -1,5 +1,5 @@
-#ifndef DIRLIGHT_GLSL
-#define DIRLIGHT_GLSL
+#ifndef PHONG_DIRLIGHT_GLSL
+#define PHONG_DIRLIGHT_GLSL
 
 #include "material/phongMaterial.glsl"
 

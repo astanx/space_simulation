@@ -70,10 +70,11 @@ void Renderer::updateUBO(Scene &scene, float aspectRatio)
 void Renderer::initShaderUBOBindings()
 {
   std::vector<Shader *> shaders = this->resourceManager.GetAllShaders();
-  
+
   for (Shader *shader : shaders)
   {
-    if (!shader) continue;
+    if (!shader)
+      continue;
 
     GLuint programID = shader->getId();
 
@@ -218,12 +219,16 @@ void Renderer::renderPointShadow(Scene &scene)
   this->renderShadowMap(scene, pointShadowShader);
 }
 
-void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer)
+void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, bool useFramebuffer)
 {
-  ScopedBlending blendingDisabled(false);
+  std::optional<ScopedBlending> blendingDisabled;
+  std::optional<ScopedFramebuffer> framebufferScope;
 
-  ScopedFramebuffer framebufferScope(framebuffer, GL_FRAMEBUFFER);
-
+  if (useFramebuffer)
+  {
+    blendingDisabled.emplace(false);
+    framebufferScope.emplace(framebuffer, GL_FRAMEBUFFER);
+  }
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -278,7 +283,7 @@ void Renderer::init(Scene &scene)
   this->initShaderUBOBindings();
 }
 
-void Renderer::render(Scene &scene, bool useBloom)
+void Renderer::render(Scene &scene, bool useBloom, bool useHDR)
 {
   this->bindUBOs();
 
@@ -287,11 +292,14 @@ void Renderer::render(Scene &scene, bool useBloom)
 
   const Framebuffer &hdrFramebuffer = this->postProcess.getHDRFramebuffer();
 
-  this->renderToFramebuffer(scene, hdrFramebuffer);
+  this->renderToFramebuffer(scene, hdrFramebuffer, useHDR);
 
-  this->postProcess.process(useBloom);
+  if (useHDR)
+  {
+    this->postProcess.process(useBloom);
 
-  this->blitDepthToDefault(hdrFramebuffer);
+    this->blitDepthToDefault(hdrFramebuffer);
+  }
 
   this->renderSkybox(scene);
   this->renderTrails(scene);

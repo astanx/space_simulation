@@ -5,6 +5,7 @@
 #include "graphics/primitives/primitives.h"
 #include "graphics/materials/asteroidMaterial.h"
 #include "graphics/materials/phongMaterial.h"
+#include "graphics/materials/pbrMaterial.h"
 
 #include "physics/structs/materialProperties.h"
 
@@ -29,7 +30,7 @@ Material &ResourceManager::LoadPhongMaterial(const std::string &name, glm::vec3 
   this->materials[name] = std::make_unique<PhongMaterial>(ambient, diffuse, specular, diffuseTexture, specularTexture, normalTexture, shininess);
   return *this->materials[name];
 }
-Material &ResourceManager::LoadPhongMaterial(const std::string &name, MaterialProperties material,
+Material &ResourceManager::LoadPhongMaterial(const std::string &name, PhongMaterialProperties material,
                                              Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture)
 {
   this->materials[name] = std::make_unique<PhongMaterial>(material, diffuseTexture, specularTexture, normalTexture);
@@ -38,6 +39,12 @@ Material &ResourceManager::LoadPhongMaterial(const std::string &name, MaterialPr
 Material &ResourceManager::LoadAsteroidMaterial(const std::string &name, Texture &diffuseTexture)
 {
   this->materials[name] = std::make_unique<AsteroidMaterial>(diffuseTexture);
+  return *this->materials[name];
+}
+
+Material &ResourceManager::LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, float emissiveStrength)
+{
+  this->materials[name] = std::make_unique<PBRMaterial>(albedoMap, normalMap, aoMap, metallicMap, roughnessMap, emissiveStrength);
   return *this->materials[name];
 }
 

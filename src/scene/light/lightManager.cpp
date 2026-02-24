@@ -72,15 +72,20 @@ void LightManager::updatePointUBO(const PointLight *pointLight, int enabled)
   {
     PointLightGPU ubo{};
 
-    ubo.ambient = glm::vec4(pointLight->getAmbient(), 1.0);
-    ubo.diffuse = glm::vec4(pointLight->getDiffuse(), 1.0);
-    ubo.specular = glm::vec4(pointLight->getSpecular(), 1.0);
-    ubo.position = glm::vec4(pointLight->getPosition(), 0.0);
-    ubo.intensity = pointLight->getIntensity();
-    ubo.quadratic = pointLight->getQuadratic();
-    ubo.constant = pointLight->getConstant();
-    ubo.linear = pointLight->getLinear();
-    ubo.enabled = enabled;
+    ubo.position = pointLight->getPosition();
+    ubo.color = pointLight->getColor();
+    ubo.luminosity = pointLight->getLuminosity();
+    ubo.radius = pointLight->getRadius();
+
+    // ubo.ambient = glm::vec4(pointLight->getAmbient(), 1.0);
+    // ubo.diffuse = glm::vec4(pointLight->getDiffuse(), 1.0);
+    // ubo.specular = glm::vec4(pointLight->getSpecular(), 1.0);
+    // ubo.position = glm::vec4(pointLight->getPosition(), 0.0);
+    // ubo.intensity = pointLight->getIntensity();
+    // ubo.quadratic = pointLight->getQuadratic();
+    // ubo.constant = pointLight->getConstant();
+    // ubo.linear = pointLight->getLinear();
+    // ubo.enabled = enabled;
 
     ScopedBuffer uboScope(*this->pointUBO, GL_UNIFORM_BUFFER);
     GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo));
@@ -118,7 +123,8 @@ void LightManager::maskPointUBO()
 
   PointLightGPU ubo{};
 
-  ubo.enabled = 0;
+  ubo.radius = 0.f;
+  // ubo.enabled = 0;
 
   ScopedBuffer uboScope(*this->pointUBO, GL_UNIFORM_BUFFER);
   GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo));
@@ -162,7 +168,7 @@ void LightManager::initDirLightUBOBinding(GLuint &programID)
   }
 
   GLuint blockIndex =
-      glGetUniformBlockIndex(programID, "PhongDirectionalLight");
+      glGetUniformBlockIndex(programID, "DirectionalLight");
 
   if (blockIndex != GL_INVALID_INDEX)
   {
@@ -178,8 +184,10 @@ void LightManager::initPointLightUBOBinding(GLuint &programID)
     return;
   }
 
+  // GLuint blockIndex =
+  //     glGetUniformBlockIndex(programID, "PhongPointLightBuffer");
   GLuint blockIndex =
-      glGetUniformBlockIndex(programID, "PhongPointLightBuffer");
+      glGetUniformBlockIndex(programID, "PBRPointLightBuffer");
 
   if (blockIndex != GL_INVALID_INDEX)
   {

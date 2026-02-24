@@ -18,20 +18,33 @@ struct DirLightGPU
   glm::vec2 _pad0;
 };
 
+// struct PointLightGPU
+// {
+//   glm::vec4 position;
+
+//   glm::vec4 ambient;
+//   glm::vec4 diffuse;
+//   glm::vec4 specular;
+
+//   float intensity;
+//   float constant;
+//   float linear;
+//   float quadratic;
+//   int enabled;
+//   glm::vec3 _pad0;
+// };
+
 struct PointLightGPU
 {
-  glm::vec4 position;
+  glm::vec3 position;
+  float _pad0;
 
-  glm::vec4 ambient;
-  glm::vec4 diffuse;
-  glm::vec4 specular;
+  glm::vec3 color;
+  float _pad1;
 
-  float intensity;
-  float constant;
-  float linear;
-  float quadratic;
-  int enabled;
-  glm::vec3 _pad0;
+  float luminosity;
+  float radius;
+  glm::vec2 _pad2;
 };
 
 class DirectionalLight;

@@ -24,7 +24,7 @@ PhongMaterial::PhongMaterial(
   this->emissive = emissive;
 }
 PhongMaterial::PhongMaterial(
-    MaterialProperties material,
+    PhongMaterialProperties material,
     Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture)
 {
   this->ambient = material.ambient;
@@ -40,54 +40,22 @@ PhongMaterial::PhongMaterial(
 // Public functions
 void PhongMaterial::sendToShader(Shader &program)
 {
-  program.setVec3f(this->ambient, "material.ambient");
-  program.setVec3f(this->diffuse, "material.diffuse");
-  program.setVec3f(this->specular, "material.specular");
-  program.set1f(this->shininess, "material.shininess");
-  program.setVec3f(this->emissive, "material.emissive");
+  program.setVec3f(this->ambient, "phongMaterial.ambient");
+  program.setVec3f(this->diffuse, "phongMaterial.diffuse");
+  program.setVec3f(this->specular, "phongMaterial.specular");
+  program.set1f(this->shininess, "phongMaterial.shininess");
+  program.setVec3f(this->emissive, "phongMaterial.emissive");
 
   // int isTexture = 0;
 
-  if (this->diffuseTexture)
-  {
-    this->diffuseTexture->activate(TextureBindingPoints::Diffuse);
-    this->diffuseTexture->bind();
-    program.set1i(TextureBindingPoints::Diffuse, "material.diffuseTexture");
-    // isTexture = 1;
-  }
-  else
-  {
-    glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::Diffuse);
-    glBindTexture(GL_TEXTURE_2D, 0);
-  }
-
-  if (this->specularTexture)
-  {
-    this->specularTexture->activate(TextureBindingPoints::Specular);
-    this->specularTexture->bind();
-    program.set1i(TextureBindingPoints::Specular, "material.specularTexture");
-    // isTexture = 1;
-  }
-  else
-  {
-    glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::Specular);
-    glBindTexture(GL_TEXTURE_2D, 0);
-  }
-
+  this->sendTexture(this->diffuseTexture, program, TextureBindingPoints::Diffuse, "phongMaterial.diffuseTexture");
+  this->sendTexture(this->specularTexture, program, TextureBindingPoints::Specular, "phongMaterial.specularTexture");
+  this->sendTexture(this->normalTexture, program, TextureBindingPoints::Normal, "phongMaterial.normalTexture");
   if (this->normalTexture)
-  {
-    this->normalTexture->activate(TextureBindingPoints::Normal);
-    this->normalTexture->bind();
-    program.set1i(TextureBindingPoints::Normal, "material.normalTexture");
     program.set1i(1, "useTBN");
-    // isTexture = 1;
-  }
   else
-  {
-    glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::Normal);
-    glBindTexture(GL_TEXTURE_2D, 0);
     program.set1i(0, "useTBN");
-  }
+
 
   // program.set1i(isTexture, "isTexture");
 }
