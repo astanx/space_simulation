@@ -86,7 +86,7 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_p
   vec3 lightDir = normalize(lightPos.xyz - pos);
 
 
-    // PCF
+  // PCF
   float shadow = 0.0;
   float bias = 
     0.0008 * (1.0 + currentDepth / far_plane) + 
