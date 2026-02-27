@@ -146,7 +146,7 @@ void ShadowManager::maskPointUBO()
   PointShadowGPU ubo{};
   // ubo.enabled = 0;
 
-  ScopedBuffer uboScope(*this->dirUBO, GL_UNIFORM_BUFFER);
+  ScopedBuffer uboScope(*this->pointUBO, GL_UNIFORM_BUFFER);
   GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointShadowGPU), &ubo));
 }
 
