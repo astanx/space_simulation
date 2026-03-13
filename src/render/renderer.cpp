@@ -262,10 +262,9 @@ void Renderer::init(Scene &scene)
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
 
   if (directionalLight)
-  {
     this->shadowManager->addDirShadow(std::make_unique<DirectionalShadow>(this->shadowRes, this->shadowRes));
-  }
-  // Multiple-lights(not supported on opengl < 4.2)
+
+    // Multiple-lights(not supported on opengl < 4.2)
   // this->initShaderBuffer(&this->lightManager->getPointSSBO(), sizeof(PointLightGPU) * this->pointLights.size(), GL_SHADER_STORAGE_BUFFER);
   if (!pointLights.empty())
   {

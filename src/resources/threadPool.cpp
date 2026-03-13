@@ -62,9 +62,7 @@ ThreadPool::~ThreadPool()
   for (std::thread &worker : this->workers)
   {
     if (worker.joinable())
-    {
       worker.join();
-    }
   }
 }
 
