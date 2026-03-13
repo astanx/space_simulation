@@ -177,17 +177,17 @@ void Scene::init()
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();
 
-  std::vector<const char *> faces =
-      {
+  // std::vector<std::string> faces =
+  //     {
+  //         "assets/skybox/right.png",
+  //         "assets/skybox/left.png",
+  //         "assets/skybox/top.png",
+  //         "assets/skybox/bottom.png",
+  //         "assets/skybox/front.png",
+  //         "assets/skybox/back.png"};
 
-          "assets/skybox/right.png",
-          "assets/skybox/left.png",
-          "assets/skybox/top.png",
-          "assets/skybox/bottom.png",
-          "assets/skybox/front.png",
-          "assets/skybox/back.png"};
-
-  std::unique_ptr<Skybox> sb = std::make_unique<Skybox>(faces);
+  // std::unique_ptr<Skybox> sb = std::make_unique<Skybox>(faces);
+  std::unique_ptr<Skybox> sb = std::make_unique<Skybox>("assets/skybox/starmap.exr", this->resourceManager);
   this->addSkybox(std::move(sb));
   this->skybox = this->skyboxes.back().get();
 }

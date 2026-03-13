@@ -62,6 +62,8 @@ if(NOT Freetype_FOUND)
     FetchContent_MakeAvailable(freetype)
 endif()
 
+add_library(miniz include/external/miniz.c)
+
 add_executable(Space
     # Main
     src/main.cpp
@@ -160,6 +162,7 @@ add_executable(Space
     src/debug/logger.cpp
 )
 
+
 target_include_directories(Space PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
@@ -171,6 +174,7 @@ target_link_libraries(Space PRIVATE
     glfw
     GLEW::GLEW
     Freetype::Freetype
+    miniz
 )
 
 # ---- Copy runtime resources (shaders, assets) next to the executable ----

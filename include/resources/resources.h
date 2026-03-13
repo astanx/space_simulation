@@ -16,6 +16,7 @@ namespace Res
   const std::string HDR_SHADER = "hdr";
   const std::string BLOOM_SHADER = "bloom";
   const std::string BLUR_SHADER = "blur";
+  const std::string CUBEMAP_SHADER = "blur";
 
   // Mesh
   const std::string CUBE_MESH = "cube";

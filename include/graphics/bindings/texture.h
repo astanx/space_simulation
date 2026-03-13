@@ -13,4 +13,5 @@ namespace TextureBindingPoints
   constexpr unsigned int AoMap = 8;
   constexpr unsigned int RoughnessMap = 9;
   constexpr unsigned int MetallicMap = 10;
+  constexpr unsigned int EnvironmentMap = 11;
 }

@@ -7,20 +7,28 @@
 #include <GL/glew.h>
 
 class Shader;
+class ResourceManager;
 
 class Skybox
 {
 private:
-  std::unique_ptr<Texture> texture;
+  std::unique_ptr<Texture> cubemapTexture;
+  std::unique_ptr<Texture> environmentTexture;
   int width;
   int height;
 
   Mesh mesh;
 
-  void loadCubemap(std::vector<const char *> faces);
+  void createCubemap();
+  void allocateCubemapFaces(GLint internalFormat, GLenum format, GLenum type);
+  void loadCubemap(std::vector<std::string> faces, GLint internalFormat, GLenum format, GLenum type);
+
+  void loadCubemapFromMap(ResourceManager &resourceManager);
+  void loadEnvironmentMap(std::string environmentMap, GLint internalFormat, GLenum format);
 
 public:
-  Skybox(std::vector<const char *> &faces);
+  Skybox(std::vector<std::string> &faces);
+  Skybox(std::string environmentMap, ResourceManager& resourceManager);
   ~Skybox() = default;
 
   void render(Shader &shader) const;
