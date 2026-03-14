@@ -27,6 +27,7 @@ uniform PBRMaterial pbrMaterial;
 uniform bool useTBN;
 
 uniform samplerCube depthMap;
+uniform samplerCube irradianceMap;
 
 void main()
 {
@@ -54,10 +55,8 @@ void main()
 
   float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, far_plane, fs_in.vs_normal);
 
-  vec4 point = CalcPBRPointLight(normal, position, viewDir, fs_in.vs_texcoord, pbrMaterial, localPointLight);
+  vec4 point = CalcPBRPointLight(normal, position, viewDir, fs_in.vs_texcoord, pbrMaterial, localPointLight, shadow, irradianceMap);
  
-  point *= (1.0 - shadow);
-
   vec4 result = point;
 
   //result += vec4(phongMaterial.emissive * albedo, 0.0);

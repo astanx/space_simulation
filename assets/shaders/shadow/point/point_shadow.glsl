@@ -65,13 +65,27 @@ void calcShadowMatrices(out mat4 shadowMatrices[6], in mat4 shadowProj[6], in ma
 }
 */
 
-vec3 gridSamplingDisk[20] = vec3[]
-(
-   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
-   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
-   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+vec3 gridSamplingDisk[20] = vec3[](
+  vec3(0.5381, 0.1856, -0.4319),
+  vec3(0.1379, 0.2486, 0.4430),
+  vec3(0.3371, 0.5679, -0.0057),
+  vec3(-0.6999, -0.0451, -0.0019),
+  vec3(0.0689, -0.1598, -0.8547),
+  vec3(0.0560, 0.0069, -0.1843),
+  vec3(-0.0146, 0.1402, 0.0762),
+  vec3(0.0100, -0.1924, -0.0344),
+  vec3(-0.3577, -0.5301, -0.4358),
+  vec3(-0.3169, 0.1063, 0.0158),
+  vec3(0.0103, -0.5869, 0.0046),
+  vec3(-0.0897, -0.4940, 0.3287),
+  vec3(0.7119, -0.0154, -0.0918),
+  vec3(-0.0533, 0.0596, -0.5411),
+  vec3(0.0352, -0.0631, 0.5460),
+  vec3(-0.4776, 0.2847, -0.0271),
+  vec3(-0.0795, 0.3185, 0.2123),
+  vec3(0.2924, -0.3127, -0.1760),
+  vec3(-0.1400, -0.1346, 0.2555),
+  vec3(-0.0550, -0.0627, -0.3161)
 );
 
 
@@ -79,50 +93,36 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_p
 {
   vec3 fragToLight = pos - lightPos.xyz;
   float currentDepth = length(fragToLight);
-  if (currentDepth < 0.0001) return 0.0;
-  vec3 sampleDir = normalize(fragToLight);
-  float closestDepth = texture(depthMap, sampleDir).r;
-  closestDepth *= far_plane;
+
+  if (currentDepth < 0.0001)
+    return 0.0;
+
   vec3 lightDir = normalize(lightPos.xyz - pos);
 
+  // backface optimization
+  if (dot(normal, lightDir) <= 0.0)
+    return 0.0;
 
-  // PCF
+  float bias = max(0.003 * (1.0 - dot(normal, lightDir)), 0.0005);
+
+  // distance-based filter radius
+  float viewDistance = currentDepth / far_plane;
+  float diskRadius = mix(0.01, 0.12, viewDistance);
+
   float shadow = 0.0;
-  float bias = 
-    0.0008 * (1.0 + currentDepth / far_plane) + 
-    0.003 * (1.0 - dot(normal, lightDir));
-
-  float samples = 4.0;
-  float offset = 0.1;
-  for(float x = -offset; x < offset; x += offset / (samples * 0.5))
-  {
-    for(float y = -offset; y < offset; y += offset / (samples * 0.5))
-    {
-      for(float z = -offset; z < offset; z += offset / (samples * 0.5))
-      {
-        float closestDepth = texture(depthMap, fragToLight + vec3(x, y, z)).r; // use lightdir to lookup cubemap
-        closestDepth *= far_plane;   // Undo mapping [0;1]
-        if(currentDepth - bias > closestDepth)
-          shadow += 1.0;
-      }
-    }
-  }
-  shadow /= (samples * samples * samples);
-
-/*
   int samples = 20;
-  float diskRadius = mix(0.01, 0.12, currentDepth / far_plane);
 
   for (int i = 0; i < samples; ++i)
   {
     vec3 sampleDir = normalize(fragToLight + gridSamplingDisk[i] * diskRadius);
-    float closestDepth = texture(depthMap, sampleDir).r * far_plane;
+    float closestDepth = texture(depthMap, sampleDir).r;
+    closestDepth *= far_plane;
+
     if (currentDepth - bias > closestDepth)
       shadow += 1.0;
   }
-  shadow /= float(samples);
-  */
 
+  shadow /= float(samples);
 
   return shadow;
 }

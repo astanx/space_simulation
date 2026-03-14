@@ -76,6 +76,8 @@ void Application::initOpenGLSettings()
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
@@ -126,6 +128,7 @@ Application::Application(
   this->resourceManager.LoadShader(Res::BLOOM_SHADER, this->GLmajor, this->GLminor, "assets/shaders/bloom/vertex.glsl", "assets/shaders/bloom/fragment.glsl");
   this->resourceManager.LoadShader(Res::BLUR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/vertex.glsl", "assets/shaders/blur/fragment.glsl");
   this->resourceManager.LoadShader(Res::CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/cubemap/vertex.glsl", "assets/shaders/cubemap/fragment.glsl");
+  this->resourceManager.LoadShader(Res::CONVOLUTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/convolution/vertex.glsl", "assets/shaders/convolution/fragment.glsl");
 
   loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, sunMaterial, 1.2e5f);
   loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
@@ -246,6 +249,14 @@ void Application::processInput()
   if (this->input.isKeyPressed(GLFW_KEY_H))
   {
     this->useHDR = !this->useHDR;
+  }
+  if (this->input.isKeyPressed(GLFW_KEY_P))
+  {
+    const glm::vec3 position = this->scene.getActiveCameraPosition();
+    Logger::logInfo("Application", "Camera position: " +
+        std::to_string(position.x) + ", " +
+        std::to_string(position.y) + ", " +
+        std::to_string(position.z));
   }
 
   if (this->input.isKeyPressed(GLFW_KEY_ENTER))

@@ -15,7 +15,7 @@ private:
   static GLenum getBindingEnumForTarget(GLenum target);
 
 public:
-  explicit ScopedTexture(const Texture &texture, GLint unit, bool saveState = false);
-  explicit ScopedTexture(GLuint id, GLenum target, GLint unit, bool saveState = false);
+  explicit ScopedTexture(const Texture &texture, GLint unit = -1, bool saveState = false);
+  explicit ScopedTexture(GLuint id, GLenum target, GLint unit = -1, bool saveState = false);
   ~ScopedTexture();
 };
