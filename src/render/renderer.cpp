@@ -118,12 +118,18 @@ void Renderer::renderAsteroidSystems(Scene &scene)
 
   GLuint &asteroidID = asteroidShader.getId();
 
+  const Skybox &skybox = scene.getActiveSkybox();
+
   ScopedShader asteroid(asteroidID);
 
   this->shadowManager->bindPointShadow(asteroidShader);
 
+  skybox.bindIrradianceMap(asteroidShader);
+
   for (const AsteroidSystem *asteroidSystem : scene.getAsteroidSystems())
     asteroidSystem->render(asteroidShader);
+
+  skybox.unbindIrradianceMap();
 }
 
 void Renderer::renderObjects(Scene &scene)
@@ -132,13 +138,19 @@ void Renderer::renderObjects(Scene &scene)
 
   GLuint &coreID = coreShader.getId();
 
+  const Skybox &skybox = scene.getActiveSkybox();
+
   ScopedShader core(coreID);
 
   this->shadowManager->bindPointShadow(coreShader);
 
+  skybox.bindIrradianceMap(coreShader);
+
   // Render all objects
   for (const Object *object : scene.getObjects())
     object->render(coreShader);
+
+  skybox.unbindIrradianceMap();
 }
 void Renderer::renderTrails(Scene &scene)
 {
@@ -211,8 +223,10 @@ void Renderer::renderPointShadow(Scene &scene)
 
   GLuint &pointShadowID = pointShadowShader.getId();
 
+  float one = 1.0f;
+
   glClearDepth(1.0);
-  glClear(GL_DEPTH_BUFFER_BIT);
+  glClearBufferfv(GL_DEPTH, 0, &one);
 
   ScopedShader pointShadowSd(pointShadowID);
   ScopedCullFace cullFace(GL_FRONT);
@@ -222,14 +236,12 @@ void Renderer::renderPointShadow(Scene &scene)
 
 void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, bool useFramebuffer)
 {
-  std::optional<ScopedBlending> blendingDisabled;
+  ScopedBlending blendingDisabled(false);
   std::optional<ScopedFramebuffer> framebufferScope;
 
   if (useFramebuffer)
-  {
-    blendingDisabled.emplace(false);
     framebufferScope.emplace(framebuffer, GL_FRAMEBUFFER);
-  }
+
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -264,7 +276,7 @@ void Renderer::init(Scene &scene)
   if (directionalLight)
     this->shadowManager->addDirShadow(std::make_unique<DirectionalShadow>(this->shadowRes, this->shadowRes));
 
-    // Multiple-lights(not supported on opengl < 4.2)
+  // Multiple-lights(not supported on opengl < 4.2)
   // this->initShaderBuffer(&this->lightManager->getPointSSBO(), sizeof(PointLightGPU) * this->pointLights.size(), GL_SHADER_STORAGE_BUFFER);
   if (!pointLights.empty())
   {

@@ -38,7 +38,8 @@ ScopedTexture::ScopedTexture(const Texture &texture, GLint unit, bool saveState)
   if (saveState)
     glGetIntegerv(GL_ACTIVE_TEXTURE, &this->prevActiveTexture);
 
-  texture.activate(unit);
+  if (unit != -1)
+    texture.activate(unit);
 
   if (saveState)
   {
@@ -56,11 +57,11 @@ ScopedTexture::ScopedTexture(GLuint id, GLenum target, GLint unit, bool saveStat
   if (saveState)
     glGetIntegerv(GL_ACTIVE_TEXTURE, &this->prevActiveTexture);
 
-  glActiveTexture(GL_TEXTURE0 + unit);
+  if (unit != -1)
+    glActiveTexture(GL_TEXTURE0 + unit);
 
   if (saveState)
   {
-
     GLenum bindingEnum = this->getBindingEnumForTarget(this->target);
     glGetIntegerv(bindingEnum, &this->prevTexture);
   }
@@ -70,7 +71,9 @@ ScopedTexture::ScopedTexture(GLuint id, GLenum target, GLint unit, bool saveStat
 
 ScopedTexture::~ScopedTexture()
 {
-  glActiveTexture(GL_TEXTURE0 + this->unit);
+  if (unit != -1)
+    glActiveTexture(GL_TEXTURE0 + this->unit);
+  
   glBindTexture(this->target, this->prevTexture);
 
   glActiveTexture(this->prevActiveTexture);

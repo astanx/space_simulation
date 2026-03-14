@@ -18,7 +18,7 @@ struct PBRPointLight
   vec2 _pad2;
 };
 
-vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial material, PBRPointLight light)
+vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial material, PBRPointLight light, float shadow, samplerCube irradianceMap)
 {
   vec3 albedo = getAlbedo(material, texcoord);
   float roughness = getRoughness(material, texcoord);
@@ -34,14 +34,13 @@ vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial
 
   // calculate per-light radiance
   vec3 toLight = light.position - position;
-  vec3 L = normalize(toLight + 1e-4 * N);
-  vec3 H = normalize(V + L);
-  float distance    = length(light.position - position);
-  
-  /*if (distance > light.radius)
-    continue; */
+  float distance = length(toLight);
+  //if (distance > light.radius) return vec4(0.0);
 
-  float intensity = light.luminosity / (4 * PI * distance * distance);
+  vec3 L = normalize(toLight);
+  vec3 H = normalize(V + L);
+
+  float intensity = light.luminosity / (4.0 * PI * distance * distance);
 
   vec3 radiance = light.color * intensity;        
         
@@ -61,11 +60,17 @@ vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial
   // add to outgoing radiance Lo
   float NdotL = max(dot(N, L), 0.0);                
   Lo += (kD * albedo / PI + specular) * radiance * NdotL; 
+
+  Lo *= (1.0 - shadow);
   
   vec3 emissive = albedo * material.emissiveStrength;
 
-  vec3 color = Lo + emissive;
+  vec3 irradiance = texture(irradianceMap, N).rgb;
+  vec3 diffuse = irradiance * albedo;
+  vec3 ambient = (kD * diffuse) * ao;
   
+  vec3 color = ambient + Lo + emissive;
+
   return vec4(color, 1.0);
 }
 
