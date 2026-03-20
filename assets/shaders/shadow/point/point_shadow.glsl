@@ -94,7 +94,7 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_p
   vec3 fragToLight = pos - lightPos.xyz;
   float currentDepth = length(fragToLight);
 
-  if (currentDepth < 0.0001)
+  if (currentDepth > far_plane)
     return 0.0;
 
   vec3 lightDir = normalize(lightPos.xyz - pos);

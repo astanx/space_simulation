@@ -229,7 +229,7 @@ void Renderer::renderPointShadow(Scene &scene)
   glClearBufferfv(GL_DEPTH, 0, &one);
 
   ScopedShader pointShadowSd(pointShadowID);
-  ScopedCullFace cullFace(GL_FRONT);
+  // ScopedCullFace cullFace(GL_FRONT);
 
   this->renderShadowMap(scene, pointShadowShader);
 }
