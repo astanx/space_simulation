@@ -170,7 +170,7 @@ void Scene::init()
   //     glm::vec3(1.0f), 1.f);
   // this->addDirLight(std::move(dirLight));
 
-  std::unique_ptr<Camera> cam = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f),
+  std::unique_ptr<Camera> cam = std::make_unique<Camera>(sunPos,
                                                          glm::vec3(0.0f, 0.0f, -1.0f),
                                                          glm::vec3(0.0f, 1.0f, 0.0f));
 

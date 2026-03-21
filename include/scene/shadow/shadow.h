@@ -24,9 +24,10 @@ public:
   Shadow(const GLuint width, const GLuint height);
   virtual ~Shadow() = default;
 
-  virtual void bind(Shader &shader, int textureUnit) const = 0;
+  virtual void bind(Shader &shader, int textureUnit, const std::string &name = "") const = 0;
 
   GLuint getShadowWidth() const { return this->shadowWidth; }
   GLuint getShadowHeight() const { return this->shadowHeight; }
   const Framebuffer &getShadowFramebuffer() const { return *this->shadowMapFBO; }
+  const Texture &getShadowMapTexture() const { return *this->shadowMapTexture; }
 };

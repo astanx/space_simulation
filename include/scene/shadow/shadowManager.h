@@ -74,8 +74,8 @@ public:
   void bindDirShadowUBO();
   void bindPointShadowUBO();
 
-  void bindDirShadow(Shader &shader);
-  void bindPointShadow(Shader &shader);
+  void bindDirShadow(Shader &shader, const std::string &name = "");
+  void bindPointShadow(Shader &shader, const std::string &name = "");
 
   DirectionalShadow *getDirShadow() const;
   PointShadow *getPointShadow() const;
