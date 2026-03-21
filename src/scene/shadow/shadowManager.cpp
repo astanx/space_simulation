@@ -227,6 +227,16 @@ void ShadowManager::bindPointShadow(Shader &shader, const std::string &name)
   this->pointShadow->bind(shader, TextureBindingPoints::PointShadow, name);
 }
 
+void ShadowManager::bindPointShadowDepth(Shader &shader, const std::string &name)
+{
+  assert(this->pointShadow && "[Shadow manager] ASSERT: No point shadow to bind depth");
+
+  if (!this->pointShadow)
+    return;
+
+  this->pointShadow->bindDepth(shader, TextureBindingPoints::PointShadow, name);
+}
+
 // Setters
 void ShadowManager::addDirShadow(std::unique_ptr<DirectionalShadow> shadow)
 {

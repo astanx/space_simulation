@@ -27,6 +27,7 @@ uniform PBRMaterial pbrMaterial;
 uniform bool useTBN;
 
 uniform samplerCube depthMap;
+uniform samplerCube esmMap;
 uniform samplerCube irradianceMap;
 
 void main()
@@ -53,7 +54,7 @@ void main()
 
   vec3 albedo = getAlbedo(pbrMaterial, fs_in.vs_texcoord);
 
-  float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, far_plane, fs_in.vs_normal);
+  float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, esmMap, far_plane, fs_in.vs_normal);
 
   vec4 point = CalcPBRPointLight(normal, position, viewDir, fs_in.vs_texcoord, pbrMaterial, localPointLight, shadow, irradianceMap);
  

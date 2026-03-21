@@ -76,6 +76,7 @@ public:
 
   void bindDirShadow(Shader &shader, const std::string &name = "");
   void bindPointShadow(Shader &shader, const std::string &name = "");
+  void bindPointShadowDepth(Shader &shader, const std::string &name = "");
 
   DirectionalShadow *getDirShadow() const;
   PointShadow *getPointShadow() const;
