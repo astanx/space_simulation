@@ -2,6 +2,7 @@
 
 #include "render/textRenderer.h"
 #include "render/postProcess.h"
+#include "render/gaussianBlur.h"
 
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
@@ -27,6 +28,7 @@ private:
   ResourceManager &resourceManager;
   TextRenderer textRenderer;
   PostProcess postProcess;
+  GaussianBlur blur;
 
   unsigned int cameraUBO;
 

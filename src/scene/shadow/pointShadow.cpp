@@ -53,9 +53,11 @@ PointShadow::PointShadow(const GLuint width, const GLuint height, glm::vec3 ligh
 };
 
 // Public functions
-void PointShadow::bind(Shader &shader, int textureUnit) const
+void PointShadow::bind(Shader &shader, int textureUnit, const std::string& name) const
 {
+  const std::string& finalName = name.empty() ? "depthMap" : name;
+
   this->shadowMapTexture->activate(textureUnit);
   this->shadowMapTexture->bind();
-  shader.set1i(textureUnit, "depthMap");
+  shader.set1i(textureUnit, finalName);
 }

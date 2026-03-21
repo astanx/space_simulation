@@ -135,6 +135,7 @@ add_executable(Space
     src/render/renderer.cpp
     src/render/textRenderer.cpp
     src/render/postProcess.cpp
+    src/render/gaussianBlur.cpp
     
     # Resources
     src/resources/OBJloader.cpp
@@ -156,7 +157,6 @@ add_executable(Space
     # Maths
     src/maths/rk4.cpp
     src/maths/random.cpp
-    src/maths/gaussian.cpp
     
     # Debug
     src/debug/logger.cpp

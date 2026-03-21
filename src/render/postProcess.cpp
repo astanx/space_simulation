@@ -3,8 +3,6 @@
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
 
-#include "maths/gaussian.h"
-
 #include "graphics/shader.h"
 
 #include "graphics/primitives/quad.h"
@@ -31,38 +29,14 @@ void PostProcess::renderFullscreenQuad(bool useBloom)
 
   std::optional<ScopedTexture> bloom;
   if (useBloom)
-    bloom.emplace(*this->finalBloomTexture, TextureBindingPoints::BloomBlur);
+    bloom.emplace(*this->blur.getFinalTexture(), TextureBindingPoints::Bloom);
 
   hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
-  hdrShader.set1i(TextureBindingPoints::BloomBlur, "bloomBlur");
+  hdrShader.set1i(TextureBindingPoints::Bloom, "bloomBlur");
   hdrShader.set1f(5e-3f, "exposure");
   hdrShader.set1f(0.22f, "bloomPower");
 
-  this->fullscreenQuad->render();
-}
-
-void PostProcess::initBloom()
-{
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-
-  float width = static_cast<float>(viewport[2]);
-  float height = static_cast<float>(viewport[3]);
-
-  for (unsigned int i = 0; i < 2; i++)
-  {
-    this->pingpongFBOs[i] = std::make_unique<Framebuffer>();
-
-    ScopedFramebuffer pingpong(*this->pingpongFBOs[i], GL_FRAMEBUFFER, true);
-
-    this->pingpongBuffers[i] = std::make_unique<Texture>(width, height, GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA, GL_FLOAT);
-
-    this->pingpongFBOs[i]->attachTexture2D(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->pingpongBuffers[i]->getId(), 0);
-
-    this->pingpongFBOs[i]->checkComplete();
-  }
-
-  this->finalBloomTexture = this->pingpongBuffers[0].get();
+  this->blur.renderFullscreenQuad();
 }
 
 void PostProcess::initHDR()
@@ -92,15 +66,11 @@ void PostProcess::initHDR()
 
     this->hdrFBO->checkComplete();
   }
-
-  std::unique_ptr<Quad> obj = std::make_unique<Quad>();
-
-  this->fullscreenQuad = std::make_unique<Mesh>(std::move(obj), VertexLayout::PositionTexcoord);
 }
 
 void PostProcess::renderBloom()
 {
-  ScopedFramebuffer pingpong(*this->pingpongFBOs[0], GL_FRAMEBUFFER);
+  ScopedFramebuffer pingpong(*this->blur.getPingPongFBO(0), GL_FRAMEBUFFER);
   glClear(GL_COLOR_BUFFER_BIT);
 
   Shader &bloomShader = this->resourceManager.GetShader(Res::BLOOM_SHADER);
@@ -112,62 +82,18 @@ void PostProcess::renderBloom()
   bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
   bloomShader.set1f(1.f, "threshold");
 
-  this->fullscreenQuad->render();
-}
-
-void PostProcess::blurBloom()
-{
-  bool horizontal = true, first_iteration = true;
-  int amount = 5;
-
-  Shader &blurShader = this->resourceManager.GetShader(Res::BLUR_SHADER);
-
-  ScopedShader blur(blurShader);
-
-  this->sendWeights(blurShader);
-
-  for (unsigned int i = 0; i < amount; i++)
-  {
-    ScopedFramebuffer pingpong(*this->pingpongFBOs[horizontal], GL_FRAMEBUFFER, true);
-
-    std::unique_ptr<ScopedTexture> pingpongBuffScope;
-
-    if (first_iteration)
-      pingpongBuffScope = std::make_unique<ScopedTexture>(*this->pingpongBuffers[0], TextureBindingPoints::BloomBlur);
-    else
-      pingpongBuffScope = std::make_unique<ScopedTexture>(*this->pingpongBuffers[!horizontal], TextureBindingPoints::BloomBlur);
-
-    blurShader.set1i(horizontal, "horizontal");
-    blurShader.set1i(TextureBindingPoints::BloomBlur, "image");
-
-    this->fullscreenQuad->render();
-
-    horizontal = !horizontal;
-    if (first_iteration)
-      first_iteration = false;
-  }
-
-  this->finalBloomTexture = pingpongBuffers[horizontal].get();
-}
-
-void PostProcess::sendWeights(Shader &shader)
-{
-  shader.set1i(this->weights.size(), "kernel_size");
-
-  shader.setVec1f(this->weights.data(), this->weights.size(), "weight");
+  this->blur.renderFullscreenQuad();
 }
 
 // Constructor
-PostProcess::PostProcess(ResourceManager &resourceManager) : resourceManager(resourceManager)
+PostProcess::PostProcess(ResourceManager &resourceManager) : resourceManager(resourceManager), blur(resourceManager)
 {
-  // Max kernel_size - 40
-  this->weights = createGaussianBlurWeights(4, 4.f);
 }
 
 void PostProcess::init()
 {
-  this->initBloom();
   this->initHDR();
+  this->blur.init(4, 4.f);
 }
 
 void PostProcess::process(bool useBloom)
@@ -175,7 +101,7 @@ void PostProcess::process(bool useBloom)
   if (useBloom)
   {
     this->renderBloom();
-    this->blurBloom();
+    this->blur.blur(*this->blur.getPingPongBuffer(0), 5);
   }
 
   this->renderFullscreenQuad(useBloom);

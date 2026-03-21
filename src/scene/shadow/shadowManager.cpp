@@ -208,23 +208,23 @@ void ShadowManager::bindPointShadowUBO()
   this->pointUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::PointShadow);
 }
 
-void ShadowManager::bindDirShadow(Shader &shader)
+void ShadowManager::bindDirShadow(Shader &shader, const std::string &name)
 {
   assert(this->directionalShadow && "[Shadow manager] ASSERT: No directional shadow to bind");
 
   if (!this->directionalShadow)
     return;
 
-  this->directionalShadow->bind(shader, TextureBindingPoints::DirectionalShadow);
+  this->directionalShadow->bind(shader, TextureBindingPoints::DirectionalShadow, name);
 }
-void ShadowManager::bindPointShadow(Shader &shader)
+void ShadowManager::bindPointShadow(Shader &shader, const std::string &name)
 {
   assert(this->pointShadow && "[Shadow manager] ASSERT: No point shadow to bind");
 
   if (!this->pointShadow)
     return;
 
-  this->pointShadow->bind(shader, TextureBindingPoints::PointShadow);
+  this->pointShadow->bind(shader, TextureBindingPoints::PointShadow, name);
 }
 
 // Setters

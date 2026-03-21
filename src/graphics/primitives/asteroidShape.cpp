@@ -14,7 +14,7 @@ double AsteroidShape::calculateR(double angle, double m, double a, double b, dou
 }
 
 // Constructor
-AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3)
+AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3, double scale)
     : Primitive()
 {
   std::vector<Vertex> vertices;
@@ -36,6 +36,8 @@ AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, doubl
       double z = r * std::cos(phi);
 
       glm::vec3 pos(x, y, z);
+      pos *= scale;
+      
       glm::vec3 normal = glm::normalize(pos);
 
       vertices.push_back(Vertex{

@@ -232,6 +232,9 @@ void Renderer::renderPointShadow(Scene &scene)
   // ScopedCullFace cullFace(GL_FRONT);
 
   this->renderShadowMap(scene, pointShadowShader);
+
+  // For ESM
+  // this->blur.blur(this->shadowManager->getPointShadow()->getShadowMapTexture(), 5);
 }
 
 void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, bool useFramebuffer)
@@ -260,7 +263,7 @@ void Renderer::blitDepthToDefault(const Framebuffer &framebuffer)
 }
 
 // Constructor
-Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager), postProcess(resourceManager) {}
+Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager), postProcess(resourceManager), blur(resourceManager) {}
 
 // Public functions
 void Renderer::init(Scene &scene)
@@ -269,6 +272,7 @@ void Renderer::init(Scene &scene)
   this->shadowManager = std::make_unique<ShadowManager>(scene);
 
   this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
+  this->blur.init(4, 4.f);
 
   const DirectionalLight *directionalLight = scene.getDirLight();
   const std::vector<PointLight *> &pointLights = scene.getPointLights();

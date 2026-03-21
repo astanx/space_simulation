@@ -38,6 +38,7 @@ const KeplerElements MAXIMUM_ASTEROID_ELEMENTS(
 // VISUAL SCALING
 const double VISUAL_SCALE = 1e-8;
 const double VISUAL_RADIUS_SCALE = VISUAL_SCALE * 40.0;
+const double VISUAL_ASTEROID_SCALE = 3e-5;
 
 // Precision
 const double EPS = 1e-6;

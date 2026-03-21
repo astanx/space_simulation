@@ -11,5 +11,5 @@ public:
   DirectionalShadow(const GLuint width, const GLuint height);
   ~DirectionalShadow() = default;
 
-  void bind(Shader &shader, int textureUnit) const override;
+  void bind(Shader &shader, int textureUnit, const std::string& name = "directionalShadowMap") const override;
 };
