@@ -88,23 +88,8 @@ vec3 gridSamplingDisk[20] = vec3[](
   vec3(-0.0550, -0.0627, -0.3161)
 );
 
-
-float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_plane, vec3 normal)
+float CalcPointShadowPCF(vec3 fragToLight, float currentDepth, samplerCube depthMap, float far_plane, float bias)
 {
-  vec3 fragToLight = pos - lightPos.xyz;
-  float currentDepth = length(fragToLight);
-
-  if (currentDepth > far_plane)
-    return 0.0;
-
-  vec3 lightDir = normalize(lightPos.xyz - pos);
-
-  // backface optimization
-  if (dot(normal, lightDir) <= 0.0)
-    return 0.0;
-
-  float bias = max(0.003 * (1.0 - dot(normal, lightDir)), 0.0005);
-
   // distance-based filter radius
   float viewDistance = currentDepth / far_plane;
   float diskRadius = mix(0.01, 0.12, viewDistance);
@@ -124,8 +109,34 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, float far_p
 
   shadow /= float(samples);
 
-  return shadow;
+  return 1.0 - shadow;
 }
 
+float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, samplerCube esmMap, float far_plane, vec3 normal)
+{
+  vec3 fragToLight = pos - lightPos.xyz;
+  float currentDepth = length(fragToLight);
+
+  if (currentDepth > far_plane)
+    return 1.0;
+
+  float c = 40.0;
+
+  vec3 dir = normalize(fragToLight);
+
+  float filtered = texture(esmMap, dir).r;
+
+  float currentDepthNorm = currentDepth / far_plane;
+
+  float esm = exp(-c * currentDepthNorm) * filtered;
+
+  float bias = max(0.003 * (1.0 - dot(normal, normalize(fragToLight))), 0.0005);
+
+  if (esm - 0.08 > 1.0)
+    return 1.0;
+    //return CalcPointShadowPCF(fragToLight, currentDepth, depthMap, far_plane, bias);
+  
+  return clamp(esm, 0.0, 1.0);
+}
 
 #endif

@@ -123,6 +123,7 @@ void Renderer::renderAsteroidSystems(Scene &scene)
   ScopedShader asteroid(asteroidID);
 
   this->shadowManager->bindPointShadow(asteroidShader);
+  this->shadowManager->bindPointShadowDepth(asteroidShader);
 
   skybox.bindIrradianceMap(asteroidShader);
 
@@ -143,6 +144,7 @@ void Renderer::renderObjects(Scene &scene)
   ScopedShader core(coreID);
 
   this->shadowManager->bindPointShadow(coreShader);
+  this->shadowManager->bindPointShadowDepth(coreShader);
 
   skybox.bindIrradianceMap(coreShader);
 
@@ -223,10 +225,7 @@ void Renderer::renderPointShadow(Scene &scene)
 
   GLuint &pointShadowID = pointShadowShader.getId();
 
-  float one = 1.0f;
-
-  glClearDepth(1.0);
-  glClearBufferfv(GL_DEPTH, 0, &one);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   ScopedShader pointShadowSd(pointShadowID);
   // ScopedCullFace cullFace(GL_FRONT);
@@ -234,7 +233,13 @@ void Renderer::renderPointShadow(Scene &scene)
   this->renderShadowMap(scene, pointShadowShader);
 
   // For ESM
-  // this->blur.blur(this->shadowManager->getPointShadow()->getShadowMapTexture(), 5);
+  this->blur.blur(this->shadowManager->getPointShadow()->getShadowMapTexture(), 5);
+
+  {
+    ScopedTexture esm(this->shadowManager->getPointShadow()->getShadowMapTexture());
+
+    GL_CALL(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));
+  }
 }
 
 void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, bool useFramebuffer)

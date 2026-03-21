@@ -14,13 +14,19 @@ protected:
   float farPlane;
   float aspectRatio;
 
+  std::unique_ptr<Texture> depthTexture;
+
   void init() override;
+  void initShadowMap();
+  void initDepthTexture();
+  void initFBO();
 
 public:
   PointShadow(const GLuint width, const GLuint height, glm::vec3 lightPos, float nearPlane, float farPlane);
   ~PointShadow() = default;
 
-  void bind(Shader &shader, int textureUnit, const std::string& name = "depthMap") const override;
+  void bind(Shader &shader, int textureUnit, const std::string &name = "esmMap") const override;
+  void bindDepth(Shader &shader, int textureUnit, const std::string &name = "depthMap") const;
 
   glm::vec3 getLightPos() const { return this->lightPos; };
   float getNearPlane() const { return this->nearPlane; };

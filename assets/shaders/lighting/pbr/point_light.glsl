@@ -61,7 +61,7 @@ vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial
   float NdotL = max(dot(N, L), 0.0);                
   Lo += (kD * albedo / PI + specular) * radiance * NdotL; 
 
-  Lo *= (1.0 - shadow);
+  Lo *= shadow;
   
   vec3 emissive = albedo * material.emissiveStrength;
 
