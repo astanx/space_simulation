@@ -126,7 +126,8 @@ Application::Application(
   this->resourceManager.LoadShader(Res::TEXT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
   this->resourceManager.LoadShader(Res::HDR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/hdr/vertex.glsl", "assets/shaders/hdr/fragment.glsl");
   this->resourceManager.LoadShader(Res::BLOOM_SHADER, this->GLmajor, this->GLminor, "assets/shaders/bloom/vertex.glsl", "assets/shaders/bloom/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLUR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/vertex.glsl", "assets/shaders/blur/fragment.glsl");
+  this->resourceManager.LoadShader(Res::BLUR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/texture/vertex.glsl", "assets/shaders/blur/texture/fragment.glsl");
+  this->resourceManager.LoadShader(Res::BLUR_CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/cubemap/vertex.glsl", "assets/shaders/blur/cubemap/fragment.glsl", "assets/shaders/blur/cubemap/geometry.glsl");
   this->resourceManager.LoadShader(Res::CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/cubemap/vertex.glsl", "assets/shaders/cubemap/fragment.glsl");
   this->resourceManager.LoadShader(Res::CONVOLUTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/convolution/vertex.glsl", "assets/shaders/convolution/fragment.glsl");
 

@@ -24,7 +24,8 @@ private:
   std::unique_ptr<Framebuffer> pingpongFBOs[2];
   std::unique_ptr<Texture> pingpongBuffers[2];
 
-  void initBuffers();
+  void initBuffersFor2D();
+  void initBuffersForCubemap(int resolution = 1024);
   void sendWeights(Shader &shader);
 
   float gaussian(float x, float mean, float stddev);
@@ -33,11 +34,11 @@ private:
 public:
   GaussianBlur(ResourceManager &resourceManager);
 
-  void init(size_t kernelSize, float stddev);
+  void init(size_t kernelSize, float stddev, bool isCube = false, int cubemapResolution = 1024);
 
   ~GaussianBlur() = default;
 
-  void blur(const Texture &source, size_t amount);
+  void blur(const Texture &source, size_t amount, bool isCube = false);
   
   void renderFullscreenQuad() { this->fullscreenQuad->render(); };
   Framebuffer *getPingPongFBO(size_t index) { return this->pingpongFBOs[index].get(); };

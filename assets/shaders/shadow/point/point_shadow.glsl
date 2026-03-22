@@ -65,50 +65,68 @@ void calcShadowMatrices(out mat4 shadowMatrices[6], in mat4 shadowProj[6], in ma
 }
 */
 
-vec3 gridSamplingDisk[20] = vec3[](
-  vec3(0.5381, 0.1856, -0.4319),
-  vec3(0.1379, 0.2486, 0.4430),
-  vec3(0.3371, 0.5679, -0.0057),
-  vec3(-0.6999, -0.0451, -0.0019),
-  vec3(0.0689, -0.1598, -0.8547),
-  vec3(0.0560, 0.0069, -0.1843),
-  vec3(-0.0146, 0.1402, 0.0762),
-  vec3(0.0100, -0.1924, -0.0344),
-  vec3(-0.3577, -0.5301, -0.4358),
-  vec3(-0.3169, 0.1063, 0.0158),
-  vec3(0.0103, -0.5869, 0.0046),
-  vec3(-0.0897, -0.4940, 0.3287),
-  vec3(0.7119, -0.0154, -0.0918),
-  vec3(-0.0533, 0.0596, -0.5411),
-  vec3(0.0352, -0.0631, 0.5460),
-  vec3(-0.4776, 0.2847, -0.0271),
-  vec3(-0.0795, 0.3185, 0.2123),
-  vec3(0.2924, -0.3127, -0.1760),
-  vec3(-0.1400, -0.1346, 0.2555),
-  vec3(-0.0550, -0.0627, -0.3161)
+const vec3 poissonDisk[32] = vec3[](
+    vec3(-0.94201624, -0.39906216,  0.00000000),
+    vec3( 0.94558609, -0.76890725,  0.00000000),
+    vec3(-0.09418410, -0.92938870,  0.00000000),
+    vec3( 0.34495938,  0.29387760,  0.00000000),
+    vec3(-0.91588581,  0.45771432,  0.00000000),
+    vec3(-0.81544232, -0.87912464,  0.00000000),
+    vec3(-0.38277543,  0.27676845,  0.00000000),
+    vec3( 0.97484398,  0.75648379,  0.00000000),
+    vec3( 0.44323325, -0.97511554,  0.00000000),
+    vec3( 0.53742981, -0.47373420,  0.00000000),
+    vec3(-0.26496911, -0.41893023,  0.00000000),
+    vec3( 0.79197514,  0.19090188,  0.00000000),
+    vec3(-0.24188840,  0.99706507,  0.00000000),
+    vec3(-0.81409955,  0.91437590,  0.00000000),
+    vec3( 0.19984126,  0.78641367,  0.00000000),
+    vec3( 0.14383161, -0.14100713,  0.00000000),
+    vec3(-0.10107862, -0.83720547,  0.00000000),
+    vec3(-0.68820405,  0.18308620,  0.00000000),
+    vec3( 0.56770492, -0.60564148,  0.00000000),
+    vec3( 0.06332600,  0.14236932,  0.00000000),
+    vec3( 0.32430196, -0.01524240,  0.00000000),
+    vec3(-0.78014514, -0.48625138,  0.00000000),
+    vec3(-0.37186815,  0.88213818,  0.00000000),
+    vec3( 0.20047664,  0.49443019,  0.00000000),
+    vec3(-0.49455280,  0.06961672,  0.00000000),
+    vec3( 0.60561586,  0.19282341,  0.00000000),
+    vec3(-0.24124980, -0.07487576,  0.00000000),
+    vec3(-0.39065485, -0.03535364,  0.00000000),
+    vec3(-0.54979134, -0.28775349,  0.00000000),
+    vec3( 0.84791017, -0.21286947,  0.00000000),
+    vec3(-0.05099079, -0.42224942,  0.00000000),
+    vec3(-0.65938362,  0.61538874,  0.00000000)
 );
 
-float CalcPointShadowPCF(vec3 fragToLight, float currentDepth, samplerCube depthMap, float far_plane, float bias)
+float CalcPointShadowPCF(vec3 fragToLight, float currentDepth, samplerCube depthMap, float far_plane, vec3 normal)
 {
-  // distance-based filter radius
-  float viewDistance = currentDepth / far_plane;
-  float diskRadius = mix(0.01, 0.12, viewDistance);
-
   float shadow = 0.0;
-  int samples = 20;
+  const int samples = 32;
+
+  float viewDistance = currentDepth / far_plane;
+  float diskRadius   = mix(0.22, 3.1, viewDistance);
+
+  float bias = 0.0025 + 0.038 * (1.0 - dot(normal, normalize(fragToLight)));
 
   for (int i = 0; i < samples; ++i)
   {
-    vec3 sampleDir = normalize(fragToLight + gridSamplingDisk[i] * diskRadius);
-    float closestDepth = texture(depthMap, sampleDir).r;
-    closestDepth *= far_plane;
+    float angle = fract(sin(dot(gl_FragCoord.xy + float(i)*vec2(17.3, 59.1), vec2(12.9898, 78.233))) * 43758.5453) * 6.2831853;
+
+    vec3 offset = poissonDisk[i] * diskRadius;
+    float s = sin(angle);
+    float c = cos(angle);
+    vec2 rotated = mat2(c, -s, s, c) * offset.xy;
+    offset = vec3(rotated, offset.z * 0.7);
+
+    vec3 sampleDir = normalize(fragToLight + offset);
+    float closestDepth = texture(depthMap, sampleDir).r * far_plane;
 
     if (currentDepth - bias > closestDepth)
       shadow += 1.0;
   }
-
   shadow /= float(samples);
-
   return 1.0 - shadow;
 }
 
@@ -130,11 +148,11 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, samplerCube
 
   float esm = exp(-c * currentDepthNorm) * filtered;
 
-  float bias = max(0.003 * (1.0 - dot(normal, normalize(fragToLight))), 0.0005);
-
-  if (esm - 0.08 > 1.0)
-    return 1.0;
-    //return CalcPointShadowPCF(fragToLight, currentDepth, depthMap, far_plane, bias);
+  if ((esm > 1.1f || esm < 0.0f) || true) // force pcf, as esm is not suitable
+  {
+    float bias = max(0.003 * (1.0 - dot(normal, normalize(fragToLight))), 0.0005);
+    return CalcPointShadowPCF(fragToLight, currentDepth, depthMap, far_plane, normal);
+  }
   
   return clamp(esm, 0.0, 1.0);
 }

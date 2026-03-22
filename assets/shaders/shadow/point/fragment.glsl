@@ -16,5 +16,5 @@ void main()
 
   float c = 40.0;
 
-  fs_color = exp(-c * lightDistance);
+  fs_color = exp(c * lightDistance);
 }

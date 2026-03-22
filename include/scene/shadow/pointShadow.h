@@ -33,5 +33,7 @@ public:
   float getFarPlane() const { return this->farPlane; };
   float getAspectRatio() const { return this->aspectRatio; };
 
+  const Texture &getDepthTexture() const { return *this->depthTexture; }
+
   void setLightPos(const glm::vec3 &pos) { this->lightPos = pos; };
 };
