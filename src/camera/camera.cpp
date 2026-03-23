@@ -26,7 +26,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp)
   float height = static_cast<float>(viewport[3]);
 
   this->mouseSensitivity = 0.2f;
-  this->movementSpeed = 250.5f;
+  this->movementSpeed = 4.5f;
 
   this->right = glm::normalize(glm::cross(this->front, this->worldUp));
 
@@ -39,8 +39,8 @@ Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp)
   this->lastY = static_cast<float>(height) / 2.f;
 
   this->fov = 45.f;
-  this->nearPlane = 0.1f;
-  this->farPlane = 20000.f;
+  this->nearPlane = 0.00001f;
+  this->farPlane = 500.f;
 
   this->updateCameraVectors();
 }
