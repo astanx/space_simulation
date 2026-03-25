@@ -7,9 +7,11 @@ struct Vertex;
 
 class Primitive
 {
-private:
+protected:
   std::vector<Vertex> vertices;
   std::vector<GLuint> indices;
+
+  void computeTangents(std::vector<Vertex> &vertices, const std::vector<GLuint> &indices);
 
 public:
   Primitive();

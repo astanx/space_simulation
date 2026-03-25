@@ -46,7 +46,7 @@ void main()
     vec3 T = normalize(normalMatrix * vertex_tangent.xyz);
 
     // Gram-Schmidt re-orthogonalization
-    T = normalize(T - dot(T, N) * N);
+    //T = normalize(T - dot(T, N) * N);
 
     vec3 B = cross(N, T) * vertex_tangent.w;
 
