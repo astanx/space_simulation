@@ -67,5 +67,7 @@ AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, doubl
     }
   }
 
-  set(vertices.data(), vertices.size(), indices.data(), indices.size());
+  this->computeTangents(vertices, indices);
+
+  this->set(vertices.data(), vertices.size(), indices.data(), indices.size());
 }

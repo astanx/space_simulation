@@ -15,4 +15,5 @@ AsteroidMaterial::AsteroidMaterial(Texture &diffuseTexture)
 void AsteroidMaterial::sendToShader(Shader &program)
 {
   this->sendTexture(this->diffuseTexture, program, TextureBindingPoints::Diffuse, "diffuseTexture");
+  this->sendTexture(this->diffuseTexture, program, TextureBindingPoints::Diffuse, "pbrMaterial.albedoMap");
 }

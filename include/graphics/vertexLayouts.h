@@ -42,9 +42,10 @@ constexpr std::array<VertexAttribute, 3> NO_COLOR = {{{0, 3, GL_FLOAT, GL_FALSE,
 
 constexpr std::array<VertexAttribute, 1> POSITION_ONLY = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)}}};
 
-constexpr std::array<VertexAttribute, 3> INSTANCED = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
+constexpr std::array<VertexAttribute, 4> INSTANCED = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
                                                        {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)},
-                                                       {2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal)}}};
+                                                       {2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal)},
+                                                       {3, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, tangent)}}};
 
 constexpr std::array<VertexAttribute, 2> POSITION_TEXCOORD = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
                                                                {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)}}};
