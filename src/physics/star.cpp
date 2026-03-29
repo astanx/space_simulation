@@ -5,9 +5,10 @@
 #include <graphics/model.h>
 
 // Constructor
-Star::Star(double mu, double radius, glm::dvec3 position, glm::dvec3 velocity) : Object(mu / G, radius, position, velocity)
+Star::Star(double mu, double radius, double luminosity, glm::dvec3 position, glm::dvec3 velocity) : Object(mu / G, radius, position, velocity)
 {
   this->mu = mu;
+  this->luminosity = luminosity;
 }
 
 // Public functions

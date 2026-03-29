@@ -56,6 +56,7 @@ const Radii sunRadii(
 		6.957e8,
 		6.957e8);
 const glm::dvec3 sunPos = glm::dvec3(0.0f, 0.0f, 0.0f);
+const double sunLuminosity = 3.826e26f;
 
 const PhongMaterialProperties sunMaterial(
 		glm::vec3(0.f),
@@ -143,6 +144,16 @@ const PhongMaterialProperties moonMaterial(
 		glm::vec3(0.55f),
 		glm::vec3(0.08f),
 		13);
+
+const HapkeParameters moonHapkeParameters(
+		0.1f, //
+		glm::radians(20.f),
+		0.05f,
+		0.8f,
+		0.01f,
+		0.2f,
+		-0.35f,
+		0.5f);
 
 // MARS
 const double marsMu = 4.2828372e13;

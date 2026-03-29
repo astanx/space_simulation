@@ -17,6 +17,7 @@ class ResourceManager;
 class ThreadPool;
 
 struct KeplerElements;
+struct HapkeParameters;
 
 struct CameraGPU
 {
@@ -72,10 +73,10 @@ public:
                        double radius, Object *centralBody, const KeplerElements keplerElements);
 
   Star *createStar(std::string name, std::string material_name, double mu,
-                   double radius, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
+                   double radius, double luminosity, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
 
   Moon *createMoon(std::string name, std::string material_name, double mu,
-                   double radius, Planet *centralBody, const KeplerElements keplerElements);
+                   double radius, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters);
 
   AsteroidSystem *createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge);
 

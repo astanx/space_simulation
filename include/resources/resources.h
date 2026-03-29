@@ -19,6 +19,7 @@ namespace Res
   const std::string BLUR_CUBEMAP_SHADER = "blur_cubemap";
   const std::string CUBEMAP_SHADER = "cubemap";
   const std::string CONVOLUTION_SHADER = "convolution";
+  const std::string REFLECTION_SHADER = "reflection";
 
   // Mesh
   const std::string CUBE_MESH = "cube";

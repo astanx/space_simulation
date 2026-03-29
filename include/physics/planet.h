@@ -23,6 +23,8 @@ public:
   void render(Shader &shader) const override;
   void addModel(std::unique_ptr<Model> m) override;
 
+  void renderMoonsRadiance(Shader &shader) const;
+
   void drift(double dt) override;
   void halfKick(const std::vector<Object *> &bodies, double dt) override;
 };

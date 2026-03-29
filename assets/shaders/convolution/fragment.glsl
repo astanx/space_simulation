@@ -1,11 +1,11 @@
 #version 410
 
+#include "constants/constants.glsl"
+
 out vec4 fs_color;
 in vec3 vs_pos;
 
 uniform samplerCube environmentMap;
-
-const float PI = 3.14159265359;
 
 void main()
 {		

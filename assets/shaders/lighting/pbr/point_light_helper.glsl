@@ -1,7 +1,7 @@
 #ifndef PBR_POINTLIGHT_HELPER_GLSL
 #define PBR_POINTLIGHT_HELPER_GLSL
 
-const float PI = 3.14159265359;
+#include "constants/constants.glsl"
 
 float distributionGGX(vec3 N, vec3 H, float roughness)
 {
