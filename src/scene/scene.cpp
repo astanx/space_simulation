@@ -84,13 +84,13 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
 }
 
 Star *Scene::createStar(std::string name, std::string material_name, double mu,
-                        double radius, glm::dvec3 position, glm::dvec3 velocity)
+                        double radius, double luminosity, glm::dvec3 position, glm::dvec3 velocity)
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
   std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
-  std::unique_ptr<Star> star = std::make_unique<Star>(mu, radius, position, velocity);
+  std::unique_ptr<Star> star = std::make_unique<Star>(mu, radius, luminosity, position, velocity);
 
   star->addModel(std::move(model));
 
@@ -102,13 +102,13 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 }
 
 Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
-                        double radius, Planet *centralBody, const KeplerElements keplerElements)
+                        double radius, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters)
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
   std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
-  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, keplerElements);
+  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, keplerElements, hapkeParameters);
 
   moon->addModel(std::move(model));
   if (moon->getUseTrail())
@@ -136,12 +136,12 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
 // Process functions
 void Scene::init()
 {
-  Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii.mean, sunPos);
+  Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii.mean, sunLuminosity * VISUAL_SCALE * VISUAL_SCALE, sunPos);
   this->sun = sunPtr;
   createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadii.mean, sunPtr, mercuryElements);
   createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii.mean, sunPtr, venusElements);
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii.mean, sunPtr, earthElements);
-  createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii.mean, earthPtr, moonElements);
+  createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii.mean, earthPtr, moonElements, moonHapkeParameters);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii.mean, sunPtr, marsElements);
   createAsteroidSystem(sunPtr, 20000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii.mean, sunPtr, jupiterElements);
@@ -159,7 +159,7 @@ void Scene::init()
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
       this->sun->getRenderPosition(),
       glm::vec3(1.0f),
-      3.826e26f * VISUAL_SCALE * VISUAL_SCALE, // sun luminosity
+      sunLuminosity * VISUAL_SCALE * VISUAL_SCALE,
       1.f);
   this->addPointLight(std::move(pointLight));
 

@@ -2,6 +2,7 @@
 
 #include "physics/structs/keplerElements.h"
 #include "physics/structs/materialProperties.h"
+#include "physics/structs/hapkeParameters.h"
 #include "physics/structs/radii.h"
 
 #include <glm/glm.hpp>
@@ -24,6 +25,7 @@ extern const double uranusMu;
 extern const double neptuneMu;
 
 extern const glm::dvec3 sunPos;
+extern const double sunLuminosity;
 
 extern const KeplerElements mercuryElements;
 extern const KeplerElements venusElements;
@@ -61,6 +63,7 @@ extern const double VISUAL_SCALE;
 extern const double VISUAL_RADIUS_SCALE;
 extern const double VISUAL_ASTEROID_SCALE;
 
+extern const HapkeParameters moonHapkeParameters;
 
 // Asteroids
 extern const double INNER_ASTEROID_BELT_EDGE;

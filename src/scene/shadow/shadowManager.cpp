@@ -36,7 +36,7 @@ void ShadowManager::initPointUBO()
     GL_CALL(glBufferData(GL_UNIFORM_BUFFER, sizeof(PointShadowGPU), nullptr, GL_DYNAMIC_DRAW));
   } 
 }
-// check if i pass tangent to asteroids
+
 // Constructor/Destructor
 ShadowManager::ShadowManager(Scene &scene)
 {

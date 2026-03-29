@@ -33,13 +33,22 @@ void Planet::update(double dt)
 void Planet::render(Shader &shader) const
 {
   for (const std::unique_ptr<Moon> &moon : this->moons)
-  {
     moon->render(shader);
-  }
 
   if (this->model)
     this->model->render(shader);
 };
+
+void Planet::renderMoonsRadiance(Shader &shader) const
+{
+  shader.setVec3f(glm::vec3(this->renderPosition), "receiverPosition");
+
+  for (const std::unique_ptr<Moon> &moon : this->moons)
+  {
+    moon->sendHapkeParametersToShader(shader);
+    moon->render(shader);
+  }
+}
 
 void Planet::addModel(std::unique_ptr<Model> model)
 {

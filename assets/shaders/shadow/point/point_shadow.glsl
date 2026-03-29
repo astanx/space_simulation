@@ -1,7 +1,6 @@
 #ifndef POINTSHADOW_GLSL
 #define POINTSHADOW_GLSL
 
-
 /*
 struct PointShadow
 {
