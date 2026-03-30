@@ -44,6 +44,7 @@ private:
   void renderDirectionalShadow(Scene &scene);
   void renderShadowMap(Scene &scene, Shader &shader);
   void renderPointShadow(Scene &scene);
+  void renderMoonsRadiance(Scene &scene);
   void renderSkybox(Scene &scene);
   void renderAsteroidSystems(Scene &scene);
   void renderObjects(Scene &scene);

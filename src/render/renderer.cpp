@@ -25,6 +25,7 @@
 #include "resources/resources.h"
 
 #include "physics/star.h"
+#include "physics/planet.h"
 
 #include <iostream>
 
@@ -260,6 +261,22 @@ void Renderer::blitDepthToDefault(const Framebuffer &framebuffer)
   glBlitFramebuffer(0, 0, viewport[2], viewport[3], 0, 0, viewport[2], viewport[3], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
+void Renderer::renderMoonsRadiance(Scene &scene)
+{
+  Shader &moonsRadianceShader = this->resourceManager.GetShader(Res::REFLECTION_SHADER);
+
+  ScopedShader moon(moonsRadianceShader);
+
+  moonsRadianceShader.set1f(scene.getSun().getLuminosity(), "lightLuminocity");
+
+  for (const Object *object : scene.getObjects())
+  {
+    const Planet *planet = dynamic_cast<const Planet *>(object);
+    if (planet)
+      planet->renderMoonsRadiance(moonsRadianceShader, scene.getActiveCamera());
+  }
+}
+
 // Constructor
 Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager), postProcess(resourceManager), blur(resourceManager) {}
 
@@ -303,6 +320,8 @@ void Renderer::render(Scene &scene, bool useBloom, bool useHDR)
 
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
+
+  this->renderMoonsRadiance(scene);
 
   const Framebuffer &hdrFramebuffer = this->postProcess.getHDRFramebuffer();
 

@@ -49,9 +49,9 @@ DirectionalShadow::DirectionalShadow(const GLuint width, const GLuint height) : 
 };
 
 // Public functions
-void DirectionalShadow::bind(Shader &shader, int textureUnit, const std::string& name) const
+void DirectionalShadow::bind(Shader &shader, int textureUnit, const std::string &name) const
 {
-  const std::string& finalName = name.empty() ? "directionalShadowMap" : name;
+  const std::string &finalName = name.empty() ? "directionalShadowMap" : name;
 
   this->shadowMapTexture->activate(textureUnit);
   this->shadowMapTexture->bind();
