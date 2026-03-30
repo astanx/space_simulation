@@ -20,6 +20,9 @@ float hapkeBRDF(vec3 N, vec3 V, vec3 L, HapkeParameters hapkeParameters)
   float NdotL = max(dot(N, L), 0.0);
   float NdotV = max(dot(N, V), 0.0);
 
+  if (NdotL <= 0.0 || NdotV <= 0.0)
+    return 0.0;
+
   float i = acos(clamp(NdotL, -1.0, 1.0));
   float e = acos(clamp(NdotV, -1.0, 1.0));
 
@@ -29,7 +32,7 @@ float hapkeBRDF(vec3 N, vec3 V, vec3 L, HapkeParameters hapkeParameters)
   float cosPsi = clamp(dot(Lp, Vp), -1.0, 1.0);
   float psi = acos(cosPsi);
 
-  float a = acos(NdotL*NdotV + sin(i)*sin(e)*cos(psi));
+  float a = acos(clamp(dot(L, V), -1.0, 1.0));
 
   float mu_0 = effectiveNdotL(i, e, hapkeParameters.theta, psi);
   float mu = effectiveNdotV(i, e, hapkeParameters.theta, psi);
