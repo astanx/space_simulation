@@ -26,7 +26,7 @@ void main()
   vec3 N = fs_in.vs_normal;
   vec3 V = normalize(receiverPosition - fs_in.vs_position);
 
-  float E = lightLuminocity / (4.0 * PI * pow(distance, 2));
+  float E = lightLuminocity / (4.0 * PI * distance * distance);
 
   float color = hapkeBRDF(N, V, L, hapkeParameters) * E;
 

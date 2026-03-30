@@ -90,8 +90,6 @@ void Planet::render(Shader &shader) const
     this->model->render(shader);
 };
 
-// irradiance is inversed
-
 void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
 {
   if (this->moons.empty())
@@ -120,6 +118,7 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
 
     for (int i = 0; i < 6; i++)
     {
+
       GL_CALL(glFramebufferTexture2D(
           GL_FRAMEBUFFER,
           GL_COLOR_ATTACHMENT0,
@@ -141,12 +140,11 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
       std::vector<float> pixels(this->radianceSize * this->radianceSize * 3);
       glReadPixels(0, 0, this->radianceSize, this->radianceSize, GL_RGB, GL_FLOAT, pixels.data());
 
-      for (float pixel : pixels)
+      for (auto &pixel : pixels)
         moonsRadiance += pixel;
-    } 
+    }
 
-    if (moonsRadiance > 0.0)
-      std::cout << "Moons radiance: " << moonsRadiance << std::endl;
+    std::cout << "Moons radiance: " << moonsRadiance / (this->radianceSize * this->radianceSize * 6) << std::endl;
   }
 }
 
