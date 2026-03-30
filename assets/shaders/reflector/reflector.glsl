@@ -20,33 +20,43 @@ float hapkeBRDF(vec3 N, vec3 V, vec3 L, HapkeParameters hapkeParameters)
   float NdotL = max(dot(N, L), 0.0);
   float NdotV = max(dot(N, V), 0.0);
 
-  if (NdotL <= 0.0 || NdotV <= 0.0)
-    return 0.0;
-
   float i = acos(clamp(NdotL, -1.0, 1.0));
   float e = acos(clamp(NdotV, -1.0, 1.0));
 
-  vec3 Lp = normalize(L - N * dot(L, N));
-  vec3 Vp = normalize(V - N * dot(V, N));
+  vec3 Lp = L - N * dot(L, N);
+  vec3 Vp = V - N * dot(V, N);
 
-  float cosPsi = clamp(dot(Lp, Vp), -1.0, 1.0);
+  float lenLp = length(Lp);
+  float lenVp = length(Vp);
+
+  float cosPsi = 1.0; 
+
+  if (lenLp > 1e-5 && lenVp > 1e-5) 
+    cosPsi = dot(Lp / lenLp, Vp / lenVp);
+
+  cosPsi = clamp(cosPsi, -1.0, 1.0);
   float psi = acos(cosPsi);
 
-  float a = acos(clamp(dot(L, V), -1.0, 1.0));
+  float cos_a = clamp(dot(L, V), -1.0, 1.0);
 
   float mu_0 = effectiveNdotL(i, e, hapkeParameters.theta, psi);
   float mu = effectiveNdotV(i, e, hapkeParameters.theta, psi);
 
-  float B = OppositionEffect(a, hapkeParameters.b0, hapkeParameters.h, hapkeParameters.b0_cb, hapkeParameters.h_cb);
+  if (mu_0 <= 0.0 || mu <= 0.0)
+    return 0.0;
 
-  float P = ParticlePhase(a, hapkeParameters.b, hapkeParameters.c);
+  float B = OppositionEffect(cos_a, hapkeParameters.b0, hapkeParameters.h, hapkeParameters.b0_cb, hapkeParameters.h_cb);
 
-  float H1 = ChandrasekharMultipleScattering(mu_0, hapkeParameters.w);
-  float H2 = ChandrasekharMultipleScattering(mu, hapkeParameters.w);
+  float P = ParticlePhase(cos_a, hapkeParameters.b, hapkeParameters.c);
+
+  float H1 = H(mu_0, hapkeParameters.w);
+  float H2 = H(mu, hapkeParameters.w);
+
+  float M = H1*H2 - 1;
 
   float S = ShadowingTerm(i, e, hapkeParameters.theta, psi);
 
-  return hapkeParameters.w / (4*PI) * mu_0 / (mu_0 + mu) * ( (1 + B) * P + H1*H2 - 1) * S;
+  return hapkeParameters.w / (4*PI) * mu_0 / (mu_0 + mu) * ( (1 + B + M) * P) * S;
 }
 
 #endif

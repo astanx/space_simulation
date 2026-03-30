@@ -146,7 +146,7 @@ const PhongMaterialProperties moonMaterial(
 		13);
 
 const HapkeParameters moonHapkeParameters(
-		0.1f, //
+		0.1f,
 		glm::radians(20.f),
 		0.05f,
 		0.8f,

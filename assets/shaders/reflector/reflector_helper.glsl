@@ -62,11 +62,11 @@ float ShadowingTerm(float i, float e, float theta, float psi)
   return numerator / denominator;
 }
 
-float ParticlePhase(float g, float b, float c)
+float ParticlePhase(float cos_a, float b, float c)
 {
- float term1 = (1 - c) / 2 * (1 - pow(b, 2)) / pow((1 + 2 * b * cos(g) + pow(b, 2)), 3/2);
+ float term1 = (1 - c) * (1 - pow(b, 2)) / pow((1 + 2 * b * cos_a + pow(b, 2)), 3/2);
 
- float term2 = (1 + c) / 2 * (1 - pow(b, 2)) / pow((1 - 2 * b * cos(g) + pow(b, 2)), 3/2);
+ float term2 = c * (1 - pow(b, 2)) / pow((1 - 2 * b * cos_a + pow(b, 2)), 3/2);
 
  return term1 + term2;
 }
@@ -90,10 +90,13 @@ float OppositionEffect(float a, float b0, float h, float b0_cb, float h_cb)
   return SHOE(a, b0, h) + CBOE(a, b0_cb, h_cb);
 }
 
-float ChandrasekharMultipleScattering(float NdotL, float omega)
+float H(float mu, float omega)
 {
-  float mu = NdotL;
+  return (1 + 2*mu) / (1 + 2 * sqrt(1 - omega));
+}
 
+float ChandrasekharMultipleScattering(float mu, float omega)
+{
   float r0 = ( 1 - sqrt(1 - omega )) / ( 1 + (sqrt(1 - omega) ));
 
   return 1 / ( 1 - omega*mu*(r0 + (1 - 2*r0*mu) * log( (1+mu) / mu)));
