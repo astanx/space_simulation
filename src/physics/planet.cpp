@@ -17,6 +17,9 @@
 #include "graphics/state/scopedViewport.h"
 #include "graphics/state/scopedDepthTest.h"
 #include "graphics/state/scopedTexture.h"
+#include "graphics/state/scopedBlending.h"
+
+#include "graphics/bindings/texture.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -38,8 +41,8 @@ void Planet::initMoonRadianceTexture()
       GL_CALL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB32F,
                            this->radianceSize, this->radianceSize, 0, GL_RGB, GL_FLOAT, NULL));
 
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -58,6 +61,12 @@ void Planet::initMoonRadianceFBO()
     GL_CALL(glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, this->moonRadianceTexture->getId(), 0));
 
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+    this->moonRBO = std::make_unique<RenderBuffer>();
+
+    this->moonRBO->bind(GL_RENDERBUFFER);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, this->radianceSize, this->radianceSize);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->moonRBO->getId());
 
     this->moonRadianceFBO->checkComplete();
   }
@@ -86,6 +95,18 @@ void Planet::render(Shader &shader) const
   for (const std::unique_ptr<Moon> &moon : this->moons)
     moon->render(shader);
 
+  std::optional<ScopedTexture> moonRadianceTextureScope;
+
+  if (!this->moons.empty())
+  {
+    moonRadianceTextureScope.emplace(*this->moonRadianceTexture, TextureBindingPoints::EnvironmentMap);
+    shader.set1i(1, "useReflectorRadiance");
+    shader.setVec3f(this->moons[0]->getRenderPosition(), "reflectorPosition");
+    shader.set1i(TextureBindingPoints::EnvironmentMap, "reflectorRadianceCubemap");
+  }
+  else
+    shader.set1i(0, "useReflectorRadiance");
+
   if (this->model)
     this->model->render(shader);
 };
@@ -112,21 +133,20 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
   {
     ScopedFramebuffer fbo(*this->moonRadianceFBO, GL_FRAMEBUFFER);
     ScopedViewport viewport(0, 0, this->radianceSize, this->radianceSize);
-    ScopedDepthTest depthTest(false);
+    ScopedDepthTest depthTest(true);
+    ScopedBlending blend(false);
 
-    double moonsRadiance = 0.0;
+    glClearColor(0.f, 0.f, 0.f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (int i = 0; i < 6; i++)
     {
-
       GL_CALL(glFramebufferTexture2D(
           GL_FRAMEBUFFER,
           GL_COLOR_ATTACHMENT0,
           GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
           moonRadianceTexture->getId(),
           0));
-
-      glClear(GL_COLOR_BUFFER_BIT);
 
       shader.setMat4fv(projection, "ProjectionMatrix");
       shader.setMat4fv(views[i], "ViewMatrix");
@@ -136,15 +156,7 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
         moon->sendHapkeParametersToShader(shader);
         moon->render(shader);
       }
-
-      std::vector<float> pixels(this->radianceSize * this->radianceSize * 3);
-      glReadPixels(0, 0, this->radianceSize, this->radianceSize, GL_RGB, GL_FLOAT, pixels.data());
-
-      for (auto &pixel : pixels)
-        moonsRadiance += pixel;
     }
-
-    std::cout << "Moons radiance: " << moonsRadiance / (this->radianceSize * this->radianceSize * 6) << std::endl;
   }
 }
 

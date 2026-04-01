@@ -30,5 +30,8 @@ void main()
 
   float color = hapkeBRDF(N, V, L, hapkeParameters) * E;
 
+  if (isnan(color) || color < 0.0)
+    color = 0.0;
+
   fs_color = vec4(vec3(color), 1.0);
 }

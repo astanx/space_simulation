@@ -18,7 +18,7 @@ struct PBRPointLight
   vec2 _pad2;
 };
 
-vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial material, PBRPointLight light, float shadow, samplerCube irradianceMap)
+vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial material, PBRPointLight light, float shadow, samplerCube irradianceMap, vec3 reflectColor)
 {
   vec3 albedo = getAlbedo(material, texcoord);
   float roughness = getRoughness(material, texcoord);
@@ -62,6 +62,8 @@ vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial
   Lo += (kD * albedo / PI + specular) * radiance * NdotL; 
 
   Lo *= shadow;
+
+  vec3 Ro = ((kD * reflectColor * albedo) + (kS * reflectColor)) * ao;
   
   vec3 emissive = albedo * material.emissiveStrength;
 
@@ -69,9 +71,34 @@ vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial
   vec3 diffuse = irradiance * albedo;
   vec3 ambient = (kD * diffuse) * ao;
   
-  vec3 color = ambient + Lo + emissive;
+  vec3 color = ambient + Lo + Ro + emissive;
 
   return vec4(color, 1.0);
+}
+
+vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial material, PBRPointLight light, float shadow, samplerCube irradianceMap)
+{
+  return CalcPBRPointLight(N, position, V, texcoord, material, light, shadow, irradianceMap, vec3(0.0));
+}
+
+vec4 CalcReflectColor(vec3 N, vec3 position, samplerCube reflectorRadianceCubemap, vec3 reflectorPosition)
+{
+  vec3 fragToReflector = position - reflectorPosition;
+  vec3 dir = normalize(fragToReflector);
+  vec3 color = texture(reflectorRadianceCubemap, dir).rgb;
+
+  return vec4(color, 1.0);
+}
+
+vec4 CalcPBRPointLight(vec3 N, vec3 tbn_position, vec3 V, vec2 texcoord, PBRMaterial material, PBRPointLight light, float shadow, samplerCube irradianceMap, bool useReflectorRadiance, samplerCube reflectorRadianceCubemap, vec3 reflectorPosition, vec3 normal, vec3 position)
+{
+  if (useReflectorRadiance)
+  { 
+    vec4 reflect = CalcReflectColor(normal, position, reflectorRadianceCubemap, reflectorPosition);
+    return CalcPBRPointLight(N, tbn_position, V, texcoord, material, light, shadow, irradianceMap, reflect.xyz);
+  }
+  
+  return CalcPBRPointLight(N, tbn_position, V, texcoord, material, light, shadow, irradianceMap);
 }
 
 #endif

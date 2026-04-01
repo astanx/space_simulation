@@ -53,6 +53,8 @@ private:
   void initShaderUBOBindings();
   void bindUBOs();
 
+  void bindDummyReflector(Shader &shader);
+
   void renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, bool useFramebuffer);
   void blitDepthToDefault(const Framebuffer &framebuffer);
 

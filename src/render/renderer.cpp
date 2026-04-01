@@ -102,6 +102,14 @@ void Renderer::bindUBOs()
   this->shadowManager->bindPointShadowUBO();
 }
 
+void Renderer::bindDummyReflector(Shader &shader)
+{
+  glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::EnvironmentMap);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  shader.set1i(TextureBindingPoints::EnvironmentMap, "reflectorRadianceCubemap");
+  shader.set1i(0, "useReflectorRadiance");
+}
+
 void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType)
 {
   glGenBuffers(1, ubo);
@@ -148,6 +156,8 @@ void Renderer::renderObjects(Scene &scene)
   this->shadowManager->bindPointShadowDepth(coreShader);
 
   skybox.bindIrradianceMap(coreShader);
+
+  this->bindDummyReflector(coreShader);
 
   // Render all objects
   for (const Object *object : scene.getObjects())

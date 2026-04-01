@@ -30,6 +30,10 @@ uniform samplerCube depthMap;
 uniform samplerCube esmMap;
 uniform samplerCube irradianceMap;
 
+uniform bool useReflectorRadiance;
+uniform samplerCube reflectorRadianceCubemap;
+uniform vec3 reflectorPosition;
+
 void main()
 {
   PBRPointLight localPointLight = pbrPointLight;
@@ -56,7 +60,7 @@ void main()
 
   float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, esmMap, far_plane, fs_in.vs_normal);
 
-  vec4 point = CalcPBRPointLight(normal, position, viewDir, fs_in.vs_texcoord, pbrMaterial, localPointLight, shadow, irradianceMap);
+  vec4 point = CalcPBRPointLight(normal, position, viewDir, fs_in.vs_texcoord, pbrMaterial, localPointLight, shadow, irradianceMap, useReflectorRadiance, reflectorRadianceCubemap, reflectorPosition, fs_in.vs_normal, fs_in.vs_position);
  
   vec4 result = point;
 
