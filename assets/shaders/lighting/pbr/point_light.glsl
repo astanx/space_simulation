@@ -63,7 +63,7 @@ vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial
 
   Lo *= shadow;
 
-  vec3 Ro = ((kD * reflectColor * albedo) + (kS * reflectColor)) * ao;
+  vec3 Ro = ao * reflectColor * (kD * albedo + kS);
   
   vec3 emissive = albedo * material.emissiveStrength;
 
