@@ -58,15 +58,24 @@ void Planet::initMoonRadianceFBO()
 
   {
     ScopedFramebuffer fbo(*this->moonRadianceFBO, GL_FRAMEBUFFER);
-    GL_CALL(glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, this->moonRadianceTexture->getId(), 0));
+
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+        this->moonRadianceTexture->getId(),
+        0);
 
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
     this->moonRBO = std::make_unique<RenderBuffer>();
 
     this->moonRBO->bind(GL_RENDERBUFFER);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, this->radianceSize, this->radianceSize);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->moonRBO->getId());
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
+                          this->radianceSize, this->radianceSize);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                              GL_RENDERBUFFER, this->moonRBO->getId());
 
     this->moonRadianceFBO->checkComplete();
   }
@@ -83,9 +92,8 @@ void Planet::update(double dt)
   // this->move(dt);
 
   for (std::unique_ptr<Moon> &moon : this->moons)
-  {
     moon->update(dt);
-  }
+
   if (this->model)
     this->model->setPosition(this->renderPosition);
 }
