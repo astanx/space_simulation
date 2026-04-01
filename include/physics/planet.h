@@ -6,6 +6,7 @@
 #include "render/renderable.h"
 
 #include "graphics/framebuffers/framebuffer.h"
+#include "graphics/buffers/renderBuffer.h"
 
 class Model;
 class Camera;
@@ -21,6 +22,8 @@ protected:
 
   std::unique_ptr<Texture> moonRadianceTexture;
   std::unique_ptr<Framebuffer> moonRadianceFBO;
+
+  std::unique_ptr<RenderBuffer> moonRBO;
 
   void initMoonRadianceTexture();
   void initMoonRadianceFBO();

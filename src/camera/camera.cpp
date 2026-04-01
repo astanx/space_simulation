@@ -18,7 +18,6 @@ void Camera::updateCameraVectors()
 Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp)
     : position(position), front(front), worldUp(worldUp), up(worldUp)
 {
-
   GLint viewport[4];
   glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -26,7 +25,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp)
   float height = static_cast<float>(viewport[3]);
 
   this->mouseSensitivity = 0.2f;
-  this->movementSpeed = 4.5f;
+  this->movementSpeed = 1.5f;
 
   this->right = glm::normalize(glm::cross(this->front, this->worldUp));
 
