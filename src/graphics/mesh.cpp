@@ -12,6 +12,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <iostream>
+
 // Private functions
 void Mesh::initVAO()
 {
@@ -25,34 +27,39 @@ void Mesh::initVAO()
 
   this->VBO->bind(GL_ARRAY_BUFFER);
 
-  GL_CALL(glBufferData(GL_ARRAY_BUFFER, this->nrOfVertices * sizeof(Vertex), this->vertices, GL_STATIC_DRAW));
+  GL_CALL(glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), this->vertices.data(), GL_STATIC_DRAW));
 
-  if (this->nrOfIndices > 0)
+  if (this->indices.size() > 0)
   {
     if (!this->EBO)
       this->EBO = std::make_unique<Buffer>();
 
     this->EBO->bind(GL_ELEMENT_ARRAY_BUFFER);
 
-    GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), this->indices, GL_STATIC_DRAW));
+    GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), this->indices.data(), GL_STATIC_DRAW));
   }
 
-  auto it = LAYOUTS.find(this->layout);
-  if (it == LAYOUTS.end())
-    throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid vertex layout");
-  const LayoutDesc &layout = it->second;
-
-  for (size_t i = 0; i < layout.count; ++i)
+  if (!this->VAOS[this->layout]->isLayoutInitialized())
   {
-    const VertexAttribute &attr = layout.attributes[i];
-    glVertexAttribPointer(
-        attr.index,
-        attr.size,
-        attr.type,
-        attr.normalized,
-        sizeof(Vertex),
-        (void *)attr.offset);
-    glEnableVertexAttribArray(attr.index);
+    auto it = LAYOUTS.find(this->layout);
+    if (it == LAYOUTS.end())
+      throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid vertex layout");
+    const LayoutDesc &layout = it->second;
+
+    for (size_t i = 0; i < layout.count; ++i)
+    {
+      const VertexAttribute &attr = layout.attributes[i];
+      glVertexAttribPointer(
+          attr.index,
+          attr.size,
+          attr.type,
+          attr.normalized,
+          sizeof(Vertex),
+          (void *)attr.offset);
+      glEnableVertexAttribArray(attr.index);
+    }
+
+    this->VAOS[this->layout]->setLayoutInitialized(true);
   }
 
   // // Position attribute
@@ -78,22 +85,17 @@ void Mesh::initVAO()
 }
 
 // Constructor and Destructor
-Mesh::Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, VertexLayout layout, GLenum drawMode)
+Mesh::Mesh(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode)
 {
-  this->nrOfVertices = nrOfVertices;
-  this->nrOfIndices = nrOfIndices;
+  if (vertexArray)
+    this->vertices = *vertexArray;
+  else
+    this->vertices = std::vector<Vertex>();
 
-  this->vertices = new Vertex[this->nrOfVertices];
-  for (size_t i = 0; i < this->nrOfVertices; i++)
-  {
-    this->vertices[i] = vertexArray[i];
-  }
-
-  this->indices = new GLuint[this->nrOfIndices];
-  for (size_t i = 0; i < this->nrOfIndices; i++)
-  {
-    this->indices[i] = indexArray[i];
-  }
+  if (indexArray)
+    this->indices = *indexArray;
+  else
+    this->indices = std::vector<GLuint>();
 
   this->drawMode = drawMode;
   this->layout = layout;
@@ -103,22 +105,8 @@ Mesh::Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray
 
 Mesh::Mesh(std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode)
 {
-  this->nrOfVertices = primitive->getNrOfVertices();
-  this->nrOfIndices = primitive->getNrOfIndices();
-
-  Vertex *vertexArray = primitive->getVertices();
-  this->vertices = new Vertex[this->nrOfVertices];
-  for (size_t i = 0; i < this->nrOfVertices; i++)
-  {
-    this->vertices[i] = vertexArray[i];
-  }
-
-  GLuint *indexArray = primitive->getIndices();
-  this->indices = new GLuint[this->nrOfIndices];
-  for (size_t i = 0; i < this->nrOfIndices; i++)
-  {
-    this->indices[i] = indexArray[i];
-  }
+  this->vertices = primitive->getVertices();
+  this->indices = primitive->getIndices();
 
   this->drawMode = drawMode;
   this->layout = layout;
@@ -128,20 +116,8 @@ Mesh::Mesh(std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum dra
 
 Mesh::Mesh(const Mesh &obj)
 {
-  this->nrOfVertices = obj.nrOfVertices;
-  this->nrOfIndices = obj.nrOfIndices;
-
-  this->vertices = new Vertex[this->nrOfVertices];
-  for (size_t i = 0; i < this->nrOfVertices; i++)
-  {
-    this->vertices[i] = obj.vertices[i];
-  }
-
-  this->indices = new GLuint[this->nrOfIndices];
-  for (size_t i = 0; i < this->nrOfIndices; i++)
-  {
-    this->indices[i] = obj.indices[i];
-  }
+  this->vertices = obj.vertices;
+  this->indices = obj.indices;
 
   this->drawMode = obj.drawMode;
   this->layout = obj.layout;
@@ -151,8 +127,6 @@ Mesh::Mesh(const Mesh &obj)
 
 Mesh::~Mesh()
 {
-  delete[] this->vertices;
-  delete[] this->indices;
 }
 
 // Functions
@@ -231,7 +205,7 @@ void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
       GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 
   if (!ptr)
-    return; // mapping failed
+    return;
 
   memcpy(ptr, instanceData.data(), instanceCount * sizeof(InstanceData));
 
@@ -249,10 +223,10 @@ void Mesh::render() const
   else
     Logger::logError("Mesh", "No VAO to render");
 
-  if (this->nrOfIndices == 0)
-    GL_CALL(glDrawArrays(this->drawMode, 0, this->nrOfVertices));
+  if (this->indices.size() == 0)
+    GL_CALL(glDrawArrays(this->drawMode, 0, this->vertices.size()));
   else
-    GL_CALL(glDrawElements(this->drawMode, this->nrOfIndices, GL_UNSIGNED_INT, 0));
+    GL_CALL(glDrawElements(this->drawMode, this->indices.size(), GL_UNSIGNED_INT, 0));
 };
 
 void Mesh::renderInstanced() const
@@ -269,12 +243,12 @@ void Mesh::renderInstanced() const
   else
     Logger::logError("Mesh", "No instanced VAO to render");
 
-  if (this->nrOfIndices == 0)
-    GL_CALL(glDrawArraysInstanced(this->drawMode, 0, this->nrOfVertices, this->instanceCount));
+  if (this->indices.size() == 0)
+    GL_CALL(glDrawArraysInstanced(this->drawMode, 0, this->vertices.size(), this->instanceCount));
   else
     GL_CALL(glDrawElementsInstanced(
         this->drawMode,
-        this->nrOfIndices,
+        this->indices.size(),
         GL_UNSIGNED_INT,
         0,
         this->instanceCount));
@@ -284,7 +258,7 @@ const double Mesh::calculateVolume() const
 {
   double volume = 0.0;
 
-  for (size_t i = 0; i < nrOfIndices; i += 3)
+  for (size_t i = 0; i < this->indices.size(); i += 3)
   {
     const glm::vec3 &v0 = vertices[indices[i]].position;
     const glm::vec3 &v1 = vertices[indices[i + 1]].position;
@@ -296,25 +270,17 @@ const double Mesh::calculateVolume() const
   return std::abs(volume) / 6.0;
 }
 
-void Mesh::updateBuffers(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices)
+void Mesh::updateBuffers(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray)
 {
-  delete[] this->vertices;
-  delete[] this->indices;
+  if (vertexArray)
+    this->vertices = *vertexArray;
+  else
+    this->vertices = std::vector<Vertex>();
 
-  this->nrOfVertices = nrOfVertices;
-  this->nrOfIndices = nrOfIndices;
-
-  this->vertices = new Vertex[this->nrOfVertices];
-  for (size_t i = 0; i < this->nrOfVertices; i++)
-  {
-    this->vertices[i] = vertexArray[i];
-  }
-
-  this->indices = new GLuint[this->nrOfIndices];
-  for (size_t i = 0; i < this->nrOfIndices; i++)
-  {
-    this->indices[i] = indexArray[i];
-  }
+  if (indexArray)
+    this->indices = *indexArray;
+  else
+    this->indices = std::vector<GLuint>();
 
   this->initVAO();
 }

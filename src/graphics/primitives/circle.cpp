@@ -35,5 +35,5 @@ Circle::Circle(unsigned segments, float radius) : Primitive()
 
   indices[indices.size() - 1] = 1;
 
-  this->set(vertices.data(), vertices.size(), indices.data(), indices.size());
+  this->set(vertices, indices);
 }

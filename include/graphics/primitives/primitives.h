@@ -17,10 +17,8 @@ public:
   Primitive();
   virtual ~Primitive();
 
-  void set(const Vertex *vertices, const unsigned nrOfVertices, const GLuint *indices, const unsigned nrOfIndices);
+  void set(const std::vector<Vertex> &vertices, const std::vector<GLuint> &indices);
 
-  Vertex *getVertices();
-  GLuint *getIndices();
-  const unsigned getNrOfVertices();
-  const unsigned getNrOfIndices();
+  std::vector<Vertex> &getVertices();
+  std::vector<GLuint> &getIndices();
 };

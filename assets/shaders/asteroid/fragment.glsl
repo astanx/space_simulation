@@ -30,6 +30,7 @@ uniform samplerCube irradianceMap;
 
 void main()
 {
+
   PBRPointLight localPointLight = pbrPointLight;
 
   vec3 position = fs_in.vs_tangentPos;
@@ -37,9 +38,7 @@ void main()
 
   localPointLight.position = fs_in.vs_tangentLightPos;
 
-  float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, esmMap, far_plane, fs_in.vs_normal);
-
-  vec4 point = CalcPBRPointLight(fs_in.vs_normal, position, viewDir, fs_in.vs_texcoord, material, localPointLight, shadow, irradianceMap);
+  vec4 point = CalcPBRPointLight(fs_in.vs_normal, position, viewDir, fs_in.vs_texcoord, material, localPointLight, 1.0, irradianceMap);
 
   fs_color = point;
 }

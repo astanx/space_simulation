@@ -63,7 +63,9 @@ void TextRenderer::init()
   FT_Done_Face(face);
   FT_Done_FreeType(ft);
 
-  this->text = std::make_unique<Mesh>(nullptr, 0, nullptr, 0, VertexLayout::PositionTexcoord);
+
+
+  this->text = std::make_unique<Mesh>(nullptr, nullptr, VertexLayout::PositionTexcoord);
 };
 
 void TextRenderer::render(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color)
@@ -117,7 +119,7 @@ void TextRenderer::render(Shader &shader, std::string text, float x, float y, fl
     {
       ScopedTexture charTexture(*ch.texture, TextureBindingPoints::Diffuse);
 
-      this->text->updateBuffers(vertices.data(), vertices.size(), nullptr, 0);
+      this->text->updateBuffers(&vertices, nullptr);
 
       this->text->render();
     }

@@ -104,8 +104,9 @@ Model::Model(glm::vec3 position, Material &material,
           : rotationOrigin;
 
   std::vector<Vertex> vertices = loadOBJmodel(OBJfile);
+  std::vector<GLuint> indices;
 
-  Mesh *mesh = new Mesh(vertices.data(), vertices.size(), nullptr, 0, VertexLayout::Full);
+  Mesh *mesh = new Mesh(&vertices, &indices, VertexLayout::Full);
   this->meshes.push_back(mesh);
 }
 

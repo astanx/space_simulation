@@ -97,5 +97,5 @@ Ellipsoid::Ellipsoid(unsigned segments, Radii radii, bool tangent) : Primitive()
   if (tangent)
     this->computeTangents(vertices, indices);
 
-  this->set(vertices.data(), vertices.size(), indices.data(), indices.size());
+  this->set(vertices, indices);
 }
