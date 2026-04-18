@@ -15,10 +15,8 @@ class Primitive;
 class Mesh
 {
 private:
-  Vertex *vertices;
-  unsigned nrOfVertices;
-  GLuint *indices;
-  unsigned nrOfIndices;
+  std::vector<Vertex> vertices;
+  std::vector<GLuint> indices;
 
   std::unordered_map<VertexLayout, std::unique_ptr<VertexArray>> VAOS;
   std::unique_ptr<Buffer> VBO;
@@ -31,14 +29,16 @@ private:
   GLenum drawMode;
   VertexLayout layout;
 
+  bool layoutInit = false;
+
   void initVAO();
 
 public:
-  Mesh(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
+  Mesh(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
 
   Mesh(std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
 
-  void updateBuffers(Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices);
+  void updateBuffers(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray);
 
   void setInstanceBuffer(const std::vector<InstanceData> &instanceData);
   void updateInstanceBuffer(const std::vector<InstanceData> &instanceData);

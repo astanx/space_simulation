@@ -62,34 +62,19 @@ Primitive::Primitive() {}
 Primitive::~Primitive() {}
 
 // Setters
-void Primitive::set(const Vertex *vertices, const unsigned nrOfVertices, const GLuint *indices, const unsigned nrOfIndices)
+void Primitive::set(const std::vector<Vertex> &vertices, const std::vector<GLuint> &indices)
 {
-  for (size_t i = 0; i < nrOfVertices; i++)
-  {
-    this->vertices.push_back(vertices[i]);
-  }
-
-  for (size_t i = 0; i < nrOfIndices; i++)
-  {
-    this->indices.push_back(indices[i]);
-  }
+  this->vertices = vertices;
+  this->indices = indices;
 }
 
 // Getters
 
-Vertex *Primitive::getVertices()
+std::vector<Vertex> &Primitive::getVertices()
 {
-  return this->vertices.data();
+  return this->vertices;
 }
-GLuint *Primitive::getIndices()
+std::vector<GLuint> &Primitive::getIndices()
 {
-  return this->indices.data();
-}
-const unsigned Primitive::getNrOfVertices()
-{
-  return this->vertices.size();
-}
-const unsigned Primitive::getNrOfIndices()
-{
-  return this->indices.size();
+  return this->indices;
 }

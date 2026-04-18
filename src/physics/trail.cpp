@@ -17,7 +17,7 @@ void Trail::generateTrail(const std::vector<glm::dvec3> &trailVec)
 
     vertices.push_back(v);
   }
-  this->trail = std::make_unique<Mesh>(vertices.data(), vertices.size(), nullptr, 0, VertexLayout::PositionOnly, GL_LINE_LOOP);
+  this->trail = std::make_unique<Mesh>(&vertices, nullptr, VertexLayout::PositionOnly, GL_LINE_LOOP);
 };
 
 // Constructor

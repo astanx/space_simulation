@@ -48,9 +48,9 @@ Material &ResourceManager::LoadPBRMaterial(const std::string &name, Texture *alb
   return *this->materials[name];
 }
 
-Mesh &ResourceManager::LoadMesh(const std::string &name, Vertex *vertexArray, const unsigned &nrOfVertices, GLuint *indexArray, const unsigned &nrOfIndices, VertexLayout layout, GLenum drawMode)
+Mesh &ResourceManager::LoadMesh(const std::string &name, std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode)
 {
-  this->meshes[name] = std::make_unique<Mesh>(vertexArray, nrOfVertices, indexArray, nrOfIndices, layout, drawMode);
+  this->meshes[name] = std::make_unique<Mesh>(vertexArray, indexArray, layout, drawMode);
   return *this->meshes[name];
 }
 Mesh &ResourceManager::LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode)
