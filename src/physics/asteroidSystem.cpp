@@ -169,7 +169,7 @@ void AsteroidSystem::update(double dt)
         for (unsigned j = begin; j < end; j++)
         {
           std::unique_ptr<Asteroid>& asteroid = this->asteroids[typeIndex][j];
-          // asteroid->update(dt);
+          asteroid->update(dt);
           this->instances[typeIndex][j].position = asteroid->getRenderPosition();
         } });
     }
@@ -283,7 +283,10 @@ void AsteroidSystem::render(Shader &shader) const
   this->asteroid_material->sendToShader(shader);
 
   for (const std::unique_ptr<Mesh> &mesh : this->meshes)
-  {
     mesh->renderInstanced();
-  }
+}
+
+void AsteroidSystem::renderInstanced(Shader &shader) const
+{
+  this->render(shader);
 }

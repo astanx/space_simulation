@@ -1,5 +1,7 @@
 #include "physics/trail.h"
 
+#include "render/modelSource.h"
+
 #include "graphics/vertex.h"
 #include "graphics/shader.h"
 
@@ -10,7 +12,7 @@ void Trail::generateTrail(const std::vector<glm::dvec3> &trailVec)
   for (const glm::dvec3 &p : trailVec)
   {
     Vertex v{};
-    v.position = p;
+    v.position = ModelSource::realToVisualPos(p);
     v.color = glm::vec3(1.f);
     v.texcoord = glm::vec2(0.0f);
     v.normal = glm::vec3(0.0f);

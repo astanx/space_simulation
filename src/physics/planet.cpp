@@ -82,22 +82,12 @@ void Planet::initMoonRadianceFBO()
 }
 
 // Constructor
-Planet::Planet(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements) : OrbitalObject(centralBody, mu, radius, keplerElements)
+Planet::Planet(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements)
+    : OrbitalObject(centralBody, mu, radius, keplerElements), ModelSource(static_cast<PositionSource *>(this))
 {
 }
 
 // Public functions
-void Planet::update(double dt)
-{
-  // this->move(dt);
-
-  for (std::unique_ptr<Moon> &moon : this->moons)
-    moon->update(dt);
-
-  if (this->model)
-    this->model->setPosition(this->renderPosition);
-}
-
 void Planet::render(Shader &shader) const
 {
   for (const std::unique_ptr<Moon> &moon : this->moons)
@@ -115,8 +105,7 @@ void Planet::render(Shader &shader) const
   else
     shader.set1i(0, "useReflectorRadiance");
 
-  if (this->model)
-    this->model->render(shader);
+  ModelSource::render(shader);
 };
 
 void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
@@ -124,11 +113,11 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
   if (this->moons.empty())
     return;
 
-  shader.setVec3f(glm::vec3(this->renderPosition), "receiverPosition");
+  glm::vec3 pos = this->renderPosition;
+
+  shader.setVec3f(pos, "receiverPosition");
 
   glm::mat4 projection = camera.getProjectionMatrix(1, 90.0f);
-
-  glm::vec3 pos = this->renderPosition;
 
   std::vector<glm::mat4> views = {
       glm::lookAt(pos, pos + glm::vec3(1, 0, 0), glm::vec3(0, -1, 0)),
@@ -168,32 +157,10 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
   }
 }
 
-void Planet::addModel(std::unique_ptr<Model> model)
-{
-  this->model = std::move(model);
-  this->model->setPosition(this->renderPosition);
-};
-
 void Planet::addMoon(std::unique_ptr<Moon> moon)
 {
   this->moons.push_back(std::move(moon));
 
   this->initMoonRadianceTexture();
   this->initMoonRadianceFBO();
-}
-
-void Planet::drift(double dt)
-{
-  this->keplerDrift(dt);
-
-  for (std::unique_ptr<Moon> &moon : this->moons)
-    moon->drift(dt);
-}
-
-void Planet::halfKick(const std::vector<Object *> &bodies, double dt)
-{
-  this->kick(bodies, dt * 0.5);
-
-  for (std::unique_ptr<Moon> &moon : this->moons)
-    moon->halfKick(bodies, dt);
 }

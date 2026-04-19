@@ -136,6 +136,7 @@ add_executable(Space
     src/render/textRenderer.cpp
     src/render/postProcess.cpp
     src/render/gaussianBlur.cpp
+    src/render/modelSource.cpp
     
     # Resources
     src/resources/OBJloader.cpp

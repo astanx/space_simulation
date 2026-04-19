@@ -134,9 +134,7 @@ void Model::render(Shader &shader)
                           TextureBindingPoints::Specular);
 
   for (Mesh *&mesh : this->meshes)
-  {
     mesh->render();
-  }
 
   // Unbind everything
   glBindVertexArray(0);
