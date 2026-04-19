@@ -3,13 +3,14 @@
 #include "physics/object.h"
 #include "physics/orbit.h"
 #include "physics/trail.h"
+#include "physics/wisdomHolman.h"
 
 class Planet;
 class Mesh;
 
 struct KeplerElements;
 
-class OrbitalObject : public Object
+class OrbitalObject : public Object, public WisdomHolman
 {
 protected:
   std::unique_ptr<Orbit> orbit;
@@ -21,7 +22,7 @@ protected:
   bool useTrail = true;
 
   void keplerDrift(double dt);
-  void kick(const std::vector<Object *> &bodies, double dt) override;
+  void kick(const std::vector<Object *> &bodies, double dt);
 
 public:
   OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements, bool useTrail = true);
@@ -30,10 +31,9 @@ public:
   const Orbit *getOrbit() const;
   const bool getUseTrail() const;
 
-  virtual void drift(double dt) override;
-  virtual void halfKick(const std::vector<Object *> &bodies, double dt) override;
+  void drift(double dt) override;
+  void halfKick(const std::vector<Object *> &bodies, double dt) override;
   void renderTrail();
-  // void move(double dt) override;
 
   virtual std::unique_ptr<Trail> generateTrail();
 };

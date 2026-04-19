@@ -8,34 +8,14 @@
 #include <iostream>
 
 // Constructor
-Moon::Moon(OrbitalObject *centralBody, double mu, double radius, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters) : OrbitalObject(centralBody, mu, radius, keplerElements, false), hapkeParameters(hapkeParameters)
+Moon::Moon(OrbitalObject *centralBody, double mu, double radius, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters) 
+: OrbitalObject(centralBody, mu, radius, keplerElements, false), hapkeParameters(hapkeParameters), ModelSource(static_cast<PositionSource *>(this))
 {
   if (this->useTrail)
     this->generateTrail();
 }
 
 // Public functions
-void Moon::update(double dt)
-{
-  // this->move(dt);
-
-  if (this->model)
-    this->model->setPosition(this->renderPosition);
-}
-
-void Moon::render(Shader &shader) const
-{
-  if (model)
-    model->render(shader);
-}
-
-void Moon::addModel(std::unique_ptr<Model> model)
-{
-  this->model = std::move(model);
-
-  this->model->setPosition(this->renderPosition);
-};
-
 std::unique_ptr<Trail> Moon::generateTrail()
 {
   std::vector<glm::dvec3> trailVec;

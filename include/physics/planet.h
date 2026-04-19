@@ -3,7 +3,7 @@
 #include "physics/orbitalObject.h"
 #include "physics/moon.h"
 
-#include "render/renderable.h"
+#include "render/modelSource.h"
 
 #include "graphics/framebuffers/framebuffer.h"
 #include "graphics/buffers/renderBuffer.h"
@@ -13,7 +13,7 @@ class Camera;
 
 struct KeplerElements;
 
-class Planet : public OrbitalObject, public Renderable
+class Planet : public OrbitalObject, public ModelSource
 {
 protected:
   std::vector<std::unique_ptr<Moon>> moons;
@@ -34,12 +34,7 @@ public:
 
   void addMoon(std::unique_ptr<Moon> moon);
 
-  void update(double dt) override;
   void render(Shader &shader) const override;
-  void addModel(std::unique_ptr<Model> m) override;
 
   void renderMoonsRadiance(Shader &shader, const Camera& camera) const;
-
-  void drift(double dt) override;
-  void halfKick(const std::vector<Object *> &bodies, double dt) override;
 };

@@ -20,28 +20,14 @@
 // Private functions
 void Scene::halfKick(double dt)
 {
-  for (Object *&object : this->objects)
-  {
+  for (WisdomHolman *&object : this->wisdomHolmanObjects)
     object->halfKick(this->objects, dt);
-  }
-
-  for (std::unique_ptr<AsteroidSystem> &asteroidSystem : this->asteroidSystems)
-  {
-    asteroidSystem->halfKick(this->objects, dt);
-  }
 }
 
 void Scene::drift(double dt)
 {
-  for (Object *&object : this->objects)
-  {
+  for (WisdomHolman *&object : this->wisdomHolmanObjects)
     object->drift(dt);
-  }
-
-  for (std::unique_ptr<AsteroidSystem> &asteroidSystem : this->asteroidSystems)
-  {
-    asteroidSystem->drift(dt);
-  }
 }
 
 void Scene::wisdomHolman(double dt)
@@ -77,8 +63,11 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   if (planet->getUseTrail())
     this->addTrail(planet->generateTrail());
 
-  this->addOrbitalObject(std::move(planet));
+  this->addPlanetarObject(std::move(planet));
+  this->addRenderable(ptr);
+  this->addUpdatable(ptr);
   this->addObject(ptr);
+  this->addWisdomHolman(ptr);
 
   return ptr;
 }
@@ -96,7 +85,10 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 
   Star *ptr = star.get();
   this->addStar(std::move(star));
+  this->addRenderable(ptr);
+  this->addUpdatable(ptr);
   this->addObject(ptr);
+  this->addWisdomHolman(ptr);
 
   return ptr;
 }
@@ -119,6 +111,11 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   assert(centralBody && "[Scene] ASSERT: No central body for moon");
 
   centralBody->addMoon(std::move(moon));
+  this->addUpdatable(ptr);
+  this->addRenderable(ptr);
+  this->addObject(ptr);
+  this->addWisdomHolman(ptr);
+
 
   return ptr;
 }
@@ -130,6 +127,9 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
                                                                             &this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
   AsteroidSystem *ptr = system.get();
   this->addAsteroidSystem(std::move(system));
+  this->addUpdatable(ptr);
+  this->addWisdomHolman(ptr);
+
   return ptr;
 }
 
@@ -226,15 +226,8 @@ void Scene::update(double dt)
   //   }
   // }
 
-  for (Object *&object : this->objects)
-  {
+  for (Updatable *&object : this->updatable)
     object->update(dt);
-  }
-
-  for (std::unique_ptr<AsteroidSystem> &asteroidSystem : this->asteroidSystems)
-  {
-    asteroidSystem->update(dt);
-  }
 
   if (this->pointLights[0])
     this->pointLights[0]->move(this->sun->getRenderPosition()); // move sun light
@@ -251,20 +244,28 @@ void Scene::addCamera(std::unique_ptr<Camera> camera)
   this->cameras.push_back(std::move(camera));
 }
 
-void Scene::addModel(std::unique_ptr<Model> model)
-{
-  this->models.push_back(std::move(model));
-}
-
 void Scene::addObject(Object *object)
 {
   this->objects.push_back(object);
 }
 
-void Scene::addOrbitalObject(std::unique_ptr<OrbitalObject> orbitalObject)
+void Scene::addRenderable(Renderable *object)
 {
-  this->orbitalObjectViews.push_back(orbitalObject.get());
-  this->orbitalObjects.push_back(std::move(orbitalObject));
+  this->renderable.push_back(object);
+}
+
+void Scene::addUpdatable(Updatable *object)
+{
+  this->updatable.push_back(object);
+}
+void Scene::addWisdomHolman(WisdomHolman *object)
+{
+  this->wisdomHolmanObjects.push_back(object);
+}
+void Scene::addPlanetarObject(std::unique_ptr<Planet> planetarObject)
+{
+  this->planetarObjectViews.push_back(planetarObject.get());
+  this->planetarObjects.push_back(std::move(planetarObject));
 }
 
 void Scene::addStar(std::unique_ptr<Star> star)
@@ -329,12 +330,12 @@ const glm::vec3 Scene::getActiveCameraPosition() const
 
   return this->activeCamera->getPosition();
 };
-const std::vector<Object *> &Scene::getObjects() const
+const std::vector<Renderable *> &Scene::getRenderable() const
 {
-  if (this->objects.empty())
-    Logger::logWarning("Scene", "Objects are empty");
+  if (this->renderable.empty())
+    Logger::logWarning("Scene", "Renderable is empty");
 
-  return this->objects;
+  return this->renderable;
 };
 const std::vector<PointLight *> &Scene::getPointLights() const
 {
@@ -363,4 +364,11 @@ const std::vector<AsteroidSystem *> &Scene::getAsteroidSystems() const
     Logger::logWarning("Scene", "Asteroid systems are empty");
 
   return this->asteroidSystemViews;
+};
+const std::vector<Planet *> &Scene::getPlanetarObjects() const
+{
+  if (this->planetarObjectViews.empty())
+    Logger::logWarning("Scene", "Planets are empty");
+
+  return this->planetarObjectViews;
 };

@@ -1,18 +1,22 @@
 #pragma once
 
-#include "graphics/model.h"
-#include "graphics/skybox.h"
-#include "physics/orbitalObject.h"
 #include "camera/camera.h"
+
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
+
+#include "graphics/model.h"
+#include "graphics/skybox.h"
+
+#include "physics/orbitalObject.h"
 #include "physics/asteroidSystem.h"
 #include "physics/star.h"
+#include "physics/planet.h"
 
 class Shader;
-class Planet;
 class Moon;
 class Object;
+class WisdomHolman;
 class ResourceManager;
 class ThreadPool;
 
@@ -34,18 +38,19 @@ private:
   Camera *activeCamera;
   Skybox *skybox;
 
-  std::vector<std::unique_ptr<Model>> models;
+  std::vector<Updatable*> updatable;
+  std::vector<Renderable*> renderable;
+  std::vector<Object*> objects;
+  std::vector<WisdomHolman*> wisdomHolmanObjects;
 
-  std::vector<std::unique_ptr<OrbitalObject>> orbitalObjects;
-  std::vector<OrbitalObject *> orbitalObjectViews;
+  std::vector<std::unique_ptr<Planet>> planetarObjects;
+  std::vector<Planet *> planetarObjectViews;
 
   std::vector<std::unique_ptr<Star>> stars;
   Star *sun;
 
   std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
   std::vector<AsteroidSystem *> asteroidSystemViews;
-
-  std::vector<Object *> objects;
 
   std::vector<std::unique_ptr<Trail>> trails;
   std::vector<Trail *> trailViews;
@@ -89,9 +94,11 @@ public:
   void update(double dt);
 
   // Setters
-  void addModel(std::unique_ptr<Model> model);
   void addObject(Object *object);
-  void addOrbitalObject(std::unique_ptr<OrbitalObject> orbitalObject);
+  void addWisdomHolman(WisdomHolman *object);
+  void addRenderable(Renderable *object);
+  void addUpdatable(Updatable *object);
+  void addPlanetarObject(std::unique_ptr<Planet> planetarObject);
   void addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSystem);
   void addStar(std::unique_ptr<Star> star);
   void addTrail(std::unique_ptr<Trail> trail);
@@ -106,9 +113,10 @@ public:
   const Star &getSun() const;
 
   const glm::vec3 getActiveCameraPosition() const;
-  const std::vector<Object *> &getObjects() const;
+  const std::vector<Renderable *> &getRenderable() const;
   const std::vector<PointLight *> &getPointLights() const;
   const DirectionalLight *getDirLight() const;
   const std::vector<Trail *> &getTrails() const;
   const std::vector<AsteroidSystem *> &getAsteroidSystems() const;
+  const std::vector<Planet *> &getPlanetarObjects() const;
 };

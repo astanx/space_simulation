@@ -160,7 +160,7 @@ void Renderer::renderObjects(Scene &scene)
   this->bindDummyReflector(coreShader);
 
   // Render all objects
-  for (const Object *object : scene.getObjects())
+  for (const Renderable *object : scene.getRenderable())
     object->render(coreShader);
 
   skybox.unbindIrradianceMap();
@@ -195,7 +195,7 @@ void Renderer::renderSkybox(Scene &scene)
 
 void Renderer::renderShadowMap(Scene &scene, Shader &shader)
 {
-  for (const Object *object : scene.getObjects())
+  for (const Renderable *object : scene.getRenderable())
   {
     if (dynamic_cast<const Star *>(object))
       continue;
@@ -279,12 +279,8 @@ void Renderer::renderMoonsRadiance(Scene &scene)
 
   moonsRadianceShader.set1f(scene.getSun().getLuminosity(), "lightLuminocity");
 
-  for (const Object *object : scene.getObjects())
-  {
-    const Planet *planet = dynamic_cast<const Planet *>(object);
-    if (planet)
-      planet->renderMoonsRadiance(moonsRadianceShader, scene.getActiveCamera());
-  }
+  for (const Planet *planet : scene.getPlanetarObjects())
+    planet->renderMoonsRadiance(moonsRadianceShader, scene.getActiveCamera());
 }
 
 // Constructor

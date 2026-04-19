@@ -86,7 +86,6 @@ void OrbitalObject::keplerDrift(double dt)
 
   this->velocity = R * v + centralBody->getVelocity();
   this->position = R * pos + centralBody->getPosition();
-  this->renderPosition = this->realToVisualPos(this->position);
   keplerElements.m = m;
   this->orbit->updateKeplerElements(keplerElements);
 }
@@ -117,7 +116,6 @@ OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, cons
   this->orbit = std::make_unique<Orbit>(centralBody, keplerElements);
   this->position = orbitalToInertial();
   this->position += centralBody->getPosition();
-  this->renderPosition = this->realToVisualPos(this->position);
   if (this->orbit)
   {
     this->velocity = this->orbit->calculateOrbitalVelocity(centralBody, this);
@@ -143,7 +141,6 @@ std::unique_ptr<Trail> OrbitalObject::generateTrail()
   {
     glm::dvec3 pos = this->orbitalToInertial(nu);
     pos += this->orbit->getCentralBody()->getPosition();
-    pos = this->realToVisualPos(pos);
 
     trailVec.push_back(pos);
   }

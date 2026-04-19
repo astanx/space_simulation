@@ -1,6 +1,10 @@
 #pragma once
 
 #include "physics/asteroid.h"
+#include "physics/wisdomHolman.h"
+
+#include "render/renderable.h"
+#include "render/updatable.h"
 
 #include <vector>
 
@@ -9,7 +13,7 @@ class Material;
 class Shader;
 class ThreadPool;
 
-class AsteroidSystem
+class AsteroidSystem : public Renderable, public Updatable, public WisdomHolman
 {
 private:
   ThreadPool &threadPool;
@@ -36,10 +40,11 @@ public:
   AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool);
   ~AsteroidSystem() = default;
 
-  void drift(double dt);
-  void halfKick(const std::vector<Object *> &bodies, double dt);
+  void drift(double dt) override;
+  void halfKick(const std::vector<Object *> &bodies, double dt) override;
 
   void applyObjectGravitation(Object *object);
-  void render(Shader &shader) const;
-  void update(double dt);
+  void render(Shader &shader) const override;
+  void renderInstanced(Shader &shader) const override;
+  void update(double dt) override;
 };

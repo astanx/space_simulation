@@ -5,28 +5,31 @@
 #include <graphics/model.h>
 
 // Constructor
-Star::Star(double mu, double radius, double luminosity, glm::dvec3 position, glm::dvec3 velocity) : Object(mu / G, radius, position, velocity)
+Star::Star(double mu, double radius, double luminosity, glm::dvec3 position, glm::dvec3 velocity)
+    : Object(mu / G, radius, position, velocity), ModelSource(static_cast<PositionSource *>(this))
 {
   this->mu = mu;
   this->luminosity = luminosity;
 }
 
 // Public functions
-void Star::update(double dt)
+void Star::drift(double dt)
 {
-  // this->move(dt);
-  if (this->model)
-    this->model->setPosition(this->renderPosition);
+  this->position += this->velocity * dt;
+  this->renderPosition = this->realToVisualPos(this->position);
 }
 
-void Star::render(Shader &shader) const
+void Star::halfKick(const std::vector<Object *> &bodies, double dt)
 {
-  if (model)
-    model->render(shader);
-}
+  this->acceleration = glm::dvec3(0.0);
 
-void Star::addModel(std::unique_ptr<Model> model)
-{
-  this->model = std::move(model);
-  this->model->setPosition(this->renderPosition);
-};
+  for (Object *other : bodies)
+  {
+    if (other == this)
+      continue;
+
+    this->applyGravitation(*other);
+  }
+
+  this->velocity += dt * this->acceleration; // kick
+}
