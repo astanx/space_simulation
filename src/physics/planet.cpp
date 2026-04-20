@@ -90,9 +90,6 @@ Planet::Planet(Object *centralBody, double mu, double radius, const KeplerElemen
 // Public functions
 void Planet::render(Shader &shader) const
 {
-  for (const std::unique_ptr<Moon> &moon : this->moons)
-    moon->render(shader);
-
   std::optional<ScopedTexture> moonRadianceTextureScope;
 
   if (!this->moons.empty())
