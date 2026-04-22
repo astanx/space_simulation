@@ -4,6 +4,8 @@
 
 #include "graphics/model.h"
 
+#include "render/frustum.h"
+
 class Shader;
 
 class Renderable
@@ -13,6 +15,6 @@ public:
   Renderable() = default;
   virtual ~Renderable() = default;
 
-  virtual void render(Shader &shader) const = 0;
-  virtual void renderInstanced(Shader &shader) const = 0;
+  virtual void render(Shader &shader, Frustum *frustum = nullptr, bool force = false) const = 0;
+  virtual void renderInstanced(Shader &shader, Frustum *frustum = nullptr, bool force = false) const = 0;
 };

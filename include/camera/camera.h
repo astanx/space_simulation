@@ -13,6 +13,8 @@ enum CameraMovement
   DOWN
 };
 
+struct Frustum;
+
 class Camera
 {
 private:
@@ -38,6 +40,7 @@ private:
   float farPlane;
 
   void updateCameraVectors();
+  float getAspect() const;
 
 public:
   Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp);
@@ -46,7 +49,7 @@ public:
   // Getters
   const glm::mat4 getViewMatrix() const;
 
-  const glm::mat4 getProjectionMatrix(float aspectRatio, float overrideFov = -1.0f) const;
+  const glm::mat4 getProjectionMatrix(float aspectRatio = -1.f, float overrideFov = -1.f) const;
 
   const glm::vec3 getPosition() const;
 
@@ -59,4 +62,6 @@ public:
   void processMouseMovement(const float &xpos, const float &ypos);
 
   void processKeyboard(CameraMovement direction, float deltaTime);
+
+  const Frustum getFrustum(float aspectRatio = -1.f) const;
 };

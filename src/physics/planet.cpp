@@ -83,12 +83,12 @@ void Planet::initMoonRadianceFBO()
 
 // Constructor
 Planet::Planet(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements)
-    : OrbitalObject(centralBody, mu, radius, keplerElements), ModelSource(static_cast<PositionSource *>(this))
+    : OrbitalObject(centralBody, mu, radius, keplerElements), ModelSource(static_cast<PositionSource *>(this), radius * VISUAL_RADIUS_SCALE)
 {
 }
 
 // Public functions
-void Planet::render(Shader &shader) const
+void Planet::render(Shader &shader, Frustum *frustum, bool force) const
 {
   std::optional<ScopedTexture> moonRadianceTextureScope;
 
@@ -102,7 +102,7 @@ void Planet::render(Shader &shader) const
   else
     shader.set1i(0, "useReflectorRadiance");
 
-  ModelSource::render(shader);
+  ModelSource::render(shader, frustum);
 };
 
 void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
@@ -148,7 +148,7 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
       for (const auto &moon : moons)
       {
         moon->sendHapkeParametersToShader(shader);
-        moon->render(shader);
+        moon->render(shader, nullptr, true);
       }
     }
   }

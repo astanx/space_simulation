@@ -15,6 +15,8 @@
 
 #include "resources/threadPool.h"
 
+#include "render/frustum.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 
@@ -145,11 +147,70 @@ AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double inne
 }
 
 // Public functions
-void AsteroidSystem::update(double dt)
+void AsteroidSystem::update(double dt, Frustum *frustum, bool force)
 {
   unsigned threadCount = this->threadPool.getThreadCount();
+
+  // std::vector<std::vector<size_t>> counts(this->asteroids.size(), std::vector<size_t>(threadCount, 0));
+
+  // // Calculate counts for each type
+  // for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
+  // {
+  //   unsigned perThread = asteroids[typeIndex].size() / threadCount;
+  //   unsigned remaining = asteroids[typeIndex].size() % threadCount;
+
+  //   unsigned start = 0;
+  //   for (unsigned int i = 0; i < threadCount; i++)
+  //   {
+  //     unsigned work = perThread + (i < remaining ? 1 : 0);
+
+  //     unsigned begin = start;
+  //     unsigned end = begin + work;
+  //     start = end;
+
+  //     this->threadPool.enqueue([this, work, dt, typeIndex, begin, end, frustum, force, &counts, i]()
+  //                              {
+  //     size_t local = 0;
+
+  //     for (unsigned j = begin; j < end; j++)
+  //     {
+  //       std::unique_ptr<Asteroid>& asteroid = this->asteroids[typeIndex][j];
+  //       if ((frustum && frustum->isVisibleSphere(asteroid->getRenderPosition(), asteroid->getRadius() * VISUAL_RADIUS_SCALE)) || force)
+  //         local++;
+  //     } 
+  //     counts[typeIndex][i] = local; });
+  //   }
+  // }
+
+  // this->threadPool.wait();
+
+  // std::vector<size_t> totalCounts(this->asteroids.size(), 0);
+
+  // std::vector<std::vector<size_t>> offsets(
+  //     this->asteroids.size(),
+  //     std::vector<size_t>(threadCount, 0));
+
+  // for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
+  // {
+  //   offsets[typeIndex][0] = 0;
+
+  //   for (size_t i = 1; i < threadCount; i++)
+  //   {
+  //     offsets[typeIndex][i] =
+  //         offsets[typeIndex][i - 1] + counts[typeIndex][i - 1];
+  //   }
+
+  //   // total = last offset + last count
+  //   totalCounts[typeIndex] =
+  //       offsets[typeIndex][threadCount - 1] +
+  //       counts[typeIndex][threadCount - 1];
+  // }
+
+  // Update asteroids
   for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
   {
+    // this->instances[typeIndex].resize(totalCounts[typeIndex]);
+
     // std::cout << "Threads: " << threadCount << std::endl;
     unsigned perThread = asteroids[typeIndex].size() / threadCount;
     unsigned remaining = asteroids[typeIndex].size() % threadCount;
@@ -164,8 +225,9 @@ void AsteroidSystem::update(double dt)
       unsigned end = begin + work;
       start = end;
 
-      this->threadPool.enqueue([this, work, dt, typeIndex, begin, end]()
+      this->threadPool.enqueue([this, work, dt, typeIndex, begin, end, frustum, force]()
                                {
+        // size_t index = offsets[typeIndex][i];
         for (unsigned j = begin; j < end; j++)
         {
           std::unique_ptr<Asteroid>& asteroid = this->asteroids[typeIndex][j];
@@ -278,7 +340,7 @@ void AsteroidSystem::halfKick(const std::vector<Object *> &bodies, double dt)
   this->threadPool.wait();
 }
 
-void AsteroidSystem::render(Shader &shader) const
+void AsteroidSystem::render(Shader &shader, Frustum *frustum, bool force) const
 {
   this->asteroid_material->sendToShader(shader);
 
@@ -286,7 +348,7 @@ void AsteroidSystem::render(Shader &shader) const
     mesh->renderInstanced();
 }
 
-void AsteroidSystem::renderInstanced(Shader &shader) const
+void AsteroidSystem::renderInstanced(Shader &shader, Frustum *frustum, bool force) const
 {
-  this->render(shader);
+  this->render(shader, frustum, force);
 }

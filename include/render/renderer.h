@@ -21,6 +21,7 @@
 class Scene;
 class ResourceManager;
 class Shader;
+struct Frustum;
 
 class Renderer
 {
@@ -37,7 +38,7 @@ private:
   const GLuint shadowRes = 4096;
   std::unique_ptr<ShadowManager> shadowManager;
 
-  void updateUBO(Scene &scene, float aspectRatio);
+  void updateUBO(Scene &scene);
 
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
@@ -46,8 +47,8 @@ private:
   void renderPointShadow(Scene &scene);
   void renderMoonsRadiance(Scene &scene);
   void renderSkybox(Scene &scene);
-  void renderAsteroidSystems(Scene &scene);
-  void renderObjects(Scene &scene);
+  void renderAsteroidSystems(Scene &scene, Frustum* frustum);
+  void renderObjects(Scene &scene, Frustum* frustum);
   void renderTrails(Scene &scene);
 
   void initShaderUBOBindings();

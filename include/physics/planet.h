@@ -34,7 +34,7 @@ public:
 
   void addMoon(std::unique_ptr<Moon> moon);
 
-  void render(Shader &shader) const override;
+  void render(Shader &shader, Frustum* frustum, bool force = false) const override;
 
   void renderMoonsRadiance(Shader &shader, const Camera& camera) const;
 };

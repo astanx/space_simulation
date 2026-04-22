@@ -9,7 +9,7 @@
 
 // Constructor
 Asteroid::Asteroid(Object *centralBody, double mu, double radius, const KeplerElements &elements)
-    : OrbitalObject(centralBody, mu, radius, elements), ModelSource(static_cast<PositionSource *>(this))
+    : OrbitalObject(centralBody, mu, radius, elements), ModelSource(static_cast<PositionSource *>(this), radius * VISUAL_RADIUS_SCALE)
 {
 }
 

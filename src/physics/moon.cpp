@@ -9,7 +9,7 @@
 
 // Constructor
 Moon::Moon(OrbitalObject *centralBody, double mu, double radius, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters) 
-: OrbitalObject(centralBody, mu, radius, keplerElements, false), hapkeParameters(hapkeParameters), ModelSource(static_cast<PositionSource *>(this))
+: OrbitalObject(centralBody, mu, radius, keplerElements, false), hapkeParameters(hapkeParameters), ModelSource(static_cast<PositionSource *>(this), radius * VISUAL_RADIUS_SCALE)
 {
   if (this->useTrail)
     this->generateTrail();
