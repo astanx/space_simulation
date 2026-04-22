@@ -30,7 +30,7 @@
 #include <iostream>
 
 // Private functions
-void Renderer::updateUBO(Scene &scene, float aspectRatio)
+void Renderer::updateUBO(Scene &scene)
 {
   const Camera &activeCamera = scene.getActiveCamera();
 
@@ -39,7 +39,7 @@ void Renderer::updateUBO(Scene &scene, float aspectRatio)
   else
   {
     CameraGPU camUBO{};
-    camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix(aspectRatio);
+    camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix();
     camUBO.ViewMatrix = activeCamera.getViewMatrix();
     camUBO.camPosition = glm::vec4(activeCamera.getPosition(), 1.0);
 
@@ -121,7 +121,7 @@ void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferTy
       GL_DYNAMIC_DRAW));
 }
 
-void Renderer::renderAsteroidSystems(Scene &scene)
+void Renderer::renderAsteroidSystems(Scene &scene, Frustum *frustum)
 {
   Shader &asteroidShader = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
 
@@ -137,12 +137,12 @@ void Renderer::renderAsteroidSystems(Scene &scene)
   skybox.bindIrradianceMap(asteroidShader);
 
   for (const AsteroidSystem *asteroidSystem : scene.getAsteroidSystems())
-    asteroidSystem->render(asteroidShader);
+    asteroidSystem->render(asteroidShader, frustum);
 
   skybox.unbindIrradianceMap();
 }
 
-void Renderer::renderObjects(Scene &scene)
+void Renderer::renderObjects(Scene &scene, Frustum *frustum)
 {
   Shader &coreShader = this->resourceManager.GetShader(Res::CORE_SHADER);
 
@@ -161,7 +161,7 @@ void Renderer::renderObjects(Scene &scene)
 
   // Render all objects
   for (const Renderable *object : scene.getRenderable())
-    object->render(coreShader);
+    object->render(coreShader, frustum);
 
   skybox.unbindIrradianceMap();
 }
@@ -257,8 +257,10 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  this->renderObjects(scene);
-  this->renderAsteroidSystems(scene);
+  Frustum frustum = scene.getActiveCamera().getFrustum();
+
+  this->renderObjects(scene, &frustum);
+  this->renderAsteroidSystems(scene, &frustum);
 }
 
 void Renderer::blitDepthToDefault(const Framebuffer &framebuffer)
@@ -346,20 +348,10 @@ void Renderer::render(Scene &scene, bool useBloom, bool useHDR)
 
 void Renderer::update(Scene &scene, double dt, bool paused)
 {
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-
-  float width = static_cast<float>(viewport[2]);
-  float height = static_cast<float>(viewport[3]);
-
-  float aspect = 1.f;
-  if (height != 0)
-    aspect = width / height;
-
   if (!paused)
     scene.update(dt);
 
-  this->updateUBO(scene, aspect);
+  this->updateUBO(scene);
 }
 
 void Renderer::renderText(const std::string &text, float x, float y, float scale, glm::vec3 color)

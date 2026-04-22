@@ -1,5 +1,7 @@
 #include "camera/camera.h"
 
+#include "render/frustum.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 // Private functions
@@ -12,6 +14,20 @@ void Camera::updateCameraVectors()
   this->front = glm::normalize(this->front);
   this->right = glm::normalize(glm::cross(this->front, this->worldUp));
   this->up = glm::normalize(glm::cross(this->right, this->front));
+}
+
+float Camera::getAspect() const
+{
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  float width = static_cast<float>(viewport[2]);
+  float height = static_cast<float>(viewport[3]);
+
+  float aspect = 1.f;
+  if (height != 0)
+    aspect = width / height;
+  return aspect;
 }
 
 // Constructor and Destructor
@@ -51,6 +67,7 @@ const glm::mat4 Camera::getViewMatrix() const
 }
 const glm::mat4 Camera::getProjectionMatrix(float aspectRatio, float overrideFov) const
 {
+  aspectRatio = aspectRatio == -1.f ? this->getAspect() : aspectRatio;
   float fov = overrideFov == -1.0f ? this->fov : overrideFov;
   return glm::perspective(glm::radians(fov), aspectRatio, this->nearPlane, this->farPlane);
 }
@@ -130,4 +147,28 @@ void Camera::processKeyboard(CameraMovement direction, float deltaTime)
   default:
     break;
   }
+}
+
+const Frustum Camera::getFrustum(float aspectRatio) const
+{
+  aspectRatio = aspectRatio == -1.f ? this->getAspect() : aspectRatio;
+
+  glm::mat4 m = this->getProjectionMatrix(aspectRatio) * this->getViewMatrix();
+
+  Frustum frustum;
+
+  frustum.faces[LEFT_FACE] = m[3] + m[0];
+  frustum.faces[RIGHT_FACE] = m[3] - m[0];
+  frustum.faces[BOTTOM_FACE] = m[3] + m[1];
+  frustum.faces[TOP_FACE] = m[3] - m[1];
+  frustum.faces[NEAR_FACE] = m[3] + m[2];
+  frustum.faces[FAR_FACE] = m[3] - m[2];
+
+  for (auto &face : frustum.faces)
+  {
+    float length = glm::length(glm::vec3(face));
+    face /= length;
+  }
+
+  return frustum;
 }

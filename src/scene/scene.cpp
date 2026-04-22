@@ -116,7 +116,6 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   this->addObject(ptr);
   this->addWisdomHolman(ptr);
 
-
   return ptr;
 }
 
@@ -226,8 +225,10 @@ void Scene::update(double dt)
   //   }
   // }
 
+  Frustum frustum = this->activeCamera->getFrustum();
+
   for (Updatable *&object : this->updatable)
-    object->update(dt);
+    object->update(dt, &frustum);
 
   if (this->pointLights[0])
     this->pointLights[0]->move(this->sun->getRenderPosition()); // move sun light

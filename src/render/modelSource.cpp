@@ -20,14 +20,15 @@ glm::dvec3 ModelSource::realToVisualPos(glm::dvec3 pos)
 }
 
 // Constructor
-ModelSource::ModelSource(const PositionSource *src)
+ModelSource::ModelSource(const PositionSource *src, double radius)
 {
   this->src = src;
+  this->radius = radius;
   this->updateRenderPosition(src->getPosition());
 }
 
 // Public functions
-void ModelSource::update(double dt)
+void ModelSource::update(double dt, Frustum *frustum, bool force)
 {
   this->updateRenderPosition(src->getPosition());
 
@@ -35,14 +36,20 @@ void ModelSource::update(double dt)
     this->model->setPosition(this->renderPosition);
 }
 
-void ModelSource::render(Shader &shader) const
+void ModelSource::render(Shader &shader, Frustum *frustum, bool force) const
 {
+  if (!force && frustum && !frustum->isVisibleSphere(this->renderPosition, this->radius))
+    return;
+
   if (model)
     model->render(shader);
 }
 
-void ModelSource::renderInstanced(Shader &shader) const
+void ModelSource::renderInstanced(Shader &shader, Frustum *frustum, bool force) const
 {
+  if (!force && frustum && !frustum->isVisibleSphere(this->renderPosition, this->radius))
+    return;
+
   if (model)
     model->renderInstanced();
 }
