@@ -50,18 +50,18 @@ Texture::Texture(GLsizei width, GLsizei height, GLenum target, GLint internalFor
 
   glBindTexture(target, this->id);
 
-  GL_CALL(glTexImage2D(
-      target,
-      0,
-      internalFormat,
-      width,
-      height,
-      0,
-      format,
-      type,
-      pixels));
+  if (target != GL_TEXTURE_CUBE_MAP)
+    GL_CALL(glTexImage2D(
+        target,
+        0,
+        internalFormat,
+        width,
+        height,
+        0,
+        format,
+        type,
+        pixels));
 
-      
   glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
