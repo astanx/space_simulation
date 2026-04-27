@@ -53,6 +53,8 @@ public:
 
   const glm::vec3 getPosition() const;
 
+  void updateMovementSpeed(float incrementor) { this->movementSpeed += incrementor; };
+
   const float getNearPlane() const { return this->nearPlane; };
   const float getFarPlane() const { return this->farPlane; };
 
