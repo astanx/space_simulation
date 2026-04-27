@@ -38,10 +38,10 @@ private:
   Camera *activeCamera;
   Skybox *skybox;
 
-  std::vector<Updatable*> updatable;
-  std::vector<Renderable*> renderable;
-  std::vector<Object*> objects;
-  std::vector<WisdomHolman*> wisdomHolmanObjects;
+  std::vector<Updatable *> updatable;
+  std::vector<Renderable *> renderable;
+  std::vector<Object *> objects;
+  std::vector<WisdomHolman *> wisdomHolmanObjects;
 
   std::vector<std::unique_ptr<Planet>> planetarObjects;
   std::vector<Planet *> planetarObjectViews;
@@ -106,6 +106,8 @@ public:
   void addDirLight(std::unique_ptr<DirectionalLight> directionalLight);
   void addCamera(std::unique_ptr<Camera> camera);
   void addSkybox(std::unique_ptr<Skybox> skybox);
+
+  void updateCameraMovementSpeed(float incrementor) { this->activeCamera->updateMovementSpeed(incrementor); };
 
   // Getters
   const Camera &getActiveCamera() const;

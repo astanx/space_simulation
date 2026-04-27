@@ -266,6 +266,17 @@ void Application::processInput()
     this->paused = !this->paused;
   }
 
+  if (this->input.isKeyPressed(GLFW_KEY_MINUS))
+  {
+    this->scene.updateCameraMovementSpeed(-1.f);
+  }
+
+  if (this->input.isKeyPressed(GLFW_KEY_EQUAL))
+  {
+    this->scene.updateCameraMovementSpeed(1.f);
+  }
+
+
   if (this->input.isKeyPressed(GLFW_KEY_UP))
   {
     if (this->timeScale > 0)
