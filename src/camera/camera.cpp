@@ -153,7 +153,7 @@ const Frustum Camera::getFrustum(float aspectRatio) const
 {
   aspectRatio = aspectRatio == -1.f ? this->getAspect() : aspectRatio;
 
-  glm::mat4 m = this->getProjectionMatrix(aspectRatio) * this->getViewMatrix();
+  glm::mat4 m = glm::transpose(this->getProjectionMatrix(aspectRatio) * this->getViewMatrix());
 
   Frustum frustum;
 
