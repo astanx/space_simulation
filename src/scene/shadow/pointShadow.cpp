@@ -24,7 +24,7 @@ void PointShadow::initShadowMap()
   ScopedTexture shadowMap(*this->shadowMapTexture);
 
   for (unsigned i = 0; i < 6; i++)
-    GL_CALL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R16F,
+    GL_CALL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R32F,
                          this->shadowWidth, this->shadowHeight, 0, GL_RED, GL_FLOAT, NULL));
 
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -81,6 +81,7 @@ PointShadow::PointShadow(const GLuint width, const GLuint height, glm::vec3 ligh
 void PointShadow::bind(Shader &shader, int textureUnit, const std::string &name) const
 {
   const std::string &finalName = name.empty() ? "esmMap" : name;
+
 
   this->shadowMapTexture->activate(textureUnit);
   this->shadowMapTexture->bind();

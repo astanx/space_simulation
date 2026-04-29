@@ -89,9 +89,7 @@ Texture::~Texture()
 void Texture::bind() const
 {
   if (glIsTexture(this->id))
-  {
     glBindTexture(this->target, this->id);
-  }
   else
     Logger::logError("Texture", "No texture to bind");
 }

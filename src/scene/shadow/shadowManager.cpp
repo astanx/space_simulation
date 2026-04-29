@@ -235,7 +235,7 @@ void ShadowManager::bindPointShadowDepth(Shader &shader, const std::string &name
   if (!this->pointShadow)
     return;
 
-  this->pointShadow->bindDepth(shader, TextureBindingPoints::PointShadow, name);
+  this->pointShadow->bindDepth(shader, TextureBindingPoints::DepthMap, name);
 }
 
 // Setters
