@@ -19,25 +19,16 @@ out VS_OUT {
 } vs_out;
 
 uniform mat4 ModelMatrix;
-uniform bool useModelMatrix;
 
 uniform bool useTBN;
 
-mat4 getModelMatrix()
-{
-  return useModelMatrix ?
-  ModelMatrix 
-  : mat4(1.0);
-}
-
 void main()
 {
-  mat4 model = getModelMatrix();
-  vs_out.vs_position = vec3(model * vec4(vertex_position, 1.0));
+  vs_out.vs_position = vec3(ModelMatrix * vec4(vertex_position, 1.0));
   //vs_out.vs_texcoord = vec2(vertex_texcoord.x, vertex_texcoord.y * -1);
   vs_out.vs_texcoord = vec2(vertex_texcoord.x, vertex_texcoord.y);
   
-  mat3 normalMatrix = transpose(inverse(mat3(model)));
+  mat3 normalMatrix = transpose(inverse(mat3(ModelMatrix)));
   vs_out.vs_normal = normalize(normalMatrix * vertex_normal);
 
   if (useTBN)
@@ -46,7 +37,7 @@ void main()
     vec3 T = normalize(normalMatrix * vertex_tangent.xyz);
 
     // Gram-Schmidt re-orthogonalization
-    //T = normalize(T - dot(T, N) * N);
+    T = normalize(T - dot(T, N) * N);
 
     vec3 B = cross(N, T) * vertex_tangent.w;
 
@@ -57,5 +48,5 @@ void main()
     vs_out.vs_tangentPos  = TBN * vs_out.vs_position;
   }
 
-  gl_Position = ProjectionMatrix * ViewMatrix * model * vec4(vertex_position, 1.f);
+  gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vertex_position, 1.f);
 }

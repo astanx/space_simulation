@@ -145,13 +145,10 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, samplerCube
 
   float currentDepthNorm = currentDepth / far_plane;
 
-  float esm = exp(-c * currentDepthNorm) * filtered;
+  float esm = filtered * exp(-c * currentDepthNorm);
 
-  if ((esm > 1.1f || esm < 0.0f) || true) // force pcf, as esm is not suitable
-  {
-    float bias = max(0.003 * (1.0 - dot(normal, normalize(fragToLight))), 0.0005);
+  if (isnan(esm) || isinf(esm) || esm > 1.5f || esm < -0.2f || true) // force pcf anyway, esm is not stable
     return CalcPointShadowPCF(fragToLight, currentDepth, depthMap, far_plane, normal);
-  }
   
   return clamp(esm, 0.0, 1.0);
 }

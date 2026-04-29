@@ -1,5 +1,6 @@
 #pragma once
 
+// max - 16
 namespace TextureBindingPoints
 {
   constexpr unsigned int Diffuse = 0;
@@ -17,4 +18,5 @@ namespace TextureBindingPoints
   constexpr unsigned int EnvironmentMap = 12;
   constexpr unsigned int IrradianceMap = 13;
   constexpr unsigned int Blur = 14;
+  constexpr unsigned int DepthMap = 15;
 }

@@ -105,7 +105,7 @@ void Renderer::bindUBOs()
 void Renderer::bindDummyReflector(Shader &shader)
 {
   glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::EnvironmentMap);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, TextureBindingPoints::EnvironmentMap);
   shader.set1i(TextureBindingPoints::EnvironmentMap, "reflectorRadianceCubemap");
   shader.set1i(0, "useReflectorRadiance");
 }
@@ -236,14 +236,15 @@ void Renderer::renderPointShadow(Scene &scene)
 
   GLuint &pointShadowID = pointShadowShader.getId();
 
+  glClearColor(exp(40.0f), 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   ScopedShader pointShadowSd(pointShadowID);
-  ScopedCullFace cullFace(GL_FRONT);
+  // ScopedCullFace cullFace(GL_FRONT);
 
   this->renderShadowMap(scene, pointShadowShader);
 
-  this->blur.blur(this->shadowManager->getPointShadow()->getDepthTexture(), 8, true);
+  this->blur.blur(this->shadowManager->getPointShadow()->getShadowMapTexture(), 16, true);
 }
 
 void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, bool useFramebuffer)

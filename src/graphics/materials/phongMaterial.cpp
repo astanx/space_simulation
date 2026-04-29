@@ -46,8 +46,6 @@ void PhongMaterial::sendToShader(Shader &program)
   program.set1f(this->shininess, "phongMaterial.shininess");
   program.setVec3f(this->emissive, "phongMaterial.emissive");
 
-  // int isTexture = 0;
-
   this->sendTexture(this->diffuseTexture, program, TextureBindingPoints::Diffuse, "phongMaterial.diffuseTexture");
   this->sendTexture(this->specularTexture, program, TextureBindingPoints::Specular, "phongMaterial.specularTexture");
   this->sendTexture(this->normalTexture, program, TextureBindingPoints::Normal, "phongMaterial.normalTexture");
@@ -55,7 +53,4 @@ void PhongMaterial::sendToShader(Shader &program)
     program.set1i(1, "useTBN");
   else
     program.set1i(0, "useTBN");
-
-
-  // program.set1i(isTexture, "isTexture");
 }
