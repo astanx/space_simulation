@@ -33,7 +33,7 @@ void PostProcess::renderFullscreenQuad(bool useBloom)
 
   hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
   hdrShader.set1i(TextureBindingPoints::Bloom, "bloomBlur");
-  hdrShader.set1f(5e-3f, "exposure");
+  hdrShader.set1f(5e-4f, "exposure");
   hdrShader.set1f(0.22f, "bloomPower");
 
   this->blur.renderFullscreenQuad();

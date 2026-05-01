@@ -158,7 +158,7 @@ void Scene::init()
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
       this->sun->getRenderPosition(),
       glm::vec3(1.0f),
-      sunLuminosity * VISUAL_SCALE * VISUAL_SCALE,
+      sunLuminosity * VISUAL_RADIUS_SCALE * VISUAL_RADIUS_SCALE,
       1.f);
   this->addPointLight(std::move(pointLight));
 

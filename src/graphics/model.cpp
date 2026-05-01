@@ -20,7 +20,6 @@ void Model::updateUniforms(Shader &shader)
   if (this->material)
     this->material->sendToShader(shader);
   shader.setMat4fv(this->ModelMatrix, "ModelMatrix");
-  shader.set1i(1, "useModelMatrix");
 }
 
 void Model::updateModelMatrix()

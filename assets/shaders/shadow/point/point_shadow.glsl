@@ -147,7 +147,7 @@ float CalcPointShadow(vec3 pos, vec4 lightPos, samplerCube depthMap, samplerCube
 
   float esm = filtered * exp(-c * currentDepthNorm);
 
-  if (isnan(esm) || isinf(esm) || esm > 1.5f || esm < -0.2f || true) // force pcf anyway, esm is not stable
+ //if (isnan(esm) || isinf(esm) || esm > 1.f || esm < 0.f)
     return CalcPointShadowPCF(fragToLight, currentDepth, depthMap, far_plane, normal);
   
   return clamp(esm, 0.0, 1.0);
