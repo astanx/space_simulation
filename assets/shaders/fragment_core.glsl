@@ -67,5 +67,5 @@ void main()
   //result += vec4(phongMaterial.emissive * albedo, 0.0);
 
   fs_color = result;
-  fs_color = vec4(vec3(shadow), 1.0);
+  //fs_color = vec4(vec3(shadow), 1.0);
 }
