@@ -39,6 +39,26 @@ void Scene::wisdomHolman(double dt)
   this->halfKick(dt);
 }
 
+void Scene::updateFrameContext(bool first)
+{
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  float width = static_cast<float>(viewport[2]);
+  float height = static_cast<float>(viewport[3]);
+
+  float aspect = 1.f;
+  if (height != 0)
+    aspect = width / height;
+
+  this->ctx.width = width;
+  this->ctx.height = height;
+  this->ctx.aspect = aspect;
+
+  if (first)
+    this->ctx.exposure = 5e-4f;
+}
+
 // Constructor/Destructor
 Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadPool(threadPool), resourceManager(resourceManager)
 {
@@ -169,9 +189,12 @@ void Scene::init()
   //     glm::vec3(1.0f), 1.f);
   // this->addDirLight(std::move(dirLight));
 
+  this->updateFrameContext(true);
+
   std::unique_ptr<Camera> cam = std::make_unique<Camera>(sunPos,
                                                          glm::vec3(0.0f, 0.0f, -1.0f),
-                                                         glm::vec3(0.0f, 1.0f, 0.0f));
+                                                         glm::vec3(0.0f, 1.0f, 0.0f),
+                                                         this->ctx.width, this->ctx.height);
 
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();
@@ -214,6 +237,8 @@ void Scene::processMouseScroll(float yoffset)
 
 void Scene::update(double dt)
 {
+  this->updateFrameContext();
+
   this->wisdomHolman(dt);
 
   // for (size_t i = 0; i < objects.size(); ++i)
@@ -225,7 +250,7 @@ void Scene::update(double dt)
   //   }
   // }
 
-  Frustum frustum = this->activeCamera->getFrustum();
+  Frustum frustum = this->activeCamera->getFrustum(this->ctx.aspect);
 
   for (Updatable *&object : this->updatable)
     object->update(dt, &frustum);
@@ -303,6 +328,11 @@ void Scene::addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSystem)
 }
 
 // Getters
+FrameContext *Scene::getFrameContext()
+{
+  return &this->ctx;
+}
+
 const Camera &Scene::getActiveCamera() const
 {
   if (!this->activeCamera)

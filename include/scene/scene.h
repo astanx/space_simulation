@@ -2,6 +2,8 @@
 
 #include "camera/camera.h"
 
+#include "scene/frameContext.h"
+
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
 
@@ -37,6 +39,7 @@ private:
   ThreadPool &threadPool;
   Camera *activeCamera;
   Skybox *skybox;
+  FrameContext ctx;
 
   std::vector<Updatable *> updatable;
   std::vector<Renderable *> renderable;
@@ -69,6 +72,8 @@ private:
   void halfKick(double dt);
   void drift(double dt);
   void wisdomHolman(double dt);
+
+  void updateFrameContext(bool first = false);
 
 public:
   Scene(ResourceManager &resourceManager, ThreadPool &threadPool);
@@ -110,6 +115,7 @@ public:
   void updateCameraMovementSpeed(float incrementor) { this->activeCamera->updateMovementSpeed(incrementor); };
 
   // Getters
+  FrameContext* getFrameContext();
   const Camera &getActiveCamera() const;
   const Skybox &getActiveSkybox() const;
   const Star &getSun() const;

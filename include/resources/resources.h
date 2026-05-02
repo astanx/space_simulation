@@ -20,8 +20,11 @@ namespace Res
   const std::string CUBEMAP_SHADER = "cubemap";
   const std::string CONVOLUTION_SHADER = "convolution";
   const std::string REFLECTION_SHADER = "reflection";
+  const std::string DOWNSAMPLE_SHADER = "downsample";
+  const std::string UPSAMPLE_SHADER = "upsample";
 
   // Mesh
+  const std::string FULLSCREEN_QUAD = "fullscreenquad";
   const std::string CUBE_MESH = "cube";
   const std::string PLANE_MESH = "plane";
   const std::string CIRCLE_MESH = "circle";

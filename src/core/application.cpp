@@ -7,6 +7,7 @@
 #include "resources/resources.h"
 
 #include "graphics/primitives/ellipsoid.h"
+#include "graphics/primitives/quad.h"
 
 #include "physics/constants.h"
 
@@ -131,6 +132,8 @@ Application::Application(
   this->resourceManager.LoadShader(Res::CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/cubemap/vertex.glsl", "assets/shaders/cubemap/fragment.glsl");
   this->resourceManager.LoadShader(Res::CONVOLUTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/convolution/vertex.glsl", "assets/shaders/convolution/fragment.glsl");
   this->resourceManager.LoadShader(Res::REFLECTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/reflector/vertex.glsl", "assets/shaders/reflector/fragment.glsl");
+  this->resourceManager.LoadShader(Res::DOWNSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/down/vertex.glsl", "assets/shaders/sample/down/fragment.glsl");
+  this->resourceManager.LoadShader(Res::UPSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/up/vertex.glsl", "assets/shaders/sample/up/fragment.glsl");
 
   loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, sunMaterial, sunLuminosity * VISUAL_RADIUS_SCALE * VISUAL_RADIUS_SCALE);
   loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
@@ -142,6 +145,8 @@ Application::Application(
 
   Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/diffuse/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
+
+  this->resourceManager.LoadMesh(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
 
   this->scene.init();
   this->renderer.init(this->scene);

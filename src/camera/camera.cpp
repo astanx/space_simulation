@@ -16,30 +16,10 @@ void Camera::updateCameraVectors()
   this->up = glm::normalize(glm::cross(this->right, this->front));
 }
 
-float Camera::getAspect() const
-{
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-
-  float width = static_cast<float>(viewport[2]);
-  float height = static_cast<float>(viewport[3]);
-
-  float aspect = 1.f;
-  if (height != 0)
-    aspect = width / height;
-  return aspect;
-}
-
 // Constructor and Destructor
-Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp)
+Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float width, float height)
     : position(position), front(front), worldUp(worldUp), up(worldUp)
 {
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-
-  float width = static_cast<float>(viewport[2]);
-  float height = static_cast<float>(viewport[3]);
-
   this->mouseSensitivity = 0.2f;
   this->movementSpeed = 1.5f;
 
@@ -67,7 +47,6 @@ const glm::mat4 Camera::getViewMatrix() const
 }
 const glm::mat4 Camera::getProjectionMatrix(float aspectRatio, float overrideFov) const
 {
-  aspectRatio = aspectRatio == -1.f ? this->getAspect() : aspectRatio;
   float fov = overrideFov == -1.0f ? this->fov : overrideFov;
   return glm::perspective(glm::radians(fov), aspectRatio, this->nearPlane, this->farPlane);
 }
@@ -151,8 +130,6 @@ void Camera::processKeyboard(CameraMovement direction, float deltaTime)
 
 const Frustum Camera::getFrustum(float aspectRatio) const
 {
-  aspectRatio = aspectRatio == -1.f ? this->getAspect() : aspectRatio;
-
   glm::mat4 m = glm::transpose(this->getProjectionMatrix(aspectRatio) * this->getViewMatrix());
 
   Frustum frustum;

@@ -15,7 +15,6 @@ class GaussianBlur
 {
 private:
   std::vector<float> weights;
-  std::unique_ptr<Mesh> fullscreenQuad;
 
   ResourceManager &resourceManager;
 
@@ -40,7 +39,6 @@ public:
 
   void blur(const Texture &source, size_t amount, bool isCube = false);
   
-  void renderFullscreenQuad() { this->fullscreenQuad->render(); };
   Framebuffer *getPingPongFBO(size_t index) { return this->pingpongFBOs[index].get(); };
   Texture *getPingPongBuffer(size_t index) { return this->pingpongBuffers[index].get(); };
   Texture *getFinalTexture() { return this->finalTexture; };

@@ -2,6 +2,8 @@
 
 #include "resources/resourceManager.h"
 
+#include "scene/frameContext.h"
+
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
 
@@ -13,28 +15,46 @@
 
 #include <memory>
 
+struct bloomMip
+{
+  glm::vec2 mipSize;
+  std::unique_ptr<Texture> mipTexture;
+};
+
 class PostProcess
 {
 private:
   std::unique_ptr<Framebuffer> hdrFBO;
   std::unique_ptr<RenderBuffer> rboDepth;
   std::unique_ptr<Texture> hdrColorBufferTexture;
+  
+  std::unique_ptr<Texture> bloomExtractTexture;
+  std::unique_ptr<Framebuffer> bloomFBO;
+
+  std::unique_ptr<Framebuffer> mipFBO;
+  std::vector<bloomMip> mipChain;
 
   ResourceManager &resourceManager;
+  FrameContext* ctx;
 
   GaussianBlur blur;
 
   void renderFullscreenQuad(bool useBloom);
 
-  void initHDR();
+  void initHDR(float width, float height);
+  void initBloom(float width, float height);
+  void initMip(unsigned int chainLength);
 
+  void downsampleBloom();
+  void upsampleBloom();
+  void extractBloom();
   void renderBloom();
 
 public:
   PostProcess(ResourceManager &resourceManager);
   ~PostProcess() = default;
 
-  void init();
+  void init(FrameContext* ctx);
 
   void process(bool useBloom);
 
