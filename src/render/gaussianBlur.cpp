@@ -98,7 +98,6 @@ GaussianBlur::GaussianBlur(ResourceManager &resourceManager) : resourceManager(r
 void GaussianBlur::init(size_t kernelSize, float stddev, bool isCube, int cubemapResolution)
 {
   this->weights = createGaussianBlurWeights(kernelSize, stddev);
-  this->fullscreenQuad = std::make_unique<Mesh>(std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
 
   if (!isCube)
     this->initBuffersFor2D();
@@ -139,7 +138,7 @@ void GaussianBlur::blur(const Texture &source, size_t amount, bool isCube)
     shader.set1i(horizontal, "horizontal");
     shader.set1i(TextureBindingPoints::Blur, isCube ? "cube" : "image");
 
-    this->fullscreenQuad->render();
+    this->resourceManager.GetMesh(Res::FULLSCREEN_QUAD).render();
 
     horizontal = !horizontal;
     if (first_iteration)

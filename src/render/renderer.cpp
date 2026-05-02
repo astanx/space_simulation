@@ -39,7 +39,7 @@ void Renderer::updateUBO(Scene &scene)
   else
   {
     CameraGPU camUBO{};
-    camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix();
+    camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix(this->ctx->aspect);
     camUBO.ViewMatrix = activeCamera.getViewMatrix();
     camUBO.camPosition = glm::vec4(activeCamera.getPosition(), 1.0);
 
@@ -187,6 +187,8 @@ void Renderer::renderSkybox(Scene &scene)
 
   ScopedShader skyboxSd(skyboxID);
 
+  skyboxShader.set1f(this->ctx->exposure, "exposure");
+
   ScopedCullFace cullFace(GL_FRONT);
   ScopedDepthMask depthMask(GL_FALSE);
 
@@ -258,10 +260,11 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  Frustum frustum = scene.getActiveCamera().getFrustum();
+  Frustum frustum = scene.getActiveCamera().getFrustum(this->ctx->aspect);
 
   this->renderObjects(scene, &frustum);
   this->renderAsteroidSystems(scene, &frustum);
+  this->renderSkybox(scene);
 }
 
 void Renderer::blitDepthToDefault(const Framebuffer &framebuffer)
@@ -317,8 +320,10 @@ void Renderer::init(Scene &scene)
                                                                         activeCamera.getFarPlane()));
   }
 
+  this->ctx = scene.getFrameContext();
+
   this->textRenderer.init();
-  this->postProcess.init();
+  this->postProcess.init(ctx);
 
   this->initShaderUBOBindings();
 }
@@ -343,7 +348,6 @@ void Renderer::render(Scene &scene, bool useBloom, bool useHDR)
     this->blitDepthToDefault(hdrFramebuffer);
   }
 
-  this->renderSkybox(scene);
   this->renderTrails(scene);
 }
 

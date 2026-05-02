@@ -30,6 +30,7 @@ private:
   TextRenderer textRenderer;
   PostProcess postProcess;
   GaussianBlur blur;
+  FrameContext* ctx;
 
   unsigned int cameraUBO;
 

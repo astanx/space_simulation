@@ -44,8 +44,7 @@ float getMetallic(PBRMaterial material, vec2 texcoord)
 
 float getAO(PBRMaterial material, vec2 texcoord)
 {
-  // temporary
-  return 1.0;
+  return 0.4;
   return texture(material.aoMap, texcoord).r;
 }
 
