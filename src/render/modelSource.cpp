@@ -49,7 +49,7 @@ void ModelSource::render(Shader &shader, Frustum *frustum, bool force) const
     return;
 
   {
-    ScopedPolygonOffset offset(true, 5.f, 5.f);
+    ScopedPolygonOffset offset(true, .1f, 4.f);
     this->mainLayer->render(shader);
   }
 
