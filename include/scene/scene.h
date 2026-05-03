@@ -75,10 +75,6 @@ private:
 
   void updateFrameContext(bool first = false);
 
-public:
-  Scene(ResourceManager &resourceManager, ThreadPool &threadPool);
-  ~Scene() = default;
-
   Planet *createPlanet(std::string name, std::string material_name, double mu,
                        double radius, Object *centralBody, const KeplerElements keplerElements);
 
@@ -88,7 +84,13 @@ public:
   Moon *createMoon(std::string name, std::string material_name, double mu,
                    double radius, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters);
 
+  void addLayerToModelSource(std::string name, std::string material_name, ModelSource* object);
+
   AsteroidSystem *createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge);
+
+public:
+  Scene(ResourceManager &resourceManager, ThreadPool &threadPool);
+  ~Scene() = default;
 
   // Process functions
   void init();
@@ -112,7 +114,7 @@ public:
   void addCamera(std::unique_ptr<Camera> camera);
   void addSkybox(std::unique_ptr<Skybox> skybox);
 
-  void updateCameraMovementSpeed(float incrementor) { this->activeCamera->updateMovementSpeed(incrementor); };
+  void updateCameraMovementSpeed(float factor) { this->activeCamera->updateMovementSpeed(factor); };
 
   // Getters
   FrameContext* getFrameContext();

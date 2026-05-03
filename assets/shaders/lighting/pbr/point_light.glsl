@@ -20,7 +20,7 @@ struct PBRPointLight
 
 vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, vec2 texcoord, PBRMaterial material, PBRPointLight light, float shadow, samplerCube irradianceMap, vec3 reflectColor)
 {
-  vec3 albedo = getAlbedo(material, texcoord);
+  vec3 albedo = getAlbedo(material, texcoord).rgb;
   float roughness = getRoughness(material, texcoord);
   float metallic = getMetallic(material, texcoord);
   float ao = getAO(material, texcoord);

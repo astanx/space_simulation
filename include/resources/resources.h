@@ -42,6 +42,9 @@ namespace Res
   const std::string URANUS = "uranus";
   const std::string NEPTUNE = "neptune";
 
+  const std::string EARTH_ATMOSPHERE = "earth_atmosphere";
+  const std::string VENUS_ATMOSPHERE = "venus_atmosphere";
+
   // Texture
   const std::string ASTEROID_DIFFUSE = "asteroid_diffuse";
 
@@ -82,6 +85,9 @@ namespace Res
   const std::string URANUS_NORMAL = "uranus_normal";
   const std::string NEPTUNE_NORMAL = "neptune_normal";
 
+  const std::string EARTH_ATMOSPHERE_DIFFUSE = "earth_atmosphere_diffuse";
+  const std::string VENUS_ATMOSPHERE_DIFFUSE = "venus_atmosphere_diffuse";
+
   // Material
   const std::string ASTEROID_MATERIAL = "asteroid_material";
 
@@ -96,6 +102,6 @@ namespace Res
   const std::string URANUS_MATERIAL = "uranus_material";
   const std::string NEPTUNE_MATERIAL = "neptune_material";
 
-  // Model
-  // const std::string BACKPACK = "backpack";
+  const std::string EARTH_ATMOSPHERE_MATERIAL = "earth_atmosphere_material";
+  const std::string VENUS_ATMOSPHERE_MATERIAL = "venus_atmosphere_material";
 }
