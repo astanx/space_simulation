@@ -109,6 +109,7 @@ add_executable(Space
         src/graphics/state/scopedBuffer.cpp
         src/graphics/state/scopedTexture.cpp
         src/graphics/state/scopedShader.cpp
+        src/graphics/state/scopedPolygonOffset.cpp
         # Framebuffers
         src/graphics/framebuffers/framebuffer.cpp
         # Buffers

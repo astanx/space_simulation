@@ -59,14 +59,6 @@ void Scene::updateFrameContext(bool first)
     this->ctx.exposure = 5e-4f;
 }
 
-// Constructor/Destructor
-Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadPool(threadPool), resourceManager(resourceManager)
-{
-  this->activeCamera = nullptr;
-  this->skybox = nullptr;
-}
-
-// Public functions
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
                             double radius, Object *centralBody, const KeplerElements keplerElements)
 {
@@ -76,7 +68,7 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
 
   std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radius, keplerElements);
 
-  planet->addModel(std::move(model));
+  planet->addMainLayer(std::move(model));
 
   Planet *ptr = planet.get();
 
@@ -101,7 +93,7 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 
   std::unique_ptr<Star> star = std::make_unique<Star>(mu, radius, luminosity, position, velocity);
 
-  star->addModel(std::move(model));
+  star->addMainLayer(std::move(model));
 
   Star *ptr = star.get();
   this->addStar(std::move(star));
@@ -122,7 +114,7 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
 
   std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, keplerElements, hapkeParameters);
 
-  moon->addModel(std::move(model));
+  moon->addMainLayer(std::move(model));
   if (moon->getUseTrail())
     this->addTrail(moon->generateTrail());
 
@@ -152,14 +144,32 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
   return ptr;
 }
 
+void Scene::addLayerToModelSource(std::string name, std::string material_name, ModelSource* object)
+{
+  Mesh &mesh = this->resourceManager.GetMesh(name);
+  Material &mat = this->resourceManager.GetMaterial(material_name);
+  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
+
+  object->addLayer(std::move(model));
+}
+
+// Constructor/Destructor
+Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadPool(threadPool), resourceManager(resourceManager)
+{
+  this->activeCamera = nullptr;
+  this->skybox = nullptr;
+}
+
 // Process functions
 void Scene::init()
 {
   Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii.mean, sunLuminosity * VISUAL_SCALE * VISUAL_SCALE, sunPos);
   this->sun = sunPtr;
   createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadii.mean, sunPtr, mercuryElements);
-  createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii.mean, sunPtr, venusElements);
+  Planet *venusPtr = createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii.mean, sunPtr, venusElements);
+  addLayerToModelSource(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_MATERIAL, venusPtr);
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii.mean, sunPtr, earthElements);
+  addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii.mean, earthPtr, moonElements, moonHapkeParameters);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii.mean, sunPtr, marsElements);
   createAsteroidSystem(sunPtr, 20000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);

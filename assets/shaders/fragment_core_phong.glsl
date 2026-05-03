@@ -53,11 +53,11 @@ void main()
     viewDir = normalize(camPosition.xyz - position);
   }
 
-  vec3 albedo = getAlbedo(phongMaterial, fs_in.vs_texcoord);
+  vec4 albedo = getAlbedo(phongMaterial, fs_in.vs_texcoord);
   vec3 specularMap = getSpecularMap(phongMaterial, fs_in.vs_texcoord);
 /*
 
-  vec4 result = CalcDirLight(dirLight, normal, viewDir, phongMaterial, albedo, specularMap);
+  vec4 result = CalcDirLight(dirLight, normal, viewDir, phongMaterial, albedo.rgb, specularMap);
   result += CalcPointLight(
     phongPointLight,
     normal,
@@ -70,7 +70,7 @@ void main()
 
   */
 
-  vec4 dir = CalcDirLight(dirLight, normal, viewDir, phongMaterial, albedo, specularMap);
+  vec4 dir = CalcDirLight(dirLight, normal, viewDir, phongMaterial, albedo.rgb, specularMap);
   
   float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, far_plane, fs_in.vs_normal);
 

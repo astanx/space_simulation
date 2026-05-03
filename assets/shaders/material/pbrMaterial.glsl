@@ -13,11 +13,11 @@ struct PBRMaterial
   float emissiveStrength;
 };
 
-vec3 getAlbedo(PBRMaterial material, vec2 texcoord)
+vec4 getAlbedo(PBRMaterial material, vec2 texcoord)
 {
-  vec3 albedo = texture(material.albedoMap, texcoord).rgb;
+  vec4 albedo = texture(material.albedoMap, texcoord).rgba;
 
-  return srgbToLinear(vec4(albedo, 1.0)).rgb;
+  return srgbToLinear(albedo);
 }
 
 vec3 getNormal(PBRMaterial material, vec2 texcoord, vec3 normal, bool hasNormalMap)

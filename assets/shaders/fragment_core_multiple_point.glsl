@@ -26,10 +26,10 @@ void main()
   vec3 normal = normalize(fs_in.vs_normal);
   vec3 viewDir = normalize(camPosition - fs_in.vs_position);
 
-  vec3 albedo = getAlbedo(isTexture, material, fs_in.vs_texcoord, fs_in.vs_color);
+  vec4 albedo = getAlbedo(isTexture, material, fs_in.vs_texcoord, fs_in.vs_color);
   vec3 specularMap = getSpecularMap(isTexture, material, fs_in.vs_texcoord);
 
-  vec4 result = CalcDirLight(dirLight, normal, viewDir, material, albedo, specularMap);
+  vec4 result = CalcDirLight(dirLight, normal, viewDir, material, albedo.rgb, specularMap);
   
   for (int i = 0; i < pointLightCount; ++i)
   {

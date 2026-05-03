@@ -135,13 +135,15 @@ Application::Application(
   this->resourceManager.LoadShader(Res::DOWNSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/down/vertex.glsl", "assets/shaders/sample/down/fragment.glsl");
   this->resourceManager.LoadShader(Res::UPSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/up/vertex.glsl", "assets/shaders/sample/up/fragment.glsl");
 
-  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, sunMaterial, sunLuminosity * VISUAL_RADIUS_SCALE * VISUAL_RADIUS_SCALE);
-  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, mercuryMaterial);
-  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, venusMaterial);
-  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, earthMaterial, 0.0f, Res::EARTH_NORMAL);
-  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, moonMaterial);
-  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, marsMaterial);
-  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, jupiterMaterial);
+  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, sunLuminosity * VISUAL_RADIUS_SCALE * VISUAL_RADIUS_SCALE);
+  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii);
+  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii);
+  loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01));
+  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 0.0f, Res::EARTH_NORMAL);
+  loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01));
+  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii);
+  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii);
+  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii);
 
   Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/diffuse/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
@@ -273,12 +275,12 @@ void Application::processInput()
 
   if (this->input.isKeyPressed(GLFW_KEY_MINUS))
   {
-    this->scene.updateCameraMovementSpeed(-1.f);
+    this->scene.updateCameraMovementSpeed(-0.1f);
   }
 
   if (this->input.isKeyPressed(GLFW_KEY_EQUAL))
   {
-    this->scene.updateCameraMovementSpeed(1.f);
+    this->scene.updateCameraMovementSpeed(0.1f);
   }
 
 
@@ -307,7 +309,7 @@ void Application::processInput()
 }
 
 void Application::loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
-                                      Radii radii, PhongMaterialProperties material, float emissiveStrength, const std::string &normal_name,
+                                      Radii radii, float emissiveStrength, const std::string &normal_name,
                                       const std::string &specular_name, int segments)
 {
   const std::string format = ".png";

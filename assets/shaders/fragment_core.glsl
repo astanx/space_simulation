@@ -56,13 +56,15 @@ void main()
     viewDir = normalize(camPosition.xyz - position);
   }
 
-  vec3 albedo = getAlbedo(pbrMaterial, fs_in.vs_texcoord);
+  vec4 albedo = getAlbedo(pbrMaterial, fs_in.vs_texcoord);
+
+  if (albedo.a < 0.02) discard;
 
   float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, esmMap, far_plane, fs_in.vs_normal);
 
   vec4 point = CalcPBRPointLight(normal, position, viewDir, fs_in.vs_texcoord, pbrMaterial, localPointLight, shadow, irradianceMap, useReflectorRadiance, reflectorRadianceCubemap, reflectorPosition, fs_in.vs_normal, fs_in.vs_position);
  
-  vec4 result = point;
+  vec4 result = albedo;
 
   //result += vec4(phongMaterial.emissive * albedo, 0.0);
 

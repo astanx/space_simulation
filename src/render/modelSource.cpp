@@ -1,5 +1,9 @@
 #include "render/modelSource.h"
 
+#include "graphics/state/scopedBlending.h"
+#include "graphics/state/scopedDepthMask.h"
+#include "graphics/state/scopedPolygonOffset.h"
+
 #include "physics/constants.h"
 
 // Private functions
@@ -32,8 +36,11 @@ void ModelSource::update(double dt, Frustum *frustum, bool force)
 {
   this->updateRenderPosition(src->getPosition());
 
-  if (this->model)
-    this->model->setPosition(this->renderPosition);
+  if (this->mainLayer)
+    this->mainLayer->setPosition(this->renderPosition);
+
+  for (auto &layer : this->layers)
+    layer->setPosition(this->renderPosition);
 }
 
 void ModelSource::render(Shader &shader, Frustum *frustum, bool force) const
@@ -41,8 +48,15 @@ void ModelSource::render(Shader &shader, Frustum *frustum, bool force) const
   if (!force && frustum && !frustum->isVisibleSphere(this->renderPosition, this->radius))
     return;
 
-  if (model)
-    model->render(shader);
+  {
+    ScopedPolygonOffset offset(true, 5.f, 5.f);
+    this->mainLayer->render(shader);
+  }
+
+  ScopedBlending blend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  ScopedDepthMask mask(GL_FALSE);
+  for (auto &layer : this->layers)
+    layer->render(shader);
 }
 
 void ModelSource::renderInstanced(Shader &shader, Frustum *frustum, bool force) const
@@ -50,6 +64,6 @@ void ModelSource::renderInstanced(Shader &shader, Frustum *frustum, bool force) 
   if (!force && frustum && !frustum->isVisibleSphere(this->renderPosition, this->radius))
     return;
 
-  if (model)
-    model->renderInstanced();
+  for (auto &layer : this->layers)
+    layer->renderInstanced();
 }
