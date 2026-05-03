@@ -64,7 +64,7 @@ void main()
 
   vec4 point = CalcPBRPointLight(normal, position, viewDir, fs_in.vs_texcoord, pbrMaterial, localPointLight, shadow, irradianceMap, useReflectorRadiance, reflectorRadianceCubemap, reflectorPosition, fs_in.vs_normal, fs_in.vs_position);
  
-  vec4 result = albedo;
+  vec4 result = point;
 
   //result += vec4(phongMaterial.emissive * albedo, 0.0);
 

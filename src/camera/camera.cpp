@@ -34,8 +34,8 @@ Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float wid
   this->lastY = static_cast<float>(height) / 2.f;
 
   this->fov = 45.f;
-  this->nearPlane = 0.00001f;
-  this->farPlane = 1000.f;
+  this->nearPlane = 0.001f;
+  this->farPlane = 500.f;
 
   this->updateCameraVectors();
 }
