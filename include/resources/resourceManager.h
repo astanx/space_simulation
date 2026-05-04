@@ -36,7 +36,7 @@ public:
 
   Material &LoadAsteroidMaterial(const std::string &name, Texture &diffuseTexture);
 
-  Material &LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, float emissiveStrength);
+  Material &LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, Texture *nightMap, float emissiveStrength, float ao, float metallic, float roughness);
 
   Mesh &LoadMesh(const std::string &name, std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
   Mesh &LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);

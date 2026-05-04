@@ -10,7 +10,8 @@
 #include "ubo/point_shadow.glsl"
 #include "ubo/camera.glsl"
 
-out vec4 fs_color;
+layout (location = 0) out vec4 fs_color;
+layout (location = 1) out vec4 fs_emissive;
 
 in VS_OUT {
   vec3 vs_position;
@@ -62,12 +63,12 @@ void main()
 
   float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, esmMap, far_plane, fs_in.vs_normal);
 
-  vec4 point = CalcPBRPointLight(normal, position, viewDir, fs_in.vs_texcoord, pbrMaterial, localPointLight, shadow, irradianceMap, useReflectorRadiance, reflectorRadianceCubemap, reflectorPosition, fs_in.vs_normal, fs_in.vs_position);
+  MaterialData material = CalculateMaterial(pbrMaterial, fs_in.vs_texcoord);
+
+  vec4 point = CalcPBRPointLight(normal, position, viewDir, material, localPointLight, shadow, irradianceMap, useReflectorRadiance, reflectorRadianceCubemap, reflectorPosition, fs_in.vs_normal, fs_in.vs_position);
  
   vec4 result = point;
 
-  //result += vec4(phongMaterial.emissive * albedo, 0.0);
-
   fs_color = result;
-  //fs_color = vec4(vec3(shadow), 1.0);
+  fs_emissive = vec4(material.emissive, 1.0);
 }

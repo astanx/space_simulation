@@ -88,6 +88,8 @@ namespace Res
   const std::string EARTH_ATMOSPHERE_DIFFUSE = "earth_atmosphere_diffuse";
   const std::string VENUS_ATMOSPHERE_DIFFUSE = "venus_atmosphere_diffuse";
 
+  const std::string EARTH_NIGHT = "earth_night";
+
   // Material
   const std::string ASTEROID_MATERIAL = "asteroid_material";
 

@@ -135,15 +135,15 @@ Application::Application(
   this->resourceManager.LoadShader(Res::DOWNSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/down/vertex.glsl", "assets/shaders/sample/down/fragment.glsl");
   this->resourceManager.LoadShader(Res::UPSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/up/vertex.glsl", "assets/shaders/sample/up/fragment.glsl");
 
-  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, sunLuminosity * VISUAL_RADIUS_SCALE * VISUAL_RADIUS_SCALE);
-  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii);
-  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii);
-  loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01));
-  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 0.0f, Res::EARTH_NORMAL);
-  loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01));
-  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii);
-  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii);
-  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii);
+  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, sunLuminosity * VISUAL_RADIUS_SCALE * VISUAL_RADIUS_SCALE);
+  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.7f, 0.f, 0.9f);
+  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.6f, 0.f, 0.85f);
+  loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 0.3f, 0.f, 0.3f);
+  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 0.6f, 0.f, 0.55f, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT);
+  loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 0.2f, 0.f, 0.2f);
+  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.8f, 0.f, 0.95f);
+  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.7f, 0.f, 0.9f);
+  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 0.4f, 0.f, 0.3f);
 
   Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/diffuse/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
@@ -263,9 +263,9 @@ void Application::processInput()
   {
     const glm::vec3 position = this->scene.getActiveCameraPosition();
     Logger::logInfo("Application", "Camera position: " +
-        std::to_string(position.x) + ", " +
-        std::to_string(position.y) + ", " +
-        std::to_string(position.z));
+                                       std::to_string(position.x) + ", " +
+                                       std::to_string(position.y) + ", " +
+                                       std::to_string(position.z));
   }
 
   if (this->input.isKeyPressed(GLFW_KEY_ENTER))
@@ -282,7 +282,6 @@ void Application::processInput()
   {
     this->scene.updateCameraMovementSpeed(0.1f);
   }
-
 
   if (this->input.isKeyPressed(GLFW_KEY_UP))
   {
@@ -309,7 +308,7 @@ void Application::processInput()
 }
 
 void Application::loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
-                                      Radii radii, float emissiveStrength, const std::string &normal_name,
+                                      Radii radii, float ao, float metallic, float roughness, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
                                       const std::string &specular_name, int segments)
 {
   const std::string format = ".png";
@@ -341,8 +340,16 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
 
   bool isTangent = normal_name != "";
 
+  Texture *night = nullptr;
+  const std::string nightPath = BASE_TEXTURE_PATH + "night/" + name + format;
+  if (std::filesystem::exists(nightPath) && night_name != "")
+  {
+    Logger::logInfo("Application", "Found night texture for object - " + name);
+    night = &this->resourceManager.LoadTexture(night_name, nightPath, GL_TEXTURE_2D);
+  }
+
   // this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
-  this->resourceManager.LoadPBRMaterial(material_name, &diff, normal, nullptr, nullptr, nullptr, emissiveStrength);
+  this->resourceManager.LoadPBRMaterial(material_name, &diff, normal, nullptr, nullptr, nullptr, night, emissiveStrength, ao, metallic, roughness);
   std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE), isTangent);
   this->resourceManager.LoadMesh(name, std::move(obj),
                                  isTangent ? VertexLayout::PositionNormalTangent : VertexLayout::NoColor);

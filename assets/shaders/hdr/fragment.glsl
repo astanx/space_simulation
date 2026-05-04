@@ -6,7 +6,8 @@ out vec4 fs_color;
   
 in vec2 vs_texcoord;
 
-uniform sampler2D hdrBuffer;
+uniform sampler2D hdrColorBuffer;
+uniform sampler2D hdrEmissiveBuffer;
 uniform sampler2D bloomBlur;
 uniform float exposure;
 uniform float bloomPower;
@@ -32,14 +33,14 @@ vec3 ACESFilm(vec3 x) {
 
 void main()
 {             
-  vec3 hdrColor = texture(hdrBuffer, vs_texcoord).rgb;
+  vec3 hdrColor = texture(hdrColorBuffer, vs_texcoord).rgb;
+  vec3 hdrEmissive = texture(hdrEmissiveBuffer, vs_texcoord).rgb;
   vec3 bloomColor = texture(bloomBlur, vs_texcoord).rgb;
 
-  hdrColor += bloomColor * bloomPower;
-  
-  hdrColor *= exposure;
+  vec3 color = hdrColor + hdrEmissive + bloomColor * bloomPower;
+  color *= exposure;
 
-  vec4 mapped = vec4(ACESFilm(hdrColor), 1.0);
+  vec4 mapped = vec4(ACESFilm(color), 1.0);
   mapped = gammaCorrection(mapped);
   
   fs_color = mapped;
