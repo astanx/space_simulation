@@ -19,4 +19,6 @@ namespace TextureBindingPoints
   constexpr unsigned int IrradianceMap = 13;
   constexpr unsigned int Blur = 14;
   constexpr unsigned int DepthMap = 15;
+  constexpr unsigned int NightMap = 16;
+  constexpr unsigned int Emissive = 17;
 }

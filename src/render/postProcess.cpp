@@ -28,13 +28,15 @@ void PostProcess::renderFullscreenQuad(bool useBloom)
   ScopedShader hdr(hdrShader);
 
   ScopedTexture hdrColor(*this->hdrColorBufferTexture, TextureBindingPoints::HDRColorBuffer);
+  ScopedTexture hdrEmissive(*this->hdrEmissiveBufferTexture, TextureBindingPoints::Emissive);
 
   std::optional<ScopedTexture> bloom;
   if (useBloom)
     // bloom.emplace(*this->blur.getFinalTexture(), TextureBindingPoints::Bloom);
     bloom.emplace(*this->mipChain[0].mipTexture, TextureBindingPoints::Bloom);
 
-  hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
+  hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrColorBuffer");
+  hdrShader.set1i(TextureBindingPoints::Emissive, "hdrEmissiveBuffer");
   hdrShader.set1i(TextureBindingPoints::Bloom, "bloomBlur");
   hdrShader.set1f(this->ctx->exposure, "exposure");
   hdrShader.set1f(0.12f, "bloomPower");
@@ -46,6 +48,7 @@ void PostProcess::initHDR(float width, float height)
   this->hdrFBO = std::make_unique<Framebuffer>();
 
   this->hdrColorBufferTexture = std::make_unique<Texture>(width, height, GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA, GL_FLOAT);
+  this->hdrEmissiveBufferTexture = std::make_unique<Texture>(width, height, GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA, GL_FLOAT);
 
   this->rboDepth = std::make_unique<RenderBuffer>();
 
@@ -56,9 +59,13 @@ void PostProcess::initHDR(float width, float height)
   {
     ScopedFramebuffer hdr(*this->hdrFBO, GL_FRAMEBUFFER);
 
-    this->hdrFBO->attachTexture2D(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBufferTexture->getId(), 0);
+    this->hdrFBO->attachTexture2D(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->hdrColorBufferTexture->getId(), 0);
+    this->hdrFBO->attachTexture2D(GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, this->hdrEmissiveBufferTexture->getId(), 0);
 
     this->hdrFBO->attachRenderBuffer(GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth->getId());
+
+    GLenum attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, attachments);
 
     this->hdrFBO->checkComplete();
   }
@@ -122,8 +129,10 @@ void PostProcess::extractBloom()
   ScopedShader shader(bloomShader);
 
   ScopedTexture hdr(*this->hdrColorBufferTexture, TextureBindingPoints::HDRColorBuffer);
+  ScopedTexture hdrEmissive(*this->hdrEmissiveBufferTexture, TextureBindingPoints::Emissive);
 
-  bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
+  bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrColorBuffer");
+  bloomShader.set1i(TextureBindingPoints::Emissive, "hdrEmissiveBuffer");
   bloomShader.set1f(60000.f, "threshold");
 
   this->resourceManager.GetMesh(Res::FULLSCREEN_QUAD).render();
@@ -203,7 +212,7 @@ void PostProcess::renderBloom()
 
   // ScopedTexture hdrColorBuffer(*this->hdrColorBufferTexture, TextureBindingPoints::HDRColorBuffer);
 
-  // bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrBuffer");
+  // bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrColorBuffer");
   // bloomShader.set1f(1.f, "threshold");
 
   // this->blur.renderFullscreenQuad();

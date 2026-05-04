@@ -42,9 +42,9 @@ Material &ResourceManager::LoadAsteroidMaterial(const std::string &name, Texture
   return *this->materials[name];
 }
 
-Material &ResourceManager::LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, float emissiveStrength)
+Material &ResourceManager::LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, Texture *nightMap, float emissiveStrength, float ao, float metallic, float roughness)
 {
-  this->materials[name] = std::make_unique<PBRMaterial>(albedoMap, normalMap, aoMap, metallicMap, roughnessMap, emissiveStrength);
+  this->materials[name] = std::make_unique<PBRMaterial>(albedoMap, normalMap, aoMap, metallicMap, roughnessMap, nightMap, emissiveStrength, ao, metallic, roughness);
   return *this->materials[name];
 }
 

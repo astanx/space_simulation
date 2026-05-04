@@ -17,7 +17,11 @@ protected:
   Texture *aoMap;
   Texture *metallicMap;
   Texture *roughnessMap;
+  Texture *nightMap;
   float emissiveStrength;
+  float ao;
+  float metallic;
+  float roughness;
 
 public:
   PBRMaterial(Texture *albedoMap,
@@ -25,7 +29,11 @@ public:
               Texture *aoMap,
               Texture *metallicMap,
               Texture *roughnessMap,
-              float emissiveStrength = 0.0f);
+              Texture *nightMap,
+              float emissiveStrength = 0.f,
+              float ao = 0.f,
+              float metallic = 0.f,
+              float roughness = 0.f);
 
   ~PBRMaterial() = default;
 

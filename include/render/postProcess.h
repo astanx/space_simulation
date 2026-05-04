@@ -27,6 +27,7 @@ private:
   std::unique_ptr<Framebuffer> hdrFBO;
   std::unique_ptr<RenderBuffer> rboDepth;
   std::unique_ptr<Texture> hdrColorBufferTexture;
+  std::unique_ptr<Texture> hdrEmissiveBufferTexture;
   
   std::unique_ptr<Texture> bloomExtractTexture;
   std::unique_ptr<Framebuffer> bloomFBO;

@@ -8,7 +8,8 @@
 
 #include "gamma/gamma_correction.glsl"
 
-out vec4 fs_color;
+layout (location = 0) out vec4 fs_color;
+layout (location = 1) out vec4 fs_emissive;
 
 in VS_OUT {
   vec3 vs_position;
@@ -20,8 +21,6 @@ in VS_OUT {
   vec3 vs_tangentPos;
 } fs_in;
 
-uniform sampler2D diffuseTexture;
-
 uniform PBRMaterial material;
 
 uniform samplerCube depthMap;
@@ -30,7 +29,6 @@ uniform samplerCube irradianceMap;
 
 void main()
 {
-
   PBRPointLight localPointLight = pbrPointLight;
 
   vec3 position = fs_in.vs_tangentPos;
@@ -38,7 +36,10 @@ void main()
 
   localPointLight.position = fs_in.vs_tangentLightPos;
 
-  vec4 point = CalcPBRPointLight(fs_in.vs_normal, position, viewDir, fs_in.vs_texcoord, material, localPointLight, 1.0, irradianceMap);
+  MaterialData m = CalculateMaterial(material, fs_in.vs_texcoord);
+
+  vec4 point = CalcPBRPointLight(fs_in.vs_normal, position, viewDir, m, localPointLight, 1.0, irradianceMap);
 
   fs_color = point;
+  fs_emissive = vec4(m.emissive, 1.0);
 }
