@@ -35,14 +35,8 @@ std::vector<float> GaussianBlur::createGaussianBlurWeights(size_t kernel_size, f
   return gaussian_blur_weights;
 }
 
-void GaussianBlur::initBuffersFor2D()
+void GaussianBlur::initBuffersFor2D(float width, float height)
 {
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-
-  float width = static_cast<float>(viewport[2]);
-  float height = static_cast<float>(viewport[3]);
-
   for (unsigned int i = 0; i < 2; i++)
   {
     this->pingpongFBOs[i] = std::make_unique<Framebuffer>();
@@ -73,7 +67,7 @@ void GaussianBlur::initBuffersForCubemap(int resolution)
 
       for (unsigned face = 0; face < 6; ++face)
         GL_CALL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGBA16F,
-                     resolution, resolution, 0, GL_RGBA, GL_FLOAT, nullptr));
+                             resolution, resolution, 0, GL_RGBA, GL_FLOAT, nullptr));
 
       glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -95,12 +89,12 @@ GaussianBlur::GaussianBlur(ResourceManager &resourceManager) : resourceManager(r
 {
 }
 
-void GaussianBlur::init(size_t kernelSize, float stddev, bool isCube, int cubemapResolution)
+void GaussianBlur::init(size_t kernelSize, float stddev, FrameContext &ctx, bool isCube, int cubemapResolution)
 {
   this->weights = createGaussianBlurWeights(kernelSize, stddev);
 
   if (!isCube)
-    this->initBuffersFor2D();
+    this->initBuffersFor2D(ctx.width, ctx.height);
   else
     this->initBuffersForCubemap(cubemapResolution);
 }

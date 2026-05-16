@@ -2,8 +2,6 @@
 
 #include "resources/resourceManager.h"
 
-#include "scene/frameContext.h"
-
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
 
@@ -12,6 +10,7 @@
 #include "graphics/buffers/renderBuffer.h"
 
 #include "render/gaussianBlur.h"
+#include "render/renderContext.h"
 
 #include <memory>
 
@@ -28,7 +27,7 @@ private:
   std::unique_ptr<RenderBuffer> rboDepth;
   std::unique_ptr<Texture> hdrColorBufferTexture;
   std::unique_ptr<Texture> hdrEmissiveBufferTexture;
-  
+
   std::unique_ptr<Texture> bloomExtractTexture;
   std::unique_ptr<Framebuffer> bloomFBO;
 
@@ -36,15 +35,14 @@ private:
   std::vector<bloomMip> mipChain;
 
   ResourceManager &resourceManager;
-  FrameContext* ctx;
 
   GaussianBlur blur;
 
-  void renderFullscreenQuad(bool useBloom);
+  void renderFullscreenQuad(RenderContext &ctx);
 
   void initHDR(float width, float height);
   void initBloom(float width, float height);
-  void initMip(unsigned int chainLength);
+  void initMip(unsigned int chainLength, float width, float height);
 
   void downsampleBloom();
   void upsampleBloom();
@@ -55,9 +53,9 @@ public:
   PostProcess(ResourceManager &resourceManager);
   ~PostProcess() = default;
 
-  void init(FrameContext* ctx);
+  void init(FrameContext &ctx);
 
-  void process(bool useBloom);
+  void process(RenderContext &ctx);
 
   const Framebuffer &getHDRFramebuffer() { return *this->hdrFBO; };
 };

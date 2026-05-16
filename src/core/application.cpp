@@ -82,6 +82,17 @@ void Application::initOpenGLSettings()
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
+void Application::updateFrameContext()
+{
+  float aspect = 1.f;
+  if (framebufferHeight != 0)
+    aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
+
+  this->renderCtx.frameCtx.width = framebufferWidth;
+  this->renderCtx.frameCtx.height = framebufferHeight;
+  this->renderCtx.frameCtx.aspect = aspect;
+}
+
 // Constructor / Destructor
 Application::Application(
     const char *title, const int windowWidth, const int windowHeight, const int GLmajor, const int GLminor, GLboolean resizable) : windowWidth(windowWidth),
@@ -93,20 +104,21 @@ Application::Application(
                                                                                                                                    scene(resourceManager, threadPool),
                                                                                                                                    input(),
                                                                                                                                    renderer(resourceManager)
-
 {
   // Init variables
   this->window = nullptr;
   this->framebufferWidth = 0;
   this->framebufferHeight = 0;
 
+  this->renderCtx.deltaTime = 0.f;
+  this->renderCtx.settings.paused = false;
+  this->renderCtx.settings.useBloom = true;
+  this->renderCtx.settings.useHDR = true;
+  this->renderCtx.settings.exposure = 5e-4;
+
+  this->timeScale = 3600 * 24;
   this->deltaTime = 0.f;
   this->lastFrame = 0.f;
-  this->timeScale = 3600 * 24;
-
-  this->paused = false;
-  this->useBloom = true;
-  this->useHDR = true;
 
   // Initialize application
   this->initGLFW();
@@ -149,8 +161,10 @@ Application::Application(
 
   this->resourceManager.LoadMesh(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
 
-  this->scene.init();
-  this->renderer.init(this->scene);
+  this->updateFrameContext();
+
+  this->scene.init(this->renderCtx);
+  this->renderer.init(this->scene, this->renderCtx);
 }
 
 Application::~Application()
@@ -179,6 +193,9 @@ void Application::update()
   this->deltaTime = currentFrame - this->lastFrame;
   this->lastFrame = currentFrame;
 
+  // Update context
+  this->renderCtx.deltaTime = this->deltaTime * this->timeScale;
+
   // Update FPS counter
   this->frames++;
   float elapsed = currentFrame - lastFpsUpdateTime;
@@ -192,7 +209,7 @@ void Application::update()
     this->lastFpsUpdateTime = currentFrame;
   }
 
-  this->renderer.update(this->scene, this->deltaTime * timeScale, this->paused);
+  this->renderer.update(this->scene, this->renderCtx);
 
   // Poll events
   glfwPollEvents();
@@ -208,7 +225,7 @@ void Application::render()
   glClearColor(1.f, 1.f, 1.f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  this->renderer.render(this->scene, this->useBloom, this->useHDR);
+  this->renderer.render(this->scene, this->renderCtx);
 
   this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
                             25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
@@ -243,10 +260,10 @@ void Application::processInput()
     this->scene.processKeyboard(DOWN, this->deltaTime);
 
   if (this->input.isActionPressed(Action::ToggleBloom))
-    this->useBloom = !this->useBloom;
+    this->renderCtx.settings.useBloom = !this->renderCtx.settings.useBloom;
 
   if (this->input.isActionPressed(Action::ToggleHDR))
-    this->useHDR = !this->useHDR;
+    this->renderCtx.settings.useHDR = !this->renderCtx.settings.useHDR;
 
   if (this->input.isActionPressed(Action::LogPosition))
   {
@@ -258,7 +275,7 @@ void Application::processInput()
   }
 
   if (this->input.isActionPressed(Action::Pause))
-    this->paused = !this->paused;
+    this->renderCtx.settings.paused = !this->renderCtx.settings.paused;
 
   if (this->input.isActionPressed(Action::DecreaseCameraSpeed))
     this->scene.updateCameraMovementSpeed(-0.1f);
@@ -363,4 +380,7 @@ void Application::framebuffer_resize_callback(GLFWwindow *window, int width, int
   appState->framebufferHeight = height;
 
   glViewport(0, 0, width, height);
+
+  appState->updateFrameContext();
+  appState->renderer.resize(appState->renderCtx.frameCtx);
 };

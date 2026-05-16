@@ -7,6 +7,8 @@
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
 
+#include "render/renderContext.h"
+
 #include "graphics/model.h"
 #include "graphics/skybox.h"
 
@@ -39,7 +41,6 @@ private:
   ThreadPool &threadPool;
   Camera *activeCamera;
   Skybox *skybox;
-  FrameContext ctx;
 
   std::vector<Updatable *> updatable;
   std::vector<Renderable *> renderable;
@@ -73,8 +74,6 @@ private:
   void drift(double dt);
   void wisdomHolman(double dt);
 
-  void updateFrameContext(bool first = false);
-
   Planet *createPlanet(std::string name, std::string material_name, double mu,
                        double radius, Object *centralBody, const KeplerElements keplerElements);
 
@@ -84,7 +83,7 @@ private:
   Moon *createMoon(std::string name, std::string material_name, double mu,
                    double radius, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters);
 
-  void addLayerToModelSource(std::string name, std::string material_name, ModelSource* object);
+  void addLayerToModelSource(std::string name, std::string material_name, ModelSource *object);
 
   AsteroidSystem *createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge);
 
@@ -93,12 +92,12 @@ public:
   ~Scene() = default;
 
   // Process functions
-  void init();
+  void init(RenderContext &renderCtx);
   void processKeyboard(CameraMovement direction, float deltaTime);
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);
 
-  void update(double dt, bool paused);
+  void update(RenderContext &renderCtx);
 
   // Setters
   void addObject(Object *object);
@@ -117,7 +116,6 @@ public:
   void updateCameraMovementSpeed(float factor) { this->activeCamera->updateMovementSpeed(factor); };
 
   // Getters
-  FrameContext* getFrameContext();
   const Camera &getActiveCamera() const;
   const Skybox &getActiveSkybox() const;
   const Star &getSun() const;

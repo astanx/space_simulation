@@ -8,5 +8,4 @@ struct FrameContext
   glm::dvec3 camPosition;
 
   float aspect;
-  float exposure;
 };

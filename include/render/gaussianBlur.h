@@ -2,6 +2,8 @@
 
 #include "resources/resourceManager.h"
 
+#include "scene/frameContext.h"
+
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
 
@@ -23,7 +25,7 @@ private:
   std::unique_ptr<Framebuffer> pingpongFBOs[2];
   std::unique_ptr<Texture> pingpongBuffers[2];
 
-  void initBuffersFor2D();
+  void initBuffersFor2D(float width, float height);
   void initBuffersForCubemap(int resolution = 1024);
   void sendWeights(Shader &shader);
 
@@ -33,12 +35,12 @@ private:
 public:
   GaussianBlur(ResourceManager &resourceManager);
 
-  void init(size_t kernelSize, float stddev, bool isCube = false, int cubemapResolution = 1024);
+  void init(size_t kernelSize, float stddev, FrameContext &ctx, bool isCube = false, int cubemapResolution = 1024);
 
   ~GaussianBlur() = default;
 
   void blur(const Texture &source, size_t amount, bool isCube = false);
-  
+
   Framebuffer *getPingPongFBO(size_t index) { return this->pingpongFBOs[index].get(); };
   Texture *getPingPongBuffer(size_t index) { return this->pingpongBuffers[index].get(); };
   Texture *getFinalTexture() { return this->finalTexture; };

@@ -39,14 +39,11 @@ private:
   ThreadPool threadPool;
 
   // Metrics
-  bool paused;
-  bool useBloom;
-  bool useHDR;
-  double timeScale;
   float fps;
 
   // Renderer
   Renderer renderer;
+  RenderContext renderCtx;
 
   // Input
   InputManager input;
@@ -55,7 +52,8 @@ private:
   Scene scene;
 
   // Timing
-  float deltaTime;
+  double timeScale;
+  double deltaTime;
   float lastFrame;
   unsigned frames = 0;
   float lastFpsUpdateTime = 0.0f;
@@ -66,6 +64,8 @@ private:
   void initWindow(const char *title, GLboolean resizable);
   void initGLEW();
   void initOpenGLSettings();
+
+  void updateFrameContext();
 
 public:
   Application(

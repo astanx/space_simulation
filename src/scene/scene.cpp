@@ -39,28 +39,6 @@ void Scene::wisdomHolman(double dt)
   this->halfKick(dt);
 }
 
-void Scene::updateFrameContext(bool first)
-{
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-
-  float width = static_cast<float>(viewport[2]);
-  float height = static_cast<float>(viewport[3]);
-
-  float aspect = 1.f;
-  if (height != 0)
-    aspect = width / height;
-
-  this->ctx.width = width;
-  this->ctx.height = height;
-  this->ctx.aspect = aspect;
-
-  if (first)
-    this->ctx.exposure = 5e-4f;
-  else
-    this->ctx.camPosition = this->activeCamera->getPosition();
-}
-
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
                             double radius, Object *centralBody, const KeplerElements keplerElements)
 {
@@ -163,7 +141,7 @@ Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadP
 }
 
 // Process functions
-void Scene::init()
+void Scene::init(RenderContext &renderCtx)
 {
   Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii.mean, sunLuminosity, sunPos);
   this->sun = sunPtr;
@@ -201,12 +179,10 @@ void Scene::init()
   //     glm::vec3(1.0f), 1.f);
   // this->addDirLight(std::move(dirLight));
 
-  this->updateFrameContext(true);
-
   std::unique_ptr<Camera> cam = std::make_unique<Camera>(sunPos,
                                                          glm::vec3(0.0f, 0.0f, -1.0f),
                                                          glm::vec3(0.0f, 1.0f, 0.0f),
-                                                         this->ctx.width, this->ctx.height);
+                                                         renderCtx.frameCtx.width, renderCtx.frameCtx.height);
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();
 
@@ -246,12 +222,10 @@ void Scene::processMouseScroll(float yoffset)
   this->activeCamera->processMouseScroll(yoffset);
 }
 
-void Scene::update(double dt, bool paused)
+void Scene::update(RenderContext &renderCtx)
 {
-  this->updateFrameContext();
-
-  if (!paused)
-    this->wisdomHolman(dt);
+  if (!renderCtx.settings.paused)
+    this->wisdomHolman(renderCtx.deltaTime);
 
   // for (size_t i = 0; i < objects.size(); ++i)
   // {
@@ -262,13 +236,15 @@ void Scene::update(double dt, bool paused)
   //   }
   // }
 
-  Frustum frustum = this->activeCamera->getFrustum(this->ctx.aspect);
+  renderCtx.frameCtx.camPosition = this->activeCamera->getPosition();
+
+  Frustum frustum = this->activeCamera->getFrustum(renderCtx.frameCtx.aspect);
 
   for (Updatable *&object : this->updatable)
-    object->update(dt, this->ctx, &frustum);
+    object->update(renderCtx.deltaTime, renderCtx.frameCtx, &frustum);
 
   for (std::unique_ptr<Trail> &trail : this->trails)
-    trail->update(this->ctx.camPosition);
+    trail->update(renderCtx.frameCtx.camPosition);
 
   if (this->pointLights[0])
     this->pointLights[0]->move(this->sun->getRenderPosition()); // move sun light
@@ -343,11 +319,6 @@ void Scene::addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSystem)
 }
 
 // Getters
-FrameContext *Scene::getFrameContext()
-{
-  return &this->ctx;
-}
-
 const Camera &Scene::getActiveCamera() const
 {
   if (!this->activeCamera)
