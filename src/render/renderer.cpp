@@ -30,7 +30,7 @@
 #include <iostream>
 
 // Private functions
-void Renderer::updateUBO(Scene &scene)
+void Renderer::updateUBO(Scene &scene, RenderContext &ctx)
 {
   const Camera &activeCamera = scene.getActiveCamera();
 
@@ -39,7 +39,7 @@ void Renderer::updateUBO(Scene &scene)
   else
   {
     CameraGPU camUBO{};
-    camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix(this->ctx->aspect);
+    camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix(ctx.frameCtx.aspect);
     camUBO.ViewMatrix = activeCamera.getViewMatrix();
     // camUBO.camPosition = glm::vec4(activeCamera.getPosition(), 1.0);
     // camUBO.camPosition = glm::vec4(glm::vec3(0.f), 1.0);
@@ -179,7 +179,7 @@ void Renderer::renderTrails(Scene &scene)
     trail->render();
 }
 
-void Renderer::renderSkybox(Scene &scene, bool useFramebuffer)
+void Renderer::renderSkybox(Scene &scene, RenderContext &ctx)
 {
   const Skybox &skybox = scene.getActiveSkybox();
 
@@ -189,7 +189,7 @@ void Renderer::renderSkybox(Scene &scene, bool useFramebuffer)
 
   ScopedShader skyboxSd(skyboxID);
 
-  skyboxShader.set1f(useFramebuffer ? this->ctx->exposure : 1.f, "exposure");
+  skyboxShader.set1f(ctx.settings.useHDR ? ctx.settings.exposure : 1.f, "exposure");
 
   ScopedCullFace cullFace(GL_FRONT);
   ScopedDepthMask depthMask(GL_FALSE);
@@ -251,22 +251,22 @@ void Renderer::renderPointShadow(Scene &scene)
   this->blur.blur(this->shadowManager->getPointShadow()->getShadowMapTexture(), 16, true);
 }
 
-void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, bool useFramebuffer)
+void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, RenderContext &ctx)
 {
   ScopedBlending blendingDisabled(false);
   std::optional<ScopedFramebuffer> framebufferScope;
 
-  if (useFramebuffer)
+  if (ctx.settings.useHDR)
     framebufferScope.emplace(framebuffer, GL_FRAMEBUFFER);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  Frustum frustum = scene.getActiveCamera().getFrustum(this->ctx->aspect);
+  Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
 
   this->renderObjects(scene, &frustum);
   this->renderAsteroidSystems(scene, &frustum);
-  this->renderSkybox(scene, useFramebuffer);
+  this->renderSkybox(scene, ctx);
 }
 
 void Renderer::blitDepthToDefault(const Framebuffer &framebuffer)
@@ -295,13 +295,13 @@ void Renderer::renderMoonsRadiance(Scene &scene)
 Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager), postProcess(resourceManager), blur(resourceManager) {}
 
 // Public functions
-void Renderer::init(Scene &scene)
+void Renderer::init(Scene &scene, RenderContext &ctx)
 {
   this->lightManager = std::make_unique<LightManager>(scene);
   this->shadowManager = std::make_unique<ShadowManager>(scene);
 
   this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
-  this->blur.init(37, 6.2f, true, this->shadowRes);
+  this->blur.init(37, 6.2f, ctx.frameCtx, true, this->shadowRes);
 
   const DirectionalLight *directionalLight = scene.getDirLight();
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
@@ -322,15 +322,13 @@ void Renderer::init(Scene &scene)
                                                                         activeCamera.getFarPlane()));
   }
 
-  this->ctx = scene.getFrameContext();
-
   this->textRenderer.init();
-  this->postProcess.init(ctx);
+  this->postProcess.init(ctx.frameCtx);
 
   this->initShaderUBOBindings();
 }
 
-void Renderer::render(Scene &scene, bool useBloom, bool useHDR)
+void Renderer::render(Scene &scene, RenderContext &ctx)
 {
   this->bindUBOs();
 
@@ -341,11 +339,11 @@ void Renderer::render(Scene &scene, bool useBloom, bool useHDR)
 
   const Framebuffer &hdrFramebuffer = this->postProcess.getHDRFramebuffer();
 
-  this->renderToFramebuffer(scene, hdrFramebuffer, useHDR);
+  this->renderToFramebuffer(scene, hdrFramebuffer, ctx);
 
-  if (useHDR)
+  if (ctx.settings.useHDR)
   {
-    this->postProcess.process(useBloom);
+    this->postProcess.process(ctx);
 
     this->blitDepthToDefault(hdrFramebuffer);
   }
@@ -353,15 +351,20 @@ void Renderer::render(Scene &scene, bool useBloom, bool useHDR)
   this->renderTrails(scene);
 }
 
-void Renderer::update(Scene &scene, double dt, bool paused)
+void Renderer::update(Scene &scene, RenderContext &ctx)
 {
-  scene.update(dt, paused);
+  scene.update(ctx);
 
-  this->updateUBO(scene);
+  this->updateUBO(scene, ctx);
 }
 
 void Renderer::renderText(const std::string &text, float x, float y, float scale, glm::vec3 color)
 {
   Shader &textShader = this->resourceManager.GetShader(Res::TEXT_SHADER);
   this->textRenderer.render(textShader, text, x, y, scale, color);
+}
+
+void Renderer::resize(FrameContext &ctx)
+{
+  this->postProcess.init(ctx);
 }

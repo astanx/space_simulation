@@ -18,7 +18,7 @@
 #include "graphics/state/scopedBlending.h"
 
 // Private functions
-void PostProcess::renderFullscreenQuad(bool useBloom)
+void PostProcess::renderFullscreenQuad(RenderContext &ctx)
 {
   ScopedDepthMask depthMask(false);
   ScopedDepthTest depthTest(false);
@@ -31,14 +31,14 @@ void PostProcess::renderFullscreenQuad(bool useBloom)
   ScopedTexture hdrEmissive(*this->hdrEmissiveBufferTexture, TextureBindingPoints::Emissive);
 
   std::optional<ScopedTexture> bloom;
-  if (useBloom)
+  if (ctx.settings.useBloom)
     // bloom.emplace(*this->blur.getFinalTexture(), TextureBindingPoints::Bloom);
     bloom.emplace(*this->mipChain[0].mipTexture, TextureBindingPoints::Bloom);
 
   hdrShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrColorBuffer");
   hdrShader.set1i(TextureBindingPoints::Emissive, "hdrEmissiveBuffer");
   hdrShader.set1i(TextureBindingPoints::Bloom, "bloomBlur");
-  hdrShader.set1f(this->ctx->exposure, "exposure");
+  hdrShader.set1f(ctx.settings.exposure, "exposure");
   hdrShader.set1f(0.5f, "bloomPower");
   this->resourceManager.GetMesh(Res::FULLSCREEN_QUAD).render();
 }
@@ -64,7 +64,7 @@ void PostProcess::initHDR(float width, float height)
 
     this->hdrFBO->attachRenderBuffer(GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth->getId());
 
-    GLenum attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    GLenum attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
     glDrawBuffers(2, attachments);
 
     this->hdrFBO->checkComplete();
@@ -86,14 +86,8 @@ void PostProcess::initBloom(float width, float height)
   }
 }
 
-void PostProcess::initMip(unsigned int chainLength)
+void PostProcess::initMip(unsigned int chainLength, float width, float height)
 {
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-
-  float width = static_cast<float>(viewport[2]);
-  float height = static_cast<float>(viewport[3]);
-
   this->mipFBO = std::make_unique<Framebuffer>();
 
   glm::vec2 mipSize = glm::vec2(width, height);
@@ -223,23 +217,21 @@ PostProcess::PostProcess(ResourceManager &resourceManager) : resourceManager(res
 {
 }
 
-void PostProcess::init(FrameContext *ctx)
+void PostProcess::init(FrameContext &ctx)
 {
-  this->ctx = ctx;
-
-  this->initHDR(ctx->width, ctx->height);
-  this->initBloom(ctx->width, ctx->height);
-  this->initMip(6);
-  this->blur.init(4, 4.f);
+  this->initHDR(ctx.width, ctx.height);
+  this->initBloom(ctx.width, ctx.height);
+  this->initMip(6, ctx.width, ctx.height);
+  this->blur.init(4, 4.f, ctx);
 }
 
-void PostProcess::process(bool useBloom)
+void PostProcess::process(RenderContext &ctx)
 {
-  if (useBloom)
+  if (ctx.settings.useBloom)
   {
     this->renderBloom();
     // this->blur.blur(*this->blur.getPingPongBuffer(0), 20);
   }
 
-  this->renderFullscreenQuad(useBloom);
+  this->renderFullscreenQuad(ctx);
 }
