@@ -179,7 +179,7 @@ void Renderer::renderTrails(Scene &scene)
     trail->render();
 }
 
-void Renderer::renderSkybox(Scene &scene)
+void Renderer::renderSkybox(Scene &scene, bool useFramebuffer)
 {
   const Skybox &skybox = scene.getActiveSkybox();
 
@@ -189,7 +189,7 @@ void Renderer::renderSkybox(Scene &scene)
 
   ScopedShader skyboxSd(skyboxID);
 
-  skyboxShader.set1f(this->ctx->exposure, "exposure");
+  skyboxShader.set1f(useFramebuffer ? this->ctx->exposure : 1.f, "exposure");
 
   ScopedCullFace cullFace(GL_FRONT);
   ScopedDepthMask depthMask(GL_FALSE);
@@ -266,7 +266,7 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
 
   this->renderObjects(scene, &frustum);
   this->renderAsteroidSystems(scene, &frustum);
-  this->renderSkybox(scene);
+  this->renderSkybox(scene, useFramebuffer);
 }
 
 void Renderer::blitDepthToDefault(const Framebuffer &framebuffer)

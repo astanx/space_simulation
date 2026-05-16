@@ -66,9 +66,9 @@ void LightManager::updateDirUBO(const DirectionalLight *dirLight, int enabled)
   }
 }
 
-void LightManager::updatePointUBO(const PointLight *pointLight, int enabled)
+void LightManager::updatePointUBO(const PointLight *pointLight, int isAreaLight)
 {
-  if (pointLight && this->pointUBO && enabled)
+  if (pointLight && this->pointUBO)
   {
     PointLightGPU ubo{};
 
@@ -76,7 +76,7 @@ void LightManager::updatePointUBO(const PointLight *pointLight, int enabled)
     ubo.color = pointLight->getColor();
     ubo.luminosity = pointLight->getLuminosity();
     ubo.radius = pointLight->getRadius();
-    ubo.isAreaLight = true; // temp
+    ubo.isAreaLight = isAreaLight;
 
     ScopedBuffer uboScope(*this->pointUBO, GL_UNIFORM_BUFFER);
     GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo));

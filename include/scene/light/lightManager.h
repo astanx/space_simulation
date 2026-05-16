@@ -67,7 +67,7 @@ public:
   ~LightManager() = default;
 
   void updateDirUBO(const DirectionalLight *dirLight, int enabled = 1);
-  void updatePointUBO(const PointLight *pointLight, int enabled = 1);
+  void updatePointUBO(const PointLight *pointLight, int isAreaLight = 1);
 
   void maskDirUBO();
   void maskPointUBO();
