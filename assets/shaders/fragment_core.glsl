@@ -18,9 +18,13 @@ in VS_OUT {
   vec2 vs_texcoord;
   vec3 vs_normal;
 
+  mat3 TBN;
+
+/*
   vec3 vs_tangentLightPos;
   vec3 vs_tangentCamPos;
   vec3 vs_tangentPos;
+*/
 } fs_in;
 
 uniform PBRMaterial pbrMaterial;
@@ -41,31 +45,28 @@ void main()
   //PhongPointLight localPointLight = phongPointLight;
 
   vec3 normal = getNormal(pbrMaterial, fs_in.vs_texcoord, fs_in.vs_normal, useTBN);
-  vec3 viewDir;
-  vec3 position;
+  vec3 viewDir = normalize(camPosition.xyz - fs_in.vs_position);
 
   if (useTBN)
-  {
-    position = fs_in.vs_tangentPos;
-    viewDir = normalize(fs_in.vs_tangentCamPos - position);
+  { 
+    mat3 TBN = fs_in.TBN;
 
-    localPointLight.position = fs_in.vs_tangentLightPos;
-  }
-  else
-  {
-    position = fs_in.vs_position;
-    viewDir = normalize(camPosition.xyz - position);
-  }
+    TBN[0] = normalize(TBN[0]);
+    TBN[1] = normalize(TBN[1]);
+    TBN[2] = normalize(TBN[2]);
 
+    normal = normalize(TBN * normal);
+  }
+    
   vec4 albedo = getAlbedo(pbrMaterial, fs_in.vs_texcoord);
 
-  if (albedo.a < 0.02) discard;
+  if (albedo.a < 0.2) discard; // for atmosphere
 
-  float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, esmMap, far_plane, fs_in.vs_normal);
+  float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, esmMap, far_plane, normal);
 
   MaterialData material = CalculateMaterial(pbrMaterial, fs_in.vs_texcoord);
 
-  vec4 point = CalcPBRPointLight(normal, position, viewDir, material, localPointLight, shadow, irradianceMap, useReflectorRadiance, reflectorRadianceCubemap, reflectorPosition, fs_in.vs_normal, fs_in.vs_position);
+  vec4 point = CalcPBRPointLight(normal, fs_in.vs_position, viewDir, material, localPointLight, shadow, irradianceMap, useReflectorRadiance, reflectorRadianceCubemap, reflectorPosition);
  
   vec4 result = point;
 

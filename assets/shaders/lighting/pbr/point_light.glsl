@@ -2,21 +2,10 @@
 #define PBR_POINTLIGHT_GLSL
 
 #include "lighting/pbr/point_light_helper.glsl"
+#include "lighting/pbr/area_light.glsl"
 #include "material/pbrMaterial.glsl"
 #include "lighting/phong/point_light.glsl"
-
-struct PBRPointLight
-{
-  vec3 position;
-  float _pad0;
-
-  vec3 color;
-  float _pad1;
-
-  float luminosity;
-  float radius;
-  vec2 _pad2;
-};
+#include "lighting/pbr/pbr_point_light.glsl"
 
 MaterialData CalculateMaterial(PBRMaterial material, vec2 texcoord)
 {
@@ -31,7 +20,8 @@ MaterialData CalculateMaterial(PBRMaterial material, vec2 texcoord)
 
   m.night = night;
 
-  m.emissive = night + m.albedo * material.emissiveStrength;
+  m.emissive = m.albedo * material.emissiveStrength;
+  //m.emissive = night;
 
   return m;
 }
@@ -51,35 +41,53 @@ vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, MaterialData material, PBR
   //if (distance > light.radius) return vec4(0.0);
 
   vec3 L = normalize(toLight);
-  vec3 H = normalize(V + L);
-
-  float intensity = light.luminosity / (4.0 * PI * distance * distance);
-
-  vec3 radiance = light.color * intensity;        
+  vec3 H = normalize(V + L);     
         
   // cook-torrance brdf
   float NDF = distributionGGX(N, H, material.roughness);        
   float G   = geometrySmith(N, V, L, material.roughness);      
-  vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
-        
+  vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
+
   vec3 kS = F;
   vec3 kD = vec3(1.0) - kS;
-  kD *= 1.0 - material.metallic;	  
-        
-  vec3 numerator    = NDF * G * F;
-  float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-  vec3 specular     = numerator / denominator;  
-            
-  // add to outgoing radiance Lo
-  float NdotL = max(dot(N, L), 0.0);  
-  Lo += (kD * material.albedo / PI + specular) * radiance * NdotL; 
+  kD *= 1.0 - material.metallic;	
+
+  float intensity;
+  vec3 radiance;  
+
+  if (light.isAreaLight)
+  {
+    intensity = light.luminosity / (4.0 * PI * light.radius * light.radius);
+
+    radiance = light.color * intensity;
+
+    vec3 specular = LTC_specular(N, V, position, light, material.roughness);
+    vec3 diffuse = LTC_diffuse(N, V, position, light, material.albedo);
+    Lo += (kD * diffuse + specular * kS) * radiance; 
+  }
+  else
+  {
+    intensity = light.luminosity / (4.0 * PI * distance * distance);
+
+    radiance = light.color * intensity;  
+
+    vec3 numerator    = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+    vec3 specular     = numerator / denominator;
+
+    // add to outgoing radiance Lo
+    float NdotL = max(dot(N, L), 0.0);  
+    Lo += (kD * material.albedo / PI + specular) * radiance * NdotL; 
+  }
 
   Lo *= shadow;
 
-  vec3 Ro = material.ao * reflectColor * (kD * material.night + kS);
+  //vec3 Ro = material.ao * reflectColor * (kD * material.night + kS);
+  vec3 Ro = reflectColor * kS;
   
   vec3 irradiance = texture(irradianceMap, N).rgb;
-  vec3 diffuse = irradiance * material.night;
+  //vec3 diffuse = irradiance * material.night;
+  vec3 diffuse = irradiance * material.albedo;
   vec3 ambient = (kD * diffuse) * material.ao;
 
   vec3 color = ambient + Lo + Ro;
@@ -101,15 +109,15 @@ vec4 CalcReflectColor(vec3 N, vec3 position, samplerCube reflectorRadianceCubema
   return vec4(color, 1.0);
 }
 
-vec4 CalcPBRPointLight(vec3 N, vec3 tbn_position, vec3 V, MaterialData material, PBRPointLight light, float shadow, samplerCube irradianceMap, bool useReflectorRadiance, samplerCube reflectorRadianceCubemap, vec3 reflectorPosition, vec3 normal, vec3 position)
+vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, MaterialData material, PBRPointLight light, float shadow, samplerCube irradianceMap, bool useReflectorRadiance, samplerCube reflectorRadianceCubemap, vec3 reflectorPosition)
 {
   if (useReflectorRadiance)
   { 
-    vec4 reflect = CalcReflectColor(normal, position, reflectorRadianceCubemap, reflectorPosition);
-    return CalcPBRPointLight(N, tbn_position, V, material, light, shadow, irradianceMap, reflect.xyz);
+    vec4 reflect = CalcReflectColor(N, position, reflectorRadianceCubemap, reflectorPosition);
+    return CalcPBRPointLight(N, position, V, material, light, shadow, irradianceMap, reflect.xyz);
   }
   
-  return CalcPBRPointLight(N, tbn_position, V, material, light, shadow, irradianceMap);
+  return CalcPBRPointLight(N, position, V, material, light, shadow, irradianceMap);
 }
 
 #endif

@@ -21,6 +21,10 @@ protected:
 
   bool useTrail = true;
 
+  // IAS15 integrator
+  void accelerationBinominal();
+
+  // Wisdon-Holman integrator
   void keplerDrift(double dt);
   void kick(const std::vector<Object *> &bodies, double dt);
 

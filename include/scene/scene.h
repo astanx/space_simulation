@@ -98,7 +98,7 @@ public:
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);
 
-  void update(double dt);
+  void update(double dt, bool paused);
 
   // Setters
   void addObject(Object *object);

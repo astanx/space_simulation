@@ -16,7 +16,7 @@ Star::Star(double mu, double radius, double luminosity, glm::dvec3 position, glm
 void Star::drift(double dt)
 {
   this->position += this->velocity * dt;
-  this->renderPosition = this->realToVisualPos(this->position);
+  // this->renderPosition = this->realToVisualPos(this->position);
 }
 
 void Star::halfKick(const std::vector<Object *> &bodies, double dt)

@@ -76,16 +76,7 @@ void LightManager::updatePointUBO(const PointLight *pointLight, int enabled)
     ubo.color = pointLight->getColor();
     ubo.luminosity = pointLight->getLuminosity();
     ubo.radius = pointLight->getRadius();
-
-    // ubo.ambient = glm::vec4(pointLight->getAmbient(), 1.0);
-    // ubo.diffuse = glm::vec4(pointLight->getDiffuse(), 1.0);
-    // ubo.specular = glm::vec4(pointLight->getSpecular(), 1.0);
-    // ubo.position = glm::vec4(pointLight->getPosition(), 0.0);
-    // ubo.intensity = pointLight->getIntensity();
-    // ubo.quadratic = pointLight->getQuadratic();
-    // ubo.constant = pointLight->getConstant();
-    // ubo.linear = pointLight->getLinear();
-    // ubo.enabled = enabled;
+    ubo.isAreaLight = true; // temp
 
     ScopedBuffer uboScope(*this->pointUBO, GL_UNIFORM_BUFFER);
     GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLightGPU), &ubo));

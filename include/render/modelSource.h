@@ -12,7 +12,7 @@ protected:
   const PositionSource *src;
   double radius;
 
-  void updateRenderPosition(glm::dvec3 realPosition);
+  void updateRenderPosition(glm::dvec3 realPosition, glm::dvec3 camPos);
 
 public:
   ModelSource(const PositionSource *src, double radius);
@@ -21,11 +21,11 @@ public:
   virtual void addMainLayer(std::unique_ptr<Model> m) { this->mainLayer = std::move(m); }
   virtual void addLayer(std::unique_ptr<Model> m) { layers.push_back(std::move(m)); }
 
-  virtual void update(double dt, Frustum *frustum = nullptr, bool force = false) override;
+  virtual void update(double dt, FrameContext &ctx, Frustum *frustum = nullptr, bool force = false) override;
   virtual void render(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
   virtual void renderInstanced(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
 
   const glm::dvec3 getRenderPosition() const { return this->renderPosition; };
 
-  static glm::dvec3 realToVisualPos(glm::dvec3 pos);
+  static glm::dvec3 realToVisualPos(glm::dvec3 pos, glm::dvec3 camPos = glm::dvec3(0.0));
 };

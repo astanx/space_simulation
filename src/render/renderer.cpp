@@ -41,7 +41,9 @@ void Renderer::updateUBO(Scene &scene)
     CameraGPU camUBO{};
     camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix(this->ctx->aspect);
     camUBO.ViewMatrix = activeCamera.getViewMatrix();
-    camUBO.camPosition = glm::vec4(activeCamera.getPosition(), 1.0);
+    // camUBO.camPosition = glm::vec4(activeCamera.getPosition(), 1.0);
+    // camUBO.camPosition = glm::vec4(glm::vec3(0.f), 1.0);
+    camUBO.camPosition = glm::vec4(0.0);
 
     glBindBuffer(GL_UNIFORM_BUFFER, this->cameraUBO);
     GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO));
@@ -353,8 +355,7 @@ void Renderer::render(Scene &scene, bool useBloom, bool useHDR)
 
 void Renderer::update(Scene &scene, double dt, bool paused)
 {
-  if (!paused)
-    scene.update(dt);
+  scene.update(dt, paused);
 
   this->updateUBO(scene);
 }

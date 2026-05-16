@@ -135,7 +135,8 @@ Application::Application(
   this->resourceManager.LoadShader(Res::DOWNSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/down/vertex.glsl", "assets/shaders/sample/down/fragment.glsl");
   this->resourceManager.LoadShader(Res::UPSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/up/vertex.glsl", "assets/shaders/sample/up/fragment.glsl");
 
-  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, sunLuminosity * VISUAL_RADIUS_SCALE * VISUAL_RADIUS_SCALE);
+  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, sunLuminosity);
+  // loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);
   loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.7f, 0.f, 0.9f);
   loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.6f, 0.f, 0.85f);
   loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 0.3f, 0.f, 0.3f);
