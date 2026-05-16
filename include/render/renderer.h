@@ -47,7 +47,7 @@ private:
   void renderShadowMap(Scene &scene, Shader &shader);
   void renderPointShadow(Scene &scene);
   void renderMoonsRadiance(Scene &scene);
-  void renderSkybox(Scene &scene);
+  void renderSkybox(Scene &scene, bool useFramebuffer);
   void renderAsteroidSystems(Scene &scene, Frustum* frustum);
   void renderObjects(Scene &scene, Frustum* frustum);
   void renderTrails(Scene &scene);
