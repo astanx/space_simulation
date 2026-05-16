@@ -57,6 +57,8 @@ void Scene::updateFrameContext(bool first)
 
   if (first)
     this->ctx.exposure = 5e-4f;
+  else
+    this->ctx.camPosition = this->activeCamera->getPosition();
 }
 
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
@@ -144,7 +146,7 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
   return ptr;
 }
 
-void Scene::addLayerToModelSource(std::string name, std::string material_name, ModelSource* object)
+void Scene::addLayerToModelSource(std::string name, std::string material_name, ModelSource *object)
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
@@ -163,7 +165,7 @@ Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadP
 // Process functions
 void Scene::init()
 {
-  Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii.mean, sunLuminosity * VISUAL_SCALE * VISUAL_SCALE, sunPos);
+  Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii.mean, sunLuminosity, sunPos);
   this->sun = sunPtr;
   createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadii.mean, sunPtr, mercuryElements);
   Planet *venusPtr = createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii.mean, sunPtr, venusElements);
@@ -188,8 +190,8 @@ void Scene::init()
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
       this->sun->getRenderPosition(),
       glm::vec3(1.0f),
-      sunLuminosity * VISUAL_RADIUS_SCALE * VISUAL_RADIUS_SCALE,
-      1.f);
+      this->sun->getLuminosity(),
+      this->sun->getRadius());
   this->addPointLight(std::move(pointLight));
 
   // std::unique_ptr<DirectionalLight> dirLight = std::make_unique<DirectionalLight>(
@@ -205,7 +207,6 @@ void Scene::init()
                                                          glm::vec3(0.0f, 0.0f, -1.0f),
                                                          glm::vec3(0.0f, 1.0f, 0.0f),
                                                          this->ctx.width, this->ctx.height);
-
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();
 
@@ -245,11 +246,12 @@ void Scene::processMouseScroll(float yoffset)
   this->activeCamera->processMouseScroll(yoffset);
 }
 
-void Scene::update(double dt)
+void Scene::update(double dt, bool paused)
 {
   this->updateFrameContext();
 
-  this->wisdomHolman(dt);
+  if (!paused)
+    this->wisdomHolman(dt);
 
   // for (size_t i = 0; i < objects.size(); ++i)
   // {
@@ -263,7 +265,10 @@ void Scene::update(double dt)
   Frustum frustum = this->activeCamera->getFrustum(this->ctx.aspect);
 
   for (Updatable *&object : this->updatable)
-    object->update(dt, &frustum);
+    object->update(dt, this->ctx, &frustum);
+
+  for (std::unique_ptr<Trail> &trail : this->trails)
+    trail->update(this->ctx.camPosition);
 
   if (this->pointLights[0])
     this->pointLights[0]->move(this->sun->getRenderPosition()); // move sun light

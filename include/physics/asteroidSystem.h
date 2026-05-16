@@ -44,7 +44,7 @@ public:
   void halfKick(const std::vector<Object *> &bodies, double dt) override;
 
   void applyObjectGravitation(Object *object);
-  void render(Shader &shader, Frustum* frustum = nullptr, bool force = false) const override;
-  void renderInstanced(Shader &shader, Frustum* frustum = nullptr, bool force = false) const override;
-  void update(double dt, Frustum* frustum = nullptr, bool force = false) override;
+  void render(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
+  void renderInstanced(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
+  void update(double dt, FrameContext &ctx, Frustum *frustum = nullptr, bool force = false) override;
 };

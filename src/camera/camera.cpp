@@ -17,45 +17,50 @@ void Camera::updateCameraVectors()
 }
 
 // Constructor and Destructor
-Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float width, float height)
+Camera::Camera(glm::dvec3 position, glm::dvec3 front, glm::dvec3 worldUp, float width, float height)
     : position(position), front(front), worldUp(worldUp), up(worldUp)
 {
   this->mouseSensitivity = 0.2f;
-  this->movementSpeed = 1.5f;
-
-  this->right = glm::normalize(glm::cross(this->front, this->worldUp));
+  this->movementSpeed = 5000000000.0;
 
   this->yaw = -90.f;
   this->pitch = 0.f;
   this->roll = 0.f;
 
   this->firstMouse = true;
-  this->lastX = static_cast<float>(width) / 2.f;
-  this->lastY = static_cast<float>(height) / 2.f;
+  this->lastX = width / 2.f;
+  this->lastY = height / 2.f;
 
   this->fov = 45.f;
-  this->nearPlane = 0.001f;
-  this->farPlane = 500.f;
+  this->nearPlane = 10000000.0;
+  this->farPlane = 52.038 * 1.49597870700e11;
 
   this->updateCameraVectors();
 }
 
 // Getters
-const glm::mat4 Camera::getViewMatrix() const
+const glm::dmat4 Camera::getViewMatrix() const
 {
-  return glm::lookAt(this->position, this->position + this->front, this->up);
+  // return glm::lookAt(this->position, this->position + this->front, this->up);
+  return glm::lookAt(glm::dvec3(0.0), this->front, this->up);
 }
-const glm::mat4 Camera::getProjectionMatrix(float aspectRatio, float overrideFov) const
+const glm::dmat4 Camera::getProjectionMatrix(double aspectRatio, double overrideFov) const
 {
-  float fov = overrideFov == -1.0f ? this->fov : overrideFov;
+  double fov = overrideFov == -1.0 ? this->fov : overrideFov;
   return glm::perspective(glm::radians(fov), aspectRatio, this->nearPlane, this->farPlane);
 }
-const glm::vec3 Camera::getPosition() const
+const glm::dvec3 Camera::getPosition() const
 {
   return this->position;
 }
 
 // Public functions
+void Camera::updateMovementSpeed(double incrementor)
+{
+  if (incrementor < 0 && movementSpeed == 0) return;
+  this->movementSpeed += incrementor;
+};
+
 void Camera::processMouseScroll(float yoffset)
 {
   this->fov -= yoffset;
@@ -101,7 +106,7 @@ void Camera::processMouseMovement(const float &xpos, const float &ypos)
   this->updateCameraVectors();
 }
 
-void Camera::processKeyboard(CameraMovement direction, float deltaTime)
+void Camera::processKeyboard(CameraMovement direction, double deltaTime)
 {
   switch (direction)
   {
@@ -128,7 +133,7 @@ void Camera::processKeyboard(CameraMovement direction, float deltaTime)
   }
 }
 
-const Frustum Camera::getFrustum(float aspectRatio) const
+const Frustum Camera::getFrustum(double aspectRatio) const
 {
   glm::mat4 m = glm::transpose(this->getProjectionMatrix(aspectRatio) * this->getViewMatrix());
 

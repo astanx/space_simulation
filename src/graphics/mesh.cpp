@@ -22,21 +22,51 @@ void Mesh::initVAO()
 
   ScopedVertexArray vao(*this->VAOS[this->layout]);
 
-  if (!this->VBO)
+  bool wasInitVBO = bool(this->VBO);
+  if (!wasInitVBO)
     this->VBO = std::make_unique<Buffer>();
 
   this->VBO->bind(GL_ARRAY_BUFFER);
 
-  GL_CALL(glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), this->vertices.data(), GL_STATIC_DRAW));
+  GLint currentVBOSize = 0;
+  glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &currentVBOSize);
+  if (!wasInitVBO || currentVBOSize != this->vertices.size() * sizeof(Vertex))
+    GL_CALL(glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), this->vertices.data(), GL_STATIC_DRAW));
+  else
+  {
+    void *ptr = glMapBufferRange(GL_ARRAY_BUFFER, 0,
+                                 this->vertices.size() * sizeof(Vertex),
+                                 GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    if (ptr)
+    {
+      memcpy(ptr, this->vertices.data(), this->vertices.size() * sizeof(Vertex));
+      glUnmapBuffer(GL_ARRAY_BUFFER);
+    }
+  }
 
   if (this->indices.size() > 0)
   {
-    if (!this->EBO)
+    bool wasInitEBO = bool(this->EBO);
+    if (!wasInitEBO)
       this->EBO = std::make_unique<Buffer>();
 
     this->EBO->bind(GL_ELEMENT_ARRAY_BUFFER);
 
-    GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), this->indices.data(), GL_STATIC_DRAW));
+    GLint currentEBOSize = 0;
+    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &currentEBOSize);
+    if (!wasInitEBO || currentEBOSize != this->indices.size() * sizeof(GLuint))
+      GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), this->indices.data(), GL_STATIC_DRAW));
+    else
+    {
+      void *ptr = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0,
+                                   this->indices.size() * sizeof(GLuint),
+                                   GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+      if (ptr)
+      {
+        memcpy(ptr, this->indices.data(), this->indices.size() * sizeof(GLuint));
+        glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+      }
+    }
   }
 
   if (!this->VAOS[this->layout]->isLayoutInitialized())

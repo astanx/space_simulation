@@ -11,11 +11,13 @@ class Trail
 {
 private:
   std::unique_ptr<Mesh> trail;
-  void generateTrail(const std::vector<glm::dvec3> &trailVec);
+  std::vector<glm::dvec3> trailVec;
+  void generateTrail(const glm::dvec3 &camPosition = glm::dvec3(0.0));
 
 public:
   Trail(const std::vector<glm::dvec3> &trailVec);
   ~Trail() = default;
 
   void render() const;
+  void update(const glm::dvec3 &camPosition);
 };

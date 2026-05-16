@@ -36,9 +36,12 @@ const KeplerElements MAXIMUM_ASTEROID_ELEMENTS(
 		glm::radians(360.0));
 
 // VISUAL SCALING
-const double VISUAL_SCALE = 1e-10;
-const double VISUAL_RADIUS_SCALE = 1e-9;
-const double VISUAL_ASTEROID_SCALE = 3e-3;
+const double VISUAL_SCALE = 1;
+const double VISUAL_RADIUS_SCALE = 1;
+const double VISUAL_ASTEROID_SCALE = 1;
+// const double VISUAL_SCALE = 1e-10;
+// const double VISUAL_RADIUS_SCALE = 1e-9;
+// const double VISUAL_ASTEROID_SCALE = 3e-3;
 
 // Precision
 const double EPS = 1e-6;

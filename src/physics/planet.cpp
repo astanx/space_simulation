@@ -130,9 +130,6 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
     ScopedDepthTest depthTest(true);
     ScopedBlending blend(false);
 
-    glClearColor(0.f, 0.f, 0.f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     for (int i = 0; i < 6; i++)
     {
       GL_CALL(glFramebufferTexture2D(
@@ -141,6 +138,9 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
           GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
           moonRadianceTexture->getId(),
           0));
+
+      glClearColor(0.f, 0.f, 0.f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       shader.setMat4fv(projection, "ProjectionMatrix");
       shader.setMat4fv(views[i], "ViewMatrix");

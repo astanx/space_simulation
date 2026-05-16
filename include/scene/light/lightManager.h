@@ -44,7 +44,8 @@ struct PointLightGPU
 
   float luminosity;
   float radius;
-  glm::vec2 _pad2;
+  bool isAreaLight;
+  float _pad2;
 };
 
 class DirectionalLight;

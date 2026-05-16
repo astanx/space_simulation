@@ -147,7 +147,7 @@ AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double inne
 }
 
 // Public functions
-void AsteroidSystem::update(double dt, Frustum *frustum, bool force)
+void AsteroidSystem::update(double dt, FrameContext &ctx, Frustum *frustum, bool force)
 {
   unsigned threadCount = this->threadPool.getThreadCount();
 
@@ -177,7 +177,7 @@ void AsteroidSystem::update(double dt, Frustum *frustum, bool force)
   //       std::unique_ptr<Asteroid>& asteroid = this->asteroids[typeIndex][j];
   //       if ((frustum && frustum->isVisibleSphere(asteroid->getRenderPosition(), asteroid->getRadius() * VISUAL_RADIUS_SCALE)) || force)
   //         local++;
-  //     } 
+  //     }
   //     counts[typeIndex][i] = local; });
   //   }
   // }
@@ -225,14 +225,14 @@ void AsteroidSystem::update(double dt, Frustum *frustum, bool force)
       unsigned end = begin + work;
       start = end;
 
-      this->threadPool.enqueue([this, work, dt, typeIndex, begin, end, frustum, force]()
+      this->threadPool.enqueue([this, work, dt, typeIndex, begin, end, frustum, force, &ctx]()
                                {
         // size_t index = offsets[typeIndex][i];
         for (unsigned j = begin; j < end; j++)
         {
           std::unique_ptr<Asteroid>& asteroid = this->asteroids[typeIndex][j];
-          asteroid->update(dt);
-          this->instances[typeIndex][j].position = asteroid->getRenderPosition();
+          asteroid->update(dt, ctx, frustum, force);
+          this->instances[typeIndex][j].position = asteroid->getRenderPosition() - ctx.camPosition;
         } });
     }
 

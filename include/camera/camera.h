@@ -18,14 +18,14 @@ struct Frustum;
 class Camera
 {
 private:
-  GLfloat movementSpeed;
-  GLfloat mouseSensitivity;
+  double movementSpeed;
+  double mouseSensitivity;
 
-  glm::vec3 worldUp;
-  glm::vec3 position;
-  glm::vec3 front;
-  glm::vec3 right;
-  glm::vec3 up;
+  glm::dvec3 worldUp;
+  glm::dvec3 position;
+  glm::dvec3 front;
+  glm::dvec3 right;
+  glm::dvec3 up;
 
   GLfloat yaw;
   GLfloat pitch;
@@ -35,34 +35,34 @@ private:
   float lastX;
   float lastY;
 
-  float fov;
-  float nearPlane;
-  float farPlane;
+  double fov;
+  double nearPlane;
+  double farPlane;
 
   void updateCameraVectors();
 
 public:
-  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 worldUp, float width, float height);
+  Camera(glm::dvec3 position, glm::dvec3 front, glm::dvec3 worldUp, float width, float height);
   ~Camera() {}
 
   // Getters
-  const glm::mat4 getViewMatrix() const;
+  const glm::dmat4 getViewMatrix() const;
 
-  const glm::mat4 getProjectionMatrix(float aspectRatio, float overrideFov = -1.f) const;
+  const glm::dmat4 getProjectionMatrix(double aspectRatio, double overrideFov = -1.0) const;
 
-  const glm::vec3 getPosition() const;
+  const glm::dvec3 getPosition() const;
 
-  void updateMovementSpeed(float incrementor) { this->movementSpeed += incrementor; };
+  void updateMovementSpeed(double incrementor);
 
-  const float getNearPlane() const { return this->nearPlane; };
-  const float getFarPlane() const { return this->farPlane; };
+  const double getNearPlane() const { return this->nearPlane; };
+  const double getFarPlane() const { return this->farPlane; };
 
   // Functions
   void processMouseScroll(float yoffset);
 
   void processMouseMovement(const float &xpos, const float &ypos);
 
-  void processKeyboard(CameraMovement direction, float deltaTime);
+  void processKeyboard(CameraMovement direction, double deltaTime);
 
-  const Frustum getFrustum(float aspectRatio) const;
+  const Frustum getFrustum(double aspectRatio) const;
 };
