@@ -2,7 +2,7 @@
 
 #include "scene/scene.h"
 #include "render/renderer.h"
-#include "core/input.h"
+#include "core/inputManager.h"
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
 
@@ -49,7 +49,7 @@ private:
   Renderer renderer;
 
   // Input
-  Input input;
+  InputManager input;
 
   // Scene
   Scene scene;
