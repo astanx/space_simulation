@@ -114,8 +114,6 @@ Application::Application(
   this->initGLEW();
   this->initOpenGLSettings();
 
-  this->input.init(this->window);
-
   // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
   this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->GLmajor, this->GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
@@ -199,7 +197,7 @@ void Application::update()
   // Poll events
   glfwPollEvents();
 
-  this->input.update();
+  this->input.update(this->window);
 
   this->processInput();
 }
@@ -223,44 +221,34 @@ void Application::render()
 
 void Application::processInput()
 {
-  if (this->input.isKeyPressed(GLFW_KEY_ESCAPE))
-  {
+  if (this->input.isActionPressed(Action::Exit))
     this->setWindowShouldClose();
-  }
-  if (this->input.isKeyHold(GLFW_KEY_W))
-  {
-    this->scene.processKeyboard(FORWARD, this->deltaTime);
-  }
-  if (this->input.isKeyHold(GLFW_KEY_S))
-  {
-    this->scene.processKeyboard(BACKWARD, this->deltaTime);
-  }
-  if (this->input.isKeyHold(GLFW_KEY_A))
-  {
-    this->scene.processKeyboard(LEFT, this->deltaTime);
-  }
-  if (this->input.isKeyHold(GLFW_KEY_D))
-  {
-    this->scene.processKeyboard(RIGHT, this->deltaTime);
-  }
-  if (this->input.isKeyHold(GLFW_KEY_SPACE))
-  {
-    this->scene.processKeyboard(UP, this->deltaTime);
-  }
-  if (this->input.isKeyHold(GLFW_KEY_LEFT_SHIFT))
-  {
-    this->scene.processKeyboard(DOWN, this->deltaTime);
-  }
 
-  if (this->input.isKeyPressed(GLFW_KEY_B))
-  {
+  if (this->input.isActionHold(Action::MoveForward))
+    this->scene.processKeyboard(FORWARD, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveBackward))
+    this->scene.processKeyboard(BACKWARD, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveLeft))
+    this->scene.processKeyboard(LEFT, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveRight))
+    this->scene.processKeyboard(RIGHT, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveUp))
+    this->scene.processKeyboard(UP, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveDown))
+    this->scene.processKeyboard(DOWN, this->deltaTime);
+
+  if (this->input.isActionPressed(Action::ToggleBloom))
     this->useBloom = !this->useBloom;
-  }
-  if (this->input.isKeyPressed(GLFW_KEY_H))
-  {
+
+  if (this->input.isActionPressed(Action::ToggleHDR))
     this->useHDR = !this->useHDR;
-  }
-  if (this->input.isKeyPressed(GLFW_KEY_P))
+
+  if (this->input.isActionPressed(Action::LogPosition))
   {
     const glm::vec3 position = this->scene.getActiveCameraPosition();
     Logger::logInfo("Application", "Camera position: " +
@@ -269,43 +257,36 @@ void Application::processInput()
                                        std::to_string(position.z));
   }
 
-  if (this->input.isKeyPressed(GLFW_KEY_ENTER))
-  {
+  if (this->input.isActionPressed(Action::Pause))
     this->paused = !this->paused;
-  }
 
-  if (this->input.isKeyPressed(GLFW_KEY_MINUS))
-  {
+  if (this->input.isActionPressed(Action::DecreaseCameraSpeed))
     this->scene.updateCameraMovementSpeed(-0.1f);
-  }
 
-  if (this->input.isKeyPressed(GLFW_KEY_EQUAL))
-  {
+  if (this->input.isActionPressed(Action::IncreaseCameraSpeed))
     this->scene.updateCameraMovementSpeed(0.1f);
+
+  if (this->input.isActionPressed(Action::DoubleTimestep))
+  {
+    if (this->timeScale > 0)
+      this->timeScale *= 2;
+    else
+      this->timeScale *= .5;
   }
 
-  if (this->input.isKeyPressed(GLFW_KEY_UP))
-  {
-    if (this->timeScale > 0)
-      this->timeScale *= 2;
-    else
-      this->timeScale *= .5;
-  }
-  if (this->input.isKeyPressed(GLFW_KEY_DOWN))
+  if (this->input.isActionPressed(Action::HalfTimestep))
   {
     if (this->timeScale > 0)
       this->timeScale *= .5;
     else
       this->timeScale *= 2;
   }
-  if (this->input.isKeyHold(GLFW_KEY_LEFT))
-  {
+
+  if (this->input.isActionHold(Action::DecreaseTimestep))
     this->timeScale -= 2;
-  }
-  if (this->input.isKeyHold(GLFW_KEY_RIGHT))
-  {
+
+  if (this->input.isActionHold(Action::IncreaseTimestep))
     this->timeScale += 2;
-  }
 }
 
 void Application::loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
