@@ -20,6 +20,7 @@ struct PBRMaterial
 
   sampler2D nightMap;
   bool useNightMap;
+  bool useRoughnessMap;
 };
 
 struct MaterialData
@@ -61,8 +62,10 @@ vec3 getNormal(PBRMaterial material, vec2 texcoord, vec3 normal, bool hasNormalM
 
 float getRoughness(PBRMaterial material, vec2 texcoord)
 {
+  if (material.useRoughnessMap)
+    return texture(material.roughnessMap, texcoord).r;
+
   return material.roughness;
-  return texture(material.roughnessMap, texcoord).r;
 }
 
 float getMetallic(PBRMaterial material, vec2 texcoord)

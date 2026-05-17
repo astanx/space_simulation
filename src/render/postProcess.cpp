@@ -39,7 +39,7 @@ void PostProcess::renderFullscreenQuad(RenderContext &ctx)
   hdrShader.set1i(TextureBindingPoints::Emissive, "hdrEmissiveBuffer");
   hdrShader.set1i(TextureBindingPoints::Bloom, "bloomBlur");
   hdrShader.set1f(ctx.settings.exposure, "exposure");
-  hdrShader.set1f(0.5f, "bloomPower");
+  hdrShader.set1f(ctx.settings.bloomPower, "bloomPower");
   this->resourceManager.GetMesh(Res::FULLSCREEN_QUAD).render();
 }
 
@@ -127,7 +127,7 @@ void PostProcess::extractBloom()
 
   bloomShader.set1i(TextureBindingPoints::HDRColorBuffer, "hdrColorBuffer");
   bloomShader.set1i(TextureBindingPoints::Emissive, "hdrEmissiveBuffer");
-  bloomShader.set1f(6000.f, "threshold");
+  bloomShader.set1f(600.f, "threshold");
 
   this->resourceManager.GetMesh(Res::FULLSCREEN_QUAD).render();
 }

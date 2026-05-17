@@ -115,6 +115,7 @@ Application::Application(
   this->renderCtx.settings.useBloom = true;
   this->renderCtx.settings.useHDR = true;
   this->renderCtx.settings.exposure = 5e-4;
+  this->renderCtx.settings.bloomPower = 0.5;
 
   this->timeScale = 3600 * 24;
   this->deltaTime = 0.f;
@@ -150,7 +151,7 @@ Application::Application(
   loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.7f, 0.f, 0.9f);
   loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.6f, 0.f, 0.85f);
   loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 0.3f, 0.f, 0.3f);
-  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 0.6f, 0.f, 0.55f, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT);
+  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 0.6f, 0.f, 0.55f, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
   loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 0.2f, 0.f, 0.2f);
   loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.8f, 0.f, 0.95f);
   loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.7f, 0.f, 0.9f);
@@ -308,7 +309,7 @@ void Application::processInput()
 
 void Application::loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
                                       Radii radii, float ao, float metallic, float roughness, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
-                                      const std::string &specular_name, int segments)
+                                      const std::string &roughness_name, int segments)
 {
   const std::string format = ".png";
 
@@ -321,12 +322,12 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
   }
   Texture &diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
 
-  Texture *spec = nullptr;
-  const std::string specularPath = BASE_TEXTURE_PATH + "specular/" + name + format;
-  if (std::filesystem::exists(specularPath) && specular_name != "")
+  Texture *rough = nullptr;
+  const std::string roughnessPath = BASE_TEXTURE_PATH + "roughness/" + name + format;
+  if (std::filesystem::exists(roughnessPath) && roughness_name != "")
   {
-    Logger::logInfo("Application", "Found specular texture for object - " + name);
-    spec = &this->resourceManager.LoadTexture(specular_name, specularPath, GL_TEXTURE_2D);
+    Logger::logInfo("Application", "Found roughness texture for object - " + name);
+    rough = &this->resourceManager.LoadTexture(roughness_name, roughnessPath, GL_TEXTURE_2D);
   }
 
   Texture *normal = nullptr;
@@ -348,7 +349,7 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
   }
 
   // this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
-  this->resourceManager.LoadPBRMaterial(material_name, &diff, normal, nullptr, nullptr, nullptr, night, emissiveStrength, ao, metallic, roughness);
+  this->resourceManager.LoadPBRMaterial(material_name, &diff, normal, nullptr, nullptr, rough, night, emissiveStrength, ao, metallic, roughness);
   std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE), isTangent);
   this->resourceManager.LoadMesh(name, std::move(obj),
                                  isTangent ? VertexLayout::PositionNormalTangent : VertexLayout::NoColor);

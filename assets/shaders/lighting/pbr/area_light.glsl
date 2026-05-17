@@ -6,16 +6,6 @@
 #include "material/pbrMaterial.glsl"
 #include "constants/constants.glsl"
 
-vec3 integrateEdgeVec(vec3 v1, vec3 v2) {
-  float x = dot(v1, v2);
-  float y = abs(x);
-  float a = 0.8543985 + (0.4965155 + 0.0145206*y)*y;
-  float b = 3.4175940 + (4.1616724 + y)*y;
-  float v = a / b;
-  float sintheta = (x > 0.0) ? v : 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - v;
-  return cross(v1, v2) * sintheta;
-}
-
 void sphere_evaluate(vec3 C, float R, vec3 P, vec3 r, float n, out vec3 points[4])
 {
   float m = sqrt(2 / (n + 2));
@@ -48,10 +38,12 @@ void sphere_evaluate(vec3 C, float R, vec3 P, vec3 r, float n, out vec3 points[4
   points[3] = C + v3 * R; 
 }
 
-vec3 LTC_specular(vec3 N, vec3 V, vec3 P, PBRPointLight light, float roughness) 
+vec3 specular_evaluate(vec3 N, vec3 V, vec3 P, PBRPointLight light, float roughness) 
 {
   vec3 r = reflect(-V, N);
   r = normalize(r);
+
+  roughness = max(roughness, 0.045);
 
   float n = 2 / (roughness * roughness) - 2;
 
@@ -108,14 +100,8 @@ vec3 LTC_specular(vec3 N, vec3 V, vec3 P, PBRPointLight light, float roughness)
   return vec3(M);
 }
 
-vec3 LTC_diffuse(vec3 N, vec3 V, vec3 P, PBRPointLight light, vec3 albedo)
+vec3 diffuse_evaluate(vec3 N, vec3 V, vec3 P, PBRPointLight light, vec3 albedo)
 {
-  /*
-  float d = length(light.position - P);
-
-  return albedo * light.radius * light.radius / (d * d) * max(0.0, dot(N, normalize(light.position - P)));
-  */
-
   vec3 L  = light.position - P;
   float dist = length(L);
 
@@ -130,111 +116,5 @@ vec3 LTC_diffuse(vec3 N, vec3 V, vec3 P, PBRPointLight light, vec3 albedo)
 
   return albedo * omega * NdotL / PI;
 }
-
-/*
-uniform sampler2D LTC1;
-uniform sampler2D LTC2;
-
-const int POINTS = 512;
-
-const float LUT_SIZE = 64.0; // ltc_texture size
-const float LUT_SCALE = (LUT_SIZE - 1.0)/LUT_SIZE;
-const float LUT_BIAS = 0.5/LUT_SIZE;
-
-void sphere_evaluate(vec3 C, float R, vec3 P, out vec3 points[POINTS])
-{
-  vec3 L = normalize(C - P);
-
-  float sinTheta = clamp(R / length(C - P), 0.0, 1.0);
-  float cosTheta = sqrt(1.0 - sinTheta * sinTheta);
-
-  vec3 T1 = normalize(cross(abs(L.x) < 0.9 ? vec3(1,0,0) : vec3(0,1,0), L));
-  vec3 T2 = cross(L, T1);
-
-  for (int i = 0; i < POINTS; i++)
-  {
-    float angle = 2.0 * PI * float(i) / float(POINTS);
-    points[i] = C + R * (cosTheta * L + sinTheta * (cos(angle) * T1 + sin(angle) * T2));
-  }
-}
-
-vec3 LTC_evaluate(vec3 N, vec3 V, vec3 P, PBRPointLight light, mat3 Minv) 
-{
-  // construct orthonormal basis around N
-  vec3 up = abs(N.z) < 0.999 ? vec3(0,0,1) : vec3(1,0,0);
-  vec3 T1 = normalize(cross(up, N));
-  vec3 T2 = cross(N, T1);
-
-  // rotate area light in (T1, T2, N) basis
-  Minv = Minv * transpose(mat3(T1, T2, N));
-
-  vec3 L[POINTS];
-  vec3 points[POINTS];
-  sphere_evaluate(light.position, light.radius, P, points);
-
-  for (int i = 0; i < POINTS; i++)
-    L[i] = normalize(Minv * (points[i] - P));
-
-  vec3 vsum = vec3(0.0);
-  for (int i = 0; i < POINTS; i++)
-  {
-    if (i == POINTS - 1)
-      vsum += integrateEdgeVec(L[i], L[0]);
-    else
-      vsum += integrateEdgeVec(L[i], L[i + 1]);
-  }
-
-  // form factor of the polygon in direction vsum
-  float len = length(vsum);
-
-  float invLen = 1.0 / max(len, 1e-5);
-  float z = vsum.z * invLen;
-
-  vec2 uvClip = vec2(z*0.5f + 0.5f, len); // range [0, 1]
-  uvClip = uvClip*LUT_SCALE + LUT_BIAS;
-
-  // Fetch the form factor for horizon clipping
-  float scale = texture(LTC2, uvClip).w;
-
-  float sum = len*scale;
-
-  return vec3(sum);
-}
-
-vec3 LTC_diffuse(vec3 N, vec3 V, vec3 P, PBRPointLight light, vec3 albedo)
-{
-  mat3 Minv = mat3(1.0);
-  vec3 E = LTC_evaluate(N, V, P, light, Minv);
-
-  return albedo / PI * E;
-}
-
-vec3 LTC_specular(vec3 N, vec3 V, vec3 P, PBRPointLight light, MaterialData material, vec3 F0) {
-  float dotNV = clamp(dot(N, V), 0.0f, 1.0f);
-
-  // use roughness and sqrt(1-cos_theta) to sample M_texture
-  vec2 uv = vec2(material.roughness, sqrt(1.0f - dotNV));
-  uv = uv*LUT_SCALE + LUT_BIAS;
-
-  // get 4 parameters for inverse_M
-  vec4 t1 = texture(LTC1, uv);
-
-  // Get 2 parameters for Fresnel calculation
-  vec4 t2 = texture(LTC2, uv);
-
-  mat3 Minv = mat3(
-    vec3(t1.x, 0, t1.y),
-    vec3(   0, 1,    0),
-    vec3(t1.z, 0, t1.w)
-  );
-
-  vec3 E = LTC_evaluate(N, V, P, light, Minv);
-
-  vec3 specular = (F0 * t2.x + (1.0 - F0) * t2.y) * E;
-
-  return specular;
-}
-*/
-
 
 #endif

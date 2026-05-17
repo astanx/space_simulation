@@ -43,7 +43,7 @@ void main()
     // Gram-Schmidt re-orthogonalization
     T = normalize(T - dot(T, N) * N);
 
-    vec3 B = cross(N, T) * vertex_tangent.w;
+    vec3 B = normalize(cross(N, T)) * vertex_tangent.w;
 
     vs_out.TBN = mat3(T, B, N);
   /*

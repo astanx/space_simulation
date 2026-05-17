@@ -8,6 +8,7 @@ struct RenderSettings
   bool useBloom;
   bool useHDR;
   double exposure;
+  double bloomPower;
 };
 
 struct RenderContext
