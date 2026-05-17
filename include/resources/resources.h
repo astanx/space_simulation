@@ -90,6 +90,8 @@ namespace Res
 
   const std::string EARTH_NIGHT = "earth_night";
 
+  const std::string EARTH_ROUGHNESS = "earth_roughness";
+
   // Material
   const std::string ASTEROID_MATERIAL = "asteroid_material";
 

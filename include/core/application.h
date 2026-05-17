@@ -81,6 +81,6 @@ public:
   static void framebuffer_resize_callback(GLFWwindow *window, int width, int height);
   void loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
                            Radii radii, float ao, float metallic, float roughness, float emissiveStrength = 0.0f,
-                           const std::string &normal_name = "", const std::string &night_name = "", const std::string &specular_name = "", int segments = 32);
+                           const std::string &normal_name = "", const std::string &night_name = "", const std::string &roughness_name = "", int segments = 32);
   void processInput();
 };

@@ -61,8 +61,8 @@ vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, MaterialData material, PBR
 
     radiance = light.color * intensity;
 
-    vec3 specular = LTC_specular(N, V, position, light, material.roughness);
-    vec3 diffuse = LTC_diffuse(N, V, position, light, material.albedo);
+    vec3 specular = specular_evaluate(N, V, position, light, material.roughness);
+    vec3 diffuse = diffuse_evaluate(N, V, position, light, material.albedo);
     Lo += (kD * diffuse + specular * kS) * radiance; 
   }
   else

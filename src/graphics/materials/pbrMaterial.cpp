@@ -58,4 +58,9 @@ void PBRMaterial::sendToShader(Shader &program)
     program.set1i(1, "pbrMaterial.useNightMap");
   else
     program.set1i(0, "pbrMaterial.useNightMap");
+
+  if (this->roughnessMap)
+    program.set1i(1, "pbrMaterial.useRoughnessMap");
+  else
+    program.set1i(0, "pbrMaterial.useRoughnessMap");
 }
