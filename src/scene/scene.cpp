@@ -152,7 +152,7 @@ void Scene::init(RenderContext &renderCtx)
   addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii.mean, earthPtr, moonElements, moonHapkeParameters);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii.mean, sunPtr, marsElements);
-  createAsteroidSystem(sunPtr, 20000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
+  createAsteroidSystem(sunPtr, 100000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii.mean, sunPtr, jupiterElements);
 
   // std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
