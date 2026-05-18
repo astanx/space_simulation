@@ -13,10 +13,17 @@ class Material;
 class Shader;
 class ThreadPool;
 
+struct ThreadWork
+{
+  size_t begin;
+  size_t end;
+};
+
 class AsteroidSystem : public Renderable, public Updatable, public WisdomHolman
 {
 private:
   ThreadPool &threadPool;
+  std::vector<std::vector<ThreadWork>> threadRanges;
   std::vector<double> meshVolumes;
 
   float lastUpdateTime = 0.0f;
@@ -33,8 +40,10 @@ private:
   Object *centralBody;
 
   KeplerElements createRandomKeplerElements();
-  Asteroid *createAsteroid();
-  void createAsteroids(unsigned amount);
+  void createAsteroid(size_t type, size_t index);
+  void createAsteroids(unsigned int amount);
+
+  void initThreadRanges();
 
 public:
   AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool);

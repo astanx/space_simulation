@@ -14,9 +14,9 @@ Asteroid::Asteroid(Object *centralBody, double mu, double radius, const KeplerEl
 }
 
 // Public functions
-glm::mat4 Asteroid::getModelMatrix()
+glm::dmat4 Asteroid::getModelMatrix()
 {
-  glm::mat4 model(1.0f);
-  model = glm::translate(model, glm::vec3(this->renderPosition));
+  glm::dmat4 model(1.0f);
+  model = glm::translate(model, this->renderPosition);
   return model;
 };
