@@ -35,10 +35,8 @@ KeplerElements AsteroidSystem::createRandomKeplerElements()
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.m, MAXIMUM_ASTEROID_ELEMENTS.m)};
 }
 
-Asteroid *AsteroidSystem::createAsteroid()
+void AsteroidSystem::createAsteroid(size_t type, size_t index)
 {
-  unsigned type = generateRandom(0u, static_cast<unsigned>(this->meshes.size() - 1));
-
   double radius = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
 
   if (radius * VISUAL_RADIUS_SCALE < 0.01)
@@ -58,15 +56,8 @@ Asteroid *AsteroidSystem::createAsteroid()
 
   std::unique_ptr<Asteroid> asteroid = std::make_unique<Asteroid>(this->centralBody, mu, radius, this->createRandomKeplerElements());
 
-  Asteroid *ptr = asteroid.get();
-
-  {
-    std::lock_guard<std::mutex> lock(this->threadPool.getMutex());
-    this->instances[type].emplace_back(InstanceData{asteroid->getRenderPosition()});
-    this->asteroids[type].emplace_back(std::move(asteroid));
-  }
-
-  return ptr;
+  this->instances[type][index] = InstanceData{asteroid->getRenderPosition()};
+  this->asteroids[type][index] = std::move(asteroid);
 }
 void AsteroidSystem::createAsteroids(unsigned amount)
 {
@@ -84,45 +75,42 @@ void AsteroidSystem::createAsteroids(unsigned amount)
   this->meshes.reserve(typeCount);
 
   for (std::unique_ptr<AsteroidShape> &asteroid : asteroidShapes)
-  {
     this->meshes.push_back(std::make_unique<Mesh>(std::move(asteroid), VertexLayout::Instanced));
-  }
 
   for (std::unique_ptr<Mesh> &mesh : meshes)
-  {
     meshVolumes.push_back(mesh->calculateVolume());
+
+  std::vector<unsigned int> typeCounts(typeCount, 0);
+  std::vector<unsigned int> asteroidTypes(amount);
+
+  for (size_t i = 0; i < amount; i++)
+  {
+    unsigned type = generateRandom(0u, static_cast<unsigned>(this->meshes.size() - 1));
+
+    asteroidTypes[i] = type;
+    typeCounts[type]++;
   }
 
-  unsigned threadCount = this->threadPool.getThreadCount();
-  unsigned perThread = amount / threadCount;
-  unsigned remaining = amount % threadCount;
-  for (unsigned int i = 0; i < threadCount; i++)
+  for (size_t typeIndex = 0; typeIndex < typeCount; typeIndex++)
   {
-    this->threadPool.enqueue([this, perThread]()
-                             { 
-        for (unsigned j = 0; j < perThread; j++) 
-          this->createAsteroid(); });
+    this->asteroids[typeIndex].resize(typeCounts[typeIndex]);
+    this->instances[typeIndex].resize(typeCounts[typeIndex]);
   }
 
-  for (unsigned i = 0; i < remaining; i++)
-  {
-    this->createAsteroid();
-  }
+  this->initThreadRanges();
+
+  for (size_t typeIndex = 0; typeIndex < this->threadRanges.size(); typeIndex++)
+    for (ThreadWork &work : this->threadRanges[typeIndex])
+    {
+      this->threadPool.enqueue([this, typeIndex, work]()
+                               {
+                                 for (unsigned int i = work.begin; i < work.end; i++)
+                                   this->createAsteroid(typeIndex, i); });
+    }
 
   this->threadPool.wait();
 
-  // for (size_t i = 0; i < amount; i++)
-  // {
-
-  //   Asteroid *asteroid = createAsteroid();
-
-  //   // glm::mat4 model(1.0f);
-  //   // model = glm::translate(model, glm::vec3(asteroid->getRenderPosition()));
-  //   // model = glm::scale(model, glm::vec3(asteroid->getRadius() * VISUAL_RADIUS_SCALE));
-  //   // this->instances[type].emplace_back(InstanceData{model});
-  // }
-
-  for (unsigned type = 0; type < asteroids.size(); type++)
+  for (unsigned type = 0; type < typeCount; type++)
   {
     if (!instances[type].empty())
     {
@@ -130,6 +118,33 @@ void AsteroidSystem::createAsteroids(unsigned amount)
       mesh->setInstanceBuffer(this->instances[type]);
 
       Logger::logInfo("Asteroid system", "Asteroids of type \"" + std::to_string(type) + "\" created - " + std::to_string(this->instances[type].size()));
+    }
+  }
+}
+
+void AsteroidSystem::initThreadRanges()
+{
+  unsigned threadCount = this->threadPool.getThreadCount();
+
+  this->threadRanges.resize(this->asteroids.size());
+
+  for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
+  {
+    unsigned perThread = this->asteroids[typeIndex].size() / threadCount;
+    unsigned remaining = this->asteroids[typeIndex].size() % threadCount;
+
+    this->threadRanges[typeIndex].resize(threadCount);
+
+    unsigned start = 0;
+    for (unsigned int i = 0; i < threadCount; i++)
+    {
+      unsigned work = perThread + (i < remaining ? 1 : 0);
+      unsigned begin = start;
+      unsigned end = begin + work;
+
+      this->threadRanges[typeIndex][i] = {begin, end};
+
+      start = end;
     }
   }
 }
@@ -149,98 +164,19 @@ AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double inne
 // Public functions
 void AsteroidSystem::update(double dt, FrameContext &ctx, Frustum *frustum, bool force)
 {
-  unsigned threadCount = this->threadPool.getThreadCount();
-
-  // std::vector<std::vector<size_t>> counts(this->asteroids.size(), std::vector<size_t>(threadCount, 0));
-
-  // // Calculate counts for each type
-  // for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
-  // {
-  //   unsigned perThread = asteroids[typeIndex].size() / threadCount;
-  //   unsigned remaining = asteroids[typeIndex].size() % threadCount;
-
-  //   unsigned start = 0;
-  //   for (unsigned int i = 0; i < threadCount; i++)
-  //   {
-  //     unsigned work = perThread + (i < remaining ? 1 : 0);
-
-  //     unsigned begin = start;
-  //     unsigned end = begin + work;
-  //     start = end;
-
-  //     this->threadPool.enqueue([this, work, dt, typeIndex, begin, end, frustum, force, &counts, i]()
-  //                              {
-  //     size_t local = 0;
-
-  //     for (unsigned j = begin; j < end; j++)
-  //     {
-  //       std::unique_ptr<Asteroid>& asteroid = this->asteroids[typeIndex][j];
-  //       if ((frustum && frustum->isVisibleSphere(asteroid->getRenderPosition(), asteroid->getRadius() * VISUAL_RADIUS_SCALE)) || force)
-  //         local++;
-  //     }
-  //     counts[typeIndex][i] = local; });
-  //   }
-  // }
-
-  // this->threadPool.wait();
-
-  // std::vector<size_t> totalCounts(this->asteroids.size(), 0);
-
-  // std::vector<std::vector<size_t>> offsets(
-  //     this->asteroids.size(),
-  //     std::vector<size_t>(threadCount, 0));
-
-  // for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
-  // {
-  //   offsets[typeIndex][0] = 0;
-
-  //   for (size_t i = 1; i < threadCount; i++)
-  //   {
-  //     offsets[typeIndex][i] =
-  //         offsets[typeIndex][i - 1] + counts[typeIndex][i - 1];
-  //   }
-
-  //   // total = last offset + last count
-  //   totalCounts[typeIndex] =
-  //       offsets[typeIndex][threadCount - 1] +
-  //       counts[typeIndex][threadCount - 1];
-  // }
-
-  // Update asteroids
   for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
   {
-    // this->instances[typeIndex].resize(totalCounts[typeIndex]);
-
-    // std::cout << "Threads: " << threadCount << std::endl;
-    unsigned perThread = asteroids[typeIndex].size() / threadCount;
-    unsigned remaining = asteroids[typeIndex].size() % threadCount;
-
-    // std::cout << "Per thread: " << perThread << ", remaining: " << remaining << std::endl;
-    unsigned start = 0;
-    for (unsigned int i = 0; i < threadCount; i++)
+    for (ThreadWork &work : this->threadRanges[typeIndex])
     {
-      unsigned work = perThread + (i < remaining ? 1 : 0);
-
-      unsigned begin = start;
-      unsigned end = begin + work;
-      start = end;
-
-      this->threadPool.enqueue([this, work, dt, typeIndex, begin, end, frustum, force, &ctx]()
+      this->threadPool.enqueue([this, work, dt, typeIndex, frustum, force, &ctx]()
                                {
-        // size_t index = offsets[typeIndex][i];
-        for (unsigned j = begin; j < end; j++)
+        for (unsigned j = work.begin; j < work.end; j++)
         {
           std::unique_ptr<Asteroid>& asteroid = this->asteroids[typeIndex][j];
           asteroid->update(dt, ctx, frustum, force);
-          this->instances[typeIndex][j].position = asteroid->getRenderPosition() - ctx.camPosition;
+          this->instances[typeIndex][j].position = asteroid->getRenderPosition();
         } });
     }
-
-    // for (size_t asteroidIndex = 0; asteroidIndex < this->asteroids[typeIndex].size(); asteroidIndex++)
-    // {
-    //   this->instances[typeIndex][asteroidIndex].position = this->asteroids[typeIndex][asteroidIndex]->getRenderPosition();
-    // }
-    // this->meshes[typeIndex]->updateInstanceBuffer(this->instances[typeIndex]);
   }
   this->threadPool.wait();
 
@@ -254,26 +190,15 @@ void AsteroidSystem::applyObjectGravitation(Object *object)
   if (currentTime - this->lastUpdateTime < 0.05f)
     return;
   this->lastUpdateTime = currentTime;
-  unsigned threadCount = this->threadPool.getThreadCount();
 
-  for (std::vector<std::unique_ptr<Asteroid>> &asteroidType : this->asteroids)
+  for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
   {
-    unsigned perThread = asteroidType.size() / threadCount;
-    unsigned remaining = asteroidType.size() % threadCount;
-
-    unsigned start = 0;
-    for (unsigned int i = 0; i < threadCount; i++)
+    for (ThreadWork &work : this->threadRanges[typeIndex])
     {
-      unsigned work = perThread + (i < remaining ? 1 : 0);
-
-      unsigned begin = start;
-      unsigned end = begin + work;
-      start = end;
-
-      this->threadPool.enqueue([this, &asteroidType, begin, end, object]()
+      this->threadPool.enqueue([this, typeIndex, work, object]()
                                {
-        for (unsigned j = begin; j < end; j++) 
-          asteroidType[j]->applyGravitation(*object); });
+        for (unsigned j = work.begin; j < work.end; j++) 
+          this->asteroids[typeIndex][j]->applyGravitation(*object); });
     }
   }
   this->threadPool.wait();
@@ -285,26 +210,14 @@ void AsteroidSystem::drift(double dt)
   if (currentTime - this->lastUpdateTime < 0.05f)
     return;
   this->lastUpdateTime = currentTime;
-  unsigned threadCount = this->threadPool.getThreadCount();
-
-  for (std::vector<std::unique_ptr<Asteroid>> &asteroidType : this->asteroids)
+  for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
   {
-    unsigned perThread = asteroidType.size() / threadCount;
-    unsigned remaining = asteroidType.size() % threadCount;
-
-    unsigned start = 0;
-    for (unsigned int i = 0; i < threadCount; i++)
+    for (ThreadWork &work : this->threadRanges[typeIndex])
     {
-      unsigned work = perThread + (i < remaining ? 1 : 0);
-
-      unsigned begin = start;
-      unsigned end = begin + work;
-      start = end;
-
-      this->threadPool.enqueue([this, &asteroidType, begin, end, dt]()
+      this->threadPool.enqueue([this, typeIndex, work, dt]()
                                {
-        for (unsigned j = begin; j < end; j++) 
-          asteroidType[j]->drift(dt); });
+        for (unsigned j = work.begin; j < work.end; j++) 
+          this->asteroids[typeIndex][j]->drift(dt); });
     }
   }
   this->threadPool.wait();
@@ -315,26 +228,15 @@ void AsteroidSystem::halfKick(const std::vector<Object *> &bodies, double dt)
   if (currentTime - this->lastUpdateTime < 0.05f)
     return;
   this->lastUpdateTime = currentTime;
-  unsigned threadCount = this->threadPool.getThreadCount();
 
-  for (std::vector<std::unique_ptr<Asteroid>> &asteroidType : this->asteroids)
+  for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
   {
-    unsigned perThread = asteroidType.size() / threadCount;
-    unsigned remaining = asteroidType.size() % threadCount;
-
-    unsigned start = 0;
-    for (unsigned int i = 0; i < threadCount; i++)
+    for (ThreadWork &work : this->threadRanges[typeIndex])
     {
-      unsigned work = perThread + (i < remaining ? 1 : 0);
-
-      unsigned begin = start;
-      unsigned end = begin + work;
-      start = end;
-
-      this->threadPool.enqueue([this, &asteroidType, begin, end, bodies, dt]()
+      this->threadPool.enqueue([this, typeIndex, work, bodies, dt]()
                                {
-        for (unsigned j = begin; j < end; j++) 
-          asteroidType[j]->halfKick(bodies, dt); });
+        for (unsigned j = work.begin; j < work.end; j++) 
+          this->asteroids[typeIndex][j]->halfKick(bodies, dt); });
     }
   }
   this->threadPool.wait();

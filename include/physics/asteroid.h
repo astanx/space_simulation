@@ -14,5 +14,5 @@ public:
 
   void renderInstanced();
 
-  glm::mat4 getModelMatrix();
+  glm::dmat4 getModelMatrix();
 };
