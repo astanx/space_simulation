@@ -28,7 +28,7 @@ private:
 
   float lastUpdateTime = 0.0f;
 
-  std::vector<std::vector<std::unique_ptr<Asteroid>>> asteroids;
+  std::vector<std::deque<Asteroid>> asteroids;
   Material *asteroid_material;
 
   std::vector<std::vector<InstanceData>> instances;
@@ -40,7 +40,7 @@ private:
   Object *centralBody;
 
   KeplerElements createRandomKeplerElements();
-  void createAsteroid(size_t type, size_t index);
+  void createAsteroid(size_t type);
   void createAsteroids(unsigned int amount);
 
   void initThreadRanges();

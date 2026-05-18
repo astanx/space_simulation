@@ -35,7 +35,7 @@ KeplerElements AsteroidSystem::createRandomKeplerElements()
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.m, MAXIMUM_ASTEROID_ELEMENTS.m)};
 }
 
-void AsteroidSystem::createAsteroid(size_t type, size_t index)
+void AsteroidSystem::createAsteroid(size_t type)
 {
   double radius = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
 
@@ -56,8 +56,11 @@ void AsteroidSystem::createAsteroid(size_t type, size_t index)
 
   std::unique_ptr<Asteroid> asteroid = std::make_unique<Asteroid>(this->centralBody, mu, radius, this->createRandomKeplerElements());
 
-  this->instances[type][index] = InstanceData{asteroid->getRenderPosition()};
-  this->asteroids[type][index] = std::move(asteroid);
+  {
+    std::lock_guard<std::mutex> lock(this->threadPool.getMutex());
+    this->asteroids[type].emplace_back(this->centralBody, mu, radius, this->createRandomKeplerElements());
+    this->instances[type].emplace_back(InstanceData{this->asteroids[type].back().getRenderPosition()});
+  }
 }
 void AsteroidSystem::createAsteroids(unsigned amount)
 {
@@ -93,7 +96,7 @@ void AsteroidSystem::createAsteroids(unsigned amount)
 
   for (size_t typeIndex = 0; typeIndex < typeCount; typeIndex++)
   {
-    this->asteroids[typeIndex].resize(typeCounts[typeIndex]);
+    // this->asteroids[typeIndex].reserve(typeCounts[typeIndex]);
     this->instances[typeIndex].resize(typeCounts[typeIndex]);
   }
 
@@ -105,7 +108,7 @@ void AsteroidSystem::createAsteroids(unsigned amount)
       this->threadPool.enqueue([this, typeIndex, work]()
                                {
                                  for (unsigned int i = work.begin; i < work.end; i++)
-                                   this->createAsteroid(typeIndex, i); });
+                                   this->createAsteroid(typeIndex); });
     }
 
   this->threadPool.wait();
@@ -172,9 +175,9 @@ void AsteroidSystem::update(double dt, FrameContext &ctx, Frustum *frustum, bool
                                {
         for (unsigned j = work.begin; j < work.end; j++)
         {
-          std::unique_ptr<Asteroid>& asteroid = this->asteroids[typeIndex][j];
-          asteroid->update(dt, ctx, frustum, force);
-          this->instances[typeIndex][j].position = asteroid->getRenderPosition();
+          Asteroid& asteroid = this->asteroids[typeIndex][j];
+          asteroid.update(dt, ctx, frustum, force);
+          this->instances[typeIndex][j].position = asteroid.getRenderPosition();
         } });
     }
   }
@@ -186,11 +189,6 @@ void AsteroidSystem::update(double dt, FrameContext &ctx, Frustum *frustum, bool
 
 void AsteroidSystem::applyObjectGravitation(Object *object)
 {
-  float currentTime = static_cast<float>(glfwGetTime());
-  if (currentTime - this->lastUpdateTime < 0.05f)
-    return;
-  this->lastUpdateTime = currentTime;
-
   for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
   {
     for (ThreadWork &work : this->threadRanges[typeIndex])
@@ -198,7 +196,7 @@ void AsteroidSystem::applyObjectGravitation(Object *object)
       this->threadPool.enqueue([this, typeIndex, work, object]()
                                {
         for (unsigned j = work.begin; j < work.end; j++) 
-          this->asteroids[typeIndex][j]->applyGravitation(*object); });
+          this->asteroids[typeIndex][j].applyGravitation(*object); });
     }
   }
   this->threadPool.wait();
@@ -206,10 +204,6 @@ void AsteroidSystem::applyObjectGravitation(Object *object)
 
 void AsteroidSystem::drift(double dt)
 {
-  float currentTime = static_cast<float>(glfwGetTime());
-  if (currentTime - this->lastUpdateTime < 0.05f)
-    return;
-  this->lastUpdateTime = currentTime;
   for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
   {
     for (ThreadWork &work : this->threadRanges[typeIndex])
@@ -217,18 +211,13 @@ void AsteroidSystem::drift(double dt)
       this->threadPool.enqueue([this, typeIndex, work, dt]()
                                {
         for (unsigned j = work.begin; j < work.end; j++) 
-          this->asteroids[typeIndex][j]->drift(dt); });
+          this->asteroids[typeIndex][j].drift(dt); });
     }
   }
   this->threadPool.wait();
 }
 void AsteroidSystem::halfKick(const std::vector<Object *> &bodies, double dt)
 {
-  float currentTime = static_cast<float>(glfwGetTime());
-  if (currentTime - this->lastUpdateTime < 0.05f)
-    return;
-  this->lastUpdateTime = currentTime;
-
   for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
   {
     for (ThreadWork &work : this->threadRanges[typeIndex])
@@ -236,7 +225,7 @@ void AsteroidSystem::halfKick(const std::vector<Object *> &bodies, double dt)
       this->threadPool.enqueue([this, typeIndex, work, bodies, dt]()
                                {
         for (unsigned j = work.begin; j < work.end; j++) 
-          this->asteroids[typeIndex][j]->halfKick(bodies, dt); });
+          this->asteroids[typeIndex][j].halfKick(bodies, dt); });
     }
   }
   this->threadPool.wait();
