@@ -52,9 +52,8 @@ void AsteroidSystem::createAsteroid(size_t type)
   // pos.y = height;
 
   double density = generateRandom(MINIMUM_ASTEROID_DENSITY, MAXIMUM_ASTEROID_DENSITY);
-  double mu = density * this->meshVolumes[type] / VISUAL_RADIUS_SCALE * G;
-
-  std::unique_ptr<Asteroid> asteroid = std::make_unique<Asteroid>(this->centralBody, mu, radius, this->createRandomKeplerElements());
+  // double mu = density * this->meshVolumes[type] / (pow(VISUAL_RADIUS_SCALE, 3)) * G;
+  double mu = density * this->meshVolumes[type] * G;
 
   {
     std::lock_guard<std::mutex> lock(this->threadPool.getMutex());
@@ -94,13 +93,7 @@ void AsteroidSystem::createAsteroids(unsigned amount)
     typeCounts[type]++;
   }
 
-  for (size_t typeIndex = 0; typeIndex < typeCount; typeIndex++)
-  {
-    // this->asteroids[typeIndex].reserve(typeCounts[typeIndex]);
-    this->instances[typeIndex].resize(typeCounts[typeIndex]);
-  }
-
-  this->initThreadRanges();
+  this->initThreadRanges(typeCounts);
 
   for (size_t typeIndex = 0; typeIndex < this->threadRanges.size(); typeIndex++)
     for (ThreadWork &work : this->threadRanges[typeIndex])
@@ -125,16 +118,16 @@ void AsteroidSystem::createAsteroids(unsigned amount)
   }
 }
 
-void AsteroidSystem::initThreadRanges()
+void AsteroidSystem::initThreadRanges(std::vector<unsigned int>& typeCounts)
 {
   unsigned threadCount = this->threadPool.getThreadCount();
 
-  this->threadRanges.resize(this->asteroids.size());
+  this->threadRanges.resize(typeCounts.size());
 
-  for (size_t typeIndex = 0; typeIndex < this->asteroids.size(); typeIndex++)
+  for (size_t typeIndex = 0; typeIndex < this->instances.size(); typeIndex++)
   {
-    unsigned perThread = this->asteroids[typeIndex].size() / threadCount;
-    unsigned remaining = this->asteroids[typeIndex].size() % threadCount;
+    unsigned perThread = typeCounts[typeIndex] / threadCount;
+    unsigned remaining = typeCounts[typeIndex] % threadCount;
 
     this->threadRanges[typeIndex].resize(threadCount);
 

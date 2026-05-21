@@ -1,5 +1,6 @@
 #version 410
 
+#include "ubo/camera.glsl"
 #include "ubo/pbr_point_light.glsl"
 #include "ubo/point_shadow.glsl"
 
@@ -15,10 +16,6 @@ in VS_OUT {
   vec3 vs_position;
   vec2 vs_texcoord;
   vec3 vs_normal;
-
-  vec3 vs_tangentLightPos;
-  vec3 vs_tangentCamPos;
-  vec3 vs_tangentPos;
 } fs_in;
 
 uniform PBRMaterial material;
@@ -29,16 +26,11 @@ uniform samplerCube irradianceMap;
 
 void main()
 {
-  PBRPointLight localPointLight = pbrPointLight;
-
-  vec3 position = fs_in.vs_tangentPos;
-  vec3 viewDir = normalize(fs_in.vs_tangentCamPos - position);
-
-  localPointLight.position = fs_in.vs_tangentLightPos;
+  vec3 viewDir = normalize(camPosition.xyz - fs_in.vs_position);
 
   MaterialData m = CalculateMaterial(material, fs_in.vs_texcoord);
 
-  vec4 point = CalcPBRPointLight(fs_in.vs_normal, position, viewDir, m, localPointLight, 1.0, irradianceMap);
+  vec4 point = CalcPBRPointLight(fs_in.vs_normal, fs_in.vs_position, viewDir, m, pbrPointLight, 1.0, irradianceMap);
 
   fs_color = point;
   fs_emissive = vec4(m.emissive, 1.0);

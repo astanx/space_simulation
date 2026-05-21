@@ -43,7 +43,7 @@ private:
   void createAsteroid(size_t type);
   void createAsteroids(unsigned int amount);
 
-  void initThreadRanges();
+  void initThreadRanges(std::vector<unsigned int>& typeCounts);
 
 public:
   AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool);

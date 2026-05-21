@@ -19,15 +19,7 @@ public:
 
   inline unsigned getThreadCount() const { return workers.size(); }
 
-  template <class F>
-  void enqueue(F &&task)
-  {
-    {
-      std::unique_lock<std::mutex> lock(this->mtx);
-      this->tasks.emplace(std::forward<F>(task));
-    }
-    this->cv.notify_one();
-  }
+  void enqueue(std::function<void()> &&task);
 
   void wait();
   std::mutex &getMutex();
