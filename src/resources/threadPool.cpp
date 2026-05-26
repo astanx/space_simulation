@@ -78,7 +78,7 @@ void ThreadPool::enqueue(std::function<void()> &&task)
 {
   {
     std::unique_lock<std::mutex> lock(this->mtx);
-    this->tasks.emplace(task);
+    this->tasks.emplace(std::move(task));
   }
   this->cv.notify_one();
 }

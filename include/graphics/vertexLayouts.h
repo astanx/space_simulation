@@ -11,7 +11,6 @@ enum class VertexLayout
   Full,
   NoColor,
   PositionOnly,
-  Instanced,
   PositionTexcoord,
   PositionNormalTangent
 };
@@ -28,8 +27,12 @@ struct VertexAttribute
 struct InstanceData
 {
   glm::vec3 position;
+  float radius;
   // glm::mat4 ModelMatrix;
 };
+
+inline const std::array<VertexAttribute, 2> INSTANCED = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(InstanceData, position)},
+                                                          {1, 1, GL_FLOAT, GL_FALSE, offsetof(InstanceData, radius)}}};
 
 constexpr std::array<VertexAttribute, 4> FULL = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
                                                   {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)},
@@ -41,11 +44,6 @@ constexpr std::array<VertexAttribute, 3> NO_COLOR = {{{0, 3, GL_FLOAT, GL_FALSE,
                                                       {2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal)}}};
 
 constexpr std::array<VertexAttribute, 1> POSITION_ONLY = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)}}};
-
-constexpr std::array<VertexAttribute, 4> INSTANCED = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
-                                                       {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)},
-                                                       {2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal)},
-                                                       {3, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, tangent)}}};
 
 constexpr std::array<VertexAttribute, 2> POSITION_TEXCOORD = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
                                                                {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)}}};
@@ -65,6 +63,5 @@ inline const std::map<VertexLayout, LayoutDesc> LAYOUTS = {
     {VertexLayout::Full, {FULL.data(), FULL.size()}},
     {VertexLayout::NoColor, {NO_COLOR.data(), NO_COLOR.size()}},
     {VertexLayout::PositionOnly, {POSITION_ONLY.data(), POSITION_ONLY.size()}},
-    {VertexLayout::Instanced, {INSTANCED.data(), INSTANCED.size()}},
     {VertexLayout::PositionTexcoord, {POSITION_TEXCOORD.data(), POSITION_TEXCOORD.size()}},
     {VertexLayout::PositionNormalTangent, {POSITION_NORMAL_TANGENT.data(), POSITION_NORMAL_TANGENT.size()}}};

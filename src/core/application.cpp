@@ -155,7 +155,7 @@ Application::Application(
   loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.7f, 0.f, 0.9f);
   loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.6f, 0.f, 0.85f);
   loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 0.3f, 0.f, 0.3f);
-  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii.scaled(100), 0.6f, 0.f, 0.55f, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
+  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 0.6f, 0.f, 0.55f, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
   loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 0.2f, 0.f, 0.2f);
   loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.8f, 0.f, 0.95f);
   loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.7f, 0.f, 0.9f);

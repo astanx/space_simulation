@@ -59,7 +59,7 @@ void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAste
   {
     std::lock_guard<std::mutex> lock(this->threadPool.getMutex());
     typeAsteroids.emplace_back(this->centralBody, mu, radius, this->createRandomKeplerElements());
-    typeInstances.emplace_back(InstanceData{typeAsteroids.back().getPosition()});
+    typeInstances.emplace_back(InstanceData{typeAsteroids.back().getPosition(), static_cast<float>(radius * VISUAL_RADIUS_SCALE)});
   }
 }
 void AsteroidSystem::createAsteroids(unsigned amount)
@@ -76,7 +76,7 @@ void AsteroidSystem::createAsteroids(unsigned amount)
   this->meshes.reserve(typeCount);
 
   for (std::unique_ptr<AsteroidShape> &asteroid : asteroidShapes)
-    this->meshes.push_back(std::make_unique<Mesh>(std::move(asteroid), VertexLayout::Instanced));
+    this->meshes.push_back(std::make_unique<Mesh>(std::move(asteroid), VertexLayout::NoColor));
 
   for (std::unique_ptr<Mesh> &mesh : meshes)
     meshVolumes.push_back(mesh->calculateVolume());
