@@ -194,27 +194,21 @@ void Mesh::setInstanceBuffer(InstanceData* instanceData, size_t count)
 
   GLuint start = layout.count;
 
-  // for (int i = 0; i < 4; i++)
-  // {
-  //   glEnableVertexAttribArray(INSTANCE_ATTRIB_START + i);
-  //   glVertexAttribPointer(
-  //       INSTANCE_ATTRIB_START + i,
-  //       4,
-  //       GL_FLOAT,
-  //       GL_FALSE,
-  //       sizeof(InstanceData),
-  //       (void *)(sizeof(glm::vec4) * i));
-  //   glVertexAttribDivisor(INSTANCE_ATTRIB_START + i, 1);
-  // }
-
   glEnableVertexAttribArray(start);
-  glVertexAttribPointer(
-      start,
-      3,
-      GL_FLOAT,
-      GL_FALSE,
-      sizeof(InstanceData), 0);
-  glVertexAttribDivisor(start, 1);
+
+  for (size_t i = 0; i < INSTANCED.size(); ++i)
+  {
+    const VertexAttribute &attr = INSTANCED[i];
+    glVertexAttribPointer(
+        start + attr.index,
+        attr.size,
+        attr.type,
+        attr.normalized,
+        sizeof(InstanceData),
+        (void *)attr.offset);
+    glEnableVertexAttribArray(start + attr.index);
+    glVertexAttribDivisor(start + attr.index, 1);
+  }
 }
 
 void Mesh::updateInstanceBuffer(InstanceData* instanceData, size_t count)
