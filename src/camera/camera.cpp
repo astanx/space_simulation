@@ -21,7 +21,7 @@ Camera::Camera(glm::dvec3 position, glm::dvec3 front, glm::dvec3 worldUp, float 
     : position(position), front(front), worldUp(worldUp), up(worldUp)
 {
   this->mouseSensitivity = 0.2f;
-  this->movementSpeed = 5000000000.0;
+  this->movementSpeed = 8000000000.0;
 
   this->yaw = -90.f;
   this->pitch = 0.f;

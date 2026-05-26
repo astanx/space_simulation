@@ -1,5 +1,7 @@
 #include "render/postProcess.h"
 
+#include "render/renderState.h"
+
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
 
@@ -54,7 +56,7 @@ void PostProcess::initHDR(float width, float height)
 
   this->rboDepth->bind(GL_RENDERBUFFER);
 
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
 
   {
     ScopedFramebuffer hdr(*this->hdrFBO, GL_FRAMEBUFFER);
@@ -113,11 +115,11 @@ void PostProcess::initMip(unsigned int chainLength, float width, float height)
   }
 }
 
-void PostProcess::extractBloom()
+void PostProcess::extractBloom(RenderContext &ctx)
 {
   ScopedFramebuffer bloom(*this->bloomFBO, GL_FRAMEBUFFER);
 
-  glClear(GL_COLOR_BUFFER_BIT);
+  RenderState::clearColor(ctx.settings.clearColor);
 
   Shader &bloomShader = this->resourceManager.GetShader(Res::BLOOM_SHADER);
   ScopedShader shader(bloomShader);
@@ -192,9 +194,9 @@ void PostProcess::upsampleBloom()
   }
 }
 
-void PostProcess::renderBloom()
+void PostProcess::renderBloom(RenderContext &ctx)
 {
-  this->extractBloom();
+  this->extractBloom(ctx);
   this->downsampleBloom();
   this->upsampleBloom();
   // ScopedFramebuffer pingpong(*this->blur.getPingPongFBO(0), GL_FRAMEBUFFER);
@@ -229,7 +231,7 @@ void PostProcess::process(RenderContext &ctx)
 {
   if (ctx.settings.useBloom)
   {
-    this->renderBloom();
+    this->renderBloom(ctx);
     // this->blur.blur(*this->blur.getPingPongBuffer(0), 20);
   }
 

@@ -60,6 +60,8 @@ private:
   void renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, RenderContext &ctx);
   void blitDepthToDefault(const Framebuffer &framebuffer);
 
+  void beginFrame(RenderContext &ctx);
+
 public:
   Renderer(ResourceManager &resourceManager);
   ~Renderer() = default;

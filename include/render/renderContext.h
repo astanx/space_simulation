@@ -9,6 +9,8 @@ struct RenderSettings
   bool useHDR;
   double exposure;
   double bloomPower;
+
+  glm::vec4 clearColor;
 };
 
 struct RenderContext

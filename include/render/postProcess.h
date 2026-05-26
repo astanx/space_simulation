@@ -46,8 +46,8 @@ private:
 
   void downsampleBloom();
   void upsampleBloom();
-  void extractBloom();
-  void renderBloom();
+  void extractBloom(RenderContext &ctx);
+  void renderBloom(RenderContext &ctx);
 
 public:
   PostProcess(ResourceManager &resourceManager);
