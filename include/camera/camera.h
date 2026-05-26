@@ -65,4 +65,5 @@ public:
   void processKeyboard(CameraMovement direction, double deltaTime);
 
   const Frustum getFrustum(double aspectRatio) const;
+  glm::dvec3 worldToViewSpace(const glm::dvec3 &position) const;
 };

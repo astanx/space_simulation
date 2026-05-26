@@ -40,8 +40,8 @@ public:
 
   void updateBuffers(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray);
 
-  void setInstanceBuffer(const std::vector<InstanceData> &instanceData);
-  void updateInstanceBuffer(const std::vector<InstanceData> &instanceData);
+  void setInstanceBuffer(InstanceData* instanceData, size_t count);
+  void updateInstanceBuffer(InstanceData* instanceData, size_t count);
 
   Mesh(const Mesh &obj);
   ~Mesh();

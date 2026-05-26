@@ -57,7 +57,8 @@ const glm::dvec3 Camera::getPosition() const
 // Public functions
 void Camera::updateMovementSpeed(double incrementor)
 {
-  if (incrementor < 0 && movementSpeed == 0) return;
+  if (incrementor < 0 && movementSpeed == 0)
+    return;
   this->movementSpeed += incrementor;
 };
 
@@ -153,4 +154,14 @@ const Frustum Camera::getFrustum(double aspectRatio) const
   }
 
   return frustum;
+}
+
+glm::dvec3 Camera::worldToViewSpace(const glm::dvec3 &position) const
+{
+  return (glm::dvec3(
+              position.x,
+              -position.z, // Z - Y
+              position.y   // Y - -Z
+              ) -
+          this->position);
 }

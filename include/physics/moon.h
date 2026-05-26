@@ -17,7 +17,5 @@ public:
   Moon(OrbitalObject *centralBody, double mu, double radius, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters);
   ~Moon() = default;
 
-  std::unique_ptr<Trail> generateTrail() override;
-
   void sendHapkeParametersToShader(Shader &shader) const;
 };

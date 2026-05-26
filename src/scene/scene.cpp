@@ -236,15 +236,11 @@ void Scene::update(RenderContext &renderCtx)
   //   }
   // }
 
-  renderCtx.frameCtx.camPosition = this->activeCamera->getPosition();
-
-  Frustum frustum = this->activeCamera->getFrustum(renderCtx.frameCtx.aspect);
-
   for (Updatable *&object : this->updatable)
-    object->update(renderCtx.deltaTime, renderCtx.frameCtx, &frustum);
+    object->update(this->getActiveCamera());
 
   for (std::unique_ptr<Trail> &trail : this->trails)
-    trail->update(renderCtx.frameCtx.camPosition);
+    trail->update(this->getActiveCamera());
 
   if (this->pointLights[0])
     this->pointLights[0]->move(this->sun->getRenderPosition()); // move sun light

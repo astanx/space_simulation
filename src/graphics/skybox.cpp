@@ -5,6 +5,8 @@
 #include "resources/resources.h"
 #include "resources/resourceManager.h"
 
+#include "render/renderConfig.h"
+
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
 
@@ -263,7 +265,7 @@ Skybox::Skybox(std::string environmentMap, ResourceManager &resourceManager) : m
 // Public functions
 void Skybox::render(Shader &shader) const
 {
-  ScopedDepthFunc depthLequal(GL_LEQUAL);
+  ScopedDepthFunc depthLequal(RendererConfig::Depth::SkyboxFunc);
   ScopedDepthMask depthMask(GL_FALSE);
   ScopedTexture skyboxText(*this->cubemapTexture, TextureBindingPoints::Skybox);
 

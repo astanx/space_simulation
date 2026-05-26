@@ -13,7 +13,7 @@ struct KeplerElements;
 class OrbitalObject : public Object, public WisdomHolman
 {
 protected:
-  std::unique_ptr<Orbit> orbit;
+  Orbit orbit;
   glm::dvec3 orbitalToInertial(double nu = -1.0);
   glm::dmat3 createR3matrix(double angle);
   glm::dmat3 createR1matrix(double angle);
@@ -30,7 +30,7 @@ protected:
 
 public:
   OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements, bool useTrail = true);
-  ~OrbitalObject() = default;
+  virtual ~OrbitalObject() = default;
 
   const Orbit *getOrbit() const;
   const bool getUseTrail() const;
