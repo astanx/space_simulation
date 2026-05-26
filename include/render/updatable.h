@@ -3,6 +3,7 @@
 #include "scene/frameContext.h"
 
 struct Frustum;
+class Camera;
 
 class Updatable
 {
@@ -11,5 +12,5 @@ public:
   Updatable() = default;
   virtual ~Updatable() = default;
 
-  virtual void update(double dt, FrameContext &ctx, Frustum *frustum = nullptr, bool force = false) = 0;
+  virtual void update(const Camera &camera) = 0;
 };

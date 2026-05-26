@@ -160,7 +160,7 @@ Mesh::~Mesh()
 }
 
 // Functions
-void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
+void Mesh::setInstanceBuffer(InstanceData* instanceData, size_t count)
 {
   if (!instancingInitialized)
   {
@@ -168,7 +168,7 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
     instancingInitialized = true;
   }
 
-  this->instanceCount = static_cast<unsigned int>(instanceData.size());
+  this->instanceCount = static_cast<unsigned int>(count);
 
   const std::unique_ptr<VertexArray> &vao = this->VAOS.at(this->layout);
 
@@ -184,7 +184,7 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
   GL_CALL(glBufferData(
       GL_ARRAY_BUFFER,
       this->instanceCount * sizeof(InstanceData),
-      instanceData.data(),
+      instanceData,
       GL_DYNAMIC_DRAW));
 
   auto it = LAYOUTS.find(this->layout);
@@ -217,14 +217,16 @@ void Mesh::setInstanceBuffer(const std::vector<InstanceData> &instanceData)
   glVertexAttribDivisor(start, 1);
 }
 
-void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
+void Mesh::updateInstanceBuffer(InstanceData* instanceData, size_t count)
 {
   if (!instancingInitialized)
   {
-    setInstanceBuffer(instanceData);
+    setInstanceBuffer(instanceData, count);
     Logger::logWarning("Mesh", "Update buffer called before buffer is set, setting buffer");
     return;
   }
+
+  this->instanceCount = static_cast<unsigned int>(count);
 
   ScopedBuffer vbo(*this->instanceVBO, GL_ARRAY_BUFFER);
 
@@ -237,7 +239,7 @@ void Mesh::updateInstanceBuffer(const std::vector<InstanceData> &instanceData)
   if (!ptr)
     return;
 
-  memcpy(ptr, instanceData.data(), instanceCount * sizeof(InstanceData));
+  memcpy(ptr, instanceData, instanceCount * sizeof(InstanceData));
 
   GL_CALL(glUnmapBuffer(GL_ARRAY_BUFFER));
 }

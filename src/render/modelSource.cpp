@@ -1,41 +1,23 @@
 #include "render/modelSource.h"
 
+#include "camera/camera.h"
+
 #include "graphics/state/scopedBlending.h"
 #include "graphics/state/scopedDepthMask.h"
 #include "graphics/state/scopedPolygonOffset.h"
 
 #include "physics/constants.h"
 
-// Private functions
-void ModelSource::updateRenderPosition(glm::dvec3 realPosition, glm::dvec3 camPos)
-{
-  this->renderPosition = this->realToVisualPos(realPosition, camPos);
-}
-
-// Static functions
-glm::dvec3 ModelSource::realToVisualPos(glm::dvec3 pos, glm::dvec3 camPos)
-{
-  return (glm::dvec3(
-              pos.x,
-              -pos.z, // Z - Y
-              pos.y   // Y - -Z
-              ) -
-          camPos) *
-         VISUAL_SCALE;
-}
-
 // Constructor
-ModelSource::ModelSource(const PositionSource *src, double radius)
+ModelSource::ModelSource(const PositionSource &src, double radius) : src(src)
 {
-  this->src = src;
   this->radius = radius;
-  this->updateRenderPosition(src->getPosition(), glm::dvec3(0.0));
 }
 
 // Public functions
-void ModelSource::update(double dt, FrameContext &ctx, Frustum *frustum, bool force)
+void ModelSource::update(const Camera &camera)
 {
-  this->updateRenderPosition(src->getPosition(), ctx.camPosition);
+  this->renderPosition = camera.worldToViewSpace(this->src.getPosition());
 
   if (this->mainLayer)
     this->mainLayer->setPosition(this->renderPosition);
