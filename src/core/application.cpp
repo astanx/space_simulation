@@ -9,6 +9,8 @@
 #include "graphics/primitives/ellipsoid.h"
 #include "graphics/primitives/quad.h"
 
+#include "render/renderState.h"
+
 #include "physics/constants.h"
 
 #include <iostream>
@@ -68,6 +70,8 @@ void Application::initOpenGLSettings()
   glEnable(GL_MULTISAMPLE);
 
   glEnable(GL_DEPTH_TEST);
+  RenderState::applyDepthFunc();
+  
   glEnable(GL_STENCIL_TEST);
 
   glEnable(GL_CULL_FACE);
@@ -222,10 +226,6 @@ void Application::update()
 
 void Application::render()
 {
-  // Clear
-  glClearColor(1.f, 1.f, 1.f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
   this->renderer.render(this->scene, this->renderCtx);
 
   this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),

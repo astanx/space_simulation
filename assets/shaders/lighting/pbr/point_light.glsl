@@ -20,7 +20,7 @@ MaterialData CalculateMaterial(PBRMaterial material, vec2 texcoord)
 
   m.night = night;
 
-  m.emissive = m.albedo * material.emissiveStrength;
+  m.emissive = night + m.albedo * material.emissiveStrength;
   //m.emissive = night;
 
   return m;

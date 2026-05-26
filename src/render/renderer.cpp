@@ -4,6 +4,8 @@
 
 #include "scene/scene.h"
 
+#include "render/renderState.h"
+
 #include "graphics/bindings/ubo.h"
 #include "graphics/bindings/texture.h"
 
@@ -216,8 +218,7 @@ void Renderer::renderDirectionalShadow(Scene &scene)
   ScopedViewport viewport(0, 0, shadowRes, shadowRes);
   ScopedFramebuffer dirShadowBuff(this->shadowManager->getDirShadow()->getShadowFramebuffer(), GL_FRAMEBUFFER);
 
-  glClearDepth(1.0);
-  glClear(GL_DEPTH_BUFFER_BIT);
+  RenderState::clearDepth();
 
   Shader &dirShadowShader = this->resourceManager.GetShader(Res::DIRECTIONAL_SHADOW_SHADER);
 
@@ -240,8 +241,8 @@ void Renderer::renderPointShadow(Scene &scene)
 
   GLuint &pointShadowID = pointShadowShader.getId();
 
-  glClearColor(exp(40.0f), 0, 0, 0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  RenderState::clearColor(glm::vec4(exp(40.0f), 0, 0, 0));
+  RenderState::clearDepth();
 
   ScopedShader pointShadowSd(pointShadowID);
   // ScopedCullFace cullFace(GL_FRONT);
@@ -258,9 +259,9 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
 
   if (ctx.settings.useHDR)
     framebufferScope.emplace(framebuffer, GL_FRAMEBUFFER);
-
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  RenderState::clearColor(ctx.settings.clearColor);
+  RenderState::clearDepth();
 
   Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
 
@@ -289,6 +290,13 @@ void Renderer::renderMoonsRadiance(Scene &scene)
 
   for (const Planet *planet : scene.getPlanetarObjects())
     planet->renderMoonsRadiance(moonsRadianceShader, scene.getActiveCamera());
+}
+
+void Renderer::beginFrame(RenderContext &ctx)
+{
+  RenderState::clearColor(ctx.settings.clearColor);
+  RenderState::clearDepth();
+  glClear(GL_STENCIL_BUFFER_BIT);
 }
 
 // Constructor
@@ -330,6 +338,8 @@ void Renderer::init(Scene &scene, RenderContext &ctx)
 
 void Renderer::render(Scene &scene, RenderContext &ctx)
 {
+  this->beginFrame(ctx);
+
   this->bindUBOs();
 
   this->renderPointShadow(scene);
