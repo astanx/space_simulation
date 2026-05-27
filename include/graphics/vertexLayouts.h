@@ -28,7 +28,6 @@ struct InstanceData
 {
   glm::vec3 position;
   float radius;
-  // glm::mat4 ModelMatrix;
 };
 
 inline const std::array<VertexAttribute, 2> INSTANCED = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(InstanceData, position)},

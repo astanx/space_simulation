@@ -29,6 +29,8 @@ private:
   std::vector<Range> typeRanges;
   std::vector<double> meshVolumes;
 
+  size_t vboCount;
+
   float lastUpdateTime = 0.0f;
 
   std::vector<Asteroid> asteroids;

@@ -22,7 +22,8 @@ private:
   std::unique_ptr<Buffer> VBO;
   std::unique_ptr<Buffer> EBO;
 
-  std::unique_ptr<Buffer> instanceVBO;
+  std::vector<std::unique_ptr<Buffer>> instanceVBOS;
+  size_t vboIndex = 0;
   unsigned int instanceCount = 0;
   bool instancingInitialized = false;
 
@@ -32,6 +33,7 @@ private:
   bool layoutInit = false;
 
   void initVAO();
+  void bindInstanceAttributes(const Buffer& vbo) const;
 
 public:
   Mesh(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
@@ -40,8 +42,8 @@ public:
 
   void updateBuffers(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray);
 
-  void setInstanceBuffer(InstanceData* instanceData, size_t count);
-  void updateInstanceBuffer(InstanceData* instanceData, size_t count);
+  void setInstanceBuffer(InstanceData* instanceData, size_t count, size_t vboCount);
+  void updateInstanceBuffer(InstanceData* instanceData, size_t count, size_t vboCount);
 
   Mesh(const Mesh &obj);
   ~Mesh();
