@@ -119,7 +119,7 @@ void AsteroidSystem::createAsteroids(unsigned amount)
   {
     Mesh *mesh = this->meshes[type].get();
 
-    mesh->setInstanceBuffer(tempInstances[type].data(), tempInstances[type].size());
+    mesh->setInstanceBuffer(tempInstances[type].data(), tempInstances[type].size(), this->vboCount);
 
     Logger::logInfo("Asteroid system", "Asteroids of type \"" + std::to_string(type) + "\" created - " + std::to_string(tempInstances[type].size()));
   }
@@ -159,6 +159,8 @@ AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double inne
   this->asteroid_material = material;
   this->centralBody = centralBody;
 
+  this->vboCount = 2;
+
   this->innerEdge = innerEdge;
   this->outerEdge = outerEdge;
 
@@ -181,7 +183,7 @@ void AsteroidSystem::update(const Camera &camera)
   for (unsigned typeIndex = 0; typeIndex < this->meshes.size(); typeIndex++)
   {
     Range &range = this->typeRanges[typeIndex];
-    this->meshes[typeIndex]->updateInstanceBuffer(this->instances.data() + range.begin, range.end - range.begin);
+    this->meshes[typeIndex]->updateInstanceBuffer(this->instances.data() + range.begin, range.end - range.begin, this->vboCount);
   }
 }
 
