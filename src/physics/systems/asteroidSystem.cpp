@@ -1,4 +1,4 @@
-#include "physics/asteroidSystem.h"
+#include "physics/systems/asteroidSystem.h"
 
 #include "debug/logger.h"
 
@@ -154,7 +154,7 @@ void AsteroidSystem::initRanges(std::vector<unsigned int> &typeCounts)
 }
 
 // Constructor
-AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool) : threadPool(threadPool)
+AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool) : threadPool(threadPool), Integratable(true)
 {
   this->asteroid_material = material;
   this->centralBody = centralBody;
@@ -201,27 +201,16 @@ void AsteroidSystem::applyObjectGravitation(Object *object)
   this->threadPool.wait();
 }
 
-void AsteroidSystem::drift(double dt)
+void AsteroidSystem::forEachObject(std::function<void(Object &)> &&func)
 {
   for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
   {
     Range &work = this->threadRanges[threadIndex];
-    this->threadPool.enqueue([this, &work, dt]()
+
+    this->threadPool.enqueue([this, work, &func]()
                              {
         for (unsigned j = work.begin; j < work.end; j++) 
-          this->asteroids[j].drift(dt); });
-  }
-  this->threadPool.wait();
-}
-void AsteroidSystem::halfKick(const std::vector<Object *> &bodies, double dt)
-{
-  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
-  {
-    Range &work = this->threadRanges[threadIndex];
-    this->threadPool.enqueue([this, &work, &bodies, dt]()
-                             {
-        for (unsigned j = work.begin; j < work.end; j++) 
-          this->asteroids[j].halfKick(bodies, dt); });
+          func(this->asteroids[j]); });
   }
   this->threadPool.wait();
 }

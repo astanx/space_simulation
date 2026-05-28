@@ -26,13 +26,13 @@ void Orbit::updateKeplerElements(KeplerElements newElements)
 {
   this->keplerElements = newElements;
 }
-Object *Orbit::getCentralBody()
+Object *Orbit::getCentralBody() const
 {
   return this->centralBody;
 }
 
 // Static functions
-glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, const OrbitalObject *orbitBody)
+glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, OrbitalObject *orbitBody)
 {
   if (!centralBody || !orbitBody)
     throw std::runtime_error("[Orbit] RUNTIME ERROR: no body to calculate velocity");

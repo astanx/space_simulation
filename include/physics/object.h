@@ -1,13 +1,14 @@
 #pragma once
 
 #include "physics/positionSource.h"
+#include "physics/integrators/integratable.h"
 
 #include <vector>
 #include <glm/glm.hpp>
 
 class Shader;
 
-class Object : public PositionSource
+class Object : public PositionSource, public Integratable
 {
 protected:
   glm::dvec3 position;
@@ -29,6 +30,7 @@ public:
   double getRadius() const;
 
   void setVelocity(const glm::dvec3 &velocity);
+  void setAcceleration(const glm::dvec3 &acceleration);
   void setPosition(const glm::dvec3 &position);
 
   void accelerate(const glm::dvec3 &acc);

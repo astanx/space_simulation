@@ -4,41 +4,25 @@
 
 #include "graphics/shader.h"
 #include "graphics/mesh.h"
+
 #include "physics/planet.h"
 #include "physics/orbit.h"
 #include "physics/star.h"
 #include "physics/moon.h"
 #include "physics/constants.h"
 
+#include "physics/systems/asteroidSystem.h"
+
 #include "resources/resources.h"
 #include "resources/resourceManager.h"
+
+#include "render/updatable.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
 
 // Private functions
-void Scene::halfKick(double dt)
-{
-  for (WisdomHolman *&object : this->wisdomHolmanObjects)
-    object->halfKick(this->objects, dt);
-}
-
-void Scene::drift(double dt)
-{
-  for (WisdomHolman *&object : this->wisdomHolmanObjects)
-    object->drift(dt);
-}
-
-void Scene::wisdomHolman(double dt)
-{
-  this->halfKick(dt);
-
-  this->drift(dt);
-
-  this->halfKick(dt);
-}
-
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
                             double radius, Object *centralBody, const KeplerElements keplerElements)
 {
@@ -55,11 +39,11 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   if (planet->getUseTrail())
     this->addTrail(planet->generateTrail());
 
-  this->addPlanetarObject(std::move(planet));
   this->addRenderable(ptr);
   this->addUpdatable(ptr);
-  this->addObject(ptr);
-  this->addWisdomHolman(ptr);
+  this->physicsWorld.addObject(ptr);
+  this->physicsWorld.addIntegratableObject(ptr);
+  this->physicsWorld.addPlanetarObject(std::move(planet));
 
   return ptr;
 }
@@ -76,11 +60,11 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
   star->addMainLayer(std::move(model));
 
   Star *ptr = star.get();
-  this->addStar(std::move(star));
   this->addRenderable(ptr);
   this->addUpdatable(ptr);
-  this->addObject(ptr);
-  this->addWisdomHolman(ptr);
+  this->physicsWorld.addObject(ptr);
+  this->physicsWorld.addIntegratableObject(ptr);
+  this->physicsWorld.addStar(std::move(star));
 
   return ptr;
 }
@@ -102,11 +86,11 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
 
   assert(centralBody && "[Scene] ASSERT: No central body for moon");
 
-  centralBody->addMoon(std::move(moon));
   this->addUpdatable(ptr);
   this->addRenderable(ptr);
-  this->addObject(ptr);
-  this->addWisdomHolman(ptr);
+  this->physicsWorld.addObject(ptr);
+  this->physicsWorld.addIntegratableObject(ptr);
+  centralBody->addMoon(std::move(moon));
 
   return ptr;
 }
@@ -117,9 +101,9 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
                                                                             innerEdge, outerEdge,
                                                                             &this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
   AsteroidSystem *ptr = system.get();
-  this->addAsteroidSystem(std::move(system));
   this->addUpdatable(ptr);
-  this->addWisdomHolman(ptr);
+  this->physicsWorld.addIntegratableObject(ptr);
+  this->physicsWorld.addAsteroidSystem(std::move(system));
 
   return ptr;
 }
@@ -139,12 +123,12 @@ Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadP
   this->activeCamera = nullptr;
   this->skybox = nullptr;
 }
+Scene::~Scene() = default;
 
 // Process functions
 void Scene::init(RenderContext &renderCtx)
 {
   Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii.mean, sunLuminosity, sunPos);
-  this->sun = sunPtr;
   createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadii.mean, sunPtr, mercuryElements);
   Planet *venusPtr = createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii.mean, sunPtr, venusElements);
   addLayerToModelSource(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_MATERIAL, venusPtr);
@@ -155,29 +139,14 @@ void Scene::init(RenderContext &renderCtx)
   createAsteroidSystem(sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii.mean, sunPtr, jupiterElements);
 
-  // std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
-  //     sunPos,
-  //     glm::vec3(0.05f),
-  //     glm::vec3(1.0f),
-  //     glm::vec3(1.0f),
-  //     25.f,
-  //     1.f,
-  //     0.00009f,
-  //     0.0000032f);
-
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
-      this->sun->getRenderPosition(),
+      sunPtr->getRenderPosition(),
       glm::vec3(1.0f),
-      this->sun->getLuminosity(),
-      this->sun->getRadius());
+      sunPtr->getLuminosity(),
+      sunPtr->getRadius());
   this->addPointLight(std::move(pointLight));
 
-  // std::unique_ptr<DirectionalLight> dirLight = std::make_unique<DirectionalLight>(
-  //     glm::vec3(1.2f, 1.0f, 2.0f),
-  //     glm::vec3(0.5f),
-  //     glm::vec3(1.0f),
-  //     glm::vec3(1.0f), 1.f);
-  // this->addDirLight(std::move(dirLight));
+  this->physicsWorld.addSun(std::move(sunPtr));
 
   std::unique_ptr<Camera> cam = std::make_unique<Camera>(sunPos,
                                                          glm::vec3(0.0f, 0.0f, -1.0f),
@@ -186,16 +155,6 @@ void Scene::init(RenderContext &renderCtx)
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();
 
-  // std::vector<std::string> faces =
-  //     {
-  //         "assets/skybox/right.png",
-  //         "assets/skybox/left.png",
-  //         "assets/skybox/top.png",
-  //         "assets/skybox/bottom.png",
-  //         "assets/skybox/front.png",
-  //         "assets/skybox/back.png"};
-
-  // std::unique_ptr<Skybox> sb = std::make_unique<Skybox>(faces);
   std::unique_ptr<Skybox> sb = std::make_unique<Skybox>("assets/skybox/starmap.exr", this->resourceManager);
   this->addSkybox(std::move(sb));
   this->skybox = this->skyboxes.back().get();
@@ -225,16 +184,7 @@ void Scene::processMouseScroll(float yoffset)
 void Scene::update(RenderContext &renderCtx)
 {
   if (!renderCtx.settings.paused)
-    this->wisdomHolman(renderCtx.deltaTime);
-
-  // for (size_t i = 0; i < objects.size(); ++i)
-  // {
-  //   for (size_t j = i + 1; j < objects.size(); ++j)
-  //   {
-  //     objects[i]->applyGravitation(*objects[j]);
-  //     objects[j]->applyGravitation(*objects[i]);
-  //   }
-  // }
+    this->physicsWorld.step(renderCtx.deltaTime);
 
   for (Updatable *&object : this->updatable)
     object->update(this->getActiveCamera());
@@ -243,7 +193,7 @@ void Scene::update(RenderContext &renderCtx)
     trail->update(this->getActiveCamera());
 
   if (this->pointLights[0])
-    this->pointLights[0]->move(this->sun->getRenderPosition()); // move sun light
+    this->pointLights[0]->move(this->physicsWorld.getSun().getRenderPosition()); // move sun light
   else
     assert(this->pointLights[0] && "[Scene] ASSERT: No sun to update position");
 }
@@ -257,11 +207,6 @@ void Scene::addCamera(std::unique_ptr<Camera> camera)
   this->cameras.push_back(std::move(camera));
 }
 
-void Scene::addObject(Object *object)
-{
-  this->objects.push_back(object);
-}
-
 void Scene::addRenderable(Renderable *object)
 {
   this->renderable.push_back(object);
@@ -270,20 +215,6 @@ void Scene::addRenderable(Renderable *object)
 void Scene::addUpdatable(Updatable *object)
 {
   this->updatable.push_back(object);
-}
-void Scene::addWisdomHolman(WisdomHolman *object)
-{
-  this->wisdomHolmanObjects.push_back(object);
-}
-void Scene::addPlanetarObject(std::unique_ptr<Planet> planetarObject)
-{
-  this->planetarObjectViews.push_back(planetarObject.get());
-  this->planetarObjects.push_back(std::move(planetarObject));
-}
-
-void Scene::addStar(std::unique_ptr<Star> star)
-{
-  this->stars.push_back(std::move(star));
 }
 
 void Scene::addTrail(std::unique_ptr<Trail> trail)
@@ -308,12 +239,6 @@ void Scene::addSkybox(std::unique_ptr<Skybox> skybox)
   this->skyboxes.push_back(std::move(skybox));
 }
 
-void Scene::addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSystem)
-{
-  this->asteroidSystemViews.push_back(asteroidSystem.get());
-  this->asteroidSystems.push_back(std::move(asteroidSystem));
-}
-
 // Getters
 const Camera &Scene::getActiveCamera() const
 {
@@ -328,13 +253,6 @@ const Skybox &Scene::getActiveSkybox() const
     throw std::runtime_error("[Scene] RUNTIME ERROR: No active skybox");
 
   return *this->skybox;
-};
-const Star &Scene::getSun() const
-{
-  if (!this->sun)
-    throw std::runtime_error("[Scene] RUNTIME ERROR: No sun");
-
-  return *this->sun;
 };
 const glm::vec3 Scene::getActiveCameraPosition() const
 {
@@ -371,17 +289,7 @@ const std::vector<Trail *> &Scene::getTrails() const
 
   return this->trailViews;
 };
-const std::vector<AsteroidSystem *> &Scene::getAsteroidSystems() const
+const PhysicsWorld &Scene::getPhysicsWorld() const
 {
-  if (this->asteroidSystemViews.empty())
-    Logger::logWarning("Scene", "Asteroid systems are empty");
-
-  return this->asteroidSystemViews;
-};
-const std::vector<Planet *> &Scene::getPlanetarObjects() const
-{
-  if (this->planetarObjectViews.empty())
-    Logger::logWarning("Scene", "Planets are empty");
-
-  return this->planetarObjectViews;
-};
+  return this->physicsWorld;
+}

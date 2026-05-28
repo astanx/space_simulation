@@ -62,7 +62,10 @@ void Object::setPosition(const glm::dvec3 &position)
 {
   this->position = position;
 }
-
+void Object::setAcceleration(const glm::dvec3 &acceleration)
+{
+  this->acceleration = acceleration;
+}
 // Public Functions
 void Object::applyGravitation(const Object &other)
 {

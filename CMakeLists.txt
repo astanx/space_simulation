@@ -153,12 +153,18 @@ add_executable(Space
     src/physics/star.cpp
     src/physics/trail.cpp
     src/physics/orbitalObject.cpp
-    src/physics/asteroidSystem.cpp
     src/physics/asteroid.cpp
+    src/physics/physicsWorld.cpp
+        # Integrators
+        src/physics/integrators/wisdomHolman.cpp
+        # Systems
+        src/physics/systems/asteroidSystem.cpp
     
     # Maths
     src/maths/rk4.cpp
     src/maths/random.cpp
+    src/maths/factorial.cpp
+    src/maths/orbitalMaths.cpp
     
     # Debug
     src/debug/logger.cpp

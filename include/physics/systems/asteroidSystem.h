@@ -1,7 +1,10 @@
 #pragma once
 
+#include "physics/systems/system.h"
+
+#include "physics/integrators/integratable.h"
+
 #include "physics/asteroid.h"
-#include "physics/wisdomHolman.h"
 
 #include "camera/camera.h"
 
@@ -21,7 +24,7 @@ struct Range
   size_t end;
 };
 
-class AsteroidSystem : public Renderable, public Updatable, public WisdomHolman
+class AsteroidSystem : public Renderable, public Updatable, public System, public Integratable
 {
 private:
   ThreadPool &threadPool;
@@ -49,14 +52,13 @@ private:
   void createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceData> &typeInstances);
   void createAsteroids(unsigned int amount);
 
-  void initRanges(std::vector<unsigned int>& typeCounts);
+  void initRanges(std::vector<unsigned int> &typeCounts);
 
 public:
   AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool);
   ~AsteroidSystem() = default;
 
-  void drift(double dt) override;
-  void halfKick(const std::vector<Object *> &bodies, double dt) override;
+  void forEachObject(std::function<void(Object &)> &&func) override;
 
   void applyObjectGravitation(Object *object);
   void render(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;

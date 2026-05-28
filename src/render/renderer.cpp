@@ -28,6 +28,7 @@
 
 #include "physics/star.h"
 #include "physics/planet.h"
+#include "physics/systems/asteroidSystem.h"
 
 #include <iostream>
 
@@ -63,7 +64,7 @@ void Renderer::updateUBO(Scene &scene, RenderContext &ctx)
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
   if (!pointLights.empty())
   {
-    this->shadowManager->updatePointShadowLightPosition(scene.getSun().getRenderPosition());
+    this->shadowManager->updatePointShadowLightPosition(scene.getPhysicsWorld().getSun().getRenderPosition());
     for (size_t i = 0; i < pointLights.size(); i++)
       this->lightManager->updatePointUBO(pointLights[i]);
   }
@@ -140,7 +141,7 @@ void Renderer::renderAsteroidSystems(Scene &scene, Frustum *frustum)
 
   skybox.bindIrradianceMap(asteroidShader);
 
-  for (const AsteroidSystem *asteroidSystem : scene.getAsteroidSystems())
+  for (const AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
     asteroidSystem->render(asteroidShader, frustum);
 
   skybox.unbindIrradianceMap();
@@ -259,7 +260,7 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
 
   if (ctx.settings.useHDR)
     framebufferScope.emplace(framebuffer, GL_FRAMEBUFFER);
-  
+
   RenderState::clearColor(ctx.settings.clearColor);
   RenderState::clearDepth();
 
@@ -286,9 +287,9 @@ void Renderer::renderMoonsRadiance(Scene &scene)
 
   ScopedShader moon(moonsRadianceShader);
 
-  moonsRadianceShader.set1f(scene.getSun().getLuminosity(), "lightLuminocity");
+  moonsRadianceShader.set1f(scene.getPhysicsWorld().getSun().getLuminosity(), "lightLuminocity");
 
-  for (const Planet *planet : scene.getPlanetarObjects())
+  for (const Planet *planet : scene.getPhysicsWorld().getPlanetarObjects())
     planet->renderMoonsRadiance(moonsRadianceShader, scene.getActiveCamera());
 }
 

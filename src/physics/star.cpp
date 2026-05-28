@@ -11,25 +11,3 @@ Star::Star(double mu, double radius, double luminosity, glm::dvec3 position, glm
   this->mu = mu;
   this->luminosity = luminosity;
 }
-
-// Public functions
-void Star::drift(double dt)
-{
-  this->position += this->velocity * dt;
-  // this->renderPosition = this->realToVisualPos(this->position);
-}
-
-void Star::halfKick(const std::vector<Object *> &bodies, double dt)
-{
-  this->acceleration = glm::dvec3(0.0);
-
-  for (Object *other : bodies)
-  {
-    if (other == this)
-      continue;
-
-    this->applyGravitation(*other);
-  }
-
-  this->velocity += dt * this->acceleration; // kick
-}
