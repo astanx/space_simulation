@@ -1,0 +1,117 @@
+#include "physics/integrators/wisdomHolman.h"
+
+#include "physics/integrators/integratable.h"
+
+#include "physics/systems/system.h"
+
+#include "physics/object.h"
+#include "physics/orbitalObject.h"
+#include "physics/constants.h"
+
+#include "maths/orbitalMaths.h"
+
+// Private functions
+void WisdomHolmanIntegrator::halfKick(Object *object, const std::vector<Object *> &objects, double dt)
+{
+  object->setAcceleration(glm::dvec3(0.0));
+  OrbitalObject *orbital = dynamic_cast<OrbitalObject *>(object);
+  Object *central = orbital ? orbital->getOrbit()->getCentralBody() : nullptr;
+
+  for (Object *other : objects)
+  {
+    if (other == object)
+      continue;
+    if (other == central)
+      continue;
+
+    object->applyGravitation(*other);
+  }
+
+  object->setVelocity(object->getVelocity() + dt * object->getAcceleration()); // kick
+}
+
+void WisdomHolmanIntegrator::keplerDrift(OrbitalObject *object, double dt)
+{
+  Orbit *orbit = object->getOrbit();
+  KeplerElements keplerElements = orbit->getKeplerElements();
+  Object *centralBody = orbit->getCentralBody();
+  double n = sqrt(centralBody->getMu() / pow(keplerElements.a, 3));
+  double m = keplerElements.m + n * dt;
+
+  m = fmod(m, 2 * M_PI);
+  if (m < 0)
+    m += 2 * M_PI;
+
+  double E = OrbitalMaths::calculateEccentricAnomaly(m, keplerElements);
+
+  glm::dvec3 pos(0.0);
+
+  pos.x = keplerElements.a * (cos(E) - keplerElements.e);
+  pos.y = keplerElements.a * sqrt(1 - pow(keplerElements.e, 2)) * sin(E);
+
+  glm::dvec3 v(0.0);
+  double r = keplerElements.a * (1 - keplerElements.e * cos(E));
+
+  v.x = -sqrt(centralBody->getMu() * keplerElements.a) / r * sin(E);
+  v.y = sqrt(centralBody->getMu() * keplerElements.a * (1 - pow(keplerElements.e, 2))) / r * cos(E);
+
+  glm::dmat3 R = OrbitalMaths::createR3matrix(keplerElements.Omega) * OrbitalMaths::createR1matrix(keplerElements.i) * OrbitalMaths::createR3matrix(keplerElements.omega);
+
+  object->setVelocity(R * v + centralBody->getVelocity());
+  object->setPosition(R * pos + centralBody->getPosition());
+  keplerElements.m = m;
+  orbit->updateKeplerElements(keplerElements);
+}
+
+void WisdomHolmanIntegrator::drift(Object *object, const std::vector<Object *> &objects, double dt)
+{
+  OrbitalObject *orbital = dynamic_cast<OrbitalObject *>(object);
+  if (orbital)
+    this->keplerDrift(orbital, dt);
+  else
+    object->setPosition(object->getPosition() + object->getVelocity() * dt);
+}
+
+// Public functions
+void WisdomHolmanIntegrator::step(std::vector<Integratable *> &objects, double dt)
+{
+  std::vector<Object *> objectPointers;
+  std::vector<System *> systemPointers;
+
+  for (Integratable *object : objects)
+  {
+    if (object->getIsSystem())
+    {
+      System *sys = dynamic_cast<System *>(object);
+      if (sys)
+        systemPointers.push_back(sys);
+    }
+    else
+    {
+      Object *obj = dynamic_cast<Object *>(object);
+      if (obj)
+        objectPointers.push_back(obj);
+    }
+  }
+
+  // kick
+  for (Object *object : objectPointers)
+    this->halfKick(object, objectPointers, dt * 0.5);
+  for (System *system : systemPointers)
+    system->forEachObject([this, dt, &objectPointers](Object &object)
+                          { this->halfKick(&object, objectPointers, dt * 0.5); });
+
+  // drift
+  for (Object *object : objectPointers)
+    this->drift(object, objectPointers, dt);
+  for (System *system : systemPointers)
+    system->forEachObject([this, dt, &objectPointers](Object &object)
+                          { this->drift(&object, objectPointers, dt); });
+
+  // kick
+  for (Object *object : objectPointers)
+    this->halfKick(object, objectPointers, dt * 0.5);
+  for (System *system : systemPointers)
+    system->forEachObject([this, dt, &objectPointers](Object &object)
+                          { this->halfKick(&object, objectPointers, dt * 0.5); });
+}

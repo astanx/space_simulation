@@ -30,7 +30,7 @@ protected:
 
 public:
   Planet(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements);
-  ~Planet() = default;
+  ~Planet();
 
   void addMoon(std::unique_ptr<Moon> moon);
 

@@ -18,9 +18,9 @@ public:
   Orbit(Object *centralBody, const KeplerElements &KeplerElements);
   ~Orbit() = default;
 
-  static glm::dvec3 calculateOrbitalVelocity(const Object *centralBody, const OrbitalObject *orbitBody);
+  static glm::dvec3 calculateOrbitalVelocity(const Object *centralBody, OrbitalObject *orbitBody);
 
-  Object *getCentralBody();
+  Object *getCentralBody() const;
 
   KeplerElements getKeplerElements() const;
   void updateKeplerElements(KeplerElements newElements);
