@@ -10,8 +10,6 @@
 
 #include "debug/logger.h"
 
-// Private functions
-
 // Constructor / Destructor
 PhysicsWorld::PhysicsWorld()
 {

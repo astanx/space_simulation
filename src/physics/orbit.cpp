@@ -25,6 +25,7 @@ KeplerElements Orbit::getKeplerElements() const
 void Orbit::updateKeplerElements(KeplerElements newElements)
 {
   this->keplerElements = newElements;
+  //this->keplerElements.calculateMeanMotion(this->centralBody->getMu());
 }
 Object *Orbit::getCentralBody() const
 {
@@ -42,7 +43,7 @@ glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, OrbitalObj
 
   const Orbit *orbit = orbitBody->getOrbit();
 
-  KeplerElements elements = orbit->getKeplerElements();
+  const KeplerElements& elements = orbit->getKeplerElements();
 
   normal.x = sin(elements.i) * sin(elements.Omega);
   normal.y = -sin(elements.i) * cos(elements.Omega);

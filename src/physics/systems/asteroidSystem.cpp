@@ -25,18 +25,23 @@
 #include <iterator>
 
 // Private functions
-KeplerElements AsteroidSystem::createRandomKeplerElements()
+KeplerElements AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000)
 {
-  return KeplerElements{
+  KeplerElements e{
       generateRandom(this->innerEdge, this->outerEdge),
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.e, MAXIMUM_ASTEROID_ELEMENTS.e),
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.i, MAXIMUM_ASTEROID_ELEMENTS.i),
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.Omega, MAXIMUM_ASTEROID_ELEMENTS.Omega),
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.omega, MAXIMUM_ASTEROID_ELEMENTS.omega),
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.m, MAXIMUM_ASTEROID_ELEMENTS.m)};
+
+  e.calculateMeanMotion(this->centralBody->getMu());
+  e.advanceMeanAnomaly(timeAfterJD2000);
+
+  return e;
 }
 
-void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceData> &typeInstances)
+void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceData> &typeInstances, double timeAfterJD2000)
 {
   double radius = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
 
@@ -58,11 +63,11 @@ void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAste
 
   {
     std::lock_guard<std::mutex> lock(this->threadPool.getMutex());
-    typeAsteroids.emplace_back(this->centralBody, mu, radius, this->createRandomKeplerElements());
+    typeAsteroids.emplace_back(this->centralBody, mu, radius, this->createRandomKeplerElements(timeAfterJD2000));
     typeInstances.emplace_back(InstanceData{typeAsteroids.back().getPosition(), static_cast<float>(radius * VISUAL_RADIUS_SCALE)});
   }
 }
-void AsteroidSystem::createAsteroids(unsigned amount)
+void AsteroidSystem::createAsteroids(unsigned amount, double timeAfterJD2000)
 {
   std::vector<std::unique_ptr<AsteroidShape>> asteroidShapes;
   asteroidShapes.push_back(std::make_unique<AsteroidShape>(24, 12, 2.0, 1.0, 1.0, 0.75, 0.85, 0.65, VISUAL_ASTEROID_SCALE));
@@ -99,11 +104,11 @@ void AsteroidSystem::createAsteroids(unsigned amount)
   for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
   {
     Range &work = this->threadRanges[threadIndex];
-    this->threadPool.enqueue([this, threadIndex, &work, &tempAsteroids, &tempInstances]()
+    this->threadPool.enqueue([this, threadIndex, &work, &tempAsteroids, &tempInstances, timeAfterJD2000]()
                              {
                                  for (unsigned int i = work.begin; i < work.end; i++)
                                    {
-                                    this->createAsteroid(this->asteroidTypes[i], tempAsteroids[this->asteroidTypes[i]], tempInstances[asteroidTypes[i]]);
+                                    this->createAsteroid(this->asteroidTypes[i], tempAsteroids[this->asteroidTypes[i]], tempInstances[asteroidTypes[i]], timeAfterJD2000);
                                   } });
   }
 
@@ -154,7 +159,7 @@ void AsteroidSystem::initRanges(std::vector<unsigned int> &typeCounts)
 }
 
 // Constructor
-AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool) : threadPool(threadPool), Integratable(true)
+AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000, Material *material, ThreadPool &threadPool) : threadPool(threadPool), Integratable(true)
 {
   this->asteroid_material = material;
   this->centralBody = centralBody;
@@ -164,7 +169,7 @@ AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double inne
   this->innerEdge = innerEdge;
   this->outerEdge = outerEdge;
 
-  this->createAsteroids(amount);
+  this->createAsteroids(amount, timeAfterJD2000);
 }
 
 // Public functions

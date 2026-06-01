@@ -13,6 +13,8 @@
 
 #include "physics/constants.h"
 
+#include "maths/dateToJD.h"
+
 #include <iostream>
 #include <filesystem>
 
@@ -71,7 +73,7 @@ void Application::initOpenGLSettings()
 
   glEnable(GL_DEPTH_TEST);
   RenderState::applyDepthFunc();
-  
+
   glEnable(GL_STENCIL_TEST);
 
   glEnable(GL_CULL_FACE);
@@ -109,11 +111,13 @@ Application::Application(
                                                                                                                                    input(),
                                                                                                                                    renderer(resourceManager)
 {
-  // Init variables
-  this->window = nullptr;
-  this->framebufferWidth = 0;
-  this->framebufferHeight = 0;
+  // Initialize application
+  this->initGLFW();
+  this->initWindow(title, resizable);
+  this->initGLEW();
+  this->initOpenGLSettings();
 
+  // Init variables
   this->renderCtx.deltaTime = 0.f;
   this->renderCtx.settings.paused = false;
   this->renderCtx.settings.useBloom = true;
@@ -123,13 +127,9 @@ Application::Application(
 
   this->timeScale = 3600 * 24;
   this->deltaTime = 0.f;
-  this->lastFrame = 0.f;
+  this->lastFrame = static_cast<float>(glfwGetTime());
 
-  // Initialize application
-  this->initGLFW();
-  this->initWindow(title, resizable);
-  this->initGLEW();
-  this->initOpenGLSettings();
+  this->startTime = dateToJD(Date{1, 1, 1900}); // Day/Month/Year Hour:Minute:Second
 
   // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
@@ -168,7 +168,7 @@ Application::Application(
 
   this->updateFrameContext();
 
-  this->scene.init(this->renderCtx);
+  this->scene.init(this->renderCtx, this->startTime);
   this->renderer.init(this->scene, this->renderCtx);
 }
 
@@ -198,8 +198,16 @@ void Application::update()
   this->deltaTime = currentFrame - this->lastFrame;
   this->lastFrame = currentFrame;
 
+  if (this->isFirstFrame)
+  {
+    this->deltaTime = 0.f;
+    this->isFirstFrame = false;
+  }
+
   // Update context
   this->renderCtx.deltaTime = this->deltaTime * this->timeScale;
+  if (!this->renderCtx.settings.paused)
+    this->elapsedDays += this->deltaTime * this->timeScale / 86400.0;
 
   // Update FPS counter
   this->frames++;
@@ -230,8 +238,13 @@ void Application::render()
 
   this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
                             25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
-  this->renderer.renderText("Time scale: " + std::to_string(int(this->timeScale)) + " seconds per frame",
+  this->renderer.renderText("Time scale: " + std::to_string(int(this->timeScale)) + " seconds per real second",
                             25.f, this->framebufferHeight - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+  this->renderer.renderText("Date: " + JDToDate(this->startTime + this->elapsedDays).toString(),
+                            25.f, this->framebufferHeight - 200.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+
+  if (this->renderCtx.settings.paused)
+    this->renderer.renderText("Paused", this->framebufferWidth / 2 - 50.f, this->framebufferHeight - 100.f, .5f, glm::vec3(1.f, 0.8f, 0.2f));
 
   // Swap buffers
   glfwSwapBuffers(this->window);

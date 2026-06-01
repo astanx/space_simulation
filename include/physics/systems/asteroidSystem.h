@@ -48,14 +48,14 @@ private:
 
   Object *centralBody;
 
-  KeplerElements createRandomKeplerElements();
-  void createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceData> &typeInstances);
-  void createAsteroids(unsigned int amount);
+  KeplerElements createRandomKeplerElements(double timeAfterJD2000);
+  void createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceData> &typeInstances, double timeAfterJD2000);
+  void createAsteroids(unsigned int amount, double timeAfterJD2000);
 
   void initRanges(std::vector<unsigned int> &typeCounts);
 
 public:
-  AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, Material *material, ThreadPool &threadPool);
+  AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000, Material *material, ThreadPool &threadPool);
   ~AsteroidSystem() = default;
 
   void forEachObject(std::function<void(Object &)> &&func) override;

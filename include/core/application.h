@@ -27,8 +27,8 @@ private:
   GLFWwindow *window;
   const int windowWidth;
   const int windowHeight;
-  int framebufferWidth;
-  int framebufferHeight;
+  int framebufferWidth = 0;
+  int framebufferHeight = 0;
 
   // OpenGL properties
   const int GLmajor;
@@ -57,6 +57,9 @@ private:
   float lastFrame;
   unsigned frames = 0;
   float lastFpsUpdateTime = 0.0f;
+  double elapsedDays = 0.0;
+  double startTime = 0.0;
+  bool isFirstFrame = true;
 
   // INITIALIZERS
   // GLFW and window
