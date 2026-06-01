@@ -4,13 +4,13 @@
 
 #include "physics/structs/keplerElements.h"
 
-double OrbitalMaths::calculateEccentricAnomaly(double M, KeplerElements keplerElements)
+double OrbitalMaths::calculateEccentricAnomaly(double M, double e)
 {
   double E = M; // initial guess
   double delta;
   do
   {
-    delta = (E - keplerElements.e * sin(E) - M) / (1 - keplerElements.e * cos(E));
+    delta = (E - e * sin(E) - M) / (1 - e * cos(E));
     E = E - delta;
   } while (abs(delta) > EPS);
 
@@ -37,7 +37,7 @@ glm::dvec3 OrbitalMaths::orbitalToInertial(KeplerElements keplerElements, double
 {
   if (nu == -1)
   {
-    double E = OrbitalMaths::calculateEccentricAnomaly(keplerElements.m, keplerElements);
+    double E = OrbitalMaths::calculateEccentricAnomaly(keplerElements.m, keplerElements.e);
     double e = keplerElements.e;
     nu = atan2(sqrt(1 - e * e) * sin(E) / (1 - e * cos(E)), (cos(E) - e) / (1 - e * cos(E)));
     if (sin(E) < 0)

@@ -11,6 +11,8 @@ const double AU_TO_METER = 1.49597870700e11;
 const double INNER_ASTEROID_BELT_EDGE = 2.1 * AU_TO_METER;
 const double OUTER_ASTEROID_BELT_EDGE = 3.3 * AU_TO_METER;
 
+const double JD_2000 = 2451545.0;
+
 // Meters
 const double MINIMUM_ASTEROID_RADIUS = 1.0;
 const double MAXIMUM_ASTEROID_RADIUS = 500000.0;

@@ -24,13 +24,22 @@
 
 // Private functions
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
-                            double radius, Object *centralBody, const KeplerElements keplerElements)
+                            double radius, Object *centralBody, const KeplerElements keplerElements, double timeAfterJD2000)
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
   std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
-  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radius, keplerElements);
+  KeplerElements e = keplerElements;
+  e.calculateMeanMotion(centralBody->getMu());
+  e.advanceMeanAnomaly(timeAfterJD2000);
+
+  if (name == Res::EARTH)
+  {
+    std::cout << e.m << std::endl;
+  }
+
+  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radius, e);
 
   planet->addMainLayer(std::move(model));
 
@@ -70,13 +79,17 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 }
 
 Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
-                        double radius, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters)
+                        double radius, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000)
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
   std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
 
-  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, keplerElements, hapkeParameters);
+  KeplerElements e = keplerElements;
+  e.calculateMeanMotion(centralBody->getMu());
+  e.advanceMeanAnomaly(timeAfterJD2000);
+
+  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radius, e, hapkeParameters);
 
   moon->addMainLayer(std::move(model));
   if (moon->getUseTrail())
@@ -95,10 +108,11 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   return ptr;
 }
 
-AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge)
+AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000)
 {
   std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(centralBody, amount,
                                                                             innerEdge, outerEdge,
+                                                                            timeAfterJD2000,
                                                                             &this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
   AsteroidSystem *ptr = system.get();
   this->addUpdatable(ptr);
@@ -126,18 +140,21 @@ Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadP
 Scene::~Scene() = default;
 
 // Process functions
-void Scene::init(RenderContext &renderCtx)
+void Scene::init(RenderContext &renderCtx, double startTime)
 {
+  double timeAfterJD2000 = startTime - JD_2000;
+  timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
+
   Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii.mean, sunLuminosity, sunPos);
-  createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadii.mean, sunPtr, mercuryElements);
-  Planet *venusPtr = createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii.mean, sunPtr, venusElements);
+  createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadii.mean, sunPtr, mercuryElements, timeAfterJD2000);
+  Planet *venusPtr = createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii.mean, sunPtr, venusElements, timeAfterJD2000);
   addLayerToModelSource(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_MATERIAL, venusPtr);
-  Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii.mean, sunPtr, earthElements);
+  Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii.mean, sunPtr, earthElements, timeAfterJD2000);
   addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
-  createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii.mean, earthPtr, moonElements, moonHapkeParameters);
-  createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii.mean, sunPtr, marsElements);
-  createAsteroidSystem(sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE);
-  createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii.mean, sunPtr, jupiterElements);
+  createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii.mean, earthPtr, moonElements, moonHapkeParameters, timeAfterJD2000);
+  createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii.mean, sunPtr, marsElements, timeAfterJD2000);
+  createAsteroidSystem(sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
+  createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii.mean, sunPtr, jupiterElements, timeAfterJD2000);
 
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
       sunPtr->getRenderPosition(),

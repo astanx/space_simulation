@@ -24,7 +24,6 @@ class Updatable;
 class Renderable;
 class ModelSource;
 
-
 struct KeplerElements;
 struct HapkeParameters;
 
@@ -62,24 +61,24 @@ private:
   std::vector<Trail *> trailViews;
 
   Planet *createPlanet(std::string name, std::string material_name, double mu,
-                       double radius, Object *centralBody, const KeplerElements keplerElements);
+                       double radius, Object *centralBody, const KeplerElements keplerElements, double timeAfterJD2000);
 
   Star *createStar(std::string name, std::string material_name, double mu,
                    double radius, double luminosity, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
 
   Moon *createMoon(std::string name, std::string material_name, double mu,
-                   double radius, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters);
+                   double radius, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000);
 
   void addLayerToModelSource(std::string name, std::string material_name, ModelSource *object);
 
-  AsteroidSystem *createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge);
+  AsteroidSystem *createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000);
 
 public:
   Scene(ResourceManager &resourceManager, ThreadPool &threadPool);
   ~Scene();
 
   // Process functions
-  void init(RenderContext &renderCtx);
+  void init(RenderContext &renderCtx, double startTime);
   void processKeyboard(CameraMovement direction, float deltaTime);
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);

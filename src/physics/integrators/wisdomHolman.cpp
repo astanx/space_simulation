@@ -35,31 +35,25 @@ void WisdomHolmanIntegrator::keplerDrift(OrbitalObject *object, double dt)
   Orbit *orbit = object->getOrbit();
   KeplerElements keplerElements = orbit->getKeplerElements();
   Object *centralBody = orbit->getCentralBody();
-  double n = sqrt(centralBody->getMu() / pow(keplerElements.a, 3));
-  double m = keplerElements.m + n * dt;
+  keplerElements.advanceMeanAnomaly(dt);
 
-  m = fmod(m, 2 * M_PI);
-  if (m < 0)
-    m += 2 * M_PI;
-
-  double E = OrbitalMaths::calculateEccentricAnomaly(m, keplerElements);
+  double E = OrbitalMaths::calculateEccentricAnomaly(keplerElements.m, keplerElements.e);
 
   glm::dvec3 pos(0.0);
 
   pos.x = keplerElements.a * (cos(E) - keplerElements.e);
-  pos.y = keplerElements.a * sqrt(1 - pow(keplerElements.e, 2)) * sin(E);
+  pos.y = keplerElements.a * sqrt(1 - (keplerElements.e * keplerElements.e)) * sin(E);
 
   glm::dvec3 v(0.0);
   double r = keplerElements.a * (1 - keplerElements.e * cos(E));
 
   v.x = -sqrt(centralBody->getMu() * keplerElements.a) / r * sin(E);
-  v.y = sqrt(centralBody->getMu() * keplerElements.a * (1 - pow(keplerElements.e, 2))) / r * cos(E);
+  v.y = sqrt(centralBody->getMu() * keplerElements.a * (1 - (keplerElements.e * keplerElements.e))) / r * cos(E);
 
   glm::dmat3 R = OrbitalMaths::createR3matrix(keplerElements.Omega) * OrbitalMaths::createR1matrix(keplerElements.i) * OrbitalMaths::createR3matrix(keplerElements.omega);
 
   object->setVelocity(R * v + centralBody->getVelocity());
   object->setPosition(R * pos + centralBody->getPosition());
-  keplerElements.m = m;
   orbit->updateKeplerElements(keplerElements);
 }
 
