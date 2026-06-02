@@ -18,6 +18,7 @@ struct Frustum;
 class Camera
 {
 private:
+  double baseSpeed;
   double movementSpeed;
   double mouseSensitivity;
 
@@ -52,7 +53,8 @@ public:
 
   const glm::dvec3 getPosition() const;
 
-  void updateMovementSpeed(double incrementor);
+  void increaseMovementSpeed(double percentage);
+  void decreaseMovementSpeed(double percentage);
 
   const double getNearPlane() const { return this->nearPlane; };
   const double getFarPlane() const { return this->farPlane; };

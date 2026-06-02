@@ -19,6 +19,7 @@ InputManager::InputManager()
   this->assignKey(Action::Exit, GLFW_KEY_ESCAPE);
   this->assignKey(Action::Pause, GLFW_KEY_ENTER);
   this->assignKey(Action::LogPosition, GLFW_KEY_P);
+  this->assignKey(Action::HideText, GLFW_KEY_T);
 
   this->assignKey(Action::ToggleHDR, GLFW_KEY_H);
   this->assignKey(Action::ToggleBloom, GLFW_KEY_B);

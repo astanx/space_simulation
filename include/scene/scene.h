@@ -94,7 +94,8 @@ public:
   void addCamera(std::unique_ptr<Camera> camera);
   void addSkybox(std::unique_ptr<Skybox> skybox);
 
-  void updateCameraMovementSpeed(float factor) { this->activeCamera->updateMovementSpeed(factor); };
+  void increaseCameraSpeed(double percentage = 10.0);
+  void decreaseCameraSpeed(double percentage = 10.0);
 
   // Getters
   const Camera &getActiveCamera() const;
