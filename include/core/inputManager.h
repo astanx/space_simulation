@@ -19,6 +19,7 @@ enum class Action
   ToggleBloom,
   ToggleHDR,
   Pause,
+  HideText,
 
   LogPosition,
   Exit,

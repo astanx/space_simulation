@@ -40,6 +40,7 @@ private:
 
   // Metrics
   float fps;
+  bool isTextShown;
 
   // Renderer
   Renderer renderer;

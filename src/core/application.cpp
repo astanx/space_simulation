@@ -131,6 +131,8 @@ Application::Application(
 
   this->startTime = dateToJD(Date{1, 1, 1900}); // Day/Month/Year Hour:Minute:Second
 
+  this->isTextShown = true;
+
   // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
   this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->GLmajor, this->GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
@@ -152,14 +154,14 @@ Application::Application(
 
   loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, sunLuminosity);
   // loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);
-  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.7f, 0.f, 0.9f);
-  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.6f, 0.f, 0.85f);
-  loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 0.3f, 0.f, 0.3f);
-  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 0.6f, 0.f, 0.55f, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
-  loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 0.2f, 0.f, 0.2f);
-  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.8f, 0.f, 0.95f);
-  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.7f, 0.f, 0.9f);
-  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 0.4f, 0.f, 0.3f);
+  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f);
+  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f);
+  loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
+  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
+  loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
+  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f);
+  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f);
+  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f);
 
   Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/diffuse/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
@@ -236,15 +238,18 @@ void Application::render()
 {
   this->renderer.render(this->scene, this->renderCtx);
 
-  this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
-                            25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
-  this->renderer.renderText("Time scale: " + std::to_string(int(this->timeScale)) + " seconds per real second",
-                            25.f, this->framebufferHeight - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
-  this->renderer.renderText("Date: " + JDToDate(this->startTime + this->elapsedDays).toString(),
-                            25.f, this->framebufferHeight - 200.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+  if (this->isTextShown)
+  {
+    this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
+                              25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+    this->renderer.renderText("Time scale: " + std::to_string(int(this->timeScale)) + " seconds per real second",
+                              25.f, this->framebufferHeight - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+    this->renderer.renderText("Date: " + JDToDate(this->startTime + this->elapsedDays).toString(),
+                              25.f, this->framebufferHeight - 200.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
 
-  if (this->renderCtx.settings.paused)
-    this->renderer.renderText("Paused", this->framebufferWidth / 2 - 50.f, this->framebufferHeight - 100.f, .5f, glm::vec3(1.f, 0.8f, 0.2f));
+    if (this->renderCtx.settings.paused)
+      this->renderer.renderText("Paused", this->framebufferWidth / 2 - 50.f, this->framebufferHeight - 100.f, .5f, glm::vec3(1.f, 0.8f, 0.2f));
+  }
 
   // Swap buffers
   glfwSwapBuffers(this->window);
@@ -279,6 +284,9 @@ void Application::processInput()
   if (this->input.isActionPressed(Action::ToggleHDR))
     this->renderCtx.settings.useHDR = !this->renderCtx.settings.useHDR;
 
+  if (this->input.isActionPressed(Action::HideText))
+    this->isTextShown = !this->isTextShown;
+
   if (this->input.isActionPressed(Action::LogPosition))
   {
     const glm::vec3 position = this->scene.getActiveCameraPosition();
@@ -292,10 +300,10 @@ void Application::processInput()
     this->renderCtx.settings.paused = !this->renderCtx.settings.paused;
 
   if (this->input.isActionPressed(Action::DecreaseCameraSpeed))
-    this->scene.updateCameraMovementSpeed(-0.1f);
+    this->scene.decreaseCameraSpeed();
 
   if (this->input.isActionPressed(Action::IncreaseCameraSpeed))
-    this->scene.updateCameraMovementSpeed(0.1f);
+    this->scene.increaseCameraSpeed();
 
   if (this->input.isActionPressed(Action::DoubleTimestep))
   {

@@ -21,7 +21,8 @@ Camera::Camera(glm::dvec3 position, glm::dvec3 front, glm::dvec3 worldUp, float 
     : position(position), front(front), worldUp(worldUp), up(worldUp)
 {
   this->mouseSensitivity = 0.2f;
-  this->movementSpeed = 8000000000.0;
+  this->baseSpeed = 8000000000.0;
+  this->movementSpeed = this->baseSpeed;
 
   this->yaw = -90.f;
   this->pitch = 0.f;
@@ -55,12 +56,17 @@ const glm::dvec3 Camera::getPosition() const
 }
 
 // Public functions
-void Camera::updateMovementSpeed(double incrementor)
+void Camera::increaseMovementSpeed(double percentage)
 {
-  if (incrementor < 0 && movementSpeed == 0)
-    return;
-  this->movementSpeed += incrementor;
-};
+  this->movementSpeed += this->baseSpeed * percentage / 100.0;
+}
+
+void Camera::decreaseMovementSpeed(double percentage)
+{
+  this->movementSpeed -= this->baseSpeed * percentage / 100.0;
+  if (this->movementSpeed < 0)
+    this->movementSpeed = 0;
+}
 
 void Camera::processMouseScroll(float yoffset)
 {

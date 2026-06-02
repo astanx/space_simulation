@@ -34,11 +34,6 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   e.calculateMeanMotion(centralBody->getMu());
   e.advanceMeanAnomaly(timeAfterJD2000);
 
-  if (name == Res::EARTH)
-  {
-    std::cout << e.m << std::endl;
-  }
-
   std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radius, e);
 
   planet->addMainLayer(std::move(model));
@@ -254,6 +249,22 @@ void Scene::addSkybox(std::unique_ptr<Skybox> skybox)
 {
   this->skyboxesViews.push_back(skybox.get());
   this->skyboxes.push_back(std::move(skybox));
+}
+
+void Scene::increaseCameraSpeed(double percentage)
+{
+  if (this->activeCamera)
+    this->activeCamera->increaseMovementSpeed(percentage);
+  else
+    Logger::logWarning("Scene", "No active camera to increase speed");
+}
+
+void Scene::decreaseCameraSpeed(double percentage)
+{
+  if (this->activeCamera)
+    this->activeCamera->decreaseMovementSpeed(percentage);
+  else
+    Logger::logWarning("Scene", "No active camera to decrease speed");
 }
 
 // Getters
