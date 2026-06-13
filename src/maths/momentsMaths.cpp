@@ -5,6 +5,7 @@
 
 #include "physics/structs/radii.h"
 #include "physics/structs/gravityField.h"
+#include "physics/structs/inertiaProperties.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -44,42 +45,37 @@ double MomentsMaths::calculateC(double mass, Radii radii, GravityField gravityFi
   return mass * radii.mean * radii.mean * gravityField.C;
 }
 
-double MomentsMaths::calculateC20(double mass, Radii radii)
+double MomentsMaths::calculateC20(double mass, Radii radii, InertiaProperties properties)
 {
-  double A = MomentsMaths::calculateA(mass, radii);
-  double B = MomentsMaths::calculateB(mass, radii);
-  double C = MomentsMaths::calculateC(mass, radii);
-  return -(C - (A + B) / 2) / (mass * radii.mean * radii.mean * sqrt(5));
+  return -(properties.C - (properties.A + properties.B) / 2) / (mass * radii.mean * radii.mean * sqrt(5));
 }
 
-double MomentsMaths::calculateC22(double mass, Radii radii)
+double MomentsMaths::calculateC22(double mass, Radii radii, InertiaProperties properties)
 {
-  double A = MomentsMaths::calculateA(mass, radii);
-  double B = MomentsMaths::calculateB(mass, radii);
-  return (B - A) / (4 * mass * radii.mean * radii.mean);
+  return (properties.B - properties.A) / (4 * mass * radii.mean * radii.mean);
 }
 
-glm::dmat3 MomentsMaths::calculateQuadrupoleTensor(double mass, Radii radii, double C20, double C22)
+glm::dmat3 MomentsMaths::calculateQuadrupoleTensor(double mass, Radii radii, InertiaProperties properties, GravityField field)
 {
-  double C_20 = C20 == -1 ? MomentsMaths::calculateC20(mass, radii) : C20;
-  double C_22 = C22 == -1 ? MomentsMaths::calculateC22(mass, radii) : C22;
+  double C_20 = field.C20 == -1 ? MomentsMaths::calculateC20(mass, radii, properties) : field.C20;
+  double C_22 = field.C22 == -1 ? MomentsMaths::calculateC22(mass, radii, properties) : field.C22;
   return glm::dmat3(glm::dvec3(-C_20 + 2 * C_22, 0, 0), glm::dvec3(0, -C_20 - 2 * C_22, 0), glm::dvec3(0, 0, 2 * C_20)) *
          mass * radii.mean * radii.mean;
 }
 
-glm::dvec3 MomentsMaths::calculateTorque(std::vector<Object> &bodies, glm::dmat3 quadropleTensor, glm::dvec3 position)
+glm::dvec3 MomentsMaths::calculateTorque(Object *object, const std::vector<Object *> &bodies)
 {
   glm::dvec3 torque = glm::dvec3(0);
-  for (const auto &body : bodies)
+  for (const Object *body : bodies)
   {
-    glm::dvec3 R = body.getPosition() - position;
+    glm::dvec3 R = body->getPosition() - object->getPosition();
     double d = glm::length(R);
 
     if (d == 0.0)
       continue;
 
     glm::dvec3 r = R / d;
-    torque += 3 * G * body.getMass() / std::pow(d, 3) * glm::cross(r, (quadropleTensor * r));
+    torque += 3 * G * body->getMass() / std::pow(d, 3) * glm::cross(r, (object->getQuadrupoleTensor() * r));
   }
   return torque;
 }

@@ -37,6 +37,22 @@ const KeplerElements MAXIMUM_ASTEROID_ELEMENTS(
 		glm::radians(360.0),
 		glm::radians(360.0));
 
+const RotationalElements MINIMUM_ASTEROID_ROTATIONAL_ELEMENTS(
+		glm::radians(0.0),
+		glm::radians(-90.0),
+		glm::radians(-0.1),
+		glm::radians(-0.1),
+		glm::radians(0.0),
+		glm::radians(-3000.0));
+
+const RotationalElements MAXIMUM_ASTEROID_ROTATIONAL_ELEMENTS(
+		glm::radians(360.0),
+		glm::radians(90.0),
+		glm::radians(0.1),
+		glm::radians(0.1),
+		glm::radians(360.0),
+		glm::radians(3000.0));
+
 // VISUAL SCALING
 const double VISUAL_SCALE = 1;
 const double VISUAL_RADIUS_SCALE = 1;
@@ -62,6 +78,13 @@ const Radii sunRadii(
 		6.957e8);
 const glm::dvec3 sunPos = glm::dvec3(0.0f, 0.0f, 0.0f);
 const double sunLuminosity = 3.826e26f;
+const RotationalElements sunRotationalElements{
+		glm::radians(286.13),
+		glm::radians(63.87),
+		glm::radians(0.0),
+		glm::radians(0.0),
+		glm::radians(84.176),
+		glm::radians(14.1844)};
 
 // MERCURY
 const double mercuryMu = 2.2031870799860e13;
@@ -76,6 +99,13 @@ const KeplerElements mercuryElements(
 		glm::radians(48.33076593),
 		glm::radians(77.45779628),
 		glm::radians(174.796));
+const RotationalElements mercuryRotationalElements{
+		glm::radians(281.0103),
+		glm::radians(61.4155),
+		glm::radians(-0.0328),
+		glm::radians(-0.0049),
+		glm::radians(329.59992624081),
+		glm::radians(6.1385108)};
 
 // VENUS
 const double venusMu = 3.248585926e14;
@@ -90,6 +120,13 @@ const KeplerElements venusElements(
 		glm::radians(76.67984255),
 		glm::radians(131.60246718),
 		glm::radians(50.115));
+const RotationalElements venusRotationalElements{
+		glm::radians(272.76),
+		glm::radians(67.16),
+		glm::radians(0.0),
+		glm::radians(0.0),
+		glm::radians(160.2),
+		glm::radians(-1.481359)};
 
 // EARTH
 const double earthMu = 3.9860044188e14;
@@ -104,6 +141,13 @@ const KeplerElements earthElements(
 		glm::radians(-11.26064),
 		glm::radians(114.20783),
 		glm::radians(358.617));
+const RotationalElements earthRotationalElements{
+		glm::radians(0.0),
+		glm::radians(90.0),
+		glm::radians(-0.641),
+		glm::radians(-0.557),
+		glm::radians(190.147),
+		glm::radians(360.9856235)};
 
 // MOON
 const double moonMu = 4.902800118e12;
@@ -118,6 +162,13 @@ const KeplerElements moonElements(
 		glm::radians(125.08),
 		glm::radians(318.15),
 		glm::radians(115.3684));
+const RotationalElements moonRotationalElements{
+		glm::radians(269.9949),
+		glm::radians(66.5392),
+		glm::radians(0.0031),
+		glm::radians(0.013),
+		glm::radians(38.3213),
+		glm::radians(13.17635815)};
 
 const HapkeParameters moonHapkeParameters(
 		0.1f,
@@ -142,6 +193,13 @@ const KeplerElements marsElements(
 		glm::radians(49.57854),
 		glm::radians(286.5),
 		glm::radians(19.412));
+const RotationalElements marsRotationalElements{
+		glm::radians(317.68085440731),
+		glm::radians(52.88643927513),
+		glm::radians(-0.10927547),
+		glm::radians(-0.05827105),
+		glm::radians(176.63205973192),
+		glm::radians(350.891982443297)};
 
 // JUPITER
 const double jupiterMu = 1.266865349e17;
@@ -156,3 +214,10 @@ const KeplerElements jupiterElements(
 		glm::radians(100.464),
 		glm::radians(273.867),
 		glm::radians(20.02));
+const RotationalElements jupiterRotationalElements{
+		glm::radians(268.0572040427),
+		glm::radians(64.4958099534),
+		glm::radians(-0.006499),
+		glm::radians(0.002413),
+		glm::radians(284.95),
+		glm::radians(870.536)};

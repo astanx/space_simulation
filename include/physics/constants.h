@@ -3,6 +3,7 @@
 #include "physics/structs/keplerElements.h"
 #include "physics/structs/materialProperties.h"
 #include "physics/structs/hapkeParameters.h"
+#include "physics/structs/rotationalElements.h"
 #include "physics/structs/radii.h"
 
 #include <glm/glm.hpp>
@@ -38,6 +39,17 @@ extern const KeplerElements saturnElements;
 extern const KeplerElements uranusElements;
 extern const KeplerElements neptuneElements;
 
+extern const RotationalElements sunRotationalElements;
+extern const RotationalElements mercuryRotationalElements;
+extern const RotationalElements venusRotationalElements;
+extern const RotationalElements earthRotationalElements;
+extern const RotationalElements moonRotationalElements;
+extern const RotationalElements marsRotationalElements;
+extern const RotationalElements jupiterRotationalElements;
+extern const RotationalElements saturnRotationalElements;
+extern const RotationalElements uranusRotationalElements;
+extern const RotationalElements neptuneRotationalElements;
+
 extern const Radii sunRadii;
 extern const Radii mercuryRadii;
 extern const Radii venusRadii;
@@ -67,3 +79,6 @@ extern const double MAXIMUM_ASTEROID_DENSITY;
 
 extern const KeplerElements MINIMUM_ASTEROID_ELEMENTS;
 extern const KeplerElements MAXIMUM_ASTEROID_ELEMENTS;
+
+extern const RotationalElements MINIMUM_ASTEROID_ROTATIONAL_ELEMENTS;
+extern const RotationalElements MAXIMUM_ASTEROID_ROTATIONAL_ELEMENTS;

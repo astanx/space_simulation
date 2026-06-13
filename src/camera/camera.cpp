@@ -171,3 +171,13 @@ glm::dvec3 Camera::worldToViewSpace(const glm::dvec3 &position) const
               ) -
           this->position);
 }
+
+glm::dmat3 Camera::worldToViewSpace(const glm::dmat3 &orientation) const
+{
+  glm::dmat3 C(
+      glm::vec3(1, 0, 0),
+      glm::vec3(0, 0, 1),
+      glm::vec3(0, -1, 0));
+
+  return C * orientation * glm::transpose(C);
+}

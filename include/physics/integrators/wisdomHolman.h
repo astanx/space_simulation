@@ -10,13 +10,13 @@ class WisdomHolmanIntegrator : public Integrator
 {
 protected:
   void halfKickLinear(Object *object, const std::vector<Object *> &objects, double dt);
-  void driftLinear(Object *object, const std::vector<Object *> &objects, double dt);
+  void driftLinear(Object *object, double dt);
 
   void halfKickAngular(Object *object, const std::vector<Object *> &objects, double dt);
-  void driftAngular(Object *object, const std::vector<Object *> &objects, double dt);
+  void driftAngular(Object *object, double dt);
 
   void halfKick(Object *object, const std::vector<Object *> &objects, double dt);
-  void drift(Object *object, const std::vector<Object *> &objects, double dt);
+  void drift(Object *object, double dt);
 
   void keplerDrift(OrbitalObject *object, double dt);
 
