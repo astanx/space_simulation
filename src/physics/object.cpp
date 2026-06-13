@@ -3,16 +3,18 @@
 #include "physics/object.h"
 
 #include "maths/rk4.h"
+#include "maths/momentsMaths.h"
 
 #include <cmath>
 #include <iostream>
 
 // Constructor
-Object::Object(double mass, Radii radii, glm::dvec3 position, glm::dvec3 velocity) : radii(radii)
+Object::Object(double mass, Radii radii, GravityField gravityField, glm::dvec3 position, glm::dvec3 velocity) : radii(radii), inertiaProperties(mass, radii, gravityField)
 {
   this->mass = mass;
   this->position = position;
   this->velocity = velocity;
+  this->quadrupoleTensor = MomentsMaths::calculateQuadrupoleTensor(mass, radii, this->inertiaProperties, gravityField);
   this->acceleration = glm::dvec3(0.0);
 }
 
@@ -31,9 +33,25 @@ glm::dvec3 Object::getVelocity() const
 {
   return this->velocity;
 }
+glm::dvec3 Object::getAngularVelocity() const
+{
+  return this->angularVelocity;
+}
+glm::dmat3 Object::getQuadrupoleTensor() const
+{
+  return this->quadrupoleTensor;
+}
+glm::dmat3 Object::getOrientation() const
+{
+  return this->orientation;
+}
 glm::dvec3 Object::getAcceleration() const
 {
   return this->acceleration;
+}
+InertiaProperties &Object::getInertiaProperties()
+{
+  return this->inertiaProperties;
 }
 double Object::getMass() const
 {
@@ -58,6 +76,14 @@ Radii Object::getRadii() const
 void Object::setVelocity(const glm::dvec3 &velocity)
 {
   this->velocity = velocity;
+}
+void Object::setAngularVelocity(const glm::dvec3 &angularVelocity)
+{
+  this->angularVelocity = angularVelocity;
+}
+void Object::setOrientation(const glm::dmat3 &orientation)
+{
+  this->orientation = orientation;
 }
 void Object::setPosition(const glm::dvec3 &position)
 {

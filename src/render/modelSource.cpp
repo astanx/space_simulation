@@ -18,9 +18,13 @@ ModelSource::ModelSource(const PositionSource &src, double radius) : src(src)
 void ModelSource::update(const Camera &camera)
 {
   this->renderPosition = camera.worldToViewSpace(this->src.getPosition());
+  this->renderOrientation = camera.worldToViewSpace(this->src.getOrientation());
 
   if (this->mainLayer)
+  {
     this->mainLayer->setPosition(this->renderPosition);
+    this->mainLayer->setOrientation(this->renderOrientation);
+  }
 
   for (auto &layer : this->layers)
     layer->setPosition(this->renderPosition);

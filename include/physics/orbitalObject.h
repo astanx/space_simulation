@@ -17,7 +17,7 @@ protected:
   bool useTrail = true;
 
 public:
-  OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, bool useTrail = true);
+  OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, GravityField gravityField = GravityField(), bool useTrail = true);
   virtual ~OrbitalObject() = default;
 
   Orbit *getOrbit();

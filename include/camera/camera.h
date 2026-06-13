@@ -68,4 +68,5 @@ public:
 
   const Frustum getFrustum(double aspectRatio) const;
   glm::dvec3 worldToViewSpace(const glm::dvec3 &position) const;
+  glm::dmat3 worldToViewSpace(const glm::dmat3 &orientation) const;
 };
