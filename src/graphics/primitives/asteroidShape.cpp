@@ -72,5 +72,9 @@ AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, doubl
 
   this->computeTangents(vertices, indices);
 
+  this->radii.polar = calculateR(0, m, a, b, n1, n2, n3);
+  this->radii.equatorian = calculateR(M_PI / 2, m, a, b, n1, n2, n3);
+  this->radii.mean = (this->radii.polar + this->radii.equatorian) / 2;
+
   this->set(vertices, indices);
 }

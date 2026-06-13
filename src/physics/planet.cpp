@@ -82,8 +82,8 @@ void Planet::initMoonRadianceFBO()
 }
 
 // Constructor / Destructor
-Planet::Planet(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements)
-    : OrbitalObject(centralBody, mu, radius, keplerElements), ModelSource(static_cast<const PositionSource &>(*this), radius * VISUAL_RADIUS_SCALE)
+Planet::Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements)
+    : OrbitalObject(centralBody, mu, radii, keplerElements), ModelSource(static_cast<const PositionSource &>(*this), radii.mean * VISUAL_RADIUS_SCALE)
 {
 }
 

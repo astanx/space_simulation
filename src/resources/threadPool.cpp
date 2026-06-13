@@ -12,10 +12,7 @@ ThreadPool::ThreadPool(size_t threads)
     threads = std::thread::hardware_concurrency();
     Logger::logInfo("Thread pool", "Supported " + std::to_string(threads) + " threads");
     if (threads == 0)
-    {
-      Logger::logInfo("Thread pool", "0 threads supported, setting to 4");
-      threads = 4;
-    }
+      Logger::logFatal("Thread pool", "0 threads supported");
   }
   this->workers.reserve(threads);
 

@@ -16,11 +16,8 @@ protected:
 
   bool useTrail = true;
 
-  // IAS15 integrator
-  void accelerationBinominal();
-
 public:
-  OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements, bool useTrail = true);
+  OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, bool useTrail = true);
   virtual ~OrbitalObject() = default;
 
   Orbit *getOrbit();

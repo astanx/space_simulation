@@ -28,7 +28,7 @@ void main()
 {
   vec3 viewDir = normalize(camPosition.xyz - fs_in.vs_position);
 
-  MaterialData m = CalculateMaterial(material, fs_in.vs_texcoord);
+  MaterialData m = CalculateMaterial(material, viewDir, fs_in.vs_normal, fs_in.vs_texcoord);
 
   vec4 point = CalcPBRPointLight(fs_in.vs_normal, fs_in.vs_position, viewDir, m, pbrPointLight, 1.0, irradianceMap);
 

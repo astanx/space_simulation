@@ -11,7 +11,7 @@
 #include "maths/orbitalMaths.h"
 
 // Private functions
-void WisdomHolmanIntegrator::halfKick(Object *object, const std::vector<Object *> &objects, double dt)
+void WisdomHolmanIntegrator::halfKickLinear(Object *object, const std::vector<Object *> &objects, double dt)
 {
   object->setAcceleration(glm::dvec3(0.0));
   OrbitalObject *orbital = dynamic_cast<OrbitalObject *>(object);
@@ -57,13 +57,24 @@ void WisdomHolmanIntegrator::keplerDrift(OrbitalObject *object, double dt)
   orbit->updateKeplerElements(keplerElements);
 }
 
-void WisdomHolmanIntegrator::drift(Object *object, const std::vector<Object *> &objects, double dt)
+void WisdomHolmanIntegrator::driftLinear(Object *object, const std::vector<Object *> &objects, double dt)
 {
   OrbitalObject *orbital = dynamic_cast<OrbitalObject *>(object);
   if (orbital)
     this->keplerDrift(orbital, dt);
   else
     object->setPosition(object->getPosition() + object->getVelocity() * dt);
+}
+
+void WisdomHolmanIntegrator::drift(Object *object, const std::vector<Object *> &objects, double dt)
+{
+  this->driftLinear(object, objects, dt);
+  // this->driftAngular(object, objects, dt);
+}
+void WisdomHolmanIntegrator::halfKick(Object *object, const std::vector<Object *> &objects, double dt)
+{
+  this->halfKickLinear(object, objects, dt);
+  // this->halfKickAngular(object, objects, dt);
 }
 
 // Public functions

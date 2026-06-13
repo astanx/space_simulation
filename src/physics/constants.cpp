@@ -94,7 +94,7 @@ const KeplerElements venusElements(
 // EARTH
 const double earthMu = 3.9860044188e14;
 const Radii earthRadii(
-		6.738137e6,
+		6.378137e6,
 		6.356752e6,
 		6.371e6);
 const KeplerElements earthElements(

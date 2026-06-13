@@ -8,10 +8,9 @@
 #include <iostream>
 
 // Constructor
-Object::Object(double mass, double radius, glm::dvec3 position, glm::dvec3 velocity)
+Object::Object(double mass, Radii radii, glm::dvec3 position, glm::dvec3 velocity) : radii(radii)
 {
   this->mass = mass;
-  this->radius = radius;
   this->position = position;
   this->velocity = velocity;
   this->acceleration = glm::dvec3(0.0);
@@ -43,16 +42,18 @@ double Object::getMass() const
 double Object::getMu() const
 {
   if (!this->mu)
-  {
     return this->mass * G;
-  }
+
   return this->mu;
 }
 double Object::getRadius() const
 {
-  return this->radius;
+  return this->radii.mean;
 }
-
+Radii Object::getRadii() const
+{
+  return this->radii;
+}
 // Setters
 void Object::setVelocity(const glm::dvec3 &velocity)
 {
