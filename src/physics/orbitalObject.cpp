@@ -13,7 +13,7 @@
 #include <iostream>
 
 // Constructor
-OrbitalObject::OrbitalObject(Object *centralBody, double mu, double radius, const KeplerElements &keplerElements, bool useTrail) : Object(mu / G, radius), orbit(centralBody, keplerElements)
+OrbitalObject::OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, bool useTrail) : Object(mu / G, radii), orbit(centralBody, keplerElements)
 {
   this->mu = mu;
   this->useTrail = useTrail;

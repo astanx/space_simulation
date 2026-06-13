@@ -64,7 +64,7 @@ void main()
 
   float shadow = CalcPointShadow(fs_in.vs_position, lightPos, depthMap, esmMap, far_plane, normal);
 
-  MaterialData material = CalculateMaterial(pbrMaterial, fs_in.vs_texcoord);
+  MaterialData material = CalculateMaterial(pbrMaterial, viewDir, normal, fs_in.vs_texcoord);
 
   vec4 point = CalcPBRPointLight(normal, fs_in.vs_position, viewDir, material, localPointLight, shadow, irradianceMap, useReflectorRadiance, reflectorRadianceCubemap, reflectorPosition);
  

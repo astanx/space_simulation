@@ -7,7 +7,7 @@
 #include "lighting/phong/point_light.glsl"
 #include "lighting/pbr/pbr_point_light.glsl"
 
-MaterialData CalculateMaterial(PBRMaterial material, vec2 texcoord)
+MaterialData CalculateMaterial(PBRMaterial material, vec3 viewDir, vec3 normal, vec2 texcoord)
 {
   MaterialData m;
 
@@ -20,7 +20,10 @@ MaterialData CalculateMaterial(PBRMaterial material, vec2 texcoord)
 
   m.night = night;
 
-  m.emissive = night + m.albedo * material.emissiveStrength;
+  float NdotV = max(dot(normal, viewDir), 0.0);
+  float nu = 0.6;
+
+  m.emissive = night + m.albedo * (material.emissiveStrength * (1 - nu * (1 - NdotV)));
   //m.emissive = night;
 
   return m;
@@ -57,7 +60,7 @@ vec4 CalcPBRPointLight(vec3 N, vec3 position, vec3 V, MaterialData material, PBR
 
   if (light.isAreaLight)
   {
-    intensity = light.luminosity / (4.0 * PI * light.radius * light.radius);
+    intensity = light.luminosity / (4.0 * PI * PI * light.radius * light.radius);
 
     radiance = light.color * intensity;
 

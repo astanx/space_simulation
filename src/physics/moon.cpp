@@ -8,8 +8,8 @@
 #include <iostream>
 
 // Constructor
-Moon::Moon(OrbitalObject *centralBody, double mu, double radius, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters) 
-: OrbitalObject(centralBody, mu, radius, keplerElements, false), hapkeParameters(hapkeParameters), ModelSource(static_cast<const PositionSource &>(*this), radius * VISUAL_RADIUS_SCALE)
+Moon::Moon(OrbitalObject *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters)
+    : OrbitalObject(centralBody, mu, radii, keplerElements, false), hapkeParameters(hapkeParameters), ModelSource(static_cast<const PositionSource &>(*this), radii.mean * VISUAL_RADIUS_SCALE)
 {
   if (this->useTrail)
     this->generateTrail();

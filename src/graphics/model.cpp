@@ -26,9 +26,7 @@ void Model::updateModelMatrix()
 {
   this->ModelMatrix = glm::mat4(1.f);
   this->ModelMatrix = glm::translate(this->ModelMatrix, this->rotationOrigin);
-  this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.x), glm::vec3(1.f, 0.f, 0.f));
-  this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.y), glm::vec3(0.f, 1.f, 0.f));
-  this->ModelMatrix = glm::rotate(this->ModelMatrix, glm::radians(this->rotation.z), glm::vec3(0.f, 0.f, 1.f));
+  this->ModelMatrix *= glm::mat4(this->orientation);
   this->ModelMatrix = glm::translate(this->ModelMatrix, this->position - this->rotationOrigin);
   this->ModelMatrix = glm::scale(this->ModelMatrix, this->scale);
 }
@@ -36,13 +34,13 @@ void Model::updateModelMatrix()
 Model::Model(glm::vec3 position, Material &material,
              std::vector<Mesh *> meshes,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
-             glm::vec3 rotation, glm::vec3 scale, glm::vec3 rotationOrigin)
+             glm::mat3 orientation, glm::vec3 scale, glm::vec3 rotationOrigin)
 {
   this->position = position;
   this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
-  this->rotation = rotation;
+  this->orientation = orientation;
   this->scale = scale;
   this->rotationOrigin =
       (rotationOrigin == glm::vec3(0.f))
@@ -58,13 +56,13 @@ Model::Model(glm::vec3 position, Material &material,
 Model::Model(glm::vec3 position, Material &material,
              Mesh &mesh,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
-             glm::vec3 rotation, glm::vec3 scale, glm::vec3 rotationOrigin)
+             glm::mat3 orientation, glm::vec3 scale, glm::vec3 rotationOrigin)
 {
   this->position = position;
   this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
-  this->rotation = rotation;
+  this->orientation = orientation;
   this->scale = scale;
   this->rotationOrigin =
       (rotationOrigin == glm::vec3(0.f))
@@ -80,7 +78,7 @@ Model::Model(const Model &model)
   this->material = model.material;
   this->overrideTextureDiffuse = model.overrideTextureDiffuse;
   this->overrideTextureSpecular = model.overrideTextureSpecular;
-  this->rotation = model.rotation;
+  this->orientation = model.orientation;
   this->scale = model.scale;
   this->rotationOrigin = model.rotationOrigin;
   this->meshes = model.meshes;
@@ -89,13 +87,13 @@ Model::Model(const Model &model)
 Model::Model(glm::vec3 position, Material &material,
              const std::string &OBJfile,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
-             glm::vec3 rotation, glm::vec3 scale, glm::vec3 rotationOrigin)
+             glm::mat3 orientation, glm::vec3 scale, glm::vec3 rotationOrigin)
 {
   this->position = position;
   this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
-  this->rotation = rotation;
+  this->orientation = orientation;
   this->scale = scale;
   this->rotationOrigin =
       (rotationOrigin == glm::vec3(0.f))
@@ -160,9 +158,9 @@ glm::vec3 Model::getPosition() const
   return this->position;
 }
 
-void Model::rotate(const glm::vec3 &rotation)
+void Model::setOrientation(const glm::mat3 &orientation)
 {
-  this->rotation += rotation;
+  this->orientation = orientation;
 }
 
 void Model::setPosition(const glm::vec3 &newPosition)

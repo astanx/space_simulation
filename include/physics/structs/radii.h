@@ -7,9 +7,9 @@ struct Radii
   double mean;
 
   Radii(
-      double equatorian,
-      double polar,
-      double mean) : equatorian(equatorian), polar(polar), mean(mean) {};
+      double equatorian = 0.0,
+      double polar = 0.0,
+      double mean = 0.0) : equatorian(equatorian), polar(polar), mean(mean) {};
 
   Radii scaled(double scale) const
   {

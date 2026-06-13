@@ -41,7 +41,7 @@ KeplerElements AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000
   return e;
 }
 
-void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceData> &typeInstances, double timeAfterJD2000)
+void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceData> &typeInstances, Radii typeRadii, double timeAfterJD2000)
 {
   double radius = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
 
@@ -63,8 +63,8 @@ void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAste
 
   {
     std::lock_guard<std::mutex> lock(this->threadPool.getMutex());
-    typeAsteroids.emplace_back(this->centralBody, mu, radius, this->createRandomKeplerElements(timeAfterJD2000));
-    typeInstances.emplace_back(InstanceData{typeAsteroids.back().getPosition(), static_cast<float>(radius * VISUAL_RADIUS_SCALE)});
+    typeAsteroids.emplace_back(this->centralBody, mu, typeRadii.scaled(radius), this->createRandomKeplerElements(timeAfterJD2000));
+    typeInstances.emplace_back(InstanceData{typeAsteroids.back().getPosition(), static_cast<float>(typeRadii.scaled(radius * VISUAL_RADIUS_SCALE).mean)});
   }
 }
 void AsteroidSystem::createAsteroids(unsigned amount, double timeAfterJD2000)
@@ -75,6 +75,10 @@ void AsteroidSystem::createAsteroids(unsigned amount, double timeAfterJD2000)
   asteroidShapes.push_back(std::make_unique<AsteroidShape>(16, 8, 3.0, 1.0, 1.2, 0.65, 0.75, 0.55, VISUAL_ASTEROID_SCALE));
   asteroidShapes.push_back(std::make_unique<AsteroidShape>(4, 7, 2.5, 1.1, 1.3, 0.60, 0.70, 0.50, VISUAL_ASTEROID_SCALE));
   asteroidShapes.push_back(std::make_unique<AsteroidShape>(12, 6, 4.0, 1.2, 1.4, 0.55, 0.65, 0.45, VISUAL_ASTEROID_SCALE));
+
+  std::vector<Radii> asteroidRadii;
+  for (std::unique_ptr<AsteroidShape> &asteroid : asteroidShapes)
+    asteroidRadii.push_back(asteroid->getRadii());
 
   const size_t typeCount = asteroidShapes.size();
 
@@ -104,11 +108,11 @@ void AsteroidSystem::createAsteroids(unsigned amount, double timeAfterJD2000)
   for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
   {
     Range &work = this->threadRanges[threadIndex];
-    this->threadPool.enqueue([this, threadIndex, &work, &tempAsteroids, &tempInstances, timeAfterJD2000]()
+    this->threadPool.enqueue([this, threadIndex, &work, &tempAsteroids, &tempInstances, &asteroidRadii, timeAfterJD2000]()
                              {
                                  for (unsigned int i = work.begin; i < work.end; i++)
                                    {
-                                    this->createAsteroid(this->asteroidTypes[i], tempAsteroids[this->asteroidTypes[i]], tempInstances[asteroidTypes[i]], timeAfterJD2000);
+                                    this->createAsteroid(this->asteroidTypes[i], tempAsteroids[this->asteroidTypes[i]], tempInstances[asteroidTypes[i]], asteroidRadii[asteroidTypes[i]], timeAfterJD2000);
                                   } });
   }
 

@@ -26,6 +26,7 @@ class ModelSource;
 
 struct KeplerElements;
 struct HapkeParameters;
+struct Radii;
 
 struct CameraGPU
 {
@@ -61,13 +62,13 @@ private:
   std::vector<Trail *> trailViews;
 
   Planet *createPlanet(std::string name, std::string material_name, double mu,
-                       double radius, Object *centralBody, const KeplerElements keplerElements, double timeAfterJD2000);
+                       Radii radii, Object *centralBody, const KeplerElements keplerElements, double timeAfterJD2000);
 
   Star *createStar(std::string name, std::string material_name, double mu,
-                   double radius, double luminosity, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
+                   Radii radii, double luminosity, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
 
   Moon *createMoon(std::string name, std::string material_name, double mu,
-                   double radius, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000);
+                   Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000);
 
   void addLayerToModelSource(std::string name, std::string material_name, ModelSource *object);
 

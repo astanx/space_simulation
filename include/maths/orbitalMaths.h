@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 struct KeplerElements;
+struct Radii;
 
 namespace OrbitalMaths
 {

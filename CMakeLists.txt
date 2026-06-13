@@ -165,6 +165,7 @@ add_executable(Space
     src/maths/random.cpp
     src/maths/factorial.cpp
     src/maths/orbitalMaths.cpp
+    src/maths/momentsMaths.cpp
     src/maths/dateToJD.cpp
     
     # Debug
