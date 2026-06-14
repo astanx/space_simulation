@@ -12,7 +12,7 @@ protected:
   double luminosity;
 
 public:
-  Star(double mu, Radii radii, double luminosity, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0), GravityField gravityField = GravityField());
+  Star(double mu, Radii radii, double luminosity, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0), TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField());
   ~Star() = default;
 
   double getLuminosity() const { return this->luminosity; }

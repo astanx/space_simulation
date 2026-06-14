@@ -14,7 +14,7 @@ protected:
   HapkeParameters hapkeParameters;
 
 public:
-  Moon(OrbitalObject *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters, GravityField gravityField = GravityField());
+  Moon(OrbitalObject *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, const HapkeParameters &hapkeParameters, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField());
   ~Moon() = default;
 
   void sendHapkeParametersToShader(Shader &shader) const;

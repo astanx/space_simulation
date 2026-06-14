@@ -9,13 +9,15 @@
 #include <iostream>
 
 // Constructor
-Object::Object(double mass, Radii radii, GravityField gravityField, glm::dvec3 position, glm::dvec3 velocity) : radii(radii), inertiaProperties(mass, radii, gravityField)
+Object::Object(double mass, Radii radii, TidalParameters tidalParameters, GravityField gravityField, glm::dvec3 position, glm::dvec3 velocity) : radii(radii), inertiaProperties(mass, radii, gravityField), tidalParameters(tidalParameters)
 {
   this->mass = mass;
   this->position = position;
   this->velocity = velocity;
   this->quadrupoleTensor = MomentsMaths::calculateQuadrupoleTensor(mass, radii, this->inertiaProperties, gravityField);
   this->acceleration = glm::dvec3(0.0);
+  this->orientation = glm::dmat3(1.0);
+  this->angularVelocity = glm::dvec3(0.0);
 }
 
 // Public functions
@@ -52,6 +54,10 @@ glm::dvec3 Object::getAcceleration() const
 InertiaProperties &Object::getInertiaProperties()
 {
   return this->inertiaProperties;
+}
+const TidalParameters &Object::getTidalParameters()
+{
+  return this->tidalParameters;
 }
 double Object::getMass() const
 {

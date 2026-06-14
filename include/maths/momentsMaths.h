@@ -22,4 +22,7 @@ namespace MomentsMaths
 
   glm::dmat3 calculateQuadrupoleTensor(double mass, Radii radii, InertiaProperties properties, GravityField field = GravityField());
   glm::dvec3 calculateTorque(Object *object, const std::vector<Object *> &bodies);
+
+  glm::dvec3 calculateGravitationalTorque(Object *object, const Object* body);
+  glm::dvec3 calculateTidalTorque(Object *object, const Object* body);
 }

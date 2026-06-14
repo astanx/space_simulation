@@ -1,11 +1,13 @@
 #include "maths/momentsMaths.h"
 
 #include "physics/object.h"
+#include "physics/orbitalObject.h"
 #include "physics/constants.h"
 
 #include "physics/structs/radii.h"
 #include "physics/structs/gravityField.h"
 #include "physics/structs/inertiaProperties.h"
+#include "physics/structs/tidalParameters.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -68,14 +70,43 @@ glm::dvec3 MomentsMaths::calculateTorque(Object *object, const std::vector<Objec
   glm::dvec3 torque = glm::dvec3(0);
   for (const Object *body : bodies)
   {
-    glm::dvec3 R = body->getPosition() - object->getPosition();
-    double d = glm::length(R);
-
-    if (d == 0.0)
-      continue;
-
-    glm::dvec3 r = R / d;
-    torque += 3 * G * body->getMass() / std::pow(d, 3) * glm::cross(r, (object->getQuadrupoleTensor() * r));
+    torque += MomentsMaths::calculateGravitationalTorque(object, body);
+    torque += MomentsMaths::calculateTidalTorque(object, body);
   }
   return torque;
+}
+
+glm::dvec3 MomentsMaths::calculateGravitationalTorque(Object *object, const Object *body)
+{
+  glm::dvec3 R = body->getPosition() - object->getPosition();
+  double d = glm::length(R);
+
+  if (d == 0.0)
+    return glm::dvec3(0.0);
+
+  glm::dvec3 r = R / d;
+  return 3 * G * body->getMass() / std::pow(d, 3) * glm::cross(r, (object->getQuadrupoleTensor() * r));
+}
+
+glm::dvec3 MomentsMaths::calculateTidalTorque(Object *object, const Object *body)
+{
+  const TidalParameters &p = object->getTidalParameters();
+  if (p.k2 == -1 && p.Q == -1)
+    return glm::dvec3(0.0);
+
+  double mu = body->getMu();
+  glm::dvec3 r = object->getPosition() - body->getPosition();
+  double d = glm::length(r);
+  if (d == 0.0)
+    return glm::dvec3(0.0);
+  glm::dvec3 omega = object->getAngularVelocity();
+  glm::dvec3 v = object->getVelocity() - body->getVelocity();
+
+  glm::dvec3 nVec = glm::cross(r, v) / glm::dot(r, r);
+  double n = glm::length(nVec);
+
+  if (n < EPS)
+    return glm::dvec3(0.0);
+
+  return -3 * p.k2 * 1 / (2 * n * p.Q) * mu * mu * pow(object->getRadius(), 5) / G / pow(d, 6) * (omega - nVec);
 }

@@ -82,8 +82,8 @@ void Planet::initMoonRadianceFBO()
 }
 
 // Constructor / Destructor
-Planet::Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, GravityField gravityField)
-    : OrbitalObject(centralBody, mu, radii, keplerElements, gravityField), ModelSource(static_cast<const PositionSource &>(*this), radii.mean * VISUAL_RADIUS_SCALE)
+Planet::Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters, GravityField gravityField)
+    : OrbitalObject(centralBody, mu, radii, keplerElements, tidalParameters, gravityField), ModelSource(static_cast<const PositionSource &>(*this), radii.mean * VISUAL_RADIUS_SCALE)
 {
 }
 
@@ -96,6 +96,7 @@ void Planet::render(Shader &shader, Frustum *frustum, bool force) const
 
   if (!this->moons.empty())
   {
+    std::cout << this->angularVelocity.x << " " << this->angularVelocity.y << " " << this->angularVelocity.z << std::endl;
     moonRadianceTextureScope.emplace(*this->moonRadianceTexture, TextureBindingPoints::EnvironmentMap);
     shader.set1i(1, "useReflectorRadiance");
     shader.setVec3f(this->moons[0]->getRenderPosition(), "reflectorPosition");

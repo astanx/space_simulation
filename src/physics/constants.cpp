@@ -152,6 +152,9 @@ const GravityField earthGravityField(
 		-4.841693174e-4,
 		2.4393836e-6,
 		0.3308);
+const TidalParameters earthTidalParameters(
+		0.299,
+		12);
 
 // MOON
 const double moonMu = 4.902800118e12;
@@ -177,6 +180,9 @@ const GravityField moonGravityField(
 		-2.032e-4,
 		2.277e-5,
 		0.393);
+const TidalParameters moonTidalParameters(
+		0.02405,
+		38);
 
 const HapkeParameters moonHapkeParameters(
 		0.1f,
