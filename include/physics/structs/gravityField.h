@@ -2,6 +2,7 @@
 
 struct GravityField
 {
+  // normalized factors
   double C20;
   double C22;
   double C;

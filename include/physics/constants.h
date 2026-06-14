@@ -3,6 +3,7 @@
 #include "physics/structs/keplerElements.h"
 #include "physics/structs/materialProperties.h"
 #include "physics/structs/hapkeParameters.h"
+#include "physics/structs/gravityField.h"
 #include "physics/structs/rotationalElements.h"
 #include "physics/structs/radii.h"
 
@@ -49,6 +50,10 @@ extern const RotationalElements jupiterRotationalElements;
 extern const RotationalElements saturnRotationalElements;
 extern const RotationalElements uranusRotationalElements;
 extern const RotationalElements neptuneRotationalElements;
+
+extern const GravityField earthGravityField;
+extern const GravityField moonGravityField;
+extern const GravityField marsGravityField;
 
 extern const Radii sunRadii;
 extern const Radii mercuryRadii;

@@ -148,6 +148,10 @@ const RotationalElements earthRotationalElements{
 		glm::radians(-0.557),
 		glm::radians(190.147),
 		glm::radians(360.9856235)};
+const GravityField earthGravityField(
+		-4.841693174e-4,
+		2.4393836e-6,
+		0.3308);
 
 // MOON
 const double moonMu = 4.902800118e12;
@@ -169,6 +173,10 @@ const RotationalElements moonRotationalElements{
 		glm::radians(0.013),
 		glm::radians(38.3213),
 		glm::radians(13.17635815)};
+const GravityField moonGravityField(
+		-2.032e-4,
+		2.277e-5,
+		0.393);
 
 const HapkeParameters moonHapkeParameters(
 		0.1f,
@@ -200,6 +208,10 @@ const RotationalElements marsRotationalElements{
 		glm::radians(-0.05827105),
 		glm::radians(176.63205973192),
 		glm::radians(350.891982443297)};
+const GravityField marsGravityField(
+		-8.745e-4,
+		5.086e-5,
+		0.366);
 
 // JUPITER
 const double jupiterMu = 1.266865349e17;

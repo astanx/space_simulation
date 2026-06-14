@@ -29,7 +29,7 @@ protected:
   void initMoonRadianceFBO();
 
 public:
-  Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements);
+  Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, GravityField gravityField = GravityField());
   ~Planet();
 
   void addMoon(std::unique_ptr<Moon> moon);
