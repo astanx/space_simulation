@@ -9,6 +9,7 @@
 
 #include "physics/physicsWorld.h"
 #include "physics/structs/gravityField.h"
+#include "physics/structs/tidalParameters.h"
 
 #include "render/renderContext.h"
 
@@ -64,13 +65,13 @@ private:
   std::vector<Trail *> trailViews;
 
   Planet *createPlanet(std::string name, std::string material_name, double mu,
-                       Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField = GravityField());
+                       Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
 
   Star *createStar(std::string name, std::string material_name, double mu,
                    Radii radii, double luminosity, const RotationalElements rotationalElements, double timeAfterJD2000, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
 
   Moon *createMoon(std::string name, std::string material_name, double mu,
-                   Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField = GravityField());
+                   Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
 
   void addLayerToModelSource(std::string name, std::string material_name, ModelSource *object);
 

@@ -1,6 +1,7 @@
 #include "physics/orbitalObject.h"
 
 #include "physics/constants.h"
+#include "physics/structs/tidalParameters.h"
 
 #include "maths/orbitalMaths.h"
 
@@ -13,7 +14,7 @@
 #include <iostream>
 
 // Constructor
-OrbitalObject::OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, GravityField gravityField, bool useTrail) : Object(mu / G, radii, gravityField), orbit(centralBody, keplerElements)
+OrbitalObject::OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters, GravityField gravityField, bool useTrail) : Object(mu / G, radii, tidalParameters, gravityField), orbit(centralBody, keplerElements)
 {
   this->mu = mu;
   this->useTrail = useTrail;
