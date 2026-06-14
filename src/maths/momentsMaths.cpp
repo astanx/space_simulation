@@ -18,7 +18,7 @@ double MomentsMaths::calculateA(double mass, Radii radii, GravityField gravityFi
 {
   if (gravityField.C == -1 && gravityField.C20 == -1 && gravityField.C22 == -1)
     return calculateA(mass, radii);
-  return mass * radii.mean * radii.mean * (gravityField.C + gravityField.C20 * sqrt(5) - 2 * gravityField.C22);
+  return mass * radii.mean * radii.mean * (gravityField.C + gravityField.C20 * sqrt(5) - 2 * gravityField.C22 * sqrt(15));
 }
 
 double MomentsMaths::calculateB(double mass, Radii radii)
@@ -30,7 +30,7 @@ double MomentsMaths::calculateB(double mass, Radii radii, GravityField gravityFi
 {
   if (gravityField.C == -1 && gravityField.C20 == -1 && gravityField.C22 == -1)
     return calculateB(mass, radii);
-  return mass * radii.mean * radii.mean * (gravityField.C + gravityField.C20 * sqrt(5) + 2 * gravityField.C22);
+  return mass * radii.mean * radii.mean * (gravityField.C + gravityField.C20 * sqrt(5) + 2 * gravityField.C22 * sqrt(15));
 }
 
 double MomentsMaths::calculateC(double mass, Radii radii)

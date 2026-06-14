@@ -8,6 +8,7 @@
 #include "scene/light/directionalLight.h"
 
 #include "physics/physicsWorld.h"
+#include "physics/structs/gravityField.h"
 
 #include "render/renderContext.h"
 
@@ -63,13 +64,13 @@ private:
   std::vector<Trail *> trailViews;
 
   Planet *createPlanet(std::string name, std::string material_name, double mu,
-                       Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000);
+                       Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField = GravityField());
 
   Star *createStar(std::string name, std::string material_name, double mu,
                    Radii radii, double luminosity, const RotationalElements rotationalElements, double timeAfterJD2000, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
 
   Moon *createMoon(std::string name, std::string material_name, double mu,
-                   Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000);
+                   Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField = GravityField());
 
   void addLayerToModelSource(std::string name, std::string material_name, ModelSource *object);
 

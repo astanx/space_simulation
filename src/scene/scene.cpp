@@ -24,7 +24,7 @@
 
 // Private functions
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
-                            Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000)
+                            Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField)
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
@@ -37,7 +37,7 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
 
-  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radii, e);
+  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radii, e, gravityField);
 
   planet->setAngularVelocity(r.calculateAngularVelocity());
   planet->setOrientation(r.calculateOrientation());
@@ -86,7 +86,7 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 }
 
 Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
-                        Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000)
+                        Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField)
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
@@ -99,7 +99,7 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
 
-  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radii, e, hapkeParameters);
+  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radii, e, hapkeParameters, gravityField);
 
   moon->setAngularVelocity(r.calculateAngularVelocity());
   moon->setOrientation(r.calculateOrientation());
@@ -162,10 +162,10 @@ void Scene::init(RenderContext &renderCtx, double startTime)
   createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
   Planet *venusPtr = createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
   addLayerToModelSource(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_MATERIAL, venusPtr);
-  Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000);
+  Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField);
   addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
-  createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000);
-  createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000);
+  createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField);
+  createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
   createAsteroidSystem(sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
 
