@@ -36,7 +36,7 @@ private:
 
   std::unique_ptr<LightManager> lightManager;
 
-  const GLuint shadowRes = 4096;
+  const GLuint shadowRes = 1024;
   std::unique_ptr<ShadowManager> shadowManager;
 
   void updateUBO(Scene &scene, RenderContext &ctx);

@@ -96,7 +96,6 @@ void Planet::render(Shader &shader, Frustum *frustum, bool force) const
 
   if (!this->moons.empty())
   {
-    std::cout << this->angularVelocity.x << " " << this->angularVelocity.y << " " << this->angularVelocity.z << std::endl;
     moonRadianceTextureScope.emplace(*this->moonRadianceTexture, TextureBindingPoints::EnvironmentMap);
     shader.set1i(1, "useReflectorRadiance");
     shader.setVec3f(this->moons[0]->getRenderPosition(), "reflectorPosition");

@@ -4,7 +4,6 @@
 #include "physics/orbit.h"
 #include "physics/trail.h"
 
-class Planet;
 class Mesh;
 
 struct KeplerElements;

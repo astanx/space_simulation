@@ -12,6 +12,7 @@ void Camera::updateCameraVectors()
   this->front.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
 
   this->front = glm::normalize(this->front);
+
   this->right = glm::normalize(glm::cross(this->front, this->worldUp));
   this->up = glm::normalize(glm::cross(this->right, this->front));
 }
@@ -101,12 +102,6 @@ void Camera::processMouseMovement(const float &xpos, const float &ypos)
   if (this->pitch < -89.0f)
     this->pitch = -89.0f;
 
-  glm::vec3 direction;
-  direction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-  direction.y = sin(glm::radians(this->pitch));
-  direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-  this->front = glm::normalize(direction);
-
   this->lastX = xpos;
   this->lastY = ypos;
 
@@ -166,9 +161,8 @@ glm::dvec3 Camera::worldToViewSpace(const glm::dvec3 &position) const
 {
   return (glm::dvec3(
               position.x,
-              -position.z, // Z - Y
-              position.y   // Y - -Z
-              ) -
+              -position.z,
+              position.y) -
           this->position);
 }
 
