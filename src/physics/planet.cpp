@@ -163,3 +163,8 @@ void Planet::addMoon(std::unique_ptr<Moon> moon)
   this->initMoonRadianceTexture();
   this->initMoonRadianceFBO();
 }
+
+void Planet::addAtmosphere(std::unique_ptr<Atmosphere> atmosphere)
+{
+  this->atmosphere = std::move(atmosphere);
+}

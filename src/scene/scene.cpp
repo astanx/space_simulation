@@ -144,6 +144,13 @@ void Scene::addLayerToModelSource(std::string name, std::string material_name, M
   object->addLayer(std::move(model));
 }
 
+void Scene::addAtmosphereToPlanet(std::string planetName, Planet *planet)
+{
+  std::string path = "assets/data/" + planetName + "/atmosphere";
+  std::unique_ptr atmosphere = std::make_unique<Atmosphere>(path);
+  planet->addAtmosphere(std::move(atmosphere));
+}
+
 // Constructor/Destructor
 Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadPool(threadPool), resourceManager(resourceManager)
 {
@@ -163,6 +170,7 @@ void Scene::init(RenderContext &renderCtx, double startTime)
   Planet *venusPtr = createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
   addLayerToModelSource(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_MATERIAL, venusPtr);
   Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters);
+  addAtmosphereToPlanet(Res::EARTH, earthPtr);
   addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
