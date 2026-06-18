@@ -70,6 +70,9 @@ glm::dvec3 MomentsMaths::calculateTorque(Object *object, const std::vector<Objec
   glm::dvec3 torque = glm::dvec3(0);
   for (const Object *body : bodies)
   {
+    if (body == object)
+      continue;
+
     torque += MomentsMaths::calculateGravitationalTorque(object, body);
     torque += MomentsMaths::calculateTidalTorque(object, body);
   }
