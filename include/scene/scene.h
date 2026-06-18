@@ -19,6 +19,7 @@
 class Shader;
 class Moon;
 class Object;
+class OrbitalObject;
 class WisdomHolman;
 class ResourceManager;
 class ThreadPool;
@@ -72,6 +73,8 @@ private:
 
   Moon *createMoon(std::string name, std::string material_name, double mu,
                    Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
+
+  void addAtmosphereToPlanet(std::string planetName, Planet *planet);
 
   void addLayerToModelSource(std::string name, std::string material_name, ModelSource *object);
 

@@ -2,13 +2,13 @@
 
 #include "physics/orbitalObject.h"
 #include "physics/moon.h"
+#include "physics/atmosphere.h"
 
 #include "render/modelSource.h"
 
 #include "graphics/framebuffers/framebuffer.h"
 #include "graphics/buffers/renderBuffer.h"
 
-class Model;
 class Camera;
 
 struct KeplerElements;
@@ -25,6 +25,8 @@ protected:
 
   std::unique_ptr<RenderBuffer> moonRBO;
 
+  std::unique_ptr<Atmosphere> atmosphere;
+
   void initMoonRadianceTexture();
   void initMoonRadianceFBO();
 
@@ -33,8 +35,9 @@ public:
   ~Planet();
 
   void addMoon(std::unique_ptr<Moon> moon);
+  void addAtmosphere(std::unique_ptr<Atmosphere> atmosphere);
 
-  void render(Shader &shader, Frustum* frustum, bool force = false) const override;
+  void render(Shader &shader, Frustum *frustum, bool force = false) const override;
 
-  void renderMoonsRadiance(Shader &shader, const Camera& camera) const;
+  void renderMoonsRadiance(Shader &shader, const Camera &camera) const;
 };

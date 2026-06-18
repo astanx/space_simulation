@@ -154,6 +154,7 @@ add_executable(Space
     src/physics/trail.cpp
     src/physics/orbitalObject.cpp
     src/physics/asteroid.cpp
+    src/physics/atmosphere.cpp
     src/physics/physicsWorld.cpp
         # Integrators
         src/physics/integrators/wisdomHolman.cpp
