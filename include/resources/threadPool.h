@@ -3,6 +3,8 @@
 #include <vector>
 #include <thread>
 
+struct Range;
+
 class ThreadPool
 {
 private:
@@ -23,4 +25,6 @@ public:
 
   void wait();
   std::mutex &getMutex();
+
+  void initRanges(std::vector<Range> &ranges, size_t total);
 };

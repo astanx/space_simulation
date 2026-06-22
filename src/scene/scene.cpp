@@ -146,8 +146,8 @@ void Scene::addLayerToModelSource(std::string name, std::string material_name, M
 
 void Scene::addAtmosphereToPlanet(std::string planetName, Planet *planet)
 {
-  std::string path = "assets/data/" + planetName + "/atmosphere";
-  std::unique_ptr atmosphere = std::make_unique<Atmosphere>(path);
+  std::string path = "assets/data/" + planetName + "/atmosphere/32_resolution";
+  std::unique_ptr atmosphere = std::make_unique<Atmosphere>(path, this->threadPool);
   planet->addAtmosphere(std::move(atmosphere));
 }
 

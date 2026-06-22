@@ -8,6 +8,8 @@
 
 #include "camera/camera.h"
 
+#include "resources/range.h"
+
 #include "render/renderable.h"
 #include "render/updatable.h"
 
@@ -17,12 +19,6 @@ class Model;
 class Material;
 class Shader;
 class ThreadPool;
-
-struct Range
-{
-  size_t begin;
-  size_t end;
-};
 
 class AsteroidSystem : public Renderable, public Updatable, public System, public Integratable
 {

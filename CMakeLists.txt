@@ -148,6 +148,7 @@ add_executable(Space
     src/physics/object.cpp
     src/physics/planet.cpp
     src/physics/constants.cpp
+    src/physics/atmosphereConstants.cpp
     src/physics/orbit.cpp
     src/physics/moon.cpp
     src/physics/star.cpp

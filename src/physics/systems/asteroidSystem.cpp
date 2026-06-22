@@ -147,19 +147,8 @@ void AsteroidSystem::initRanges(std::vector<unsigned int> &typeCounts)
     start += typeCounts[typeIndex];
   }
 
-  unsigned int perThread = start / threadCount;
-  unsigned int remaining = start % threadCount;
-  start = 0;
-  for (size_t i = 0; i < this->threadRanges.size(); i++)
-  {
-    unsigned work = perThread + (i < remaining ? 1 : 0);
-
-    unsigned begin = start;
-    unsigned end = begin + work;
-
-    this->threadRanges[i] = {begin, end};
-    start = end;
-  }
+  size_t total = start;
+  this->threadPool.initRanges(this->threadRanges, total);
 }
 
 // Constructor

@@ -93,7 +93,8 @@ Planet::~Planet() = default;
 void Planet::render(Shader &shader, Frustum *frustum, bool force) const
 {
   std::optional<ScopedTexture> moonRadianceTextureScope;
-
+  if (this->atmosphere)
+    this->atmosphere->step(86400.f);
   if (!this->moons.empty())
   {
     moonRadianceTextureScope.emplace(*this->moonRadianceTexture, TextureBindingPoints::EnvironmentMap);
