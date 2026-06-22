@@ -1,5 +1,7 @@
 #include "resources/threadPool.h"
 
+#include "resources/range.h"
+
 #include "debug/logger.h"
 
 #include <iostream>
@@ -83,4 +85,23 @@ void ThreadPool::enqueue(std::function<void()> &&task)
 std::mutex &ThreadPool::getMutex()
 {
   return this->mtx;
+}
+
+void ThreadPool::initRanges(std::vector<Range> &ranges, size_t total)
+{
+  size_t threadCount = this->getThreadCount();
+  ranges.resize(threadCount);
+  unsigned int perThread = total / threadCount;
+  unsigned int remaining = total % threadCount;
+  size_t start = 0;
+  for (size_t i = 0; i < threadCount; i++)
+  {
+    unsigned work = perThread + (i < remaining ? 1 : 0);
+
+    unsigned begin = start;
+    unsigned end = begin + work;
+
+    ranges[i] = {begin, end};
+    start = end;
+  }
 }
