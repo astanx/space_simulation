@@ -2,10 +2,15 @@
 
 #include "resources/range.h"
 
+#include "render/modelSource.h"
+
 #include "external/json.hpp"
 
 #include <vector>
 #include <string>
+
+class Texture;
+class Buffer;
 
 struct Grid
 {
@@ -32,6 +37,13 @@ struct Flux
   std::vector<double> north;
   std::vector<double> top;
 
+  void calculateFlux(size_t index, glm::dvec3 flux, glm::uvec3 indices, std::vector<double> &data, std::vector<double> &mass) // vec3 - east, north, top
+  {
+    this->east[index] = flux.x * data[indices.x] / mass[indices.x];
+    this->north[index] = flux.y * data[indices.y] / mass[indices.y];
+    this->top[index] = flux.z * data[indices.z] / mass[indices.z];
+  }
+
   void forEach(std::function<void(std::vector<double> &)> &&func)
   {
     func(east);
@@ -43,15 +55,23 @@ struct Flux
 struct ThreadScratch
 {
   Flux mass;
-  Flux cloud;
-  Flux water;
+  Flux cloud_liquid_mass;
+  Flux water_vapor_mass;
+  Flux cloud_ice_mass;
+  Flux cloud_rain_mass;
+  Flux cloud_snow_mass;
+  Flux ozone_mass;
   Flux energy;
 
   void forEach(std::function<void(Flux &)> &&func)
   {
     func(mass);
-    func(cloud);
-    func(water);
+    func(cloud_liquid_mass);
+    func(water_vapor_mass);
+    func(cloud_ice_mass);
+    func(cloud_rain_mass);
+    func(cloud_snow_mass);
+    func(ozone_mass);
     func(energy);
   }
 };
@@ -66,16 +86,29 @@ protected:
   std::vector<Range> threadRanges;
 
   std::vector<float> temperature;
-  // std::vector<float> relativeHumidity;
+  std::vector<float> relativeHumidity;
   std::vector<float> specificHumidity;
-  std::vector<float> cloud;
+  // std::vector<float> divergence;
+  std::vector<float> ozone_mass_mixing_ratio;
+  // std::vector<float> vorticity;
+  // std::vector<float> potential_vorticity;
+  std::vector<float> cloud_cover;
+  std::vector<float> cloud_ice_water_content;
+  std::vector<float> cloud_liquid_water_content;
+  std::vector<float> cloud_snow_water_content;
+  std::vector<float> cloud_rain_water_content;
+
   std::vector<float> u_wind;
   std::vector<float> v_wind;
   std::vector<float> w_wind;
   std::vector<float> geopotential;
   std::vector<double> mass;
-  std::vector<double> water_mass;
-  std::vector<double> cloud_mass;
+  std::vector<double> water_vapor_mass;
+  std::vector<double> ozone_mass;
+  std::vector<double> cloud_liquid_mass;
+  std::vector<double> cloud_ice_mass;
+  std::vector<double> cloud_rain_mass;
+  std::vector<double> cloud_snow_mass;
   std::vector<double> thermal_energy;
   std::vector<double> density;
   std::vector<float> volume;
@@ -88,9 +121,13 @@ protected:
   std::vector<float> faceAreaNS;
   std::vector<float> faceAreaTB; // for each lon/lat
 
-  Grid grid;
+  std::unique_ptr<Texture> densityTexture;
+  std::unique_ptr<Texture> temperatureTexture;
+  std::unique_ptr<Texture> humidityTexture;
+  std::unique_ptr<Texture> geopotentialTexture;
+  std::unique_ptr<Texture> cloudTexture;
 
-  float g; // Planet gravitational acceleration
+  Grid grid;
 
   size_t idx(size_t nlon, size_t nlat, size_t npres);
   std::optional<size_t> idx(std::optional<size_t> nlon, std::optional<size_t> nlat, std::optional<size_t> npres);
@@ -105,7 +142,13 @@ protected:
 
   void initGrid(nlohmann::json &json);
   void initFromMetadata(std::string &folderPath);
-  void initVectors();
+  void initVectors(double g, double R);
+  void initTextures();
+  void initTexture(std::unique_ptr<Texture> &text);
+
+  void updateTextures();
+  void updateTexture(std::vector<float> &data, std::unique_ptr<Texture> &text);
+  void updateTexture(std::vector<double> &data, std::unique_ptr<Texture> &text);
 
   void accumulateDelta(std::vector<float> &delta, float d, size_t idx, std::optional<size_t> nextIdx);
   double computeNetFlux(std::vector<double> &delta, size_t idx, std::optional<size_t> prevIdx);
@@ -113,9 +156,11 @@ protected:
 
   void applyDelta();
 
+  float calculateWaterVaporPressure(float q, float pressure);
+
 public:
-  Atmosphere(std::string &folderPath, ThreadPool &threadPool);
+  Atmosphere(std::string &folderPath, ThreadPool &threadPool, double g, double radius);
   ~Atmosphere() = default;
 
-  void step(float dt);
+  void step(double dt, double g);
 };

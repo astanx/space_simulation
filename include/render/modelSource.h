@@ -13,6 +13,8 @@ protected:
   const PositionSource &src;
   double radius;
 
+  virtual void renderLayers(Shader &shader) const;
+
 public:
   ModelSource(const PositionSource &src, double radius);
   virtual ~ModelSource() = default;
