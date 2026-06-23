@@ -8,6 +8,15 @@
 
 #include "physics/constants.h"
 
+// Private functions
+void ModelSource::renderLayers(Shader &shader) const
+{
+  ScopedBlending blend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  ScopedDepthMask mask(GL_FALSE);
+  for (auto &layer : this->layers)
+    layer->render(shader);
+}
+
 // Constructor
 ModelSource::ModelSource(const PositionSource &src, double radius) : src(src)
 {
@@ -40,10 +49,7 @@ void ModelSource::render(Shader &shader, Frustum *frustum, bool force) const
     this->mainLayer->render(shader);
   }
 
-  ScopedBlending blend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  ScopedDepthMask mask(GL_FALSE);
-  for (auto &layer : this->layers)
-    layer->render(shader);
+  this->renderLayers(shader);
 }
 
 void ModelSource::renderInstanced(Shader &shader, Frustum *frustum, bool force) const

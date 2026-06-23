@@ -24,7 +24,7 @@
 
 // Private functions
 Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
-                            Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
+                            Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, double g)
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
@@ -37,7 +37,7 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
 
-  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radii, e, tidalParameters, gravityField);
+  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radii, e, tidalParameters, gravityField, g);
 
   planet->setAngularVelocity(r.calculateAngularVelocity());
   planet->setOrientation(r.calculateOrientation());
@@ -147,7 +147,7 @@ void Scene::addLayerToModelSource(std::string name, std::string material_name, M
 void Scene::addAtmosphereToPlanet(std::string planetName, Planet *planet)
 {
   std::string path = "assets/data/" + planetName + "/atmosphere/32_resolution";
-  std::unique_ptr atmosphere = std::make_unique<Atmosphere>(path, this->threadPool);
+  std::unique_ptr atmosphere = std::make_unique<Atmosphere>(path, this->threadPool, planet->getFreeFallAcc(), planet->getRadius());
   planet->addAtmosphere(std::move(atmosphere));
 }
 
@@ -169,7 +169,7 @@ void Scene::init(RenderContext &renderCtx, double startTime)
   createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
   Planet *venusPtr = createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
   addLayerToModelSource(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_MATERIAL, venusPtr);
-  Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters);
+  Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
   addAtmosphereToPlanet(Res::EARTH, earthPtr);
   addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);

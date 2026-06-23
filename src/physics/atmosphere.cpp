@@ -5,6 +5,12 @@
 
 #include "resources/threadPool.h"
 
+#include "graphics/texture.h"
+#include "graphics/buffers/buffer.h"
+
+#include "graphics/state/scopedTexture.h"
+#include "graphics/state/scopedBuffer.h"
+
 #include "debug/logger.h"
 
 #include <glm/glm.hpp>
@@ -64,6 +70,15 @@ std::optional<float> Atmosphere::vectorAt(std::vector<float> &data, std::optiona
   if (idx)
     return data[*idx];
   return std::nullopt;
+}
+
+float Atmosphere::calculateWaterVaporPressure(float q, float pressure)
+{
+  float r_m = q / (1 - q);
+
+  float e = r_m * pressure / (0.622 + r_m);
+
+  return e;
 }
 
 void Atmosphere::readFloatFile(const std::string &path, std::vector<float> &data)
@@ -136,9 +151,8 @@ void Atmosphere::initFromMetadata(std::string &folderPath)
     Logger::logFatal("Atmosphere", "Json does not contain longitude_values field");
 }
 
-void Atmosphere::initVectors()
+void Atmosphere::initVectors(double g, double R)
 {
-  double R = 6371000; // Planet mean radius change after
   float dlat = abs(this->latitude[1] - this->latitude[0]);
   float dlon = std::abs(longitude[1] - longitude[0]);
   double L_lat = R * M_PI * dlat / 180;
@@ -146,8 +160,12 @@ void Atmosphere::initVectors()
   size_t size = this->grid.size;
 
   this->mass.resize(size);
-  this->cloud_mass.resize(size);
-  this->water_mass.resize(size);
+  this->cloud_liquid_mass.resize(size);
+  this->water_vapor_mass.resize(size);
+  this->ozone_mass.resize(size);
+  this->cloud_snow_mass.resize(size);
+  this->cloud_rain_mass.resize(size);
+  this->cloud_ice_mass.resize(size);
   this->density.resize(size);
   this->volume.resize(size);
   this->thermal_energy.resize(size);
@@ -157,7 +175,7 @@ void Atmosphere::initVectors()
 
   for (Range &work : this->threadRanges)
   {
-    this->threadPool.enqueue([this, &work, R, L_lat, dlon]()
+    this->threadPool.enqueue([this, &work, R, L_lat, dlon, g]()
                              {
       for (size_t nlon = work.begin; nlon < work.end; nlon++)
       {
@@ -171,14 +189,14 @@ void Atmosphere::initVectors()
             size_t index = idx(nlon, nlat, npres);
             float pres = this->pressure[npres];
 
-            float h = this->geopotential[index] / this->g;
+            float h = this->geopotential[index] / g;
 
             float h_up = h;
             float h_down = h;
             if (auto next = this->nextIdx(npres, this->pressure.size()))
-              h_up = this->geopotential[idx(nlon, nlat, *next)] / this->g;
+              h_up = this->geopotential[idx(nlon, nlat, *next)] / g;
             if (auto prev = this->prevIdx(npres))
-              h_down = this->geopotential[idx(nlon, nlat, *prev)] / this->g;
+              h_down = this->geopotential[idx(nlon, nlat, *prev)] / g;
 
             float L_up = abs(h_up - h);
             float L_down = abs(h - h_down);
@@ -195,9 +213,8 @@ void Atmosphere::initVectors()
             this->volume[index] = V;
 
             float q = this->specificHumidity[index];
-            float r_m = q / (1 - q);
+            float e = this->calculateWaterVaporPressure(q, pres);
 
-            float e = r_m * pres / (0.622 + r_m);
             float pres_d = pres - e; // dry air pressure
 
             float T = this->temperature[index];
@@ -208,11 +225,15 @@ void Atmosphere::initVectors()
             float m = p * V; // mass
             this->mass[index] = m;
 
-            float cc = this->cloud[index];
-
-            this->water_mass[index] = q * m;           // water vapor mass
-            this->cloud_mass[index] = cc * m;          // cloud water mass
+            this->water_vapor_mass[index] = q * m;  // water vapor mass
+            this->ozone_mass[index] = this->ozone_mass_mixing_ratio[index] * m;
+            this->cloud_ice_mass[index] = this->cloud_ice_water_content[index] * m;
+            this->cloud_liquid_mass[index] = this->cloud_liquid_water_content[index] * m;
+            this->cloud_snow_mass[index] = this->cloud_snow_water_content[index] * m;
+            this->cloud_rain_mass[index] = this->cloud_rain_water_content[index] * m;
             this->thermal_energy[index] = m * c_p * T; // thermal energy
+
+            this->relativeHumidity[index] /= 100; // convert from percent
 
             this->faceAreaEW[index] = L_lat * L_vert;          // east/west face area - for each cell
             this->faceAreaNS[index] = L_lon * L_vert;          // north/south face area - for each cell
@@ -226,11 +247,79 @@ void Atmosphere::initVectors()
                         { flux.forEach([size](std::vector<double> &vec)
                                        { vec.resize(size); }); });
 
-  std::cout << "INIT MASS: " << this->mass[27378] << std::endl;
-  std::cout << "INIT DENSITY: " << this->density[27378] << std::endl;
-  std::cout << "INIT TEMPERATURE: " << this->temperature[27378] << std::endl;
-  std::cout << "INIT SPEED: " << this->w_wind[27378] << std::endl;
-  std::cout << "INIT CLOUD: " << this->cloud[27378] << std::endl;
+  std::cout << "INIT MASS: " << this->mass[1000] << std::endl;
+  std::cout << "INIT DENSITY: " << this->density[1000] << std::endl;
+  std::cout << "INIT TEMPERATURE: " << this->temperature[1000] << std::endl;
+  std::cout << "INIT SPEED: " << this->w_wind[1000] << std::endl;
+  std::cout << "INIT CLOUD COVER: " << this->cloud_cover[1000] << std::endl;
+  std::cout << "INIT RELATIVE HUMIDITY: " << this->relativeHumidity[1000] << std::endl;
+}
+
+void Atmosphere::initTexture(std::unique_ptr<Texture> &text)
+{
+  text = std::make_unique<Texture>(GL_TEXTURE_3D);
+
+  ScopedTexture t(*text);
+
+  GL_CALL(glTexImage3D(
+      GL_TEXTURE_3D,
+      0,
+      GL_R16F,
+      this->grid.nlon,
+      this->grid.nlat,
+      this->grid.npres,
+      0,
+      GL_RED,
+      GL_FLOAT,
+      nullptr));
+}
+
+void Atmosphere::initTextures()
+{
+  this->initTexture(this->densityTexture);
+  this->initTexture(this->cloudTexture);
+  this->initTexture(this->temperatureTexture);
+  this->initTexture(this->humidityTexture);
+  this->initTexture(this->geopotentialTexture);
+}
+
+void Atmosphere::updateTexture(std::vector<float> &data, std::unique_ptr<Texture> &text)
+{
+  ScopedTexture t(*text);
+  glTexSubImage3D(
+      GL_TEXTURE_3D,
+      0,
+      0, 0, 0,
+      this->grid.nlon,
+      this->grid.nlat,
+      this->grid.npres,
+      GL_RED,
+      GL_FLOAT,
+      data.data());
+}
+
+void Atmosphere::updateTexture(std::vector<double> &data, std::unique_ptr<Texture> &text)
+{
+  ScopedTexture t(*text);
+  glTexSubImage3D(
+      GL_TEXTURE_3D,
+      0,
+      0, 0, 0,
+      grid.nlon,
+      grid.nlat,
+      grid.npres,
+      GL_RED,
+      GL_FLOAT,
+      data.data());
+}
+
+void Atmosphere::updateTextures()
+{
+  this->updateTexture(this->density, this->densityTexture);
+  this->updateTexture(this->specificHumidity, this->humidityTexture);
+  this->updateTexture(this->temperature, this->temperatureTexture);
+  this->updateTexture(this->cloud_cover, this->cloudTexture);
+  this->updateTexture(this->geopotential, this->geopotentialTexture);
 }
 
 void Atmosphere::accumulateDelta(std::vector<float> &delta, float d, size_t idx, std::optional<size_t> nextIdx)
@@ -258,8 +347,6 @@ double Atmosphere::computeNetFlux(Flux &delta, size_t index, size_t nlon, size_t
 
 void Atmosphere::applyDelta()
 {
-  // std::cout << "FLUX: " << this->computeNetFlux(this->scratch.mass, 0, 0, 0, 0) << std::endl;
-
   for (Range &work : this->threadRanges)
   {
     this->threadPool.enqueue([this, &work]()
@@ -276,58 +363,106 @@ void Atmosphere::applyDelta()
             size_t index = idx(nlon, nlat, npres);
 
             this->mass[index] += this->computeNetFlux(this->scratch.mass, index, nlon, nlat, npres);
-            this->cloud_mass[index] += this->computeNetFlux(this->scratch.cloud, index, nlon, nlat, npres);
-            this->water_mass[index] += this->computeNetFlux(this->scratch.water, index, nlon, nlat, npres);
+            this->cloud_ice_mass[index] += this->computeNetFlux(this->scratch.cloud_ice_mass, index, nlon, nlat, npres);
+            this->cloud_liquid_mass[index] += this->computeNetFlux(this->scratch.cloud_liquid_mass, index, nlon, nlat, npres);
+            this->cloud_snow_mass[index] += this->computeNetFlux(this->scratch.cloud_snow_mass, index, nlon, nlat, npres);
+            this->cloud_rain_mass[index] += this->computeNetFlux(this->scratch.cloud_rain_mass, index, nlon, nlat, npres);
+            this->water_vapor_mass[index] += this->computeNetFlux(this->scratch.water_vapor_mass, index, nlon, nlat, npres);
+            this->ozone_mass[index] += this->computeNetFlux(this->scratch.ozone_mass, index, nlon, nlat, npres);
             this->thermal_energy[index] += this->computeNetFlux(this->scratch.energy, index, nlon, nlat, npres);
 
             this->mass[index] = std::max(this->mass[index], 1e-200);
             double m = this->mass[index];
 
-            this->specificHumidity[index] = this->water_mass[index] / float(m);
-            this->cloud[index] = this->cloud_mass[index] / float(m);
+            this->specificHumidity[index] = std::clamp(this->water_vapor_mass[index] / float(m), 0.0, 1.0);
+            this->cloud_ice_water_content[index] = std::clamp(this->cloud_ice_mass[index] / float(m), 0.0, 1.0);
+            this->cloud_liquid_water_content[index] = std::clamp(this->cloud_liquid_mass[index] / float(m), 0.0, 1.0);
+            this->cloud_rain_water_content[index] = std::clamp(this->cloud_rain_mass[index] / float(m), 0.0, 1.0);
+            this->cloud_snow_water_content[index] = std::clamp(this->cloud_snow_mass[index] / float(m), 0.0, 1.0);
+            this->ozone_mass_mixing_ratio[index] = std::clamp(this->ozone_mass[index] / float(m), 0.0, 1.0);
+
+            if (!isfinite(this->specificHumidity[index])) this->specificHumidity[index] = 0.0;
+            if (!isfinite(this->cloud_ice_water_content[index])) this->cloud_ice_water_content[index] = 0.0;
+            if (!isfinite(this->cloud_liquid_water_content[index])) this->cloud_liquid_water_content[index] = 0.0;
+            if (!isfinite(this->cloud_rain_water_content[index])) this->cloud_rain_water_content[index] = 0.0;
+            if (!isfinite(this->cloud_snow_water_content[index])) this->cloud_snow_water_content[index] = 0.0;
+            if (!isfinite(this->ozone_mass_mixing_ratio[index])) this->ozone_mass_mixing_ratio[index] = 0.0;
 
             this->temperature[index] = this->thermal_energy[index] / (m * c_p);
             this->density[index] = m / this->volume[index];
+
+            float e = this->calculateWaterVaporPressure(this->specificHumidity[index], pres);
+            float T = this->temperature[index];
+            float e_s = 611.2 * exp(17.67 * (T - 273.15) / (T - 29.65));
+
+            this->relativeHumidity[index] = e / e_s;
+            if (!isfinite(this->relativeHumidity[index])) this->relativeHumidity[index] = 0.0;
+
+            // float RH_crit = 1.f;
+            // float x = std::max(0.f, (this->relativeHumidity[index] - RH_crit) / (1.f - RH_crit));
+            
+            // this->cloud_cover[index] = x * x;
+
+            float area = faceAreaTB[idx(nlon, nlat)];
+            float lwp = cloud_liquid_mass[index] / area;
+
+            float r_e = 10e-6f; // 10 µm droplets
+            float tau = 3.f * lwp / (2.f * 1000.f * r_e);
+
+            this->cloud_cover[index] = std::clamp(1.f - exp(-tau), 0.f, 1.f);
+
+            if (!isfinite(this->cloud_cover[index])) this->cloud_cover[index] = 0.0;
           }
         }
       } });
   }
   this->threadPool.wait();
 
-  // std::cout << "MASS 0: " << this->mass[27378] << std::endl;
-  // std::cout << "DENSITY 0: " << this->density[27378] << std::endl;
-  // std::cout << "ENERGY 0: " << this->thermal_energy[27378] << std::endl;
-  // std::cout << "TEMPERATURE 0: " << this->temperature[27378] << std::endl;
-  // std::cout << "WATER MASS 0: " << this->water_mass[27378] << std::endl;
-  // std::cout << "CLOUD MASS 0: " << this->cloud_mass[27378] << std::endl;
-  // std::cout << "HUMIDITY 0: " << this->specificHumidity[27378] << std::endl;
-  // std::cout << "CLOUD 0: " << this->cloud[27378] << std::endl;
-  // std::cout << std::endl;
+  std::cout << "MASS 0: " << this->mass[1000] << std::endl;
+  std::cout << "MASS LIQUID 0: " << this->cloud_liquid_mass[1000] << std::endl;
+  std::cout << "MASS ICE 0: " << this->cloud_ice_mass[1000] << std::endl;
+  std::cout << "MASS ICE CONTENT 0: " << this->cloud_ice_water_content[1000] << std::endl;
+  std::cout << "DENSITY 0: " << this->density[1000] << std::endl;
+  std::cout << "ENERGY 0: " << this->thermal_energy[1000] << std::endl;
+  std::cout << "TEMPERATURE 0: " << this->temperature[1000] << std::endl;
+  std::cout << "WATER MASS 0: " << this->cloud_liquid_mass[1000] << std::endl;
+  std::cout << "SPECIFIC HUMIDITY 0: " << this->specificHumidity[1000] << std::endl;
+  std::cout << "RELATIVE HUMIDITY 0: " << this->relativeHumidity[1000] << std::endl;
+  std::cout << "CLOUD COVER 0: " << this->cloud_cover[1000] << std::endl;
+  std::cout << std::endl;
 }
 
 // Constructor
-Atmosphere::Atmosphere(std::string &folderPath, ThreadPool &threadPool) : threadPool(threadPool)
+Atmosphere::Atmosphere(std::string &folderPath, ThreadPool &threadPool, double g, double radius) : threadPool(threadPool)
 {
-  this->g = 9.80665; // change
-
   this->initFromMetadata(folderPath);
 
   this->readFloatFile(folderPath + "/t.bin", this->temperature);
-  // this->readFloatFile(folderPath + "/r.bin", this->relativeHumidity);
+  this->readFloatFile(folderPath + "/r.bin", this->relativeHumidity);
   this->readFloatFile(folderPath + "/q.bin", this->specificHumidity);
-  this->readFloatFile(folderPath + "/cc.bin", this->cloud);
+  this->readFloatFile(folderPath + "/cc.bin", this->cloud_cover);
   this->readFloatFile(folderPath + "/u.bin", this->u_wind);
   this->readFloatFile(folderPath + "/v.bin", this->v_wind);
   this->readFloatFile(folderPath + "/w.bin", this->w_wind);
   this->readFloatFile(folderPath + "/z.bin", this->geopotential);
+  // this->readFloatFile(folderPath + "/vo.bin", this->vorticity);
+  // this->readFloatFile(folderPath + "/pv.bin", this->potential_vorticity);
+  // this->readFloatFile(folderPath + "/d.bin", this->divergence);
+  this->readFloatFile(folderPath + "/o3.bin", this->ozone_mass_mixing_ratio);
+  this->readFloatFile(folderPath + "/ciwc.bin", this->cloud_ice_water_content);
+  this->readFloatFile(folderPath + "/clwc.bin", this->cloud_liquid_water_content);
+  this->readFloatFile(folderPath + "/crwc.bin", this->cloud_rain_water_content);
+  this->readFloatFile(folderPath + "/cswc.bin", this->cloud_snow_water_content);
 
   this->threadPool.initRanges(this->threadRanges, this->longitude.size());
 
-  this->initVectors();
+  this->initVectors(g, radius);
+
+  this->initTextures();
 }
 
 // Public functions
-void Atmosphere::step(float dt)
+void Atmosphere::step(double dt, double g)
 {
   this->scratch.forEach([](Flux &flux)
                         { flux.forEach([](std::vector<double> &vec)
@@ -336,7 +471,7 @@ void Atmosphere::step(float dt)
   for (size_t i = 0; i < this->threadRanges.size(); i++)
   {
     Range &work = this->threadRanges[i];
-    this->threadPool.enqueue([this, &work, dt]()
+    this->threadPool.enqueue([this, &work, dt, g]()
                              {
   for (size_t nlon = work.begin; nlon < work.end; nlon++)
   {
@@ -394,73 +529,24 @@ void Atmosphere::step(float dt)
         if (!std::isfinite(m_n)) m_n = 0;
         if (!std::isfinite(m_t)) m_t = 0;
 
-        double m = this->mass[index];
-
-        double c_w_e, c_c_e, c_e_e;
-        double c_w_n, c_c_n, c_e_n;
-        double c_w_t, c_c_t, c_e_t;
+        glm::dvec3 fluxes(m_e, m_n, m_t);
+        glm::uvec3 indices(index);
 
         if (m_e < 0)
-        {
-          double m = this->mass[east];
-
-          c_w_e = this->water_mass[east] / m;
-          c_c_e = this->cloud_mass[east] / m;
-          c_e_e = this->thermal_energy[east] / m;
-        }
-        else
-        {
-          c_w_e = this->water_mass[index] / m;
-          c_c_e = this->cloud_mass[index] / m;
-          c_e_e = this->thermal_energy[index] / m;
-        }
-
+          indices.x = east;
         if (m_n < 0 && north)
-        {
-          double m = this->mass[*north];
-
-          c_w_n = this->water_mass[*north] / m;
-          c_c_n = this->cloud_mass[*north] / m;
-          c_e_n = this->thermal_energy[*north] / m;
-        }
-        else
-        {
-          c_w_n = this->water_mass[index] / m;
-          c_c_n = this->cloud_mass[index] / m;
-          c_e_n = this->thermal_energy[index] / m;
-        }
-
+          indices.y = *north;
         if (m_t < 0 && top)
-        {
-          double m = this->mass[*top];
+          indices.z = *top;
 
-          c_w_t = this->water_mass[*top] / m;
-          c_c_t = this->cloud_mass[*top] / m;
-          c_e_t = this->thermal_energy[*top] / m; 
-        }
-        else
-        {
-          c_w_t = this->water_mass[index] / m;
-          c_c_t = this->cloud_mass[index] / m;
-          c_e_t = this->thermal_energy[index] / m;
-        }
-
-
-        this->scratch.mass.east[index] = m_e;
-        this->scratch.mass.north[index] = m_n;
-        this->scratch.mass.top[index] = m_t;
-
-        this->scratch.water.east[index] = m_e * c_w_e;
-        this->scratch.water.north[index] = m_n * c_w_n;
-        this->scratch.water.top[index] = m_t * c_w_t;
-
-        this->scratch.cloud.east[index] = m_e * c_c_e;
-        this->scratch.cloud.north[index] = m_n * c_c_n;
-        this->scratch.cloud.top[index] = m_t * c_c_t;
-
-        this->scratch.energy.east[index] = m_e * c_e_e;
-        this->scratch.energy.north[index] = m_n * c_e_n;
-        this->scratch.energy.top[index] = m_t * c_e_t;
+        this->scratch.mass.calculateFlux(index, fluxes, indices, this->mass, this->mass);
+        this->scratch.cloud_ice_mass.calculateFlux(index, fluxes, indices, this->cloud_ice_mass, this->mass);
+        this->scratch.cloud_liquid_mass.calculateFlux(index, fluxes, indices, this->cloud_liquid_mass, this->mass);
+        this->scratch.cloud_snow_mass.calculateFlux(index, fluxes, indices, this->cloud_snow_mass, this->mass);
+        this->scratch.cloud_rain_mass.calculateFlux(index, fluxes, indices, this->cloud_rain_mass, this->mass);
+        this->scratch.water_vapor_mass.calculateFlux(index, fluxes, indices, this->water_vapor_mass, this->mass);
+        this->scratch.ozone_mass.calculateFlux(index, fluxes, indices, this->ozone_mass, this->mass);
+        this->scratch.energy.calculateFlux(index, fluxes, indices, this->thermal_energy, this->mass);
       }
     }
   } });
@@ -548,11 +634,7 @@ void Atmosphere::step(float dt)
 
   this->threadPool.wait();
 
-
-  // double total = 0.0;
-  // for (size_t i = 0; i < mass.size(); i++)
-  //   total += mass[i];
-  // std::cout << "TOTAL: " << total << std::endl;
-
   this->applyDelta();
+
+  this->updateTextures();
 }

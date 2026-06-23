@@ -18,6 +18,8 @@ class Planet : public OrbitalObject, public ModelSource
 protected:
   std::vector<std::unique_ptr<Moon>> moons;
 
+  double g; // Acceleration of free fall of the Planet
+
   uint radianceSize = 32;
 
   std::unique_ptr<Texture> moonRadianceTexture;
@@ -30,12 +32,16 @@ protected:
   void initMoonRadianceTexture();
   void initMoonRadianceFBO();
 
+  void renderLayers(Shader &shader) const override;
+
 public:
-  Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField());
+  Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), double g = 0.0);
   ~Planet();
 
   void addMoon(std::unique_ptr<Moon> moon);
   void addAtmosphere(std::unique_ptr<Atmosphere> atmosphere);
+
+  double getFreeFallAcc() const;
 
   void render(Shader &shader, Frustum *frustum, bool force = false) const override;
 
