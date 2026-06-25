@@ -50,6 +50,7 @@ private:
   void renderSkybox(Scene &scene, RenderContext &ctx);
   void renderAsteroidSystems(Scene &scene, Frustum *frustum);
   void renderObjects(Scene &scene, Frustum *frustum);
+  void renderAtmospheres(Scene &scene, Frustum *frustum);
   void renderTrails(Scene &scene);
 
   void initShaderUBOBindings();

@@ -13,8 +13,6 @@ protected:
   const PositionSource &src;
   double radius;
 
-  virtual void renderLayers(Shader &shader) const;
-
 public:
   ModelSource(const PositionSource &src, double radius);
   virtual ~ModelSource() = default;
@@ -24,6 +22,7 @@ public:
 
   virtual void update(const Camera &camera) override;
   virtual void render(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
+  virtual void renderLayers(Shader &shader, Frustum *frustum = nullptr, bool force = false) const;
   virtual void renderInstanced(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
 
   const glm::dvec3 getRenderPosition() const { return this->renderPosition; };

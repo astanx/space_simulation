@@ -91,6 +91,12 @@ Model::Model(glm::vec3 position, Material &material,
   this->meshes.push_back(mesh);
 }
 
+Model::Model(glm::vec3 position, Mesh &mesh)
+{
+  this->position = position;
+  this->meshes.push_back(&mesh);
+}
+
 Model::~Model()
 {
 }

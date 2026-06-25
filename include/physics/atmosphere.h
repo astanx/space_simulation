@@ -3,6 +3,7 @@
 #include "resources/range.h"
 
 #include "render/modelSource.h"
+#include "physics/structs/radii.h"
 
 #include "external/json.hpp"
 
@@ -11,6 +12,8 @@
 
 class Texture;
 class Buffer;
+class Shader;
+class Planet;
 
 struct Grid
 {
@@ -126,8 +129,11 @@ protected:
   std::unique_ptr<Texture> humidityTexture;
   std::unique_ptr<Texture> geopotentialTexture;
   std::unique_ptr<Texture> cloudTexture;
+  std::unique_ptr<Texture> liquidContentTexture;
+  std::unique_ptr<Texture> iceContentTexture;
 
   Grid grid;
+  Radii radii;
 
   size_t idx(size_t nlon, size_t nlat, size_t npres);
   std::optional<size_t> idx(std::optional<size_t> nlon, std::optional<size_t> nlat, std::optional<size_t> npres);
@@ -142,7 +148,7 @@ protected:
 
   void initGrid(nlohmann::json &json);
   void initFromMetadata(std::string &folderPath);
-  void initVectors(double g, double R);
+  void initVectors(double g, Radii planetRadii);
   void initTextures();
   void initTexture(std::unique_ptr<Texture> &text);
 
@@ -159,8 +165,15 @@ protected:
   float calculateWaterVaporPressure(float q, float pressure);
 
 public:
-  Atmosphere(std::string &folderPath, ThreadPool &threadPool, double g, double radius);
+  Atmosphere(Planet *planet, std::string &folderPath, ThreadPool &threadPool);
   ~Atmosphere() = default;
 
+  Radii getRadii() const { return this->radii; };
+
   void step(double dt, double g);
+
+  void sendToShader(Shader &shader);
+
+  void bindTextures();
+  void unbindTextures();
 };

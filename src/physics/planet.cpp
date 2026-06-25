@@ -81,11 +81,6 @@ void Planet::initMoonRadianceFBO()
   }
 }
 
-void Planet::renderLayers(Shader &shader) const
-{
-  ModelSource::renderLayers(shader);
-}
-
 // Constructor / Destructor
 Planet::Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters, GravityField gravityField, double g)
     : OrbitalObject(centralBody, mu, radii, keplerElements, tidalParameters, gravityField), ModelSource(static_cast<const PositionSource &>(*this), radii.mean * VISUAL_RADIUS_SCALE)
@@ -99,8 +94,8 @@ Planet::~Planet() = default;
 void Planet::render(Shader &shader, Frustum *frustum, bool force) const
 {
   std::optional<ScopedTexture> moonRadianceTextureScope;
-  if (this->atmosphere)
-    this->atmosphere->step(86400.f, this->g);
+  // if (this->atmosphere)
+  //   this->atmosphere->step(500.f, this->g);
   if (!this->moons.empty())
   {
     moonRadianceTextureScope.emplace(*this->moonRadianceTexture, TextureBindingPoints::EnvironmentMap);
@@ -111,8 +106,20 @@ void Planet::render(Shader &shader, Frustum *frustum, bool force) const
   else
     shader.set1i(0, "useReflectorRadiance");
 
-  ModelSource::render(shader, frustum);
+  ModelSource::render(shader, frustum, force);
 };
+
+void Planet::renderAtmosphere(Shader &shader, Frustum *frustum, bool force) const
+{
+  if (this->atmosphere)
+  {
+    this->atmosphere->bindTextures();
+    shader.set1f(this->g, "g");
+    this->atmosphere->sendToShader(shader);
+    ModelSource::renderLayers(shader, frustum, force);
+    this->atmosphere->unbindTextures();
+  }
+}
 
 void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
 {

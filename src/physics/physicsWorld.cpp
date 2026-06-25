@@ -27,6 +27,10 @@ void PhysicsWorld::addObject(Object *object)
 {
   this->objects.push_back(object);
 }
+void PhysicsWorld::addAtmosphere(Atmosphere *atmosphere)
+{
+  this->atmospheres.push_back(atmosphere);
+}
 void PhysicsWorld::addPlanetarObject(std::unique_ptr<Planet> planetarObject)
 {
   this->planetarObjectViews.push_back(planetarObject.get());

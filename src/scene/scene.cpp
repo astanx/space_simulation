@@ -5,6 +5,8 @@
 #include "graphics/shader.h"
 #include "graphics/mesh.h"
 
+#include "graphics/primitives/ellipsoid.h"
+
 #include "physics/planet.h"
 #include "physics/orbit.h"
 #include "physics/star.h"
@@ -147,7 +149,16 @@ void Scene::addLayerToModelSource(std::string name, std::string material_name, M
 void Scene::addAtmosphereToPlanet(std::string planetName, Planet *planet)
 {
   std::string path = "assets/data/" + planetName + "/atmosphere/32_resolution";
-  std::unique_ptr atmosphere = std::make_unique<Atmosphere>(path, this->threadPool, planet->getFreeFallAcc(), planet->getRadius());
+  std::unique_ptr atmosphere = std::make_unique<Atmosphere>(planet, path, this->threadPool);
+  Atmosphere *ptr = atmosphere.get();
+
+  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(32, atmosphere->getRadii().scaled(VISUAL_RADIUS_SCALE));
+  this->resourceManager.LoadMesh(path, std::move(obj), VertexLayout::NoColor);
+  Mesh &mesh = this->resourceManager.GetMesh(path);
+  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mesh);
+
+  physicsWorld.addAtmosphere(ptr);
+  planet->addLayer(std::move(model));
   planet->addAtmosphere(std::move(atmosphere));
 }
 
