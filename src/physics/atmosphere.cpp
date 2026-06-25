@@ -2,14 +2,18 @@
 
 #include "physics/atmosphereConstants.h"
 #include "physics/constants.h"
+#include "physics/planet.h"
 
 #include "resources/threadPool.h"
 
 #include "graphics/texture.h"
+#include "graphics/shader.h"
 #include "graphics/buffers/buffer.h"
 
 #include "graphics/state/scopedTexture.h"
 #include "graphics/state/scopedBuffer.h"
+
+#include "graphics/bindings/atmosphereTexture.h"
 
 #include "debug/logger.h"
 
@@ -151,10 +155,11 @@ void Atmosphere::initFromMetadata(std::string &folderPath)
     Logger::logFatal("Atmosphere", "Json does not contain longitude_values field");
 }
 
-void Atmosphere::initVectors(double g, double R)
+void Atmosphere::initVectors(double g, Radii planetRadii)
 {
   float dlat = abs(this->latitude[1] - this->latitude[0]);
   float dlon = std::abs(longitude[1] - longitude[0]);
+  double R = planetRadii.mean;
   double L_lat = R * M_PI * dlat / 180;
 
   size_t size = this->grid.size;
@@ -173,15 +178,25 @@ void Atmosphere::initVectors(double g, double R)
   this->faceAreaNS.resize(size);
   this->faceAreaTB.resize(this->grid.nlat * this->grid.nlon);
 
+  this->radii.polar = planetRadii.polar + (this->geopotential[idx(0, 0, this->pressure.size() - 1)] + this->geopotential[idx(0, this->latitude.size() - 1, this->pressure.size() - 1)]) / (2 * g);
+
   for (Range &work : this->threadRanges)
   {
-    this->threadPool.enqueue([this, &work, R, L_lat, dlon, g]()
+    this->threadPool.enqueue([this, &work, &planetRadii, R, L_lat, dlon, g]()
                              {
       for (size_t nlon = work.begin; nlon < work.end; nlon++)
       {
         for (size_t nlat = 0; nlat < this->latitude.size(); nlat++)
         {
-          float latRad = this->latitude[nlat] * M_PI / 180;
+          float latDeg = this->latitude[nlat];
+          if (auto next = this->nextIdx(nlat, this->latitude.size()))
+          {  
+            if (abs(latDeg) < abs(this->latitude[*next]))
+              this->radii.equatorian = planetRadii.equatorian + this->geopotential[idx(nlon, nlat, this->pressure.size() - 1)] / g;
+          }
+          else if (this->radii.equatorian == 0) this->radii.equatorian = planetRadii.equatorian + this->geopotential[idx(nlon, nlat, this->pressure.size() - 1)] / g;
+
+          float latRad = latDeg * M_PI / 180;
           double L_lon = R * cos(latRad) * dlon * M_PI / 180;
           this->faceAreaTB[idx(nlon, nlat)] = L_lon * L_lat; // top/bottom face area - for each lon/lat
           for (size_t npres = 0; npres < this->pressure.size(); npres++)
@@ -247,6 +262,8 @@ void Atmosphere::initVectors(double g, double R)
                         { flux.forEach([size](std::vector<double> &vec)
                                        { vec.resize(size); }); });
 
+  this->radii.mean = pow(this->radii.equatorian * this->radii.equatorian + this->radii.polar, 1 / 3);
+
   std::cout << "INIT MASS: " << this->mass[1000] << std::endl;
   std::cout << "INIT DENSITY: " << this->density[1000] << std::endl;
   std::cout << "INIT TEMPERATURE: " << this->temperature[1000] << std::endl;
@@ -272,6 +289,26 @@ void Atmosphere::initTexture(std::unique_ptr<Texture> &text)
       GL_RED,
       GL_FLOAT,
       nullptr));
+
+  glTexParameteri(GL_TEXTURE_3D,
+                  GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR);
+
+  glTexParameteri(GL_TEXTURE_3D,
+                  GL_TEXTURE_MAG_FILTER,
+                  GL_LINEAR);
+
+  glTexParameteri(GL_TEXTURE_3D,
+                  GL_TEXTURE_WRAP_S,
+                  GL_REPEAT);
+
+  glTexParameteri(GL_TEXTURE_3D,
+                  GL_TEXTURE_WRAP_T,
+                  GL_CLAMP_TO_EDGE);
+
+  glTexParameteri(GL_TEXTURE_3D,
+                  GL_TEXTURE_WRAP_R,
+                  GL_CLAMP_TO_EDGE);
 }
 
 void Atmosphere::initTextures()
@@ -281,6 +318,8 @@ void Atmosphere::initTextures()
   this->initTexture(this->temperatureTexture);
   this->initTexture(this->humidityTexture);
   this->initTexture(this->geopotentialTexture);
+  this->initTexture(this->iceContentTexture);
+  this->initTexture(this->liquidContentTexture);
 }
 
 void Atmosphere::updateTexture(std::vector<float> &data, std::unique_ptr<Texture> &text)
@@ -320,6 +359,8 @@ void Atmosphere::updateTextures()
   this->updateTexture(this->temperature, this->temperatureTexture);
   this->updateTexture(this->cloud_cover, this->cloudTexture);
   this->updateTexture(this->geopotential, this->geopotentialTexture);
+  this->updateTexture(this->cloud_ice_water_content, this->iceContentTexture);
+  this->updateTexture(this->cloud_liquid_water_content, this->liquidContentTexture);
 }
 
 void Atmosphere::accumulateDelta(std::vector<float> &delta, float d, size_t idx, std::optional<size_t> nextIdx)
@@ -433,7 +474,7 @@ void Atmosphere::applyDelta()
 }
 
 // Constructor
-Atmosphere::Atmosphere(std::string &folderPath, ThreadPool &threadPool, double g, double radius) : threadPool(threadPool)
+Atmosphere::Atmosphere(Planet *planet, std::string &folderPath, ThreadPool &threadPool) : threadPool(threadPool)
 {
   this->initFromMetadata(folderPath);
 
@@ -456,7 +497,7 @@ Atmosphere::Atmosphere(std::string &folderPath, ThreadPool &threadPool, double g
 
   this->threadPool.initRanges(this->threadRanges, this->longitude.size());
 
-  this->initVectors(g, radius);
+  this->initVectors(planet->getFreeFallAcc(), planet->getRadii());
 
   this->initTextures();
 }
@@ -637,4 +678,55 @@ void Atmosphere::step(double dt, double g)
   this->applyDelta();
 
   this->updateTextures();
+}
+
+void Atmosphere::sendToShader(Shader &shader)
+{
+  shader.set1i(this->grid.npres, "npressure");
+  shader.setVec1f(this->pressure.data(), this->pressure.size(), "pressureLevels");
+  shader.set1f(0.8f, "g_s"); // temp
+
+  shader.set1i(AtmosphereTextureBindingPoints::Humidity, "humidityTexture");
+  shader.set1i(AtmosphereTextureBindingPoints::Density, "densityTexture");
+  shader.set1i(AtmosphereTextureBindingPoints::Temperature, "temperatureTexture");
+  shader.set1i(AtmosphereTextureBindingPoints::Geopotential, "geopotentialTexture");
+  shader.set1i(AtmosphereTextureBindingPoints::Cloud, "cloudTexture");
+  shader.set1i(AtmosphereTextureBindingPoints::LiquidContent, "liquidContentTexture");
+  shader.set1i(AtmosphereTextureBindingPoints::IceContent, "iceContentTexture");
+}
+
+void Atmosphere::bindTextures()
+{
+
+  this->humidityTexture->activate(AtmosphereTextureBindingPoints::Humidity);
+  this->humidityTexture->bind();
+
+  this->densityTexture->activate(AtmosphereTextureBindingPoints::Density);
+  this->densityTexture->bind();
+
+  this->temperatureTexture->activate(AtmosphereTextureBindingPoints::Temperature);
+  this->temperatureTexture->bind();
+
+  this->geopotentialTexture->activate(AtmosphereTextureBindingPoints::Geopotential);
+  this->geopotentialTexture->bind();
+
+  this->cloudTexture->activate(AtmosphereTextureBindingPoints::Cloud);
+  this->cloudTexture->bind();
+
+  this->liquidContentTexture->activate(AtmosphereTextureBindingPoints::LiquidContent);
+  this->liquidContentTexture->bind();
+
+  this->iceContentTexture->activate(AtmosphereTextureBindingPoints::IceContent);
+  this->iceContentTexture->bind();
+}
+
+void Atmosphere::unbindTextures()
+{
+  this->humidityTexture->unbind(AtmosphereTextureBindingPoints::Humidity);
+  this->densityTexture->unbind(AtmosphereTextureBindingPoints::Density);
+  this->temperatureTexture->unbind(AtmosphereTextureBindingPoints::Temperature);
+  this->geopotentialTexture->unbind(AtmosphereTextureBindingPoints::Geopotential);
+  this->cloudTexture->unbind(AtmosphereTextureBindingPoints::Cloud);
+  this->liquidContentTexture->unbind(AtmosphereTextureBindingPoints::LiquidContent);
+  this->iceContentTexture->unbind(AtmosphereTextureBindingPoints::IceContent);
 }

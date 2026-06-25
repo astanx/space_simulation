@@ -170,6 +170,17 @@ void Renderer::renderObjects(Scene &scene, Frustum *frustum)
 
   skybox.unbindIrradianceMap();
 }
+void Renderer::renderAtmospheres(Scene &scene, Frustum *frustum)
+{
+  Shader &atmosphereShader = this->resourceManager.GetShader(Res::ATMOSPHERE_SHADER);
+
+  GLuint &atmosphereID = atmosphereShader.getId();
+
+  ScopedShader atmosphereSh(atmosphereID);
+
+  for (const Planet *planet : scene.getPhysicsWorld().getPlanetarObjects())
+    planet->renderAtmosphere(atmosphereShader, frustum);
+}
 void Renderer::renderTrails(Scene &scene)
 {
   Shader &trailShader = this->resourceManager.GetShader(Res::TRAIL_SHADER);
@@ -267,6 +278,8 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
   Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
 
   this->renderObjects(scene, &frustum);
+  // temporary off
+  //  this->renderAtmospheres(scene, &frustum);
   this->renderAsteroidSystems(scene, &frustum);
   this->renderSkybox(scene, ctx);
 }

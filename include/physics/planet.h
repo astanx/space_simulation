@@ -32,8 +32,6 @@ protected:
   void initMoonRadianceTexture();
   void initMoonRadianceFBO();
 
-  void renderLayers(Shader &shader) const override;
-
 public:
   Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), double g = 0.0);
   ~Planet();
@@ -45,5 +43,6 @@ public:
 
   void render(Shader &shader, Frustum *frustum, bool force = false) const override;
 
+  void renderAtmosphere(Shader &shader, Frustum *frustum, bool force = false) const;
   void renderMoonsRadiance(Shader &shader, const Camera &camera) const;
 };

@@ -8,15 +8,6 @@
 
 #include "physics/constants.h"
 
-// Private functions
-void ModelSource::renderLayers(Shader &shader) const
-{
-  ScopedBlending blend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  ScopedDepthMask mask(GL_FALSE);
-  for (auto &layer : this->layers)
-    layer->render(shader);
-}
-
 // Constructor
 ModelSource::ModelSource(const PositionSource &src, double radius) : src(src)
 {
@@ -48,8 +39,17 @@ void ModelSource::render(Shader &shader, Frustum *frustum, bool force) const
     ScopedPolygonOffset offset(true, .1f, 4.f);
     this->mainLayer->render(shader);
   }
+}
 
-  this->renderLayers(shader);
+void ModelSource::renderLayers(Shader &shader, Frustum *frustum, bool force) const
+{
+  if (!force && frustum && !frustum->isVisibleSphere(this->renderPosition, this->radius))
+    return;
+
+  ScopedBlending blend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  ScopedDepthMask mask(GL_FALSE);
+  for (auto &layer : this->layers)
+    layer->render(shader);
 }
 
 void ModelSource::renderInstanced(Shader &shader, Frustum *frustum, bool force) const

@@ -1,6 +1,5 @@
 #pragma once
 
-// max - 16
 namespace TextureBindingPoints
 {
   constexpr unsigned int Diffuse = 0;
