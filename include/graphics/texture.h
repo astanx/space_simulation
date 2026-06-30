@@ -22,6 +22,9 @@ public:
   inline GLuint getId() const { return this->id; };
   inline GLenum getTarget() const { return this->target; };
 
+  inline int getWidth() const { return this->width; };
+  inline int getHeight() const { return this->height; };
+
   void bind() const;
   void unbind(const GLint textureUnit) const;
 

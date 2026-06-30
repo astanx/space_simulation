@@ -6,6 +6,8 @@
 
 #include "render/renderState.h"
 
+#include "graphics/instanceLayouts.h"
+
 #include "graphics/bindings/ubo.h"
 #include "graphics/bindings/texture.h"
 
@@ -84,9 +86,13 @@ void Renderer::initShaderUBOBindings()
 
     GLuint programID = shader->getId();
 
-    GLuint blockIndex = glGetUniformBlockIndex(programID, "Camera");
-    if (blockIndex != GL_INVALID_INDEX)
-      glUniformBlockBinding(programID, blockIndex, UBOBindingPoints::Camera);
+    GLuint cameraBlockIndex = glGetUniformBlockIndex(programID, "Camera");
+    if (cameraBlockIndex != GL_INVALID_INDEX)
+      glUniformBlockBinding(programID, cameraBlockIndex, UBOBindingPoints::Camera);
+
+    GLuint scaleBlockIndex = glGetUniformBlockIndex(programID, "Scale");
+    if (scaleBlockIndex != GL_INVALID_INDEX)
+      glUniformBlockBinding(programID, scaleBlockIndex, UBOBindingPoints::Scale);
 
     this->lightManager->initDirLightUBOBinding(programID);
     this->lightManager->initPointLightUBOBinding(programID);
@@ -134,17 +140,37 @@ void Renderer::renderAsteroidSystems(Scene &scene, Frustum *frustum)
 
   const Skybox &skybox = scene.getActiveSkybox();
 
-  ScopedShader asteroid(asteroidID);
+  {
+    ScopedShader asteroid(asteroidID);
 
-  this->shadowManager->bindPointShadow(asteroidShader);
-  this->shadowManager->bindPointShadowDepth(asteroidShader);
+    this->shadowManager->bindPointShadow(asteroidShader);
+    this->shadowManager->bindPointShadowDepth(asteroidShader);
 
-  skybox.bindIrradianceMap(asteroidShader);
+    skybox.bindIrradianceMap(asteroidShader);
 
-  for (const AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
-    asteroidSystem->render(asteroidShader, frustum);
+    for (const AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
+      asteroidSystem->render(asteroidShader, frustum);
 
-  skybox.unbindIrradianceMap();
+    skybox.unbindIrradianceMap();
+  }
+
+  Shader &impostorShader = this->resourceManager.GetShader(Res::IMPOSTOR_SHADER);
+  GLuint &impostorID = impostorShader.getId();
+
+  {
+    ScopedShader impostor(impostorID);
+    for (const AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
+      asteroidSystem->renderImpostor(impostorShader);
+  }
+
+  Shader &pointShader = this->resourceManager.GetShader(Res::POINT_SHADER);
+  GLuint &pointID = pointShader.getId();
+
+  {
+    ScopedShader point(pointID);
+    for (const AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
+      asteroidSystem->renderPoint(pointShader);
+  }
 }
 
 void Renderer::renderObjects(Scene &scene, Frustum *frustum)
@@ -313,6 +339,38 @@ void Renderer::beginFrame(RenderContext &ctx)
   glClear(GL_STENCIL_BUFFER_BIT);
 }
 
+// void Renderer::partitionRenderable(Renderable *renderable, std::vector<Renderable *> &full, std::vector<InstancePositionRadiusTexture> &impostor, std::vector<InstancePositionRadiusColor> &point)
+// {
+//   float distance = 1.f;
+//   float radius = 1.f;
+//   bool isStar = false;
+//   // better to handle with radii not only disnatce
+//   // stars should always be full
+//   // full/etc vectors should be instace vectors not renderable.
+//   // config the distance
+//   if (distance < radius * 2 || isStar)
+//     full.push_back(renderable);
+//   else if (distance < radius * 20)
+//     impostor.emplace_back(InstancePositionRadiusTexture{});
+//   else
+//     point.emplace_back(InstancePositionRadiusColor{});
+// }
+
+void Renderer::partitionRenderables(const Scene &scene, RenderContext &ctx)
+{
+  // for (auto &renderable : scene.getRenderable())
+  //   this->partitionRenderable(renderable, this->fullGeometry, this->impostor, this->points);
+
+  const Camera &camera = scene.getActiveCamera();
+  Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
+
+  for (auto &system : scene.getPhysicsWorld().getSystems())
+    system->partitionObjects(camera, &this->lodManager, ctx.frameCtx.height, &frustum);
+
+  // 1. function which passes 3 vectors and fills them with 1 object per time. NICE
+  // 2. make it non-renderable for asteroids
+}
+
 // Constructor
 Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager), postProcess(resourceManager), blur(resourceManager) {}
 
@@ -378,6 +436,8 @@ void Renderer::render(Scene &scene, RenderContext &ctx)
 void Renderer::update(Scene &scene, RenderContext &ctx)
 {
   scene.update(ctx);
+
+  this->partitionRenderables(scene, ctx);
 
   this->updateUBO(scene, ctx);
 }

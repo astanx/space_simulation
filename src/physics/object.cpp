@@ -3,6 +3,7 @@
 #include "physics/object.h"
 
 #include "maths/rk4.h"
+#include "maths/constants.h"
 #include "maths/momentsMaths.h"
 
 #include <cmath>

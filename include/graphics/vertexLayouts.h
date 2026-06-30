@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/vertex.h"
+#include "graphics/vertexAttribute.h"
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -8,6 +9,7 @@
 
 enum class VertexLayout
 {
+  Empty,
   Full,
   NoColor,
   PositionOnly,
@@ -15,23 +17,7 @@ enum class VertexLayout
   PositionNormalTangent
 };
 
-struct VertexAttribute
-{
-  GLuint index;
-  GLint size;
-  GLenum type;
-  GLboolean normalized;
-  size_t offset;
-};
-
-struct InstanceData
-{
-  glm::vec3 position;
-  float radius;
-};
-
-inline const std::array<VertexAttribute, 2> INSTANCED = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(InstanceData, position)},
-                                                          {1, 1, GL_FLOAT, GL_FALSE, offsetof(InstanceData, radius)}}};
+constexpr std::array<VertexAttribute, 0> EMPTY = {};
 
 constexpr std::array<VertexAttribute, 4> FULL = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
                                                   {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)},
@@ -52,13 +38,8 @@ constexpr std::array<VertexAttribute, 4> POSITION_NORMAL_TANGENT = {{{0, 3, GL_F
                                                                      {2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal)},
                                                                      {3, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, tangent)}}};
 
-struct LayoutDesc
-{
-  const VertexAttribute *attributes;
-  size_t count;
-};
-
 inline const std::map<VertexLayout, LayoutDesc> LAYOUTS = {
+    {VertexLayout::Empty, {EMPTY.data(), EMPTY.size()}},
     {VertexLayout::Full, {FULL.data(), FULL.size()}},
     {VertexLayout::NoColor, {NO_COLOR.data(), NO_COLOR.size()}},
     {VertexLayout::PositionOnly, {POSITION_ONLY.data(), POSITION_ONLY.size()}},

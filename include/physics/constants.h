@@ -10,7 +10,6 @@
 
 #include <glm/glm.hpp>
 
-extern const double EPS;
 extern const double G;
 extern const double AU_TO_METER;
 extern const double JD_2000;

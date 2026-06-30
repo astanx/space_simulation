@@ -97,6 +97,7 @@ add_executable(Space
         src/graphics/primitives/sphere.cpp
         src/graphics/primitives/asteroidShape.cpp
         src/graphics/primitives/ellipsoid.cpp
+        src/graphics/primitives/point.cpp
         # State
         src/graphics/state/scopedBlending.cpp
         src/graphics/state/scopedDepthFunc.cpp
@@ -138,6 +139,7 @@ add_executable(Space
     src/render/postProcess.cpp
     src/render/gaussianBlur.cpp
     src/render/modelSource.cpp
+    src/render/lodManager.cpp
     
     # Resources
     src/resources/OBJloader.cpp
@@ -169,6 +171,7 @@ add_executable(Space
     src/maths/orbitalMaths.cpp
     src/maths/momentsMaths.cpp
     src/maths/dateToJD.cpp
+    src/maths/constants.cpp
     
     # Debug
     src/debug/logger.cpp

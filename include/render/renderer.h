@@ -4,6 +4,7 @@
 #include "render/postProcess.h"
 #include "render/gaussianBlur.h"
 #include "render/renderContext.h"
+#include "render/lodManager.h"
 
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
@@ -22,7 +23,24 @@
 class Scene;
 class ResourceManager;
 class Shader;
+class Renderable;
 struct Frustum;
+struct InstancePositionRadiusTexture;
+struct InstancePositionRadiusColor;
+
+struct CameraGPU
+{
+  glm::mat4 ProjectionMatrix;
+  glm::mat4 ViewMatrix;
+  glm::vec4 camPosition;
+};
+
+struct ScaleGPU
+{
+  float viewportHeight;
+  float baseMinPixelSize;
+  float fov;
+};
 
 class Renderer
 {
@@ -31,6 +49,12 @@ private:
   TextRenderer textRenderer;
   PostProcess postProcess;
   GaussianBlur blur;
+  LODManager lodManager;
+
+  std::vector<Renderable *> fullGeometry;
+  std::unique_ptr<Mesh> impostorMesh;
+  std::vector<InstancePositionRadiusTexture> impostor;
+  std::vector<InstancePositionRadiusColor> points;
 
   unsigned int cameraUBO;
 
@@ -62,6 +86,8 @@ private:
   void blitDepthToDefault(const Framebuffer &framebuffer);
 
   void beginFrame(RenderContext &ctx);
+
+  void partitionRenderables(const Scene &scene, RenderContext &ctx);
 
 public:
   Renderer(ResourceManager &resourceManager);

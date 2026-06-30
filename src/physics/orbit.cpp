@@ -5,6 +5,8 @@
 #include "physics/constants.h"
 #include "physics/planet.h"
 
+#include "maths/constants.h"
+
 #include "graphics/shader.h"
 #include "graphics/vertex.h"
 #include "graphics/mesh.h"

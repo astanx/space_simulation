@@ -10,6 +10,7 @@ class Integrator;
 class Integratable;
 class Trail;
 class Atmosphere;
+class System;
 
 class PhysicsWorld
 {
@@ -26,6 +27,8 @@ private:
   std::vector<std::unique_ptr<Star>> stars;
   Star *sun;
 
+  std::vector<System *> systems;
+
   std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
   std::vector<AsteroidSystem *> asteroidSystemViews;
 
@@ -39,6 +42,7 @@ public:
   void addAtmosphere(Atmosphere *atmosphere);
   void addPlanetarObject(std::unique_ptr<Planet> planetarObject);
   void addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSystem);
+  void addSystem(System *system);
   void addStar(std::unique_ptr<Star> star);
   void addSun(Star *sun);
   void addIntegratableObject(Integratable *object);
@@ -47,4 +51,6 @@ public:
 
   const std::vector<AsteroidSystem *> &getAsteroidSystems() const;
   const std::vector<Planet *> &getPlanetarObjects() const;
+  const std::vector<Object *> &getObjects() const;
+  const std::vector<System *> &getSystems() const;
 };
