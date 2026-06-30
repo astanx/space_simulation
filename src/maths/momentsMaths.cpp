@@ -1,5 +1,7 @@
 #include "maths/momentsMaths.h"
 
+#include "maths/constants.h"
+
 #include "physics/object.h"
 #include "physics/orbitalObject.h"
 #include "physics/constants.h"

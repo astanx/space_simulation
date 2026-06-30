@@ -56,6 +56,10 @@ void PhysicsWorld::addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSys
   this->asteroidSystemViews.push_back(asteroidSystem.get());
   this->asteroidSystems.push_back(std::move(asteroidSystem));
 }
+void PhysicsWorld::addSystem(System *system)
+{
+  this->systems.push_back(system);
+}
 const Star &PhysicsWorld::getSun() const
 {
   if (!this->sun)
@@ -76,4 +80,14 @@ const std::vector<Planet *> &PhysicsWorld::getPlanetarObjects() const
     Logger::logWarning("PhysicsWorld", "Planets are empty");
 
   return this->planetarObjectViews;
+};
+
+const std::vector<Object *> &PhysicsWorld::getObjects() const
+{
+  return this->objects;
+};
+
+const std::vector<System *> &PhysicsWorld::getSystems() const
+{
+  return this->systems;
 };

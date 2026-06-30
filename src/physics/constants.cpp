@@ -61,9 +61,6 @@ const double VISUAL_ASTEROID_SCALE = 1;
 // const double VISUAL_RADIUS_SCALE = 1e-9;
 // const double VISUAL_ASTEROID_SCALE = 3e-3;
 
-// Precision
-const double EPS = 1e-12;
-
 // Gravitational constant
 const double G = 6.674e-11;
 

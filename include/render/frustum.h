@@ -28,4 +28,12 @@ struct Frustum
     }
     return true;
   }
+
+  static bool shouldBeProcessed(Frustum *frustum, glm::vec3 center, float radius, bool force)
+  {
+    if (!force && frustum && !frustum->isVisibleSphere(center, radius))
+      return false;
+
+    return true;
+  }
 };

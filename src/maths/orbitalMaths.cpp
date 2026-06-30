@@ -1,6 +1,6 @@
 #include "maths/orbitalMaths.h"
 
-#include "physics/constants.h"
+#include "maths/constants.h"
 
 #include "physics/structs/keplerElements.h"
 

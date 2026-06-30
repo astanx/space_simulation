@@ -12,5 +12,5 @@ public:
   Updatable() = default;
   virtual ~Updatable() = default;
 
-  virtual void update(const Camera &camera) = 0;
+  virtual void update(const Camera &camera, Frustum *frustum = nullptr, bool force = false) = 0;
 };

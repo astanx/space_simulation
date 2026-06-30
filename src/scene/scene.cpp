@@ -131,6 +131,7 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
                                                                             &this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
   AsteroidSystem *ptr = system.get();
   this->addUpdatable(ptr);
+  this->physicsWorld.addSystem(ptr);
   this->physicsWorld.addIntegratableObject(ptr);
   this->physicsWorld.addAsteroidSystem(std::move(system));
 
@@ -185,7 +186,7 @@ void Scene::init(RenderContext &renderCtx, double startTime)
   addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
-  createAsteroidSystem(sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
+  createAsteroidSystem(sunPtr, 100000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
 
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(

@@ -10,6 +10,7 @@
 
 #include "render/modelSource.h"
 
+#include "maths/constants.h"
 #include "maths/orbitalMaths.h"
 
 // Private functions

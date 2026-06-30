@@ -23,6 +23,8 @@ namespace Res
   const std::string DOWNSAMPLE_SHADER = "downsample";
   const std::string UPSAMPLE_SHADER = "upsample";
   const std::string ATMOSPHERE_SHADER = "atmosphere";
+  const std::string IMPOSTOR_SHADER = "impostor";
+  const std::string POINT_SHADER = "point";
 
   // Mesh
   const std::string FULLSCREEN_QUAD = "fullscreenquad";

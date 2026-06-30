@@ -58,6 +58,7 @@ public:
 
   const double getNearPlane() const { return this->nearPlane; };
   const double getFarPlane() const { return this->farPlane; };
+  const float getFOV() const { return this->fov; };
 
   // Functions
   void processMouseScroll(float yoffset);

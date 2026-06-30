@@ -20,7 +20,7 @@ public:
   virtual void addMainLayer(std::unique_ptr<Model> m) { this->mainLayer = std::move(m); }
   virtual void addLayer(std::unique_ptr<Model> m) { layers.push_back(std::move(m)); }
 
-  virtual void update(const Camera &camera) override;
+  virtual void update(const Camera &camera, Frustum *frustum = nullptr, bool force = false) override;
   virtual void render(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
   virtual void renderLayers(Shader &shader, Frustum *frustum = nullptr, bool force = false) const;
   virtual void renderInstanced(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;

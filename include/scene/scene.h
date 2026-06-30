@@ -32,13 +32,6 @@ struct RotationalElements;
 struct HapkeParameters;
 struct Radii;
 
-struct CameraGPU
-{
-  glm::mat4 ProjectionMatrix;
-  glm::mat4 ViewMatrix;
-  glm::vec4 camPosition;
-};
-
 class Scene
 {
 private:

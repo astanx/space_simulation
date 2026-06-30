@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/vertexLayouts.h"
+#include "graphics/instanceLayouts.h"
 #include "graphics/vertex.h"
 
 #include "graphics/buffers/buffer.h"
@@ -18,7 +19,7 @@ private:
   std::vector<Vertex> vertices;
   std::vector<GLuint> indices;
 
-  std::unordered_map<VertexLayout, std::unique_ptr<VertexArray>> VAOS;
+  std::unique_ptr<VertexArray> VAO;
   std::unique_ptr<Buffer> VBO;
   std::unique_ptr<Buffer> EBO;
 
@@ -28,12 +29,14 @@ private:
   bool instancingInitialized = false;
 
   GLenum drawMode;
-  VertexLayout layout;
 
-  bool layoutInit = false;
+  LayoutDesc VAOlayout;
+  LayoutDesc instanceLayout;
 
   void initVAO();
-  void bindInstanceAttributes(const Buffer& vbo) const;
+
+  template <typename T>
+  void bindInstanceAttributes(const T *instanceData, const Buffer &vbo) const;
 
 public:
   Mesh(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
@@ -42,8 +45,11 @@ public:
 
   void updateBuffers(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray);
 
-  void setInstanceBuffer(InstanceData* instanceData, size_t count, size_t vboCount);
-  void updateInstanceBuffer(InstanceData* instanceData, size_t count, size_t vboCount);
+  template <typename T>
+  void setInstanceBuffer(const T *instanceData, size_t count, size_t vboCount);
+  template <typename T>
+  void updateInstanceBuffer(const T *instanceData, size_t count, size_t vboCount);
+  void setInstanceLayout(InstanceLayout layout);
 
   Mesh(const Mesh &obj);
   ~Mesh();
@@ -53,3 +59,5 @@ public:
 
   const double calculateVolume() const;
 };
+
+#include "graphics/mesh.tpp"
