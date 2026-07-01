@@ -10,16 +10,12 @@
 // Constructor
 Ellipsoid::Ellipsoid(unsigned segments, Radii radii, bool tangent) : Primitive()
 {
-  std::vector<Vertex> vertices;
-  std::vector<GLuint> indices;
-
   glm::vec3 topPos(0.f, radii.polar, 0.f);
   glm::vec3 topNormal(0.f, 1 / radii.polar, 0.f);
-  vertices.push_back(Vertex{
-      topPos,
-      glm::vec3(1.f),
-      glm::vec2(0.5f, 0.f),
-      glm::normalize(topNormal)});
+
+  this->positions.push_back(topPos);
+  this->normals.push_back(glm::normalize(topNormal));
+  this->texcoords.push_back(glm::vec2(0.5f, 0.f));
 
   for (unsigned i = 1; i < segments; ++i)
   {
@@ -42,31 +38,27 @@ Ellipsoid::Ellipsoid(unsigned segments, Radii radii, bool tangent) : Primitive()
           pos.z / (radii.equatorian * radii.equatorian));
       normal = glm::normalize(normal);
 
-      vertices.push_back(Vertex{
-          pos,
-          glm::vec3(1.f),
-          glm::vec2(u, v),
-          normal});
+      this->positions.push_back(pos);
+      this->normals.push_back(normal);
+      this->texcoords.push_back(glm::vec2(u, v));
     }
   }
 
   glm::vec3 bottomPos(0.f, -radii.polar, 0.f);
   glm::vec3 bottomNormal(0.f, -1 / radii.polar, 0.f);
-  vertices.push_back(Vertex{
-      bottomPos,
-      glm::vec3(1.f),
-      glm::vec2(0.5f, 1.f),
-      glm::normalize(bottomNormal)});
+  this->positions.push_back(bottomPos);
+  this->normals.push_back(glm::normalize(bottomNormal));
+  this->texcoords.push_back(glm::vec2(0.5f, 1.f));
 
   unsigned ringVertices = segments + 1;
   unsigned top = 0;
-  unsigned bottom = vertices.size() - 1;
+  unsigned bottom = this->positions.size() - 1;
 
   for (unsigned j = 0; j < segments; ++j)
   {
-    indices.push_back(top);
-    indices.push_back(1 + j + 1);
-    indices.push_back(1 + j);
+    this->indices.push_back(top);
+    this->indices.push_back(1 + j + 1);
+    this->indices.push_back(1 + j);
   }
 
   for (unsigned i = 0; i < segments - 2; ++i)
@@ -76,26 +68,24 @@ Ellipsoid::Ellipsoid(unsigned segments, Radii radii, bool tangent) : Primitive()
       unsigned first = 1 + i * ringVertices + j;
       unsigned second = first + ringVertices;
 
-      indices.push_back(first);
-      indices.push_back(first + 1);
-      indices.push_back(second);
+      this->indices.push_back(first);
+      this->indices.push_back(first + 1);
+      this->indices.push_back(second);
 
-      indices.push_back(second);
-      indices.push_back(first + 1);
-      indices.push_back(second + 1);
+      this->indices.push_back(second);
+      this->indices.push_back(first + 1);
+      this->indices.push_back(second + 1);
     }
   }
 
   unsigned base = bottom - ringVertices;
   for (unsigned j = 0; j < segments; ++j)
   {
-    indices.push_back(bottom);
-    indices.push_back(base + j);
-    indices.push_back(base + j + 1);
+    this->indices.push_back(bottom);
+    this->indices.push_back(base + j);
+    this->indices.push_back(base + j + 1);
   }
 
   if (tangent)
-    this->computeTangents(vertices, indices);
-
-  this->set(vertices, indices);
+    this->computeTangents();
 }

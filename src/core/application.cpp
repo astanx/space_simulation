@@ -169,7 +169,7 @@ Application::Application(
   Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/diffuse/asteroid.png", GL_TEXTURE_2D);
   this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
 
-  this->resourceManager.LoadMesh(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
+  this->resourceManager.LoadMesh<VertexPositionTexcoord>(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
 
   this->updateFrameContext();
 
@@ -375,8 +375,12 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
   // this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
   this->resourceManager.LoadPBRMaterial(material_name, &diff, normal, nullptr, nullptr, rough, night, emissiveStrength, ao, metallic, roughness);
   std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE), isTangent);
-  this->resourceManager.LoadMesh(name, std::move(obj),
-                                 isTangent ? VertexLayout::PositionNormalTangent : VertexLayout::NoColor);
+  if (isTangent)
+    this->resourceManager.LoadMesh<VertexPositionTexcoordNormalTangent>(name, std::move(obj),
+                                                                        VertexLayout::PositionNormalTangent);
+  else
+    this->resourceManager.LoadMesh<VertexPositionTexcoordNormal>(name, std::move(obj),
+                                                                 VertexLayout::NoColor);
 }
 
 // Static functions

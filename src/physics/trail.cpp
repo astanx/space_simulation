@@ -10,17 +10,9 @@
 // Private functions
 void Trail::generateTrail(const Camera &camera)
 {
-  std::vector<Vertex> vertices;
+  std::vector<VertexPosition> vertices;
   for (const glm::dvec3 &p : trailVec)
-  {
-    Vertex v{};
-    v.position = camera.worldToViewSpace(p);
-    v.color = glm::vec3(1.f);
-    v.texcoord = glm::vec2(0.0f);
-    v.normal = glm::vec3(0.0f);
-
-    vertices.push_back(v);
-  }
+    vertices.push_back({camera.worldToViewSpace(p)});
 
   if (!this->trail)
     this->trail = std::make_unique<Mesh>(&vertices, nullptr, VertexLayout::PositionOnly, GL_LINE_LOOP);
@@ -30,7 +22,8 @@ void Trail::generateTrail(const Camera &camera)
 
 // Constructor
 Trail::Trail(const std::vector<glm::dvec3> &trailVec) : trailVec(trailVec)
-{}
+{
+}
 
 // Public functions
 void Trail::render() const

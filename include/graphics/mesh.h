@@ -13,11 +13,16 @@
 class Shader;
 class Primitive;
 
+template <typename T>
+struct TypeTag
+{
+};
+
 class Mesh
 {
 private:
-  std::vector<Vertex> vertices;
-  std::vector<GLuint> indices;
+  size_t verticesSize;
+  size_t indicesSize;
 
   std::unique_ptr<VertexArray> VAO;
   std::unique_ptr<Buffer> VBO;
@@ -33,17 +38,21 @@ private:
   LayoutDesc VAOlayout;
   LayoutDesc instanceLayout;
 
-  void initVAO();
+  template <typename T>
+  void initVAO(std::vector<T> *vertexArray, std::vector<GLuint> *indexArray);
 
   template <typename T>
   void bindInstanceAttributes(const T *instanceData, const Buffer &vbo) const;
 
 public:
-  Mesh(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
+  template <typename T>
+  Mesh(std::vector<T> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
+  template <typename T>
+  Mesh(TypeTag<T>, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
+  ~Mesh() = default;
 
-  Mesh(std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
-
-  void updateBuffers(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray);
+  template <typename T>
+  void updateBuffers(std::vector<T> *vertexArray, std::vector<GLuint> *indexArray);
 
   template <typename T>
   void setInstanceBuffer(const T *instanceData, size_t count, size_t vboCount = 1);
@@ -51,13 +60,8 @@ public:
   void updateInstanceBuffer(const T *instanceData, size_t count, size_t vboCount = 1);
   void setInstanceLayout(InstanceLayout layout);
 
-  Mesh(const Mesh &obj);
-  ~Mesh();
-
   void render() const;
   void renderInstanced() const;
-
-  const double calculateVolume() const;
 };
 
 #include "graphics/mesh.tpp"

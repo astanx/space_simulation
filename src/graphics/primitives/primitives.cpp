@@ -3,10 +3,10 @@
 #include "graphics/vertex.h"
 
 // Private functions
-void Primitive::computeTangents(std::vector<Vertex> &vertices, const std::vector<GLuint> &indices)
+void Primitive::computeTangents()
 {
-  std::vector<glm::vec3> tan(vertices.size(), glm::vec3(0));
-  std::vector<glm::vec3> bitan(vertices.size(), glm::vec3(0));
+  this->tangents.resize(this->positions.size(), glm::vec3(0));
+  this->bitangents.resize(this->positions.size(), glm::vec3(0));
 
   for (size_t i = 0; i < indices.size(); i += 3)
   {
@@ -14,13 +14,13 @@ void Primitive::computeTangents(std::vector<Vertex> &vertices, const std::vector
     GLuint i1 = indices[i + 1];
     GLuint i2 = indices[i + 2];
 
-    const glm::vec3 &p0 = vertices[i0].position;
-    const glm::vec3 &p1 = vertices[i1].position;
-    const glm::vec3 &p2 = vertices[i2].position;
+    const glm::vec3 &p0 = this->positions[i0];
+    const glm::vec3 &p1 = this->positions[i1];
+    const glm::vec3 &p2 = this->positions[i2];
 
-    const glm::vec2 &uv0 = vertices[i0].texcoord;
-    const glm::vec2 &uv1 = vertices[i1].texcoord;
-    const glm::vec2 &uv2 = vertices[i2].texcoord;
+    const glm::vec2 &uv0 = this->texcoords[i0];
+    const glm::vec2 &uv1 = this->texcoords[i1];
+    const glm::vec2 &uv2 = this->texcoords[i2];
 
     glm::vec3 edge1 = p1 - p0;
     glm::vec3 edge2 = p2 - p0;
@@ -33,27 +33,27 @@ void Primitive::computeTangents(std::vector<Vertex> &vertices, const std::vector
     glm::vec3 T = f * (deltaUV2.y * edge1 - deltaUV1.y * edge2);
     glm::vec3 B = f * (-deltaUV2.x * edge1 + deltaUV1.x * edge2);
 
-    tan[i0] += T;
-    tan[i1] += T;
-    tan[i2] += T;
+    this->tangents[i0] += T;
+    this->tangents[i1] += T;
+    this->tangents[i2] += T;
 
-    bitan[i0] += B;
-    bitan[i1] += B;
-    bitan[i2] += B;
+    this->bitangents[i0] += B;
+    this->bitangents[i1] += B;
+    this->bitangents[i2] += B;
   }
 
-  for (size_t i = 0; i < vertices.size(); ++i)
+  for (size_t i = 0; i < this->tangents.size(); ++i)
   {
-    glm::vec3 N = vertices[i].normal;
-    glm::vec3 T = tan[i];
+    glm::vec3 N = this->normals[i];
+    glm::vec3 T = this->tangents[i];
 
     // Gram-Schmidt orthogonalization
     T = glm::normalize(T - N * glm::dot(N, T));
 
     float handedness =
-        (glm::dot(glm::cross(N, T), bitan[i]) < 0.0f) ? -1.0f : 1.0f;
+        (glm::dot(glm::cross(N, T), this->bitangents[i]) < 0.0f) ? -1.0f : 1.0f;
 
-    vertices[i].tangent = glm::vec4(T, handedness);
+    this->tangents[i] = glm::vec4(T, handedness);
   }
 }
 
@@ -61,20 +61,24 @@ void Primitive::computeTangents(std::vector<Vertex> &vertices, const std::vector
 Primitive::Primitive() {}
 Primitive::~Primitive() {}
 
-// Setters
-void Primitive::set(const std::vector<Vertex> &vertices, const std::vector<GLuint> &indices)
-{
-  this->vertices = vertices;
-  this->indices = indices;
-}
-
 // Getters
-
-std::vector<Vertex> &Primitive::getVertices()
-{
-  return this->vertices;
-}
 std::vector<GLuint> &Primitive::getIndices()
 {
   return this->indices;
+}
+
+const double Primitive::calculateVolume() const
+{
+  double volume = 0.0;
+
+  for (size_t i = 0; i < this->indices.size(); i += 3)
+  {
+    const glm::vec3 &v0 = this->positions[this->indices[i]];
+    const glm::vec3 &v1 = this->positions[this->indices[i + 1]];
+    const glm::vec3 &v2 = this->positions[this->indices[i + 2]];
+
+    volume += glm::dot(v0, glm::cross(v1, v2));
+  }
+
+  return std::abs(volume) / 6.0;
 }

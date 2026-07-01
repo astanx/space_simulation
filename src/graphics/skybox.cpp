@@ -234,7 +234,7 @@ void Skybox::initIrradianceMap(GLint internalFormat, GLenum format)
 }
 
 // Constructor/Destructor
-Skybox::Skybox(std::vector<std::string> &faces) : mesh(std::make_unique<Cube>(), VertexLayout::PositionOnly)
+Skybox::Skybox(std::vector<std::string> &faces) : mesh(TypeTag<VertexPosition>{}, std::make_unique<Cube>(), VertexLayout::PositionOnly)
 {
   if (faces.size() != 6)
     Logger::logFatal("Skybox", "Constructor requires 6 faces");
@@ -247,7 +247,7 @@ Skybox::Skybox(std::vector<std::string> &faces) : mesh(std::make_unique<Cube>(),
   this->loadCubemap(faces, internalFormat, format, GL_UNSIGNED_BYTE);
 }
 
-Skybox::Skybox(std::string environmentMap, ResourceManager &resourceManager) : mesh(std::make_unique<Cube>(), VertexLayout::PositionOnly)
+Skybox::Skybox(std::string environmentMap, ResourceManager &resourceManager) : mesh(TypeTag<VertexPosition>{}, std::make_unique<Cube>(), VertexLayout::PositionOnly)
 {
   GLint internalFormat = GL_RGBA32F;
   GLenum format = GL_RGBA;

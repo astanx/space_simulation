@@ -160,7 +160,7 @@ void Scene::addAtmosphereToPlanet(std::string planetName, Planet *planet)
   Atmosphere *ptr = atmosphere.get();
 
   std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(32, atmosphere->getRadii().scaled(VISUAL_RADIUS_SCALE));
-  this->resourceManager.LoadMesh(path, std::move(obj), VertexLayout::NoColor);
+  this->resourceManager.LoadMesh<VertexPositionTexcoordNormal>(path, std::move(obj), VertexLayout::NoColor);
   Mesh &mesh = this->resourceManager.GetMesh(path);
   std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mesh);
 
@@ -198,7 +198,7 @@ void Scene::init(RenderContext &renderCtx, double startTime)
   addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
-  createAsteroidSystem(sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
+  createAsteroidSystem(sunPtr, 100000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
 
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
