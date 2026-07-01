@@ -45,6 +45,7 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   planet->setOrientation(r.calculateOrientation());
 
   planet->addMainLayer(std::move(model));
+  planet->setRenderImportance(this->importance.planet);
 
   Planet *ptr = planet.get();
 
@@ -52,6 +53,7 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
     this->addTrail(planet->generateTrail());
 
   this->addRenderable(ptr);
+  this->addModelSource(ptr);
   this->addUpdatable(ptr);
   this->physicsWorld.addObject(ptr);
   this->physicsWorld.addIntegratableObject(ptr);
@@ -76,9 +78,11 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
   star->setOrientation(r.calculateOrientation());
 
   star->addMainLayer(std::move(model));
+  star->setRenderImportance(this->importance.star);
 
   Star *ptr = star.get();
   this->addRenderable(ptr);
+  this->addModelSource(ptr);
   this->addUpdatable(ptr);
   this->physicsWorld.addObject(ptr);
   this->physicsWorld.addIntegratableObject(ptr);
@@ -105,6 +109,7 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
 
   moon->setAngularVelocity(r.calculateAngularVelocity());
   moon->setOrientation(r.calculateOrientation());
+  moon->setRenderImportance(this->importance.moon);
 
   moon->addMainLayer(std::move(model));
   if (moon->getUseTrail())
@@ -115,6 +120,7 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   assert(centralBody && "[Scene] ASSERT: No central body for moon");
 
   this->addUpdatable(ptr);
+  this->addModelSource(ptr);
   this->addRenderable(ptr);
   this->physicsWorld.addObject(ptr);
   this->physicsWorld.addIntegratableObject(ptr);
@@ -127,7 +133,7 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
 {
   std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(centralBody, amount,
                                                                             innerEdge, outerEdge,
-                                                                            timeAfterJD2000,
+                                                                            timeAfterJD2000, this->importance.asteroid,
                                                                             &this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
   AsteroidSystem *ptr = system.get();
   this->addUpdatable(ptr);
@@ -168,6 +174,12 @@ Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadP
 {
   this->activeCamera = nullptr;
   this->skybox = nullptr;
+
+  this->importance.base = 1.f;
+  this->importance.asteroid = 2.5f;
+  this->importance.planet = 5.f;
+  this->importance.moon = 3.f;
+  this->importance.star = 12.f;
 }
 Scene::~Scene() = default;
 
@@ -186,7 +198,7 @@ void Scene::init(RenderContext &renderCtx, double startTime)
   addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
   createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);
   createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
-  createAsteroidSystem(sunPtr, 100000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
+  createAsteroidSystem(sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
   createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
 
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
@@ -262,6 +274,11 @@ void Scene::addRenderable(Renderable *object)
   this->renderable.push_back(object);
 }
 
+void Scene::addModelSource(ModelSource *object)
+{
+  this->modelSources.push_back(object);
+}
+
 void Scene::addUpdatable(Updatable *object)
 {
   this->updatable.push_back(object);
@@ -333,6 +350,13 @@ const std::vector<Renderable *> &Scene::getRenderable() const
     Logger::logWarning("Scene", "Renderable is empty");
 
   return this->renderable;
+};
+std::vector<ModelSource *> &Scene::getModelSources()
+{
+  if (this->modelSources.empty())
+    Logger::logWarning("Scene", "Model sources are empty");
+
+  return this->modelSources;
 };
 const std::vector<PointLight *> &Scene::getPointLights() const
 {

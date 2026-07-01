@@ -14,4 +14,6 @@ public:
   TextMaterial(Texture *diffuseTexture);
   ~TextMaterial() = default;
   void sendToShader(Shader &shader) override;
+
+  const Texture *getTexture() const override { return this->diffuseTexture; };
 };

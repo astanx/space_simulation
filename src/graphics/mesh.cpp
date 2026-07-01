@@ -75,13 +75,21 @@ void Mesh::initVAO()
     for (size_t i = 0; i < this->VAOlayout.count; ++i)
     {
       const VertexAttribute &attr = this->VAOlayout.attributes[i];
-      glVertexAttribPointer(
-          attr.index,
-          attr.size,
-          attr.type,
-          attr.normalized,
-          sizeof(Vertex),
-          (void *)attr.offset);
+      if (attr.type == GL_UNSIGNED_INT || attr.type == GL_INT)
+        glVertexAttribIPointer(
+            attr.index,
+            attr.size,
+            attr.type,
+            sizeof(Vertex),
+            (void *)attr.offset);
+      else
+        glVertexAttribPointer(
+            attr.index,
+            attr.size,
+            attr.type,
+            attr.normalized,
+            sizeof(Vertex),
+            (void *)attr.offset);
       glEnableVertexAttribArray(attr.index);
     }
 

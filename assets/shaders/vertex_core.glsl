@@ -23,6 +23,7 @@ out VS_OUT {
 } vs_out;
 
 uniform mat4 ModelMatrix;
+uniform float radius;
 
 uniform bool useTBN;
 

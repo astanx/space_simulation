@@ -24,6 +24,7 @@ class Scene;
 class ResourceManager;
 class Shader;
 class Renderable;
+class ModelSource;
 struct Frustum;
 struct InstancePositionRadiusTexture;
 struct InstancePositionRadiusColor;
@@ -51,10 +52,16 @@ private:
   GaussianBlur blur;
   LODManager lodManager;
 
-  std::vector<Renderable *> fullGeometry;
+  bool isImpostorInitialized = false;
+  std::unique_ptr<Texture> impostorTexture;
   std::unique_ptr<Mesh> impostorMesh;
-  std::vector<InstancePositionRadiusTexture> impostor;
-  std::vector<InstancePositionRadiusColor> points;
+  std::unique_ptr<Mesh> pointMesh;
+
+  std::unordered_map<GLuint, unsigned int> textureLayers;
+
+  std::vector<Renderable *> fullInstances;
+  std::vector<InstancePositionRadiusTexture> impostorInstances;
+  std::vector<InstancePositionRadiusColor> pointInstances;
 
   unsigned int cameraUBO;
 
@@ -67,6 +74,13 @@ private:
 
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
+  void initLOD(Scene &scene);
+  void initImpostor(Scene &scene);
+  void initPoint();
+  void bindLayerToImpostorTexture(const Texture &texture, unsigned int layer);
+  void partitionObjects(Scene &scene, RenderContext &ctx);
+  void partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force = false);
+
   void renderDirectionalShadow(Scene &scene);
   void renderShadowMap(Scene &scene, Shader &shader);
   void renderPointShadow(Scene &scene);
@@ -76,6 +90,8 @@ private:
   void renderObjects(Scene &scene, Frustum *frustum);
   void renderAtmospheres(Scene &scene, Frustum *frustum);
   void renderTrails(Scene &scene);
+  void renderImpostor(Scene &scene);
+  void renderPoint();
 
   void initShaderUBOBindings();
   void bindUBOs();
@@ -86,8 +102,6 @@ private:
   void blitDepthToDefault(const Framebuffer &framebuffer);
 
   void beginFrame(RenderContext &ctx);
-
-  void partitionRenderables(const Scene &scene, RenderContext &ctx);
 
 public:
   Renderer(ResourceManager &resourceManager);

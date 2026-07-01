@@ -53,6 +53,8 @@ public:
 	glm::mat3 getOrientation() const;
 
 	void setOrientation(const glm::mat3 &orientation);
-	void scaleBy(const glm::vec3 &scale);
+	void setScale(const glm::vec3 &scale);
 	void setPosition(const glm::vec3 &newPosition);
+
+	const Material *getMaterial() const { return this->material; };
 };

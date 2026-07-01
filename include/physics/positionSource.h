@@ -4,8 +4,11 @@
 
 class PositionSource
 {
+protected:
+  glm::dvec3 position;
+
 public:
   virtual ~PositionSource() = default;
-  virtual glm::dvec3 getPosition() const = 0;
-  virtual glm::dmat3 getOrientation() const = 0;
+  const glm::dvec3 &getPosition() const { return this->position; };
+  void setPosition(const glm::dvec3 &position) { this->position = position; };
 };

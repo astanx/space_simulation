@@ -10,6 +10,7 @@
 
 #include "graphics/bindings/ubo.h"
 #include "graphics/bindings/texture.h"
+#include "graphics/bindings/impostor.h"
 
 #include "graphics/state/scopedBlending.h"
 #include "graphics/state/scopedDepthMask.h"
@@ -24,6 +25,7 @@
 #include "graphics/buffers/renderBuffer.h"
 
 #include "graphics/primitives/quad.h"
+#include "graphics/primitives/point.h"
 
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
@@ -31,6 +33,9 @@
 #include "physics/star.h"
 #include "physics/planet.h"
 #include "physics/systems/asteroidSystem.h"
+
+#define STB_IMAGE_RESIZE2_IMPLEMENTATION
+#include "external/stb_image_resize2.h"
 
 #include <iostream>
 
@@ -102,6 +107,89 @@ void Renderer::initShaderUBOBindings()
   }
 }
 
+void Renderer::initLOD(Scene &scene)
+{
+  this->initImpostor(scene);
+  this->initPoint();
+}
+
+void Renderer::initImpostor(Scene &scene)
+{
+  this->impostorMesh = std::make_unique<Mesh>(std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
+  this->impostorMesh->setInstanceLayout(InstanceLayout::PositionRadiusTexture);
+  this->impostorMesh->setInstanceBuffer(this->impostorInstances.data(), this->impostorInstances.size());
+
+  this->impostorTexture = std::make_unique<Texture>(GL_TEXTURE_2D_ARRAY);
+
+  unsigned int layer = ImpostorTextureBindingPoints::Size;
+  for (const ModelSource *object : scene.getModelSources())
+  {
+    const Texture *texture = object->getMainLayer()->getMaterial()->getTexture();
+    if (!texture)
+      Logger::logWarning("Renderer", "No texture found for object");
+
+    this->bindLayerToImpostorTexture(*texture, layer);
+    layer++;
+  }
+
+  for (System *system : scene.getPhysicsWorld().getSystems())
+  {
+    const Texture *texture = system->getTexture();
+    if (!texture)
+      Logger::logWarning("Renderer", "No texture found for system");
+
+    this->bindLayerToImpostorTexture(*texture, layer);
+
+    system->setImpostorLayer(layer);
+    layer++;
+  }
+}
+
+void Renderer::initPoint()
+{
+  this->pointMesh = std::make_unique<Mesh>(std::make_unique<Point>(), VertexLayout::Empty, GL_POINTS);
+  this->pointMesh->setInstanceLayout(InstanceLayout::PositionRadiusColor);
+  this->pointMesh->setInstanceBuffer(this->pointInstances.data(), this->pointInstances.size());
+}
+
+void Renderer::bindLayerToImpostorTexture(const Texture &texture, unsigned int layer)
+{
+  if (!this->impostorTexture)
+    Logger::logFatal("Renderer", "No importor texture to bind layer");
+
+  ScopedTexture impostor(*this->impostorTexture);
+
+  int width = 1024;
+  int height = 512;
+
+  int srcWidth = texture.getWidth();
+  int srcHeight = texture.getHeight();
+
+  if (!this->isImpostorInitialized)
+  {
+    GL_CALL(glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, ImpostorTextureBindingPoints::MaxSize));
+    this->isImpostorInitialized = true;
+  }
+
+  if (layer >= ImpostorTextureBindingPoints::MaxSize)
+    Logger::logError("Renderer", "Maximum impostor layer size exceeded");
+
+  this->textureLayers[texture.getId()] = layer;
+
+  std::vector<uint8_t> pixels(srcWidth * srcHeight * 4);
+
+  {
+    ScopedTexture text(texture);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+  }
+
+  std::vector<uint8_t> resized(width * height * 4);
+
+  stbir_resize_uint8_linear(pixels.data(), srcWidth, srcHeight, 0, resized.data(), width, height, 0, STBIR_RGBA);
+
+  GL_CALL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, resized.data()));
+}
+
 void Renderer::bindUBOs()
 {
   glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::Camera, this->cameraUBO);
@@ -153,24 +241,6 @@ void Renderer::renderAsteroidSystems(Scene &scene, Frustum *frustum)
 
     skybox.unbindIrradianceMap();
   }
-
-  Shader &impostorShader = this->resourceManager.GetShader(Res::IMPOSTOR_SHADER);
-  GLuint &impostorID = impostorShader.getId();
-
-  {
-    ScopedShader impostor(impostorID);
-    for (const AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
-      asteroidSystem->renderImpostor(impostorShader);
-  }
-
-  Shader &pointShader = this->resourceManager.GetShader(Res::POINT_SHADER);
-  GLuint &pointID = pointShader.getId();
-
-  {
-    ScopedShader point(pointID);
-    for (const AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
-      asteroidSystem->renderPoint(pointShader);
-  }
 }
 
 void Renderer::renderObjects(Scene &scene, Frustum *frustum)
@@ -191,7 +261,7 @@ void Renderer::renderObjects(Scene &scene, Frustum *frustum)
   this->bindDummyReflector(coreShader);
 
   // Render all objects
-  for (const Renderable *object : scene.getRenderable())
+  for (const Renderable *object : this->fullInstances)
     object->render(coreShader, frustum);
 
   skybox.unbindIrradianceMap();
@@ -290,6 +360,34 @@ void Renderer::renderPointShadow(Scene &scene)
   this->blur.blur(this->shadowManager->getPointShadow()->getShadowMapTexture(), 16, true);
 }
 
+void Renderer::renderImpostor(Scene &scene)
+{
+  Shader &impostorShader = this->resourceManager.GetShader(Res::IMPOSTOR_SHADER);
+  GLuint &impostorID = impostorShader.getId();
+
+  ScopedShader impostor(impostorID);
+  ScopedTexture impostorText(*this->impostorTexture, ImpostorTextureBindingPoints::Impostor);
+
+  const Skybox &skybox = scene.getActiveSkybox();
+  skybox.bindIrradianceMap(impostorShader);
+
+  impostorShader.set1i(ImpostorTextureBindingPoints::Impostor, "impostors");
+
+  this->impostorMesh->renderInstanced();
+
+  skybox.unbindIrradianceMap();
+}
+
+void Renderer::renderPoint()
+{
+  Shader &pointShader = this->resourceManager.GetShader(Res::POINT_SHADER);
+  GLuint &pointID = pointShader.getId();
+
+  ScopedShader point(pointID);
+
+  this->pointMesh->renderInstanced();
+}
+
 void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, RenderContext &ctx)
 {
   ScopedBlending blendingDisabled(false);
@@ -304,6 +402,8 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
   Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
 
   this->renderObjects(scene, &frustum);
+  this->renderImpostor(scene);
+  this->renderPoint();
   // temporary off
   //  this->renderAtmospheres(scene, &frustum);
   this->renderAsteroidSystems(scene, &frustum);
@@ -339,36 +439,62 @@ void Renderer::beginFrame(RenderContext &ctx)
   glClear(GL_STENCIL_BUFFER_BIT);
 }
 
-// void Renderer::partitionRenderable(Renderable *renderable, std::vector<Renderable *> &full, std::vector<InstancePositionRadiusTexture> &impostor, std::vector<InstancePositionRadiusColor> &point)
-// {
-//   float distance = 1.f;
-//   float radius = 1.f;
-//   bool isStar = false;
-//   // better to handle with radii not only disnatce
-//   // stars should always be full
-//   // full/etc vectors should be instace vectors not renderable.
-//   // config the distance
-//   if (distance < radius * 2 || isStar)
-//     full.push_back(renderable);
-//   else if (distance < radius * 20)
-//     impostor.emplace_back(InstancePositionRadiusTexture{});
-//   else
-//     point.emplace_back(InstancePositionRadiusColor{});
-// }
-
-void Renderer::partitionRenderables(const Scene &scene, RenderContext &ctx)
+void Renderer::partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force)
 {
-  // for (auto &renderable : scene.getRenderable())
-  //   this->partitionRenderable(renderable, this->fullGeometry, this->impostor, this->points);
+  float importance = object->getRenderImportance();
+  float radius = object->getWorldRadius();
+  const glm::dvec3 pos = object->getRenderPosition();
+  float scaledMeanRadius = this->lodManager.scaleRadius(pos, radius, fov, viewportHeight, importance);
+  object->setRenderRadius(scaledMeanRadius);
+
+  if (!Frustum::shouldBeProcessed(frustum, pos, scaledMeanRadius, force))
+    return;
+
+  const Texture *texture = object->getMainLayer()->getMaterial()->getTexture();
+
+  int level = this->lodManager.getLODLevel(pos, radius, fov, viewportHeight, importance);
+
+  switch (level)
+  {
+  case LOD::Full:
+  {
+    const Radii &radii = object->getSrcRadii();
+    float scaledEquatorianRadius = this->lodManager.scaleRadius(pos, radii.equatorian, fov, viewportHeight, importance);
+    float scaledPolarRadius = this->lodManager.scaleRadius(pos, radii.polar, fov, viewportHeight, importance);
+    object->scaleRadii(Radii{scaledEquatorianRadius, scaledPolarRadius, scaledMeanRadius});
+    this->fullInstances.emplace_back(object);
+    break;
+  }
+  case LOD::Impostor:
+    this->impostorInstances.emplace_back(InstancePositionRadiusTexture{pos, scaledMeanRadius, this->textureLayers[texture->getId()]});
+    break;
+  case LOD::Point:
+    this->pointInstances.emplace_back(InstancePositionRadiusColor{pos, scaledMeanRadius, texture->getAverageColor()});
+    break;
+  default:
+    Logger::logError("Asteroid System", "No handler for LOD level: " + std::to_string(level));
+    break;
+  }
+}
+
+void Renderer::partitionObjects(Scene &scene, RenderContext &ctx)
+{
+  this->fullInstances.clear();
+  this->impostorInstances.clear();
+  this->pointInstances.clear();
 
   const Camera &camera = scene.getActiveCamera();
   Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
 
-  for (auto &system : scene.getPhysicsWorld().getSystems())
-    system->partitionObjects(camera, &this->lodManager, ctx.frameCtx.height, &frustum);
+  // change from getmodel source to get LOD/smth like that
+  for (ModelSource *object : scene.getModelSources())
+    this->partitionObject(object, &frustum, ctx.frameCtx.height, camera.getFOV());
 
-  // 1. function which passes 3 vectors and fills them with 1 object per time. NICE
-  // 2. make it non-renderable for asteroids
+  for (auto &system : scene.getPhysicsWorld().getSystems())
+    system->partitionObjects(this->impostorInstances, this->pointInstances, camera, &this->lodManager, ctx.frameCtx.height, &frustum);
+
+  this->impostorMesh->updateInstanceBuffer(this->impostorInstances.data(), this->impostorInstances.size());
+  this->pointMesh->updateInstanceBuffer(this->pointInstances.data(), this->pointInstances.size());
 }
 
 // Constructor
@@ -406,6 +532,8 @@ void Renderer::init(Scene &scene, RenderContext &ctx)
   this->postProcess.init(ctx.frameCtx);
 
   this->initShaderUBOBindings();
+
+  this->initLOD(scene);
 }
 
 void Renderer::render(Scene &scene, RenderContext &ctx)
@@ -437,7 +565,7 @@ void Renderer::update(Scene &scene, RenderContext &ctx)
 {
   scene.update(ctx);
 
-  this->partitionRenderables(scene, ctx);
+  this->partitionObjects(scene, ctx);
 
   this->updateUBO(scene, ctx);
 }

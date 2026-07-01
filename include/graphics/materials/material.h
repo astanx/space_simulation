@@ -14,4 +14,6 @@ public:
   virtual ~Material() = default;
 
   virtual void sendToShader(Shader &program) = 0;
+
+  virtual const Texture* getTexture() const = 0;
 };
