@@ -46,9 +46,9 @@ public:
   void updateBuffers(std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray);
 
   template <typename T>
-  void setInstanceBuffer(const T *instanceData, size_t count, size_t vboCount);
+  void setInstanceBuffer(const T *instanceData, size_t count, size_t vboCount = 1);
   template <typename T>
-  void updateInstanceBuffer(const T *instanceData, size_t count, size_t vboCount);
+  void updateInstanceBuffer(const T *instanceData, size_t count, size_t vboCount = 1);
   void setInstanceLayout(InstanceLayout layout);
 
   Mesh(const Mesh &obj);

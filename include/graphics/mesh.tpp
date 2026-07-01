@@ -17,13 +17,22 @@ void Mesh::bindInstanceAttributes(const T *instanceData, const Buffer &vbo) cons
   for (size_t i = 0; i < this->instanceLayout.count; i++)
   {
     const VertexAttribute &attr = this->instanceLayout.attributes[i];
-    glVertexAttribPointer(
-        start + attr.index,
-        attr.size,
-        attr.type,
-        attr.normalized,
-        sizeof(T),
-        (void *)attr.offset);
+    if (attr.type == GL_UNSIGNED_INT || attr.type == GL_INT)
+      glVertexAttribIPointer(
+          start + attr.index,
+          attr.size,
+          attr.type,
+          sizeof(T),
+          (void *)attr.offset);
+    else
+      glVertexAttribPointer(
+          start + attr.index,
+          attr.size,
+          attr.type,
+          attr.normalized,
+          sizeof(T),
+          (void *)attr.offset);
+
     glEnableVertexAttribArray(start + attr.index);
     glVertexAttribDivisor(start + attr.index, 1);
   }

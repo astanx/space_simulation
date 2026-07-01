@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 
 #include <string>
 
@@ -11,6 +12,7 @@ private:
   int width;
   int height;
   GLenum target;
+  glm::vec3 averageColor;
 
 public:
   Texture(const std::string &fileName, GLenum target);
@@ -24,6 +26,7 @@ public:
 
   inline int getWidth() const { return this->width; };
   inline int getHeight() const { return this->height; };
+  inline const glm::vec3 &getAverageColor() const { return this->averageColor; };
 
   void bind() const;
   void unbind(const GLint textureUnit) const;

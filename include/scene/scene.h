@@ -32,6 +32,15 @@ struct RotationalElements;
 struct HapkeParameters;
 struct Radii;
 
+struct Importance
+{
+  float base;
+  float asteroid;
+  float planet;
+  float moon;
+  float star;
+};
+
 class Scene
 {
 private:
@@ -40,9 +49,11 @@ private:
   PhysicsWorld physicsWorld;
   Camera *activeCamera;
   Skybox *skybox;
-
+  Importance importance;
+  
   std::vector<Updatable *> updatable;
   std::vector<Renderable *> renderable;
+  std::vector<ModelSource *> modelSources;
 
   std::vector<std::unique_ptr<Camera>> cameras;
   std::vector<Camera *> cameraViews;
@@ -87,6 +98,7 @@ public:
 
   // Setters
   void addRenderable(Renderable *object);
+  void addModelSource(ModelSource *object);
   void addUpdatable(Updatable *object);
   void addTrail(std::unique_ptr<Trail> trail);
   void addPointLight(std::unique_ptr<PointLight> pointLight);
@@ -103,6 +115,7 @@ public:
 
   const glm::vec3 getActiveCameraPosition() const;
   const std::vector<Renderable *> &getRenderable() const;
+  std::vector<ModelSource *> &getModelSources();
   const std::vector<PointLight *> &getPointLights() const;
   const DirectionalLight *getDirLight() const;
   const std::vector<Trail *> &getTrails() const;

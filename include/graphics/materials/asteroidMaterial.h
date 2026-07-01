@@ -14,5 +14,5 @@ public:
   AsteroidMaterial(Texture &diffuseTexture);
   ~AsteroidMaterial() = default;
   void sendToShader(Shader &shader) override;
-  Texture *getDiffuseTexture() { return this->diffuseTexture; };
+  const Texture *getTexture() const override { return this->diffuseTexture; };
 };

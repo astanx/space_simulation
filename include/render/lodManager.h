@@ -13,7 +13,7 @@ namespace LOD
 struct LODSettings
 {
   float baseMinPixelSize = 1.f;
-  std::vector<float> pixelRadiusThreshold = {8, 3}; // > [0] - full, > [1] - impostor, else - point
+  std::vector<float> pixelRadiusThreshold = {8, 3}; // >= [0] - full, >= [1] - impostor, else - point
 };
 
 class Camera;
@@ -28,8 +28,8 @@ public:
   ~LODManager() = default;
 
   int getLODLevel(float pixelRadius);
-  int getLODLevel(const Camera &camera, const glm::vec3 &position, float radius, float viewportHeight, float importance = 1.f);
+  int getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
 
-  float calculatePixelRadius(const Camera &camera, const glm::vec3 &position, float radius, float viewportHeight, float importance = 1.f);
-  float scaleRadius(const Camera &camera, const glm::vec3 &position, float radius, float viewportHeight, float importance = 1.f);
+  float calculatePixelRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
+  float scaleRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
 };

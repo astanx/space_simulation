@@ -31,6 +31,22 @@ Texture::Texture(const std::string &fileName, GLenum target)
 
   if (image)
   {
+    float r = 0;
+    float g = 0;
+    float b = 0;
+
+    const float pixelCount = width * height;
+
+    for (size_t i = 0; i < pixelCount; ++i)
+    {
+      r += image[i * 4 + 0];
+      g += image[i * 4 + 1];
+      b += image[i * 4 + 2];
+    }
+
+    this->averageColor = glm::vec3(r, g, b);
+    this->averageColor /= pixelCount;
+
     GL_CALL(glTexImage2D(target, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image));
     GL_CALL(glGenerateMipmap(target));
   }
@@ -129,7 +145,6 @@ void Texture::loadFromFile(const std::string &fileName)
     Logger::logError("Texture", "Failed to load from file - " + fileName);
     return;
   }
-
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(this->target, 0);
   stbi_image_free(image);

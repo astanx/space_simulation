@@ -136,9 +136,9 @@ void Model::renderInstanced()
   glBindVertexArray(0);
 }
 
-void Model::scaleBy(const glm::vec3 &scale)
+void Model::setScale(const glm::vec3 &scale)
 {
-  this->scale *= scale;
+  this->scale = scale;
 }
 
 glm::vec3 Model::getPosition() const

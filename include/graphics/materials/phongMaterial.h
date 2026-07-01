@@ -31,4 +31,6 @@ public:
   ~PhongMaterial() = default;
 
   void sendToShader(Shader &program) override;
+
+  const Texture *getTexture() const override { return this->diffuseTexture; };
 };

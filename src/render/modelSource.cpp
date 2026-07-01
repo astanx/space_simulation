@@ -9,15 +9,15 @@
 #include "physics/constants.h"
 
 // Constructor
-ModelSource::ModelSource(const PositionSource &src, double radius) : src(src)
+ModelSource::ModelSource(const TransformSource &src, double renderRadius) : src(src)
 {
-  this->radius = radius;
+  this->renderRadius = renderRadius;
 }
 
 // Public functions
 void ModelSource::update(const Camera &camera, Frustum *frustum, bool force)
 {
-  if (!Frustum::shouldBeProcessed(frustum, this->renderPosition, this->radius, force))
+  if (!Frustum::shouldBeProcessed(frustum, this->renderPosition, this->renderRadius, force))
     return;
 
   this->renderPosition = camera.worldToViewSpace(this->src.getPosition());
@@ -35,7 +35,7 @@ void ModelSource::update(const Camera &camera, Frustum *frustum, bool force)
 
 void ModelSource::render(Shader &shader, Frustum *frustum, bool force) const
 {
-  if (!Frustum::shouldBeProcessed(frustum, this->renderPosition, this->radius, force))
+  if (!Frustum::shouldBeProcessed(frustum, this->renderPosition, this->renderRadius, force))
     return;
 
   {
@@ -46,7 +46,7 @@ void ModelSource::render(Shader &shader, Frustum *frustum, bool force) const
 
 void ModelSource::renderLayers(Shader &shader, Frustum *frustum, bool force) const
 {
-  if (!Frustum::shouldBeProcessed(frustum, this->renderPosition, this->radius, force))
+  if (!Frustum::shouldBeProcessed(frustum, this->renderPosition, this->renderRadius, force))
     return;
 
   ScopedBlending blend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -57,9 +57,25 @@ void ModelSource::renderLayers(Shader &shader, Frustum *frustum, bool force) con
 
 void ModelSource::renderInstanced(Shader &shader, Frustum *frustum, bool force) const
 {
-  if (!Frustum::shouldBeProcessed(frustum, this->renderPosition, this->radius, force))
+  if (!Frustum::shouldBeProcessed(frustum, this->renderPosition, this->renderRadius, force))
     return;
 
   for (auto &layer : this->layers)
     layer->renderInstanced();
+}
+
+void ModelSource::scaleRadii(Radii scaledRadii)
+{
+  this->renderRadius = scaledRadii.mean;
+  Radii radii = this->src.getRadii();
+
+  float equatorian = scaledRadii.equatorian / radii.equatorian;
+  float polar = scaledRadii.polar / radii.polar;
+
+  glm::vec3 scale(equatorian, polar, equatorian);
+
+  this->mainLayer->setScale(scale);
+
+  for (auto &layer : this->layers)
+    layer->setScale(scale);
 }

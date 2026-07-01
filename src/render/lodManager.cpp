@@ -16,21 +16,21 @@ int LODManager::getLODLevel(float pixelRadius)
     return LOD::Point;
 }
 
-int LODManager::getLODLevel(const Camera &camera, const glm::vec3 &position, float radius, float viewportHeight, float importance)
+int LODManager::getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance)
 {
-  float pixelRadius = this->calculatePixelRadius(camera, position, radius, viewportHeight, importance);
+  float pixelRadius = this->calculatePixelRadius(position, radius, fov, viewportHeight, importance);
 
   return this->getLODLevel(pixelRadius);
 }
 
-float LODManager::calculatePixelRadius(const Camera &camera, const glm::vec3 &position, float radius, float viewportHeight, float importance)
+float LODManager::calculatePixelRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance)
 {
   float d = glm::length(position);
 
   if (d < EPS)
     d = 1e-4f;
 
-  float worldToPixel = (viewportHeight * 0.5f) / (d * tan(glm::radians(camera.getFOV() / 2.0f)));
+  float worldToPixel = (viewportHeight * 0.5f) / (d * tan(glm::radians(fov / 2.f)));
 
   float pixelRadius = radius * worldToPixel * importance;
 
@@ -40,12 +40,12 @@ float LODManager::calculatePixelRadius(const Camera &camera, const glm::vec3 &po
   return pixelRadius;
 }
 
-float LODManager::scaleRadius(const Camera &camera, const glm::vec3 &position, float radius, float viewportHeight, float importance)
+float LODManager::scaleRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance)
 {
   float minPixelSize = this->settings.baseMinPixelSize * importance;
 
-  float pixelWorldSize = (length(position) * 2.0 * tan(glm::radians(camera.getFOV() / 2.0))) / viewportHeight;
-  float minWorldRadius = minPixelSize * pixelWorldSize * 0.5;
+  float pixelWorldSize = (length(position) * 2.f * tan(glm::radians(fov / 2.f))) / viewportHeight;
+  float minWorldRadius = minPixelSize * pixelWorldSize * 0.5f;
 
   float finalRadius = std::max(radius, minWorldRadius);
 
