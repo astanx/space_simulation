@@ -20,9 +20,6 @@ double AsteroidShape::calculateR(double angle, double m, double a, double b, dou
 AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3, double scale)
     : Primitive()
 {
-  std::vector<Vertex> vertices;
-  std::vector<GLuint> indices;
-
   for (size_t ip = 0; ip <= size_t(phiSteps); ++ip)
   {
     double phi = M_PI * ip / phiSteps;
@@ -41,13 +38,11 @@ AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, doubl
       glm::vec3 pos(x, y, z);
       pos *= scale;
 
-      glm::vec3 normal = glm::normalize(pos);
 
-      vertices.push_back(Vertex{
-          pos,
-          glm::vec3(1.0f, 1.0f, 1.0f),
-          glm::vec2(theta / (2.0f * M_PI), phi / M_PI),
-          normal});
+      glm::vec3 normal = glm::normalize(pos);
+      this->positions.push_back(pos);
+      this->normals.push_back(normal);
+      this->texcoords.push_back(glm::vec2(theta / (2.0f * M_PI), phi / M_PI));
     }
   }
 
@@ -60,21 +55,17 @@ AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, doubl
       size_t i2 = (ip + 1) * (thetaSteps + 1) + it;
       size_t i3 = i2 + 1;
 
-      indices.push_back(i0);
-      indices.push_back(i2);
-      indices.push_back(i1);
+      this->indices.push_back(i0);
+      this->indices.push_back(i2);
+      this->indices.push_back(i1);
 
-      indices.push_back(i1);
-      indices.push_back(i2);
-      indices.push_back(i3);
+      this->indices.push_back(i1);
+      this->indices.push_back(i2);
+      this->indices.push_back(i3);
     }
   }
-
-  this->computeTangents(vertices, indices);
 
   this->radii.polar = calculateR(0, m, a, b, n1, n2, n3);
   this->radii.equatorian = calculateR(M_PI / 2, m, a, b, n1, n2, n3);
   this->radii.mean = (this->radii.polar + this->radii.equatorian) / 2;
-
-  this->set(vertices, indices);
 }

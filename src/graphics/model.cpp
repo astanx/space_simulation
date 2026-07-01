@@ -84,7 +84,7 @@ Model::Model(glm::vec3 position, Material &material,
   this->orientation = orientation;
   this->scale = scale;
 
-  std::vector<Vertex> vertices = loadOBJmodel(OBJfile);
+  std::vector<VertexPositionTexcoordNormalColor> vertices = loadOBJmodel(OBJfile);
   std::vector<GLuint> indices;
 
   Mesh *mesh = new Mesh(&vertices, &indices, VertexLayout::Full);

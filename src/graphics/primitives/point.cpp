@@ -5,12 +5,5 @@
 // Constructor and Destructor
 Point::Point() : Primitive()
 {
-  std::vector<Vertex> vertices =
-      {
-          {glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 0.f, 0.f)},
-      };
-
-  std::vector<GLuint> indices = {};
-
-  this->set(vertices, indices);
+  this->positions.push_back(glm::vec3(0.f, 0.f, 0.f));
 }

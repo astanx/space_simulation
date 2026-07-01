@@ -63,9 +63,9 @@ void TextRenderer::init()
   FT_Done_Face(face);
   FT_Done_FreeType(ft);
 
+  std::vector<VertexPositionTexcoord> vertices;
 
-
-  this->text = std::make_unique<Mesh>(nullptr, nullptr, VertexLayout::PositionTexcoord);
+  this->text = std::make_unique<Mesh>(&vertices, nullptr, VertexLayout::PositionTexcoord);
 };
 
 void TextRenderer::render(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color)
@@ -106,14 +106,15 @@ void TextRenderer::render(Shader &shader, std::string text, float x, float y, fl
     float w = ch.size.x * scale;
     float h = ch.size.y * scale;
     // update VBO for each character
-    std::vector<Vertex> vertices{
-        {{xpos, ypos + h, 0.0f}, {}, {0.0f, 0.0f}},
-        {{xpos, ypos, 0.0f}, {}, {0.0f, 1.0f}},
-        {{xpos + w, ypos, 0.0f}, {}, {1.0f, 1.0f}},
 
-        {{xpos, ypos + h, 0.0f}, {}, {0.0f, 0.0f}},
-        {{xpos + w, ypos, 0.0f}, {}, {1.0f, 1.0f}},
-        {{xpos + w, ypos + h, 0.0f}, {}, {1.0f, 0.0f}}};
+    std::vector<VertexPositionTexcoord> vertices{
+        {{xpos, ypos + h, 0.0f}, {0.0f, 0.0f}},
+        {{xpos, ypos, 0.0f}, {0.0f, 1.0f}},
+        {{xpos + w, ypos, 0.0f}, {1.0f, 1.0f}},
+
+        {{xpos, ypos + h, 0.0f}, {0.0f, 0.0f}},
+        {{xpos + w, ypos, 0.0f}, {1.0f, 1.0f}},
+        {{xpos + w, ypos + h, 0.0f}, {1.0f, 0.0f}}};
 
     // render glyph texture over quad
     {

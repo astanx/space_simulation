@@ -19,24 +19,24 @@ enum class VertexLayout
 
 constexpr std::array<VertexAttribute, 0> EMPTY = {};
 
-constexpr std::array<VertexAttribute, 4> FULL = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
-                                                  {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)},
-                                                  {2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal)},
-                                                  {3, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, color)}}};
+constexpr std::array<VertexAttribute, 4> FULL = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormalColor, position)},
+                                                  {1, 2, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormalColor, texcoord)},
+                                                  {2, 3, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormalColor, normal)},
+                                                  {3, 3, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormalColor, color)}}};
 
-constexpr std::array<VertexAttribute, 3> NO_COLOR = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
-                                                      {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)},
-                                                      {2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal)}}};
+constexpr std::array<VertexAttribute, 3> NO_COLOR = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormal, position)},
+                                                      {1, 2, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormal, texcoord)},
+                                                      {2, 3, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormal, normal)}}};
 
-constexpr std::array<VertexAttribute, 1> POSITION_ONLY = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)}}};
+constexpr std::array<VertexAttribute, 1> POSITION_ONLY = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexPosition, position)}}};
 
-constexpr std::array<VertexAttribute, 2> POSITION_TEXCOORD = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
-                                                               {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)}}};
+constexpr std::array<VertexAttribute, 2> POSITION_TEXCOORD = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoord, position)},
+                                                               {1, 2, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoord, texcoord)}}};
 
-constexpr std::array<VertexAttribute, 4> POSITION_NORMAL_TANGENT = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position)},
-                                                                     {1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex, texcoord)},
-                                                                     {2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal)},
-                                                                     {3, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, tangent)}}};
+constexpr std::array<VertexAttribute, 4> POSITION_NORMAL_TANGENT = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormalTangent, position)},
+                                                                     {1, 2, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormalTangent, texcoord)},
+                                                                     {2, 3, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormalTangent, normal)},
+                                                                     {3, 4, GL_FLOAT, GL_FALSE, offsetof(VertexPositionTexcoordNormalTangent, tangent)}}};
 
 inline const std::map<VertexLayout, LayoutDesc> LAYOUTS = {
     {VertexLayout::Empty, {EMPTY.data(), EMPTY.size()}},

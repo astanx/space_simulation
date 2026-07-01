@@ -115,7 +115,7 @@ void Renderer::initLOD(Scene &scene)
 
 void Renderer::initImpostor(Scene &scene)
 {
-  this->impostorMesh = std::make_unique<Mesh>(std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
+  this->impostorMesh = std::make_unique<Mesh>(TypeTag<VertexPositionTexcoord>{}, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
   this->impostorMesh->setInstanceLayout(InstanceLayout::PositionRadiusTexture);
   this->impostorMesh->setInstanceBuffer(this->impostorInstances.data(), this->impostorInstances.size());
 
@@ -147,7 +147,7 @@ void Renderer::initImpostor(Scene &scene)
 
 void Renderer::initPoint()
 {
-  this->pointMesh = std::make_unique<Mesh>(std::make_unique<Point>(), VertexLayout::Empty, GL_POINTS);
+  this->pointMesh = std::make_unique<Mesh>(TypeTag<VertexEmpty>{}, std::make_unique<Point>(), VertexLayout::Empty, GL_POINTS);
   this->pointMesh->setInstanceLayout(InstanceLayout::PositionRadiusColor);
   this->pointMesh->setInstanceBuffer(this->pointInstances.data(), this->pointInstances.size());
 }

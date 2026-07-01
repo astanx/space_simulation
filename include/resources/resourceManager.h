@@ -38,9 +38,10 @@ public:
 
   Material &LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, Texture *nightMap, float emissiveStrength, float ao, float metallic, float roughness);
 
-  Mesh &LoadMesh(const std::string &name, std::vector<Vertex> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
+  template <typename T>
+  Mesh &LoadMesh(const std::string &name, std::vector<T> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
+  template <typename T>
   Mesh &LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
-  Mesh &LoadMesh(const std::string &name, const Mesh &obj);
 
   // Getters
   Shader &GetShader(const std::string &name);
@@ -49,3 +50,5 @@ public:
   Mesh &GetMesh(const std::string &name);
   std::vector<Shader *> GetAllShaders();
 };
+
+#include "resources/resourceManager.tpp"

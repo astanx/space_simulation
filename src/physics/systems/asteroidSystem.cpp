@@ -89,15 +89,15 @@ void AsteroidSystem::createAsteroids(unsigned amount, double timeAfterJD2000)
   for (std::unique_ptr<AsteroidShape> &asteroid : asteroidShapes)
     asteroidRadii.push_back(asteroid->getRadii());
 
+  for (std::unique_ptr<AsteroidShape> &shape : asteroidShapes)
+    meshVolumes.push_back(shape->calculateVolume());
+
   const size_t typeCount = asteroidShapes.size();
 
   this->meshes.reserve(typeCount);
 
   for (std::unique_ptr<AsteroidShape> &asteroid : asteroidShapes)
-    this->meshes.push_back(std::make_unique<Mesh>(std::move(asteroid), VertexLayout::NoColor));
-
-  for (std::unique_ptr<Mesh> &mesh : meshes)
-    meshVolumes.push_back(mesh->calculateVolume());
+    this->meshes.push_back(std::make_unique<Mesh>(TypeTag<VertexPositionTexcoordNormal>{}, std::move(asteroid), VertexLayout::NoColor));
 
   std::vector<unsigned int> typeCounts(typeCount, 0);
   this->asteroidTypes.resize(amount);

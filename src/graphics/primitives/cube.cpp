@@ -5,46 +5,103 @@
 // Constructor and Destructor
 Cube::Cube() : Primitive()
 {
-  std::vector<Vertex> vertices =
-      {
-          // Front face (+Z)
-          {glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 0.f, 1.f)},
-          {glm::vec3(0.5f, -0.5f, 0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 0.f, 1.f)},
-          {glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 0.f, 1.f)},
-          {glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 0.f, 1.f)},
+  // Front face (+Z)
+  this->positions.push_back(glm::vec3(-0.5f, -0.5f, 0.5f));
+  this->positions.push_back(glm::vec3(0.5f, -0.5f, 0.5f));
+  this->positions.push_back(glm::vec3(0.5f, 0.5f, 0.5f));
+  this->positions.push_back(glm::vec3(-0.5f, 0.5f, 0.5f));
 
-          // Back face (-Z)
-          {glm::vec3(0.5f, -0.5f, -0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 0.f, -1.f)},
-          {glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)},
-          {glm::vec3(-0.5f, 0.5f, -0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 0.f, -1.f)},
-          {glm::vec3(0.5f, 0.5f, -0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 0.f, -1.f)},
+  this->texcoords.push_back(glm::vec2(0.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 1.0f));
+  this->texcoords.push_back(glm::vec2(0.0f, 1.0f));
 
-          // Left face (-X)
-          {glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(-1.f, 0.f, 0.f)},
-          {glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(-1.f, 0.f, 0.f)},
-          {glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(-1.f, 0.f, 0.f)},
-          {glm::vec3(-0.5f, 0.5f, -0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(-1.f, 0.f, 0.f)},
+  this->normals.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
+  this->normals.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
+  this->normals.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
+  this->normals.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
 
-          // Right face (+X)
-          {glm::vec3(0.5f, -0.5f, 0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(1.f, 0.f, 0.f)},
-          {glm::vec3(0.5f, -0.5f, -0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(1.f, 0.f, 0.f)},
-          {glm::vec3(0.5f, 0.5f, -0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(1.f, 0.f, 0.f)},
-          {glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(1.f, 0.f, 0.f)},
+  // Back face (-Z)
+  this->positions.push_back(glm::vec3(0.5f, -0.5f, -0.5f));
+  this->positions.push_back(glm::vec3(-0.5f, -0.5f, -0.5f));
+  this->positions.push_back(glm::vec3(-0.5f, 0.5f, -0.5f));
+  this->positions.push_back(glm::vec3(0.5f, 0.5f, -0.5f));
 
-          // Top face (+Y)
-          {glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, 1.f, 0.f)},
-          {glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, 1.f, 0.f)},
-          {glm::vec3(0.5f, 0.5f, -0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, 1.f, 0.f)},
-          {glm::vec3(-0.5f, 0.5f, -0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, 1.f, 0.f)},
+  this->texcoords.push_back(glm::vec2(0.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 1.0f));
+  this->texcoords.push_back(glm::vec2(0.0f, 1.0f));
 
-          // Bottom face (-Y)
-          {glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)},
-          {glm::vec3(0.5f, -0.5f, -0.5f), glm::vec3(0.f, 1.f, 0.f), glm::vec2(1.f, 0.f), glm::vec3(0.f, -1.f, 0.f)},
-          {glm::vec3(0.5f, -0.5f, 0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(1.f, 1.f), glm::vec3(0.f, -1.f, 0.f)},
-          {glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec3(1.f, 1.f, 0.f), glm::vec2(0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)},
-      };
+  this->normals.push_back(glm::vec3(0.0f, 0.0f, -1.0f));
+  this->normals.push_back(glm::vec3(0.0f, 0.0f, -1.0f));
+  this->normals.push_back(glm::vec3(0.0f, 0.0f, -1.0f));
+  this->normals.push_back(glm::vec3(0.0f, 0.0f, -1.0f));
 
-  std::vector<GLuint> indices =
+  // Left face (-X)
+  this->positions.push_back(glm::vec3(-0.5f, -0.5f, -0.5f));
+  this->positions.push_back(glm::vec3(-0.5f, -0.5f, 0.5f));
+  this->positions.push_back(glm::vec3(-0.5f, 0.5f, 0.5f));
+  this->positions.push_back(glm::vec3(-0.5f, 0.5f, -0.5f));
+
+  this->texcoords.push_back(glm::vec2(0.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 1.0f));
+  this->texcoords.push_back(glm::vec2(0.0f, 1.0f));
+
+  this->normals.push_back(glm::vec3(-1.0f, 0.0f, 0.0f));
+  this->normals.push_back(glm::vec3(-1.0f, 0.0f, 0.0f));
+  this->normals.push_back(glm::vec3(-1.0f, 0.0f, 0.0f));
+  this->normals.push_back(glm::vec3(-1.0f, 0.0f, 0.0f));
+
+  // Right face (+X)
+  this->positions.push_back(glm::vec3(0.5f, -0.5f, 0.5f));
+  this->positions.push_back(glm::vec3(0.5f, -0.5f, -0.5f));
+  this->positions.push_back(glm::vec3(0.5f, 0.5f, -0.5f));
+  this->positions.push_back(glm::vec3(0.5f, 0.5f, 0.5f));
+
+  this->texcoords.push_back(glm::vec2(0.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 1.0f));
+  this->texcoords.push_back(glm::vec2(0.0f, 1.0f));
+
+  this->normals.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
+  this->normals.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
+  this->normals.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
+  this->normals.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
+
+  // Top face (+Y)
+  this->positions.push_back(glm::vec3(-0.5f, 0.5f, 0.5f));
+  this->positions.push_back(glm::vec3(0.5f, 0.5f, 0.5f));
+  this->positions.push_back(glm::vec3(0.5f, 0.5f, -0.5f));
+  this->positions.push_back(glm::vec3(-0.5f, 0.5f, -0.5f));
+
+  this->texcoords.push_back(glm::vec2(0.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 1.0f));
+  this->texcoords.push_back(glm::vec2(0.0f, 1.0f));
+
+  this->normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+  this->normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+  this->normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+  this->normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+
+  // Bottom face (-Y)
+  this->positions.push_back(glm::vec3(-0.5f, -0.5f, -0.5f));
+  this->positions.push_back(glm::vec3(0.5f, -0.5f, -0.5f));
+  this->positions.push_back(glm::vec3(0.5f, -0.5f, 0.5f));
+  this->positions.push_back(glm::vec3(-0.5f, -0.5f, 0.5f));
+
+  this->texcoords.push_back(glm::vec2(0.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 0.0f));
+  this->texcoords.push_back(glm::vec2(1.0f, 1.0f));
+  this->texcoords.push_back(glm::vec2(0.0f, 1.0f));
+
+  this->normals.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
+  this->normals.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
+  this->normals.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
+  this->normals.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
+
+  this->indices =
       {
           0, 1, 2, 0, 2, 3,       // Front
           4, 5, 6, 4, 6, 7,       // Back
@@ -53,6 +110,4 @@ Cube::Cube() : Primitive()
           16, 17, 18, 16, 18, 19, // Top
           20, 21, 22, 20, 22, 23  // Bottom
       };
-
-  this->set(vertices, indices);
 }

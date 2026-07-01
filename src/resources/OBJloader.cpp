@@ -17,7 +17,7 @@
 #include <sstream>
 #include <algorithm>
 
-std::vector<Vertex> loadOBJmodel(const std::string &filename)
+std::vector<VertexPositionTexcoordNormalColor> loadOBJmodel(const std::string &filename)
 {
   std::vector<glm::fvec3> vertex_positions;
   std::vector<glm::fvec2> vertex_texcoords;
@@ -27,7 +27,7 @@ std::vector<Vertex> loadOBJmodel(const std::string &filename)
   std::vector<GLint> vertex_texcoord_indices;
   std::vector<GLint> vertex_normal_indices;
 
-  std::vector<Vertex> vertices;
+  std::vector<VertexPositionTexcoordNormalColor> vertices;
 
   std::ifstream inFile(filename);
 
