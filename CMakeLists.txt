@@ -9,6 +9,9 @@ include(FetchContent)
 # Find OpenGL
 find_package(OpenGL REQUIRED)
 
+# Find OpenCL
+find_package(OpenCL REQUIRED)
+
 # GLM (header-only)
 find_package(glm QUIET)
 if(NOT glm_FOUND)
@@ -74,6 +77,13 @@ add_executable(Space
 
     # Camera
     src/camera/camera.cpp
+
+    # Compute
+    src/compute/clBuffer.cpp
+    src/compute/commandQueue.cpp
+    src/compute/context.cpp
+    src/compute/kernel.cpp
+    src/compute/program.cpp
 
     # Graphics
     src/graphics/shader.cpp
@@ -185,6 +195,7 @@ target_include_directories(Space PRIVATE
 # Link libraries
 target_link_libraries(Space PRIVATE
     OpenGL::GL
+    OpenCL::OpenCL
     glm::glm
     glfw
     GLEW::GLEW
