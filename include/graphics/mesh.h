@@ -32,6 +32,7 @@ private:
   size_t vboIndex = 0;
   unsigned int instanceCount = 0;
   bool instancingInitialized = false;
+  bool isTangent = false;
 
   GLenum drawMode;
 
@@ -62,6 +63,8 @@ public:
 
   void render() const;
   void renderInstanced() const;
+
+  bool getIsTangent() const { return this->isTangent; };
 };
 
 #include "graphics/mesh.tpp"

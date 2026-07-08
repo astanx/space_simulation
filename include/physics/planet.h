@@ -41,8 +41,8 @@ public:
 
   double getFreeFallAcc() const;
 
-  void render(Shader &shader, Frustum *frustum, bool force = false) const override;
+  void render(Shader &shader) override;
 
-  void renderAtmosphere(Shader &shader, Frustum *frustum, bool force = false) const;
+  void renderAtmosphere(Shader &shader) const;
   void renderMoonsRadiance(Shader &shader, const Camera &camera) const;
 };

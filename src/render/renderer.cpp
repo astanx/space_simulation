@@ -5,6 +5,7 @@
 #include "scene/scene.h"
 
 #include "render/renderState.h"
+#include "render/frustum.h"
 
 #include "graphics/instanceLayouts.h"
 
@@ -19,6 +20,7 @@
 #include "graphics/state/scopedCullFace.h"
 #include "graphics/state/scopedViewport.h"
 #include "graphics/state/scopedFramebuffer.h"
+#include "graphics/state/scopedPolygonOffset.h"
 #include "graphics/state/scopedTexture.h"
 #include "graphics/state/scopedShader.h"
 
@@ -220,7 +222,7 @@ void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferTy
       GL_DYNAMIC_DRAW));
 }
 
-void Renderer::renderAsteroidSystems(Scene &scene, Frustum *frustum)
+void Renderer::renderAsteroidSystems(Scene &scene)
 {
   Shader &asteroidShader = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
 
@@ -236,37 +238,61 @@ void Renderer::renderAsteroidSystems(Scene &scene, Frustum *frustum)
 
     skybox.bindIrradianceMap(asteroidShader);
 
-    for (const AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
-      asteroidSystem->render(asteroidShader, frustum);
+    for (AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
+      asteroidSystem->render(asteroidShader);
 
     skybox.unbindIrradianceMap();
   }
 }
 
-void Renderer::renderObjects(Scene &scene, Frustum *frustum)
+void Renderer::renderObjectsGroup(std::unordered_map<Renderable *, RenderFlags> &objects, Scene &scene, Shader &shader)
 {
-  Shader &coreShader = this->resourceManager.GetShader(Res::CORE_SHADER);
 
-  GLuint &coreID = coreShader.getId();
-
+  GLuint &ID = shader.getId();
   const Skybox &skybox = scene.getActiveSkybox();
 
-  ScopedShader core(coreID);
+  ScopedShader sh(ID);
+  // ScopedShader coreTangent(coreTagentID);
 
-  this->shadowManager->bindPointShadow(coreShader);
-  this->shadowManager->bindPointShadowDepth(coreShader);
+  this->shadowManager->bindPointShadow(shader);
+  this->shadowManager->bindPointShadowDepth(shader);
 
-  skybox.bindIrradianceMap(coreShader);
+  skybox.bindIrradianceMap(shader);
 
-  this->bindDummyReflector(coreShader);
+  this->bindDummyReflector(shader);
 
   // Render all objects
-  for (const Renderable *object : this->fullInstances)
-    object->render(coreShader, frustum);
+  for (auto &[object, flag] : objects)
+  {
+    std::optional<ScopedPolygonOffset> offset;
+    std::optional<ScopedBlending> blend;
+    std::optional<ScopedDepthMask> mask;
+
+    if (flag == RenderFlags::Main)
+      offset.emplace(true, .1f, 4.f);
+
+    if (flag == RenderFlags::Layer)
+    {
+      blend.emplace(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      mask.emplace(GL_FALSE);
+    }
+
+    object->render(shader);
+  }
 
   skybox.unbindIrradianceMap();
 }
-void Renderer::renderAtmospheres(Scene &scene, Frustum *frustum)
+
+void Renderer::renderObjects(Scene &scene)
+{
+  Shader &coreShader = this->resourceManager.GetShader(Res::CORE_SHADER);
+  Shader &coreTangentShader = this->resourceManager.GetShader(Res::CORE_TANGENT_SHADER);
+
+  this->renderObjectsGroup(this->fullInstances, scene, coreShader);
+  this->renderObjectsGroup(this->fullTangentInstances, scene, coreTangentShader);
+}
+
+void Renderer::renderAtmospheres(Scene &scene)
 {
   Shader &atmosphereShader = this->resourceManager.GetShader(Res::ATMOSPHERE_SHADER);
 
@@ -275,7 +301,7 @@ void Renderer::renderAtmospheres(Scene &scene, Frustum *frustum)
   ScopedShader atmosphereSh(atmosphereID);
 
   for (const Planet *planet : scene.getPhysicsWorld().getPlanetarObjects())
-    planet->renderAtmosphere(atmosphereShader, frustum);
+    planet->renderAtmosphere(atmosphereShader);
 }
 void Renderer::renderTrails(Scene &scene)
 {
@@ -309,7 +335,7 @@ void Renderer::renderSkybox(Scene &scene, RenderContext &ctx)
 
 void Renderer::renderShadowMap(Scene &scene, Shader &shader)
 {
-  for (const Renderable *object : scene.getRenderable())
+  for (Renderable *object : scene.getRenderable())
   {
     if (dynamic_cast<const Star *>(object))
       continue;
@@ -399,14 +425,12 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
   RenderState::clearColor(ctx.settings.clearColor);
   RenderState::clearDepth();
 
-  Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
-
-  this->renderObjects(scene, &frustum);
+  this->renderObjects(scene);
   this->renderImpostor(scene);
   this->renderPoint();
   // temporary off
   //  this->renderAtmospheres(scene, &frustum);
-  this->renderAsteroidSystems(scene, &frustum);
+  this->renderAsteroidSystems(scene);
   this->renderSkybox(scene, ctx);
 }
 
@@ -462,7 +486,13 @@ void Renderer::partitionObject(ModelSource *object, Frustum *frustum, float view
     float scaledEquatorianRadius = this->lodManager.scaleRadius(pos, radii.equatorian, fov, viewportHeight, importance);
     float scaledPolarRadius = this->lodManager.scaleRadius(pos, radii.polar, fov, viewportHeight, importance);
     object->scaleRadii(Radii{scaledEquatorianRadius, scaledPolarRadius, scaledMeanRadius});
-    this->fullInstances.emplace_back(object);
+
+    object->forEachModel([this](Model &model, RenderFlags flag)
+                         {
+        if (model.getIsTangent())
+          this->fullTangentInstances.insert({&model, flag});
+        else
+          this->fullInstances.insert({&model, flag}); });
     break;
   }
   case LOD::Impostor:
@@ -486,7 +516,6 @@ void Renderer::partitionObjects(Scene &scene, RenderContext &ctx)
   const Camera &camera = scene.getActiveCamera();
   Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
 
-  // change from getmodel source to get LOD/smth like that
   for (ModelSource *object : scene.getModelSources())
     this->partitionObject(object, &frustum, ctx.frameCtx.height, camera.getFOV());
 

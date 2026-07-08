@@ -106,6 +106,9 @@ Mesh::Mesh(std::vector<T> *vertexArray, std::vector<GLuint> *indexArray, VertexL
     throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid vertex layout");
   this->VAOlayout = it->second;
 
+  if (layout == VertexLayout::PositionNormalTangent)
+    this->isTangent = true;
+
   this->initVAO(vertexArray, indexArray);
 }
 
@@ -121,6 +124,9 @@ Mesh::Mesh(TypeTag<T>, std::unique_ptr<Primitive> primitive, VertexLayout layout
 
   std::vector<T> vertices = primitive->getVertices<T>();
   std::vector<GLuint> indices = primitive->getIndices();
+
+  if (layout == VertexLayout::PositionNormalTangent)
+    this->isTangent = true;
 
   this->initVAO(&vertices, &indices);
 }

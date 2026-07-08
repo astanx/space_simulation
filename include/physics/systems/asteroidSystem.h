@@ -62,9 +62,9 @@ public:
   void forEachObject(std::function<void(Object &)> &&func) override;
 
   void applyObjectGravitation(Object *object);
-  void render(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
-  void renderInstanced(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
-  void update(const Camera &camera, Frustum *frustum = nullptr, bool force = false) override;
+  void render(Shader &shader) override;
+  void renderInstanced() override;
+  void update(const Camera &camera) override;
 
   void partitionObjects(std::vector<InstancePositionRadiusTexture> &impostorInstances, std::vector<InstancePositionRadiusColor> &pointInstances, const Camera &camera, LODManager *manager, float viewportHeight, Frustum *frustum = nullptr, bool force = false) override;
   const Texture *getTexture() override;

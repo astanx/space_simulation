@@ -5,6 +5,7 @@
 #include "render/gaussianBlur.h"
 #include "render/renderContext.h"
 #include "render/lodManager.h"
+#include "render/renderFlags.h"
 
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
@@ -36,13 +37,6 @@ struct CameraGPU
   glm::vec4 camPosition;
 };
 
-struct ScaleGPU
-{
-  float viewportHeight;
-  float baseMinPixelSize;
-  float fov;
-};
-
 class Renderer
 {
 private:
@@ -59,7 +53,8 @@ private:
 
   std::unordered_map<GLuint, unsigned int> textureLayers;
 
-  std::vector<Renderable *> fullInstances;
+  std::unordered_map<Renderable *, RenderFlags> fullInstances;
+  std::unordered_map<Renderable *, RenderFlags> fullTangentInstances;
   std::vector<InstancePositionRadiusTexture> impostorInstances;
   std::vector<InstancePositionRadiusColor> pointInstances;
 
@@ -86,9 +81,10 @@ private:
   void renderPointShadow(Scene &scene);
   void renderMoonsRadiance(Scene &scene);
   void renderSkybox(Scene &scene, RenderContext &ctx);
-  void renderAsteroidSystems(Scene &scene, Frustum *frustum);
-  void renderObjects(Scene &scene, Frustum *frustum);
-  void renderAtmospheres(Scene &scene, Frustum *frustum);
+  void renderAsteroidSystems(Scene &scene);
+  void renderObjects(Scene &scene);
+  void renderObjectsGroup(std::unordered_map<Renderable *, RenderFlags> &objects, Scene &scene, Shader& shader);
+  void renderAtmospheres(Scene &scene);
   void renderTrails(Scene &scene);
   void renderImpostor(Scene &scene);
   void renderPoint();

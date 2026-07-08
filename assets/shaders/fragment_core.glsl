@@ -17,19 +17,13 @@ in VS_OUT {
   vec3 vs_position;
   vec2 vs_texcoord;
   vec3 vs_normal;
-
+  
+  #ifdef TANGENT
   mat3 TBN;
-
-/*
-  vec3 vs_tangentLightPos;
-  vec3 vs_tangentCamPos;
-  vec3 vs_tangentPos;
-*/
+  #endif
 } fs_in;
 
 uniform PBRMaterial pbrMaterial;
-
-uniform bool useTBN;
 
 uniform samplerCube depthMap;
 uniform samplerCube esmMap;
@@ -44,11 +38,13 @@ void main()
   PBRPointLight localPointLight = pbrPointLight;
   //PhongPointLight localPointLight = phongPointLight;
 
-  vec3 normal = getNormal(pbrMaterial, fs_in.vs_texcoord, fs_in.vs_normal, useTBN);
+  vec3 normal = normalize(fs_in.vs_normal);
+
   vec3 viewDir = normalize(camPosition.xyz - fs_in.vs_position);
 
-  if (useTBN)
-  { 
+  #ifdef TANGENT
+    normal = getNormal(pbrMaterial, fs_in.vs_texcoord, normal);
+
     mat3 TBN = fs_in.TBN;
 
     TBN[0] = normalize(TBN[0]);
@@ -56,7 +52,7 @@ void main()
     TBN[2] = normalize(TBN[2]);
 
     normal = normalize(TBN * normal);
-  }
+  #endif
     
   vec4 albedo = getAlbedo(pbrMaterial, fs_in.vs_texcoord);
 

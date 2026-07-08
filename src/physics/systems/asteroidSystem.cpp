@@ -251,7 +251,7 @@ void AsteroidSystem::partitionObjects(std::vector<InstancePositionRadiusTexture>
     pointInstances.insert(pointInstances.end(), std::make_move_iterator(local.begin()), std::make_move_iterator(local.end()));
 }
 
-void AsteroidSystem::update(const Camera &camera, Frustum *frustum, bool force)
+void AsteroidSystem::update(const Camera &camera)
 {
   // for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
   // {
@@ -295,7 +295,7 @@ void AsteroidSystem::forEachObject(std::function<void(Object &)> &&func)
   this->threadPool.wait();
 }
 
-void AsteroidSystem::render(Shader &shader, Frustum *frustum, bool force) const
+void AsteroidSystem::render(Shader &shader)
 {
   this->asteroid_material->sendToShader(shader);
 
@@ -303,9 +303,10 @@ void AsteroidSystem::render(Shader &shader, Frustum *frustum, bool force) const
     mesh->renderInstanced();
 }
 
-void AsteroidSystem::renderInstanced(Shader &shader, Frustum *frustum, bool force) const
+void AsteroidSystem::renderInstanced()
 {
-  this->render(shader, frustum, force);
+  for (const std::unique_ptr<Mesh> &mesh : this->meshes)
+    mesh->renderInstanced();
 }
 
 const Texture *AsteroidSystem::getTexture()

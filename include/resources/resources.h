@@ -7,6 +7,7 @@ namespace Res
 {
   // Shader
   const std::string CORE_SHADER = "core";
+  const std::string CORE_TANGENT_SHADER = "core_tangent";
   const std::string SKYBOX_SHADER = "skybox";
   const std::string ASTEROID_SHADER = "asteroid_shader";
   const std::string TRAIL_SHADER = "trail";

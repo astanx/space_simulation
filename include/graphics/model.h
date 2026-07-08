@@ -1,5 +1,7 @@
 #pragma once
 
+#include "render/renderable.h"
+
 #include <vector>
 #include <glm/glm.hpp>
 
@@ -8,13 +10,13 @@ class Shader;
 class Texture;
 class Mesh;
 
-class Model
+class Model : public Renderable
 {
 protected:
 	Material *material;
 	Texture *overrideTextureDiffuse;
 	Texture *overrideTextureSpecular;
-	std::vector<Mesh *> meshes;
+	Mesh *mesh;
 	glm::mat4 ModelMatrix;
 	glm::vec3 position;
 	glm::dmat3 orientation;
@@ -24,11 +26,6 @@ protected:
 	void updateModelMatrix();
 
 public:
-	Model(glm::vec3 position, Material &material,
-				std::vector<Mesh *> meshes,
-				Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
-				glm::mat3 orientation = glm::mat3(1.f), glm::vec3 scale = glm::vec3(1.f));
-
 	Model(glm::vec3 position, Material &material,
 				Mesh &mesh,
 				Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
@@ -46,8 +43,8 @@ public:
 
 	~Model();
 
-	void render(Shader &shader);
-	void renderInstanced();
+	void render(Shader &shader) override;
+	void renderInstanced() override;
 
 	glm::vec3 getPosition() const;
 	glm::mat3 getOrientation() const;
@@ -57,4 +54,5 @@ public:
 	void setPosition(const glm::vec3 &newPosition);
 
 	const Material *getMaterial() const { return this->material; };
+	bool getIsTangent() const;
 };

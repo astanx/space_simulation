@@ -31,22 +31,6 @@ void Model::updateModelMatrix()
 }
 // Constructor/Descructor
 Model::Model(glm::vec3 position, Material &material,
-             std::vector<Mesh *> meshes,
-             Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
-             glm::mat3 orientation, glm::vec3 scale)
-{
-  this->position = position;
-  this->material = &material;
-  this->overrideTextureDiffuse = overrideTextureDiffuse;
-  this->overrideTextureSpecular = overrideTextureSpecular;
-  this->orientation = orientation;
-  this->scale = scale;
-
-  for (Mesh *&mesh : meshes)
-    this->meshes.push_back(mesh);
-}
-
-Model::Model(glm::vec3 position, Material &material,
              Mesh &mesh,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
              glm::mat3 orientation, glm::vec3 scale)
@@ -58,7 +42,7 @@ Model::Model(glm::vec3 position, Material &material,
   this->orientation = orientation;
   this->scale = scale;
 
-  this->meshes.push_back(&mesh);
+  this->mesh = &mesh;
 }
 
 Model::Model(const Model &model)
@@ -69,7 +53,7 @@ Model::Model(const Model &model)
   this->overrideTextureSpecular = model.overrideTextureSpecular;
   this->orientation = model.orientation;
   this->scale = model.scale;
-  this->meshes = model.meshes;
+  this->mesh = model.mesh;
 }
 
 Model::Model(glm::vec3 position, Material &material,
@@ -87,14 +71,13 @@ Model::Model(glm::vec3 position, Material &material,
   std::vector<VertexPositionTexcoordNormalColor> vertices = loadOBJmodel(OBJfile);
   std::vector<GLuint> indices;
 
-  Mesh *mesh = new Mesh(&vertices, &indices, VertexLayout::Full);
-  this->meshes.push_back(mesh);
+  this->mesh = new Mesh(&vertices, &indices, VertexLayout::Full);
 }
 
 Model::Model(glm::vec3 position, Mesh &mesh)
 {
   this->position = position;
-  this->meshes.push_back(&mesh);
+  this->mesh = &mesh;
 }
 
 Model::~Model()
@@ -120,8 +103,8 @@ void Model::render(Shader &shader)
     specularScope.emplace(*this->overrideTextureSpecular,
                           TextureBindingPoints::Specular);
 
-  for (Mesh *&mesh : this->meshes)
-    mesh->render();
+  if (this->mesh)
+    this->mesh->render();
 
   // Unbind everything
   glBindVertexArray(0);
@@ -129,8 +112,8 @@ void Model::render(Shader &shader)
 
 void Model::renderInstanced()
 {
-  for (Mesh *&mesh : this->meshes)
-    mesh->renderInstanced();
+  if (this->mesh)
+    this->mesh->renderInstanced();
 
   // Unbind everything
   glBindVertexArray(0);
@@ -145,10 +128,16 @@ glm::vec3 Model::getPosition() const
 {
   return this->position;
 }
+
 glm::mat3 Model::getOrientation() const
 {
   return this->orientation;
 }
+
+bool Model::getIsTangent() const
+{
+  return this->mesh->getIsTangent();
+};
 
 void Model::setOrientation(const glm::mat3 &orientation)
 {

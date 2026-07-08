@@ -50,10 +50,8 @@ vec4 getNight(PBRMaterial material, vec2 texcoord)
   return srgbToLinear(night);
 }
 
-vec3 getNormal(PBRMaterial material, vec2 texcoord, vec3 normal, bool hasNormalMap)
+vec3 getNormal(PBRMaterial material, vec2 texcoord, vec3 normal)
 {
-  if (!hasNormalMap) return normalize(normal);
-
   vec3 N = texture(material.normalMap, texcoord).rgb;
   N = normalize(N * 2.0 - 1.0);
 

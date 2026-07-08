@@ -1,9 +1,14 @@
 #pragma once
 
-#include "physics/transformSource.h"
-
 #include "render/renderable.h"
 #include "render/updatable.h"
+#include "render/renderFlags.h"
+
+#include "graphics/model.h"
+
+#include "physics/transformSource.h"
+
+#include <functional>
 
 class ModelSource : public Renderable, public Updatable
 {
@@ -27,10 +32,12 @@ public:
   void setRenderRadius(double radius) { this->renderRadius = radius; };
   void setRenderImportance(float importance) { this->renderImportance = importance; };
 
-  virtual void update(const Camera &camera, Frustum *frustum = nullptr, bool force = false) override;
-  virtual void render(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
-  virtual void renderLayers(Shader &shader, Frustum *frustum = nullptr, bool force = false) const;
-  virtual void renderInstanced(Shader &shader, Frustum *frustum = nullptr, bool force = false) const override;
+  virtual void update(const Camera &camera) override;
+  virtual void render(Shader &shader) override;
+  virtual void renderLayers(Shader &shader) const;
+  virtual void renderInstanced() override;
+
+  void forEachModel(std::function<void(Model &, RenderFlags)> &&func);
 
   const glm::dvec3 getRenderPosition() const { return this->renderPosition; };
   const double getRenderRadius() const { return this->renderRadius; };

@@ -91,7 +91,7 @@ Planet::Planet(Object *centralBody, double mu, Radii radii, const KeplerElements
 Planet::~Planet() = default;
 
 // Public functions
-void Planet::render(Shader &shader, Frustum *frustum, bool force) const
+void Planet::render(Shader &shader)
 {
   std::optional<ScopedTexture> moonRadianceTextureScope;
   // if (this->atmosphere)
@@ -106,17 +106,17 @@ void Planet::render(Shader &shader, Frustum *frustum, bool force) const
   else
     shader.set1i(0, "useReflectorRadiance");
 
-  ModelSource::render(shader, frustum, force);
+  ModelSource::render(shader);
 };
 
-void Planet::renderAtmosphere(Shader &shader, Frustum *frustum, bool force) const
+void Planet::renderAtmosphere(Shader &shader) const
 {
   if (this->atmosphere)
   {
     this->atmosphere->bindTextures();
     shader.set1f(this->g, "g");
     this->atmosphere->sendToShader(shader);
-    ModelSource::renderLayers(shader, frustum, force);
+    ModelSource::renderLayers(shader);
     this->atmosphere->unbindTextures();
   }
 }
@@ -164,7 +164,7 @@ void Planet::renderMoonsRadiance(Shader &shader, const Camera &camera) const
       for (const auto &moon : moons)
       {
         moon->sendHapkeParametersToShader(shader);
-        moon->render(shader, nullptr, true);
+        moon->render(shader);
       }
     }
   }
