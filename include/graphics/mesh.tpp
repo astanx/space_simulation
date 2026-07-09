@@ -151,7 +151,7 @@ void Mesh::updateBuffers(std::vector<T> *vertexArray, std::vector<GLuint> *index
 template <typename T>
 void Mesh::bindInstanceAttributes(const T *instanceData, const Buffer &vbo) const
 {
-  GLuint start = this->VAOlayout.count;
+  GLuint start = this->instanceLayout.offset ? this->VAOlayout.count : 0;
 
   ScopedBuffer buff(vbo, GL_ARRAY_BUFFER);
 

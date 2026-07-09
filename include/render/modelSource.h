@@ -35,7 +35,8 @@ public:
   virtual void update(const Camera &camera) override;
   virtual void render(Shader &shader) override;
   virtual void renderLayers(Shader &shader) const;
-  virtual void renderInstanced() override;
+  virtual void renderLayersInstanced(Shader &shader) const;
+  virtual void renderInstanced(Shader &shader) override;
 
   void forEachModel(std::function<void(Model &, RenderFlags)> &&func);
 

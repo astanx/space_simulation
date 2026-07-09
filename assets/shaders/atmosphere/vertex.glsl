@@ -6,14 +6,13 @@
 layout (location = 0) in vec3 vertex_position;
 layout (location = 1) in vec2 vertex_texcoord;
 layout (location = 2) in vec3 vertex_normal;
+layout (location = 4) in mat4 ModelMatrix;
 
 out VS_OUT {
   vec3 vs_position;
   vec2 vs_texcoord;
   vec3 vs_normal;
 } vs_out;
-
-uniform mat4 ModelMatrix;
 
 void main()
 {

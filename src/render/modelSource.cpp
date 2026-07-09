@@ -44,10 +44,18 @@ void ModelSource::renderLayers(Shader &shader) const
     layer->render(shader);
 }
 
-void ModelSource::renderInstanced()
+void ModelSource::renderLayersInstanced(Shader &shader) const
 {
+  ScopedBlending blend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  ScopedDepthMask mask(GL_FALSE);
   for (auto &layer : this->layers)
-    layer->renderInstanced();
+    layer->renderInstanced(shader);
+}
+
+void ModelSource::renderInstanced(Shader &shader)
+{
+  ScopedPolygonOffset offset(true, .1f, 4.f);
+  this->mainLayer->renderInstanced(shader);
 }
 
 void ModelSource::scaleRadii(Radii scaledRadii)

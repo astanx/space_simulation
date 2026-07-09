@@ -209,7 +209,7 @@ void Scene::init(RenderContext &renderCtx, double startTime)
   this->addPointLight(std::move(pointLight));
 
   this->physicsWorld.addSun(std::move(sunPtr));
-
+// model matrix split
   std::unique_ptr<Camera> cam = std::make_unique<Camera>(sunPos,
                                                          glm::vec3(0.0f, 0.0f, -1.0f),
                                                          glm::vec3(0.0f, 1.0f, 0.0f),

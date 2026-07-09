@@ -239,7 +239,7 @@ void Renderer::renderAsteroidSystems(Scene &scene)
     skybox.bindIrradianceMap(asteroidShader);
 
     for (AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
-      asteroidSystem->render(asteroidShader);
+      asteroidSystem->renderInstanced(asteroidShader);
 
     skybox.unbindIrradianceMap();
   }
@@ -277,7 +277,7 @@ void Renderer::renderObjectsGroup(std::unordered_map<Renderable *, RenderFlags> 
       mask.emplace(GL_FALSE);
     }
 
-    object->render(shader);
+    object->renderInstanced(shader);
   }
 
   skybox.unbindIrradianceMap();
@@ -340,7 +340,7 @@ void Renderer::renderShadowMap(Scene &scene, Shader &shader)
     if (dynamic_cast<const Star *>(object))
       continue;
 
-    object->render(shader);
+    object->renderInstanced(shader);
   }
 }
 

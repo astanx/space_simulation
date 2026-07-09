@@ -17,7 +17,7 @@ protected:
 	Texture *overrideTextureDiffuse;
 	Texture *overrideTextureSpecular;
 	Mesh *mesh;
-	glm::mat4 ModelMatrix;
+	glm::mat4 modelMatrix;
 	glm::vec3 position;
 	glm::dmat3 orientation;
 	glm::vec3 scale;
@@ -44,7 +44,7 @@ public:
 	~Model();
 
 	void render(Shader &shader) override;
-	void renderInstanced() override;
+	void renderInstanced(Shader &shader) override;
 
 	glm::vec3 getPosition() const;
 	glm::mat3 getOrientation() const;

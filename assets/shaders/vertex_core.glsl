@@ -9,6 +9,7 @@ layout (location = 2) in vec3 vertex_normal;
 #ifdef TANGENT
 layout (location = 3) in vec4 vertex_tangent;
 #endif
+layout (location = 4) in mat4 ModelMatrix;
 
 out VS_OUT {
   vec3 vs_position;
@@ -20,7 +21,6 @@ out VS_OUT {
   #endif
 } vs_out;
 
-uniform mat4 ModelMatrix;
 uniform float radius;
 
 void main()

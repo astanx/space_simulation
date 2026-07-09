@@ -19,15 +19,14 @@ void Model::updateUniforms(Shader &shader)
 {
   if (this->material)
     this->material->sendToShader(shader);
-  shader.setMat4fv(this->ModelMatrix, "ModelMatrix");
 }
 
 void Model::updateModelMatrix()
 {
-  this->ModelMatrix = glm::mat4(1.f);
-  this->ModelMatrix = glm::translate(this->ModelMatrix, this->position);
-  this->ModelMatrix *= glm::mat4(this->orientation);
-  this->ModelMatrix = glm::scale(this->ModelMatrix, this->scale);
+  this->modelMatrix = glm::mat4(1.f);
+  this->modelMatrix = glm::translate(this->modelMatrix, this->position);
+  this->modelMatrix *= glm::mat4(this->orientation);
+  this->modelMatrix = glm::scale(this->modelMatrix, this->scale);
 }
 // Constructor/Descructor
 Model::Model(glm::vec3 position, Material &material,
@@ -43,6 +42,7 @@ Model::Model(glm::vec3 position, Material &material,
   this->scale = scale;
 
   this->mesh = &mesh;
+  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrix);
 }
 
 Model::Model(const Model &model)
@@ -54,6 +54,7 @@ Model::Model(const Model &model)
   this->orientation = model.orientation;
   this->scale = model.scale;
   this->mesh = model.mesh;
+  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrix);
 }
 
 Model::Model(glm::vec3 position, Material &material,
@@ -72,12 +73,14 @@ Model::Model(glm::vec3 position, Material &material,
   std::vector<GLuint> indices;
 
   this->mesh = new Mesh(&vertices, &indices, VertexLayout::Full);
+  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrix);
 }
 
 Model::Model(glm::vec3 position, Mesh &mesh)
 {
   this->position = position;
   this->mesh = &mesh;
+  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrix);
 }
 
 Model::~Model()
@@ -90,6 +93,8 @@ void Model::render(Shader &shader)
   // Update uniforms
   this->updateModelMatrix();
   this->updateUniforms(shader);
+
+  shader.setMat4fv(this->modelMatrix, "ModelMatrix");
 
   // Render objects
   std::optional<ScopedTexture> diffuseScope;
@@ -110,8 +115,29 @@ void Model::render(Shader &shader)
   glBindVertexArray(0);
 }
 
-void Model::renderInstanced()
+void Model::renderInstanced(Shader &shader)
 {
+  // Update uniforms
+  this->updateModelMatrix();
+  this->updateUniforms(shader);
+
+  std::vector<InstanceModelMatrix> buf;
+  buf.emplace_back(InstanceModelMatrix{this->modelMatrix});
+
+  this->mesh->setInstanceBuffer(buf.data(), buf.size());
+
+  // Render objects
+  std::optional<ScopedTexture> diffuseScope;
+  std::optional<ScopedTexture> specularScope;
+
+  if (this->overrideTextureDiffuse)
+    diffuseScope.emplace(*this->overrideTextureDiffuse,
+                         TextureBindingPoints::Diffuse);
+
+  if (this->overrideTextureSpecular)
+    specularScope.emplace(*this->overrideTextureSpecular,
+                          TextureBindingPoints::Specular);
+
   if (this->mesh)
     this->mesh->renderInstanced();
 

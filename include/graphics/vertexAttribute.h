@@ -15,4 +15,5 @@ struct LayoutDesc
 {
   const VertexAttribute *attributes;
   size_t count;
+  bool offset = true;
 };

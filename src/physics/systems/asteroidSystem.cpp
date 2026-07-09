@@ -300,11 +300,13 @@ void AsteroidSystem::render(Shader &shader)
   this->asteroid_material->sendToShader(shader);
 
   for (const std::unique_ptr<Mesh> &mesh : this->meshes)
-    mesh->renderInstanced();
+    mesh->render();
 }
 
-void AsteroidSystem::renderInstanced()
+void AsteroidSystem::renderInstanced(Shader &shader)
 {
+  this->asteroid_material->sendToShader(shader);
+
   for (const std::unique_ptr<Mesh> &mesh : this->meshes)
     mesh->renderInstanced();
 }

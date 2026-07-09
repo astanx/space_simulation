@@ -2,13 +2,13 @@
 
 layout (location = 0) in vec3 vertex_position;
 layout (location = 1) in vec3 vertex_normal;
+layout (location = 4) in mat4 ModelMatrix;
 
 out VS_OUT {
   vec3 vs_position;
   vec3 vs_normal;
 } vs_out;
 
-uniform mat4 ModelMatrix;
 uniform mat4 ProjectionMatrix;
 uniform mat4 ViewMatrix;
 

@@ -49,11 +49,6 @@ void PBRMaterial::sendToShader(Shader &program)
   program.set1f(this->metallic, "pbrMaterial.metallic");
   program.set1f(this->roughness, "pbrMaterial.roughness");
 
-  if (this->normalMap)
-    program.set1i(1, "useTBN");
-  else
-    program.set1i(0, "useTBN");
-
   if (this->nightMap)
     program.set1i(1, "pbrMaterial.useNightMap");
   else

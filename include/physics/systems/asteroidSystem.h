@@ -63,7 +63,7 @@ public:
 
   void applyObjectGravitation(Object *object);
   void render(Shader &shader) override;
-  void renderInstanced() override;
+  void renderInstanced(Shader &shader) override;
   void update(const Camera &camera) override;
 
   void partitionObjects(std::vector<InstancePositionRadiusTexture> &impostorInstances, std::vector<InstancePositionRadiusColor> &pointInstances, const Camera &camera, LODManager *manager, float viewportHeight, Frustum *frustum = nullptr, bool force = false) override;

@@ -1,8 +1,8 @@
 #version 410
 
 layout (location = 0) in vec3 vertex_position;
+layout (location = 4) in mat4 ModelMatrix;
 
-uniform mat4 ModelMatrix;
 
 void main()
 {

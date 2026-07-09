@@ -49,8 +49,4 @@ void PhongMaterial::sendToShader(Shader &program)
   this->sendTexture(this->diffuseTexture, program, TextureBindingPoints::Diffuse, "phongMaterial.diffuseTexture");
   this->sendTexture(this->specularTexture, program, TextureBindingPoints::Specular, "phongMaterial.specularTexture");
   this->sendTexture(this->normalTexture, program, TextureBindingPoints::Normal, "phongMaterial.normalTexture");
-  if (this->normalTexture)
-    program.set1i(1, "useTBN");
-  else
-    program.set1i(0, "useTBN");
 }
