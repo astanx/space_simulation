@@ -8,7 +8,7 @@
 #include <fstream>
 
 // Private functions
-std::string Shader::loadShaderSrc(const char *fileName, bool isInclude)
+std::string Shader::loadShaderSrc(const std::string &fileName, bool isInclude)
 {
   std::string temp = "";
   std::string src = "";
@@ -36,7 +36,7 @@ std::string Shader::loadShaderSrc(const char *fileName, bool isInclude)
     }
   }
   else
-    std::cerr << "[Shader] RUNTIME ERROR: Could not open shader file - " << fileName << std::endl;
+    Logger::logFatal("Shader", "Could not open shader file: " + fileName);
 
   inFile.close();
 
@@ -50,7 +50,7 @@ std::string Shader::loadShaderSrc(const char *fileName, bool isInclude)
   return src;
 }
 
-GLuint Shader::loadShader(GLenum type, char *fileName)
+GLuint Shader::loadShader(GLenum type, const std::string &fileName)
 {
   char infoLog[512];
   GLint success;
@@ -65,7 +65,7 @@ GLuint Shader::loadShader(GLenum type, char *fileName)
 
   if (!success)
   {
-    std::cerr << "[Shader] RUNTIME ERROR: Compilation failed for - " << fileName << std::endl;
+    Logger::logError("Shader", "Compilation failed for: " + fileName);
     glGetShaderInfoLog(shader, 512, NULL, infoLog);
     std::cout << infoLog << std::endl;
   }
@@ -111,7 +111,7 @@ GLint Shader::getUniformLocation(const std::string &name)
 }
 
 // Constructor / Destructor
-Shader::Shader(const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile)
+Shader::Shader(const int GLSLmajor, const int GLSLminor, const std::string &vertexFile, const char *fragmentFile, const char *geometryFile)
 {
   this->GLSLmajor = GLSLmajor;
   this->GLSLminor = GLSLminor;
@@ -119,10 +119,11 @@ Shader::Shader(const int GLSLmajor, const int GLSLminor, const char *vertexFile,
   GLuint geometryShader = 0;
   GLuint fragmentShader = 0;
 
-  vertexShader = loadShader(GL_VERTEX_SHADER, const_cast<char *>(vertexFile));
+  vertexShader = loadShader(GL_VERTEX_SHADER, vertexFile);
   if (geometryFile != nullptr)
-    geometryShader = loadShader(GL_GEOMETRY_SHADER, const_cast<char *>(geometryFile));
-  fragmentShader = loadShader(GL_FRAGMENT_SHADER, const_cast<char *>(fragmentFile));
+    geometryShader = loadShader(GL_GEOMETRY_SHADER, geometryFile);
+  if (fragmentFile != nullptr)
+    fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentFile);
 
   this->linkProgram(vertexShader, geometryShader, fragmentShader);
 

@@ -48,10 +48,7 @@ Program::Program(const std::string filePath, Context &context)
 
   cl_int errNum;
 
-  this->program = clCreateProgramWithSource(context.get(), 1, &source, NULL, &errNum);
-
-  if (errNum != CL_SUCCESS)
-    Logger::logError("Program", "Failed to create OpenCL program");
+  CL_CREATE(this->program = clCreateProgramWithSource(context.get(), 1, &source, NULL, &errNum), errNum);
 
   this->build(context);
 }
@@ -71,17 +68,18 @@ void Program::build(Context &context)
   if (context.getSupportsDouble())
     options = "-DUSE_DOUBLE";
 
-  cl_int errNum = clBuildProgram(this->program, 1, &device, options.c_str(), nullptr, nullptr);
+  CL_CALL(clBuildProgram(this->program, 1, &device, options.c_str(), nullptr, nullptr));
 
-  if (errNum != CL_SUCCESS)
+  size_t logSize = 0;
+
+  clGetProgramBuildInfo(this->program, device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
+
+  if (logSize > 1)
   {
-    size_t logSize = 0;
-    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
-
     std::vector<char> log(logSize);
 
-    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log.data(), nullptr);
+    clGetProgramBuildInfo(this->program, device, CL_PROGRAM_BUILD_LOG, logSize, log.data(), nullptr);
 
-    Logger::logError("Program", "Program build failed: " + std::string(log.begin(), log.end()));
+    Logger::logInfo("Program", std::string(log.data()));
   }
 }

@@ -103,7 +103,7 @@ Mesh::Mesh(std::vector<T> *vertexArray, std::vector<GLuint> *indexArray, VertexL
 
   auto it = LAYOUTS.find(layout);
   if (it == LAYOUTS.end())
-    throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid vertex layout");
+    Logger::logFatal("Mesh", "Invalid vertex layout");
   this->VAOlayout = it->second;
 
   if (layout == VertexLayout::PositionNormalTangent)
@@ -119,7 +119,7 @@ Mesh::Mesh(TypeTag<T>, std::unique_ptr<Primitive> primitive, VertexLayout layout
 
   auto it = LAYOUTS.find(layout);
   if (it == LAYOUTS.end())
-    throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid vertex layout");
+    Logger::logFatal("Mesh", "Invalid vertex layout");
   this->VAOlayout = it->second;
 
   std::vector<T> vertices = primitive->getVertices<T>();

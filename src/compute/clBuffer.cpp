@@ -8,19 +8,13 @@
 CLBuffer::CLBuffer(cl_context context, cl_mem_flags flag, size_t size)
 {
   cl_int errNum;
-  this->buffer = clCreateBuffer(context, flag, size, nullptr, &errNum);
-
-  if (errNum != CL_SUCCESS)
-    Logger::logError("CLBuffer", "Failed to create OpenCL buffer");
+  CL_CREATE(this->buffer = clCreateBuffer(context, flag, size, nullptr, &errNum), errNum);
 }
 
 CLBuffer::CLBuffer(cl_context context, cl_mem_flags flag, GLuint buffer)
 {
   cl_int errNum;
-  this->buffer = clCreateFromGLBuffer(context, flag, buffer, &errNum);
-
-  if (errNum != CL_SUCCESS)
-    Logger::logError("CLBuffer", "Failed to create OpenCL buffer from OpenGL buffer");
+  CL_CREATE(this->buffer = clCreateFromGLBuffer(context, flag, buffer, &errNum), errNum);
 }
 
 CLBuffer::~CLBuffer()

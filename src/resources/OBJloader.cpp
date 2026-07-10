@@ -32,8 +32,7 @@ std::vector<VertexPositionTexcoordNormalColor> loadOBJmodel(const std::string &f
   std::ifstream inFile(filename);
 
   if (!inFile)
-    throw std::runtime_error(
-        std::string("[OBJ loader] ERROR: Could not open file: ") + filename);
+    Logger::logFatal("OBJ loader", "Could not open file: " + filename);
 
   std::stringstream ss;
   std::string line = "";

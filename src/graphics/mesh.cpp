@@ -20,7 +20,7 @@ void Mesh::setInstanceLayout(InstanceLayout layout)
 {
   auto it = INSTANCE_LAYOUTS.find(layout);
   if (it == INSTANCE_LAYOUTS.end())
-    throw std::runtime_error("[Mesh] RUNTIME ERROR: Invalid instance layout");
+    Logger::logFatal("Mesh", "Invalid instance layout");
   this->instanceLayout = it->second;
 }
 

@@ -326,21 +326,21 @@ void Scene::decreaseCameraSpeed(double percentage)
 const Camera &Scene::getActiveCamera() const
 {
   if (!this->activeCamera)
-    throw std::runtime_error("[Scene] RUNTIME ERROR: No active camera");
+    Logger::logFatal("Scene", "No active camera");
 
   return *this->activeCamera;
 };
 const Skybox &Scene::getActiveSkybox() const
 {
   if (!this->skybox)
-    throw std::runtime_error("[Scene] RUNTIME ERROR: No active skybox");
+    Logger::logFatal("Scene", "No active skybox");
 
   return *this->skybox;
 };
 const glm::vec3 Scene::getActiveCameraPosition() const
 {
   if (!this->activeCamera)
-    throw std::runtime_error("[Scene] RUNTIME ERROR: No active camera, can not get position");
+    Logger::logFatal("Scene", "No active camera, can not get position");
 
   return this->activeCamera->getPosition();
 };

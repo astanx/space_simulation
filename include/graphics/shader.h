@@ -13,16 +13,16 @@ private:
   int GLSLmajor;
   int GLSLminor;
 
-  std::string loadShaderSrc(const char *fileName, bool isInclude = false);
+  std::string loadShaderSrc(const std::string &fileName, bool isInclude = false);
 
-  GLuint loadShader(GLenum type, char *fileName);
+  GLuint loadShader(GLenum type, const std::string &fileName);
 
   void linkProgram(GLuint vertexShader, GLuint geometryShader, GLuint fragmentShader);
 
   GLint getUniformLocation(const std::string &name);
 
 public:
-  Shader(const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile = nullptr);
+  Shader(const int GLSLmajor, const int GLSLminor, const std::string &vertexFile, const char *fragmentFile, const char *geometryFile = nullptr);
 
   ~Shader();
 

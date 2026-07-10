@@ -24,7 +24,7 @@ void Application::initGLFW()
   if (!glfwInit())
   {
     glfwTerminate();
-    throw std::runtime_error("[Application] RUNTIME ERROR: GLFW init failed");
+    Logger::logFatal("Application", "GLFW init failed");
   }
 }
 void Application::initWindow(const char *title, GLboolean resizable)
@@ -42,8 +42,8 @@ void Application::initWindow(const char *title, GLboolean resizable)
   GLFWwindow *window = glfwCreateWindow(this->windowWidth, this->windowHeight, title, NULL, NULL);
   if (!window)
   {
+    Logger::logFatal("Application", "GLFW window creation failed");
     glfwTerminate();
-    throw std::runtime_error("[Application] RUNTIME ERROR: GLFW window creation failed");
   }
 
   glfwGetFramebufferSize(window, &this->framebufferWidth, &this->framebufferHeight);
@@ -62,9 +62,9 @@ void Application::initGLEW()
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK)
   {
+    Logger::logFatal("Application", "GLEW init failed");
     glfwDestroyWindow(this->window);
     glfwTerminate();
-    throw std::runtime_error("[Application] RUNTIME ERROR: GLEW init failed");
   }
 }
 void Application::initOpenGLSettings()

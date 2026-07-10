@@ -79,11 +79,7 @@ Context::Context()
   contextProperties[i] = 0;
 
   cl_int errNum;
-
-  this->context = clCreateContext(contextProperties, 1, &this->device, nullptr, nullptr, &errNum);
-
-  if (errNum != CL_SUCCESS)
-    Logger::logError("Context", "Failed to create OpenCL context");
+  CL_CREATE(this->context = clCreateContext(contextProperties, 1, &this->device, nullptr, nullptr, &errNum), errNum);
 }
 
 Context::~Context()

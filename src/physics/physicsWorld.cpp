@@ -43,7 +43,7 @@ void PhysicsWorld::addIntegratableObject(Integratable *object)
 void PhysicsWorld::addSun(Star *sun)
 {
   if (this->sun)
-    throw std::runtime_error("[PhysicsWorld] RUNTIME ERROR: Sun already exists");
+    Logger::logFatal("PhysicsWorld", "Sun already exists");
 
   this->sun = sun;
 }
@@ -63,7 +63,7 @@ void PhysicsWorld::addSystem(System *system)
 const Star &PhysicsWorld::getSun() const
 {
   if (!this->sun)
-    throw std::runtime_error("[PhysicsWorld] RUNTIME ERROR: No sun");
+    Logger::logFatal("PhysicsWorld", "No sun");
 
   return *this->sun;
 };

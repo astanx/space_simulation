@@ -83,52 +83,49 @@ Kernel &ResourceManager::GetKernel(const std::string &name)
 {
   auto it = this->kernels.find(name);
   if (it == this->kernels.end())
-    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Kernel not found");
+    Logger::logFatal("Resource manager", "Kernel not found: " + name);
   return *it->second;
 }
 Program &ResourceManager::GetProgram(const std::string &name)
 {
   auto it = this->programs.find(name);
   if (it == this->programs.end())
-    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Program not found");
+    Logger::logFatal("Resource manager", "Program not found: " + name);
   return *it->second;
 }
 Context &ResourceManager::GetContext(const std::string &name)
 {
   auto it = this->contexts.find(name);
   if (it == this->contexts.end())
-    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Context not found");
+    Logger::logFatal("Resource manager", "Context not found: " + name);
   return *it->second;
 }
 Shader &ResourceManager::GetShader(const std::string &name)
 {
   auto it = this->shaders.find(name);
   if (it == this->shaders.end())
-    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Shader not found");
+    Logger::logFatal("Resource manager", "Shader not found: " + name);
   return *it->second;
 }
 Texture &ResourceManager::GetTexture(const std::string &name)
 {
   auto it = this->textures.find(name);
   if (it == this->textures.end())
-    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Texture not found");
-
+    Logger::logFatal("Resource manager", "Texture not found: " + name);
   return *it->second;
 }
 Material &ResourceManager::GetMaterial(const std::string &name)
 {
   auto it = this->materials.find(name);
   if (it == this->materials.end())
-    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Material not found");
-
+    Logger::logFatal("Resource manager", "Material not found: " + name);
   return *it->second;
 }
 Mesh &ResourceManager::GetMesh(const std::string &name)
 {
   auto it = this->meshes.find(name);
   if (it == this->meshes.end())
-    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Mesh not found");
-
+    Logger::logFatal("Resource manager", "Mesh not found: " + name);
   return *it->second;
 }
 std::vector<Shader *> ResourceManager::GetAllShaders()

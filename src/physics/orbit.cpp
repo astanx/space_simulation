@@ -38,7 +38,7 @@ Object *Orbit::getCentralBody() const
 glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, OrbitalObject *orbitBody)
 {
   if (!centralBody || !orbitBody)
-    throw std::runtime_error("[Orbit] RUNTIME ERROR: no body to calculate velocity");
+    Logger::logFatal("Orbit", "No body to calculate velocity");
 
   glm::dvec3 normal(0.0);
   glm::dvec3 velocity(0.0);
