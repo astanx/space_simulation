@@ -5,10 +5,15 @@
 #include "graphics/materials/material.h"
 #include "graphics/mesh.h"
 
+#include "compute/kernel.h"
+#include "compute/program.h"
+#include "compute/context.h"
+
 #include <unordered_map>
 #include <string>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <OpenCL/cl.h>
 
 class Primitive;
 class AsteroidMaterial;
@@ -23,11 +28,21 @@ private:
   std::unordered_map<std::string, std::unique_ptr<Material>> materials;
   std::unordered_map<std::string, std::unique_ptr<Mesh>> meshes;
 
+  std::unordered_map<std::string, std::unique_ptr<Kernel>> kernels;
+  std::unordered_map<std::string, std::unique_ptr<Program>> programs;
+  std::unordered_map<std::string, std::unique_ptr<Context>> contexts;
+
 public:
   ResourceManager() = default;
   ~ResourceManager() = default;
 
   // Loaders
+  Kernel &LoadKernel(const std::string &name, cl_program program);
+  Kernel &LoadKernel(const std::string &storeName, const std::string &kernelName, cl_program program);
+  Kernel &LoadKernel(const std::string &name, const std::string &programName);
+  Program &LoadProgram(const std::string &name, const std::string &filePath, Context &context);
+  Program &LoadProgram(const std::string &name, const std::string &filePath, const std::string &contextName);
+  Context &LoadContext(const std::string &name);
   Shader &LoadShader(const std::string &name, const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile = nullptr);
   Texture &LoadTexture(const std::string &name, const std::string &filePath, GLenum type);
   Material &LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
@@ -44,6 +59,9 @@ public:
   Mesh &LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
 
   // Getters
+  Kernel &GetKernel(const std::string &name);
+  Program &GetProgram(const std::string &name);
+  Context &GetContext(const std::string &name);
   Shader &GetShader(const std::string &name);
   Texture &GetTexture(const std::string &name);
   Material &GetMaterial(const std::string &name);

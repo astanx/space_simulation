@@ -1,7 +1,10 @@
 #ifndef CONSTANTS
 #define CONSTANTS
 
-#define PI = 3.14159265359;
-#define EPS = 1e-12;
+#include "real.cl"
+
+constant real PI = 3.141592653589793;
+constant real EPS = 1e-12;
+constant real G = 6.674e-11;
 
 #endif

@@ -2,13 +2,14 @@
 #define KEPLER
 
 #include "constants.cl"
+#include "real.cl"
 
-double calculateMeanMotion(double mu, double a)
+real calculateMeanMotion(real mu, real a)
 {
   return sqrt(mu / (a * a * a));
 }
 
-double advanceMeanAnomaly(double m, double n, double dt)
+real advanceMeanAnomaly(real m, real n, real dt)
 {
   m = fmod(m + n * dt, 2 * PI);
   

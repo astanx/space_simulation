@@ -1,35 +1,69 @@
 #include "matrix.cl"
 #include "constants.cl"
+#include "real.cl"
 
-struct ObjectState
+typedef struct
 {
-  double3 position;
+  real3 position;
   dmat3 tensor;
-  double3 angularVelocity;
-  double3 velocity;
-  double meanRadius;
-}
+  real3 angularVelocity;
+  real3 velocity;
+  real meanRadius;
+} ObjectState;
 
-struct TidalProperties
+typedef struct
 {
-  double loveNumber;
-  double tidalFactor;
-  bool isTidal;
+  real loveNumber;
+  real tidalFactor;
+  int isTidal;
+} TidalProperties;
+
+real3 calculateGravitationalTorque(real3 objectPosition, dmat3 objectTensor, real bodyMu, real3 bodyPosition)
+{
+  real3 R = bodyPosition - objectPosition;
+  real d = length(R);
+
+  if (d == 0.0)
+    return real3(0.0);
+
+  real3 r = R / d;
+  return 3 *  bodyMu / pow(d, 3) * cross(r, dmat3_dot_d3(objectTensor, r));
 }
 
-double3 calculateTorque(ObjectState object, TidalProperties properties, 
-                        __global double3* positions, __global double3* velocities, __global double3* mus, 
+real3 calculateTidalTorque(real3 objectPosition, real3 objectAngularVelocity, 
+                              real3 objectVelocity, real objectMeanRadius,
+                              real objectLoveNumber, real objectTidalFactor,
+                              real3 bodyVelocity, real3 bodyPosition, real bodyMu)
+{
+  real3 r = objectPosition - bodyPosition;
+  real d = length(r);
+  if (d == 0.0)
+    return real3(0.0);
+
+  real3 v = objectVelocity - bodyVelocity;
+
+  real3 nVec = cross(r, v) / dot(r, r);
+  real n = length(nVec);
+
+  if (n < EPS)
+    return real3(0.0);
+
+  return -3 * objectLoveNumber * 1 / (2 * n * objectTidalFactor) * bodyMu * bodyMu * pow(objectMeanRadius, 5) / G / pow(d, 6) * (objectAngularVelocity - nVec);
+}
+
+real3 calculateTorque(ObjectState object, TidalProperties properties, 
+                        __global real3* positions, __global real3* velocities, __global real* mus, 
                         int i, int count)
 {
-  double3 torque = double3(0.0);
+  real3 torque = (real3)(0.0);
 
   for (int j = 0; j < count; j++)
   {
     if (i == j)
       continue;
 
-    double3 bodyPosition = positions[j];
-    double bodyMu = mus[j];
+    real3 bodyPosition = positions[j];
+    real bodyMu = mus[j];
 
     torque += calculateGravitationalTorque(object.position, object.tensor, bodyMu, bodyPosition);
     if (properties.isTidal)
@@ -38,37 +72,4 @@ double3 calculateTorque(ObjectState object, TidalProperties properties,
                                       velocities[j], bodyPosition, bodyMu);
   }
   return torque;
-}
-
-double3 calculateGravitationalTorque(double3 objectPosition, dmat3 objectTensor, double bodyMu, double3 bodyPosition)
-{
-  double3 R = bodyPosition - objectPosition;
-  double d = length(R);
-
-  if (d == 0.0)
-    return double3(0.0);
-
-  double3 r = R / d;
-  return 3 *  bodyMu / pow(d, 3) * cross(r, dot(objectTensor, r));
-}
-
-double3 calculateTidalTorque(double3 objectPosition, double3 objectAngularVelocity, 
-                              double3 objectVelocity, double objectMeanRadius,
-                              double objectLoveNumber, double objectTidalFactor,
-                              double3 bodyVelocity, double3 bodyPosition, double bodyMu)
-{
-  double3 r = objectPosition - bodyPosition;
-  double d = length(r);
-  if (d == 0.0)
-    return double3(0.0);
-
-  double3 v = objectVelocity - bodyVelocity;
-
-  double3 nVec = cross(r, v) / dot(r, r);
-  double n = length(nVec);
-
-  if (n < EPS)
-    return double3(0.0);
-
-  return -3 * objectLoveNumber * 1 / (2 * n * objectTidalFactor) * mu * mu * pow(objectMeanRadius, 5) / G / pow(d, 6) * (objectAngularVelocity - nVec);
 }

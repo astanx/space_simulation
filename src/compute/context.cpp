@@ -21,7 +21,7 @@ Context::Context()
   for (cl_uint i = 0; i < numPlatforms; i++)
   {
     cl_uint numDevices;
-    clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);
+    clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
 
     std::vector<cl_device_id> devices(numDevices);
     clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, numDevices, devices.data(), NULL);
@@ -32,6 +32,7 @@ Context::Context()
     {
       cl_uint computeUnits;
       clGetDeviceInfo(devices[j], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &computeUnits, NULL);
+
       if (computeUnits > bestComputeUnits)
       {
         bestComputeUnits = computeUnits;
@@ -40,6 +41,16 @@ Context::Context()
       }
     }
   }
+
+  char extensions[4096];
+  clGetDeviceInfo(this->device, CL_DEVICE_EXTENSIONS, sizeof(extensions), extensions, nullptr);
+
+  this->supportsDouble = strstr(extensions, "cl_khr_fp64") != nullptr;
+
+  if (this->supportsDouble)
+    Logger::logInfo("Context", "Device supports OpenCL double precision");
+  else
+    Logger::logWarning("Context", "Device does NOT support OpenCL double precision");
 
   cl_context_properties contextProperties[7];
   int i = 0;

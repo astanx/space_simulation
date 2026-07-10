@@ -3,13 +3,13 @@
 #include "debug/logger.h"
 
 // Constructor / Destructor
-Kernel::Kernel(cl_program program)
+Kernel::Kernel(const std::string &name, cl_program program)
 {
   cl_int errNum;
-  this->kernel = clCreateKernel(program, "hello_kernel", &errNum);
+  this->kernel = clCreateKernel(program, name.c_str(), &errNum);
 
   if (errNum != CL_SUCCESS)
-    Logger::logError("Kernel", "Failed to create OpenCL kernel");
+    Logger::logError("Kernel", "Failed to create OpenCL kernel: " + name);
 }
 
 Kernel::~Kernel()

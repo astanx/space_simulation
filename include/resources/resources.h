@@ -112,4 +112,17 @@ namespace Res
 
   const std::string EARTH_ATMOSPHERE_MATERIAL = "earth_atmosphere_material";
   const std::string VENUS_ATMOSPHERE_MATERIAL = "venus_atmosphere_material";
+
+  // Contexts
+  const std::string MAIN_CONTEXT = "main_context";
+
+  // Programs
+  const std::string WISDOM_HOLMAN_INTERGATOR_PROGRAM = "wisdom_holman_intergator";
+
+  // Kernels
+  const std::string DRIFT_ANGULAR_KERNEL = "driftAngular";
+  const std::string DRIFT_OBJECTS_LINEAR_KERNEL = "driftObjectsLinear";
+  const std::string DRIFT_ORBITAL_LINEAR_KERNEL = "driftOrbitalLinear";
+  const std::string HALF_KICK_ANGULAR_KERNEL = "halfKickAngular";
+  const std::string HALF_KICK_LINEAR_KERNEL = "halfKickLinear";
 }

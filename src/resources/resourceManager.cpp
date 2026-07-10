@@ -12,6 +12,36 @@
 #include <iostream>
 
 // Loaders
+Kernel &ResourceManager::LoadKernel(const std::string &name, cl_program program)
+{
+  this->kernels[name] = std::make_unique<Kernel>(name, program);
+  return *this->kernels[name];
+}
+Kernel &ResourceManager::LoadKernel(const std::string &storeName, const std::string &kernelName, cl_program program)
+{
+  this->kernels[storeName] = std::make_unique<Kernel>(kernelName, program);
+  return *this->kernels[storeName];
+}
+Kernel &ResourceManager::LoadKernel(const std::string &name, const std::string &programName)
+{
+  this->kernels[name] = std::make_unique<Kernel>(name, this->GetProgram(programName).get());
+  return *this->kernels[name];
+}
+Program &ResourceManager::LoadProgram(const std::string &name, const std::string &filePath, Context &context)
+{
+  this->programs[name] = std::make_unique<Program>(filePath, context);
+  return *this->programs[name];
+}
+Program &ResourceManager::LoadProgram(const std::string &name, const std::string &filePath, const std::string &contextName)
+{
+  this->programs[name] = std::make_unique<Program>(filePath, this->GetContext(contextName));
+  return *this->programs[name];
+}
+Context &ResourceManager::LoadContext(const std::string &name)
+{
+  this->contexts[name] = std::make_unique<Context>();
+  return *this->contexts[name];
+}
 Shader &ResourceManager::LoadShader(const std::string &name, const int GLSLmajor, const int GLSLminor, const char *vertexFile, const char *fragmentFile, const char *geometryFile)
 {
   this->shaders[name] = std::make_unique<Shader>(GLSLmajor, GLSLminor, vertexFile, fragmentFile, geometryFile);
@@ -49,6 +79,27 @@ Material &ResourceManager::LoadPBRMaterial(const std::string &name, Texture *alb
 }
 
 // Getters
+Kernel &ResourceManager::GetKernel(const std::string &name)
+{
+  auto it = this->kernels.find(name);
+  if (it == this->kernels.end())
+    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Kernel not found");
+  return *it->second;
+}
+Program &ResourceManager::GetProgram(const std::string &name)
+{
+  auto it = this->programs.find(name);
+  if (it == this->programs.end())
+    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Program not found");
+  return *it->second;
+}
+Context &ResourceManager::GetContext(const std::string &name)
+{
+  auto it = this->contexts.find(name);
+  if (it == this->contexts.end())
+    throw std::runtime_error("[Resource manager] RUNTIME ERROR: Context not found");
+  return *it->second;
+}
 Shader &ResourceManager::GetShader(const std::string &name)
 {
   auto it = this->shaders.find(name);

@@ -1,19 +1,21 @@
 #include "compute/program.h"
 
+#include "compute/context.h"
+
 #include "debug/logger.h"
 
 #include <fstream>
 #include <sstream>
 
 // Private functions
-std::string Program::loadProgramSrc(const std::string fileName, bool isInclude)
+std::string Program::loadProgramSrc(const std::string filePath, bool isInclude)
 {
   std::string temp = "";
   std::string src = "";
 
   std::ifstream inFile;
 
-  inFile.open(fileName);
+  inFile.open(filePath);
 
   if (inFile.is_open())
   {
@@ -31,7 +33,7 @@ std::string Program::loadProgramSrc(const std::string fileName, bool isInclude)
     }
   }
   else
-    Logger::logError("Program", "Could not open program file: " + fileName);
+    Logger::logError("Program", "Could not open program file: " + filePath);
 
   inFile.close();
 
@@ -39,17 +41,19 @@ std::string Program::loadProgramSrc(const std::string fileName, bool isInclude)
 }
 
 // Constructor / Destructor
-Program::Program(std::string fileName, cl_context context)
+Program::Program(const std::string filePath, Context &context)
 {
-  std::string src = this->loadProgramSrc(fileName);
+  std::string src = this->loadProgramSrc(filePath);
   const char *source = src.c_str();
 
   cl_int errNum;
 
-  this->program = clCreateProgramWithSource(context, 1, &source, NULL, &errNum);
+  this->program = clCreateProgramWithSource(context.get(), 1, &source, NULL, &errNum);
 
   if (errNum != CL_SUCCESS)
     Logger::logError("Program", "Failed to create OpenCL program");
+
+  this->build(context);
 }
 
 Program::~Program()
@@ -58,7 +62,26 @@ Program::~Program()
 }
 
 // Public functiosn
-void Program::build(cl_device_id device)
+void Program::build(Context &context)
 {
-  clBuildProgram(this->program, 1, &device, nullptr, nullptr, nullptr);
+  cl_device_id device = context.getDevice();
+
+  std::string options;
+
+  if (context.getSupportsDouble())
+    options = "-DUSE_DOUBLE";
+
+  cl_int errNum = clBuildProgram(this->program, 1, &device, options.c_str(), nullptr, nullptr);
+
+  if (errNum != CL_SUCCESS)
+  {
+    size_t logSize = 0;
+    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
+
+    std::vector<char> log(logSize);
+
+    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log.data(), nullptr);
+
+    Logger::logError("Program", "Program build failed: " + std::string(log.begin(), log.end()));
+  }
 }

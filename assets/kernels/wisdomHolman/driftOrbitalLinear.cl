@@ -1,45 +1,46 @@
 #include "kepler.cl"
 #include "orbitalMaths.cl"
 #include "matrix.cl"
+#include "real.cl"
 
-__kernel void driftOrbitalLinear(__global double3* positions, __global double3* velocities, __global double* mu, __global double* semiAxises, 
-                          __global double* eccentricities, __global double* inclinations, __global double* longitude, 
-                          __global double* periapsis, __global double* meanAnomaly, __global double* meanMotion, 
-                          __global int* centralBodyIndices, double dt)
+__kernel void driftOrbitalLinear(__global real3* positions, __global real3* velocities, __global real* mu, __global real* semiAxises, 
+                          __global real* eccentricities, __global real* inclinations, __global real* longitude, 
+                          __global real* periapsis, __global real* meanAnomaly, __global real* meanMotion, 
+                          __global int* centralBodyIndices, real dt)
 {
   int id = get_global_id(0);
 
-  double m = meanAnomaly[id];
-  double n = meanMotion[id];
-  double a = semiAxises[id];
-  double e = eccentricities[id];
-  double i = inclination[id];
-  double Omega = longitude[id];
-  double omega = periapsis[id];
+  real m = meanAnomaly[id];
+  real n = meanMotion[id];
+  real a = semiAxises[id];
+  real e = eccentricities[id];
+  real i = inclinations[id];
+  real Omega = longitude[id];
+  real omega = periapsis[id];
 
   int centralBodyID = centralBodyIndices[id];
 
-  double mu_central = mu[centralBodyID];
+  real mu_central = mu[centralBodyID];
 
   m = advanceMeanAnomaly(m, n, dt);
 
-  double E = calculateEccentricAnomaly(m, e);
+  real E = calculateEccentricAnomaly(m, e);
 
-  double3 pos = double3(0.0);
+  real3 pos = real3(0.0);
 
   pos.x = a * (cos(E) - e);
   pos.y = a * sqrt(1 - (e * e)) * sin(E);
 
-  double3 v = double3(0.0);
-  double r = a * (1 - e * cos(E));
+  real3 v = real3(0.0);
+  real r = a * (1 - e * cos(E));
 
   v.x = -sqrt(mu_central * a) / r * sin(E);
   v.y = sqrt(mu_central * a * (1 - (e * e))) / r * cos(E);
 
-  dmat3 R = createR3matrix(Omega) * createR1matrix(i) * createR3matrix(omega);
+  dmat3 R = dmat3_dot_dmat3(createR3matrix(Omega), dmat3_dot_dmat3(createR1matrix(i), createR3matrix(omega)));
 
-  velocities[id] = dot(R, v) + velocities[centralBodyID];
-  positions[id] = dot(R, pos) + positions[centralBodyID];
+  velocities[id] = dmat3_dot_d3(R, v) + velocities[centralBodyID];
+  positions[id] = dmat3_dot_d3(R, pos) + positions[centralBodyID];
 
   meanAnomaly[id] = m;
 }

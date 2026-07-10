@@ -3,16 +3,19 @@
 #include <OpenCL/cl.h>
 #include <string>
 
+class Context;
+
 class Program
 {
 protected:
   cl_program program;
 
-  std::string loadProgramSrc(const std::string fileName, bool isInclude = false);
+  std::string loadProgramSrc(const std::string filePath, bool isInclude = false);
 
 public:
-  Program(std::string fileName, cl_context context);
+  Program(const std::string filePath, Context& context);
   ~Program();
 
-  void build(cl_device_id device);
+  void build(Context& context);
+  cl_program get() { return this->program; };
 };
