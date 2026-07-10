@@ -1,7 +1,7 @@
 #include "constants.cl"
 #include "matrix.cl"
 
-__kernel void driftObjectsLinear(__global double3* angularVelocities, __global double4* velocities, double dt)
+__kernel void driftObjectsLinear(__global double3* angularVelocities, __global double4* velocities, __global dmat3* orientations, double dt)
 {
   int id = get_global_id(0);
   double3 omega = angularVelocities[id];
@@ -19,6 +19,6 @@ __kernel void driftObjectsLinear(__global double3* angularVelocities, __global d
     dmat3 mat;
     dmat3 exp = identity() + sin(theta) * skew / theta + (1 - cos(theta)) / theta / theta * skew * skew;
 
-    object->setOrientation(exp * object->getOrientation()); // fix
+    orientations[id] *= exp;
   }
 }

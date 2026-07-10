@@ -5,21 +5,48 @@
 #include <fstream>
 #include <sstream>
 
+// Private functions
+std::string Program::loadProgramSrc(const std::string fileName, bool isInclude)
+{
+  std::string temp = "";
+  std::string src = "";
+
+  std::ifstream inFile;
+
+  inFile.open(fileName);
+
+  if (inFile.is_open())
+  {
+    while (std::getline(inFile, temp))
+    {
+      if (temp.find("#include") == 0)
+      {
+        long start = temp.find("\"") + 1;
+        long end = temp.find("\"", start);
+        std::string includePath = temp.substr(start, end - start);
+        src += this->loadProgramSrc(("assets/kernels/" + includePath).c_str(), true) + "\n";
+      }
+      else
+        src += temp + "\n";
+    }
+  }
+  else
+    Logger::logError("Program", "Could not open program file: " + fileName);
+
+  inFile.close();
+
+  return src;
+}
+
 // Constructor / Destructor
 Program::Program(std::string fileName, cl_context context)
 {
-  std::ifstream kernelFile(fileName, std::ios::in);
-  if (!kernelFile.is_open())
-    Logger::logError("Program", "Failed to open file for reading: " + fileName);
-
-  std::ostringstream oss;
-  oss << kernelFile.rdbuf();
-  std::string srcStdStr = oss.str();
-  const char *srcStr = srcStdStr.c_str();
+  std::string src = this->loadProgramSrc(fileName);
+  const char *source = src.c_str();
 
   cl_int errNum;
 
-  this->program = clCreateProgramWithSource(context, 1, &srcStr, NULL, &errNum);
+  this->program = clCreateProgramWithSource(context, 1, &source, NULL, &errNum);
 
   if (errNum != CL_SUCCESS)
     Logger::logError("Program", "Failed to create OpenCL program");

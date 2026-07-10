@@ -5,7 +5,7 @@
 __kernel void driftOrbitalLinear(__global double3* positions, __global double3* velocities, __global double* mu, __global double* semiAxises, 
                           __global double* eccentricities, __global double* inclinations, __global double* longitude, 
                           __global double* periapsis, __global double* meanAnomaly, __global double* meanMotion, 
-                          int centralBodyID, double dt)
+                          __global int* centralBodyIndices, double dt)
 {
   int id = get_global_id(0);
 
@@ -16,6 +16,8 @@ __kernel void driftOrbitalLinear(__global double3* positions, __global double3* 
   double i = inclination[id];
   double Omega = longitude[id];
   double omega = periapsis[id];
+
+  int centralBodyID = centralBodyIndices[id];
 
   double mu_central = mu[centralBodyID];
 
