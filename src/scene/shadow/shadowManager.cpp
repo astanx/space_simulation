@@ -34,7 +34,7 @@ void ShadowManager::initPointUBO()
 
     ScopedBuffer uboScope(*this->pointUBO, GL_UNIFORM_BUFFER);
     GL_CALL(glBufferData(GL_UNIFORM_BUFFER, sizeof(PointShadowGPU), nullptr, GL_DYNAMIC_DRAW));
-  } 
+  }
 }
 
 // Constructor/Destructor

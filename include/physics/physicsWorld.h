@@ -6,7 +6,10 @@ class Object;
 class Planet;
 class Star;
 class AsteroidSystem;
-class Integrator;
+class IntegratorCPU;
+class IntegratorGPU;
+class ResourceManager;
+class Context;
 class Integratable;
 class Trail;
 class Atmosphere;
@@ -15,7 +18,8 @@ class System;
 class PhysicsWorld
 {
 private:
-  std::unique_ptr<Integrator> integrator;
+  std::unique_ptr<IntegratorCPU> integratorCPU;
+  std::unique_ptr<IntegratorGPU> integratorGPU;
 
   std::vector<Object *> objects;
   std::vector<Atmosphere *> atmospheres;
@@ -35,6 +39,8 @@ private:
 public:
   PhysicsWorld();
   ~PhysicsWorld();
+
+  void initGPU(ResourceManager &resourceManager, Context &ctx);
 
   void step(double dt);
 

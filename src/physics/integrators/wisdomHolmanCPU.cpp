@@ -1,4 +1,4 @@
-#include "physics/integrators/wisdomHolman.h"
+#include "physics/integrators/wisdomHolmanCPU.h"
 
 #include "physics/integrators/integratable.h"
 
@@ -13,8 +13,10 @@
 #include "maths/constants.h"
 #include "maths/orbitalMaths.h"
 
+#include <iostream>
+
 // Private functions
-void WisdomHolmanIntegrator::halfKickLinear(Object *object, const std::vector<Object *> &objects, double dt)
+void WisdomHolmanIntegratorCPU::halfKickLinear(Object *object, const std::vector<Object *> &objects, double dt)
 {
   object->setAcceleration(glm::dvec3(0.0));
   OrbitalObject *orbital = dynamic_cast<OrbitalObject *>(object);
@@ -32,7 +34,7 @@ void WisdomHolmanIntegrator::halfKickLinear(Object *object, const std::vector<Ob
 
   object->setVelocity(object->getVelocity() + dt * object->getAcceleration()); // kick
 }
-void WisdomHolmanIntegrator::halfKickAngular(Object *object, const std::vector<Object *> &objects, double dt)
+void WisdomHolmanIntegratorCPU::halfKickAngular(Object *object, const std::vector<Object *> &objects, double dt)
 {
   glm::dvec3 torque = MomentsMaths::calculateTorque(object, objects);
   glm::dvec3 omega = object->getAngularVelocity();
@@ -43,7 +45,7 @@ void WisdomHolmanIntegrator::halfKickAngular(Object *object, const std::vector<O
   object->setAngularVelocity(object->getAngularVelocity() + dt * acc);
 }
 
-void WisdomHolmanIntegrator::keplerDrift(OrbitalObject *object, double dt)
+void WisdomHolmanIntegratorCPU::keplerDrift(OrbitalObject *object, double dt)
 {
   Orbit *orbit = object->getOrbit();
   KeplerElements keplerElements = orbit->getKeplerElements();
@@ -70,7 +72,7 @@ void WisdomHolmanIntegrator::keplerDrift(OrbitalObject *object, double dt)
   orbit->updateKeplerElements(keplerElements);
 }
 
-void WisdomHolmanIntegrator::driftLinear(Object *object, double dt)
+void WisdomHolmanIntegratorCPU::driftLinear(Object *object, double dt)
 {
   OrbitalObject *orbital = dynamic_cast<OrbitalObject *>(object);
   if (orbital)
@@ -78,7 +80,7 @@ void WisdomHolmanIntegrator::driftLinear(Object *object, double dt)
   else
     object->setPosition(object->getPosition() + object->getVelocity() * dt);
 }
-void WisdomHolmanIntegrator::driftAngular(Object *object, double dt)
+void WisdomHolmanIntegratorCPU::driftAngular(Object *object, double dt)
 {
   glm::dvec3 omega = object->getAngularVelocity();
 
@@ -98,38 +100,24 @@ void WisdomHolmanIntegrator::driftAngular(Object *object, double dt)
   }
 }
 
-void WisdomHolmanIntegrator::drift(Object *object, double dt)
+void WisdomHolmanIntegratorCPU::drift(Object *object, double dt)
 {
   this->driftLinear(object, dt);
   this->driftAngular(object, dt);
 }
-void WisdomHolmanIntegrator::halfKick(Object *object, const std::vector<Object *> &objects, double dt)
+void WisdomHolmanIntegratorCPU::halfKick(Object *object, const std::vector<Object *> &objects, double dt)
 {
   this->halfKickLinear(object, objects, dt);
   this->halfKickAngular(object, objects, dt);
 }
 
 // Public functions
-void WisdomHolmanIntegrator::step(std::vector<Integratable *> &objects, double dt)
+void WisdomHolmanIntegratorCPU::step(std::vector<Integratable *> &objects, double dt)
 {
   std::vector<Object *> objectPointers;
   std::vector<System *> systemPointers;
 
-  for (Integratable *object : objects)
-  {
-    if (object->getIsSystem())
-    {
-      System *sys = dynamic_cast<System *>(object);
-      if (sys)
-        systemPointers.push_back(sys);
-    }
-    else
-    {
-      Object *obj = dynamic_cast<Object *>(object);
-      if (obj)
-        objectPointers.push_back(obj);
-    }
-  }
+  this->splitObjectsSystems(objects, objectPointers, systemPointers);
 
   // kick
   for (Object *object : objectPointers)

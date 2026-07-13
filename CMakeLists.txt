@@ -170,7 +170,8 @@ add_executable(Space
     src/physics/atmosphere.cpp
     src/physics/physicsWorld.cpp
         # Integrators
-        src/physics/integrators/wisdomHolman.cpp
+        src/physics/integrators/integrator.cpp
+        src/physics/integrators/wisdomHolmanCPU.cpp
         # Systems
         src/physics/systems/asteroidSystem.cpp
     

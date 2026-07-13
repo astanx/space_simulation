@@ -6,21 +6,38 @@
 #include "physics/star.h"
 #include "physics/systems/asteroidSystem.h"
 
-#include "physics/integrators/wisdomHolman.h"
+#include "physics/integrators/integratorCPU.h"
+#include "physics/integrators/integratorGPU.h"
+
+#include "physics/integrators/wisdomHolmanCPU.h"
+#include "physics/integrators/wisdomHolmanGPU.h"
+
+#include "resources/resourceManager.h"
+#include "resources/resources.h"
 
 #include "debug/logger.h"
 
 // Constructor / Destructor
 PhysicsWorld::PhysicsWorld()
 {
-  this->integrator = std::make_unique<WisdomHolmanIntegrator>();
+  this->integratorCPU = std::make_unique<WisdomHolmanIntegratorCPU>();
 }
 PhysicsWorld::~PhysicsWorld() = default;
 
 // Public functions
+void PhysicsWorld::initGPU(ResourceManager &resourceManager, Context &ctx)
+{
+  if (ctx.getSupportsDouble())
+    this->integratorGPU = std::make_unique<WisdomHolmanIntegratorGPU<double>>(resourceManager);
+  else
+    this->integratorGPU = std::make_unique<WisdomHolmanIntegratorGPU<float>>(resourceManager);
+
+  this->integratorGPU->init(this->integratableObjects, ctx);
+}
 void PhysicsWorld::step(double dt)
 {
-  this->integrator->step(this->integratableObjects, dt);
+  // this->integratorCPU->step(this->integratableObjects, dt);
+  this->integratorGPU->step(dt);
 }
 
 void PhysicsWorld::addObject(Object *object)

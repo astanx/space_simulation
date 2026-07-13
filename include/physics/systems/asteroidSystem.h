@@ -60,6 +60,7 @@ public:
   ~AsteroidSystem() = default;
 
   void forEachObject(std::function<void(Object &)> &&func) override;
+  void forEachObject(std::function<void(Object &, size_t)> &&func) override;
 
   void applyObjectGravitation(Object *object);
   void render(Shader &shader) override;

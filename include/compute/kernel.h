@@ -14,4 +14,7 @@ public:
   ~Kernel();
 
   void setArg(cl_uint index, size_t size, const void *value);
+  void setArg(cl_uint index, cl_mem buffer);
+
+  cl_kernel get() { return this->kernel; };
 };

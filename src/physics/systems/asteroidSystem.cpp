@@ -156,8 +156,8 @@ void AsteroidSystem::initRanges(std::vector<unsigned int> &typeCounts)
     start += typeCounts[typeIndex];
   }
 
-  size_t total = start;
-  this->threadPool.initRanges(this->threadRanges, total);
+  this->totalObjects = start;
+  this->threadPool.initRanges(this->threadRanges, this->totalObjects);
 }
 
 // Constructor
@@ -291,6 +291,20 @@ void AsteroidSystem::forEachObject(std::function<void(Object &)> &&func)
                              {
         for (unsigned j = work.begin; j < work.end; j++) 
           func(this->asteroids[j]); });
+  }
+  this->threadPool.wait();
+}
+
+void AsteroidSystem::forEachObject(std::function<void(Object &, size_t)> &&func)
+{
+  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
+  {
+    Range &work = this->threadRanges[threadIndex];
+
+    this->threadPool.enqueue([this, work, &func]()
+                             {
+        for (unsigned j = work.begin; j < work.end; j++) 
+          func(this->asteroids[j], j); });
   }
   this->threadPool.wait();
 }

@@ -3,10 +3,10 @@
 #include "matrix.cl"
 #include "real.cl"
 
-__kernel void driftOrbitalLinear(__global real3* positions, __global real3* velocities, __global real* mu, __global real* semiAxises, 
-                          __global real* eccentricities, __global real* inclinations, __global real* longitude, 
-                          __global real* periapsis, __global real* meanAnomaly, __global real* meanMotion, 
-                          __global int* centralBodyIndices, real dt)
+__kernel void driftOrbitalLinear(__global real3* positions, __global real* mus, __global real3* velocities, __global real* semiAxises, 
+                                __global real* eccentricities, __global real* inclinations, __global real* longitude, 
+                                __global real* periapsis, __global real* meanAnomaly, __global real* meanMotion, 
+                                __global int* centralBodyIndices, real dt)
 {
   int id = get_global_id(0);
 
@@ -20,7 +20,7 @@ __kernel void driftOrbitalLinear(__global real3* positions, __global real3* velo
 
   int centralBodyID = centralBodyIndices[id];
 
-  real mu_central = mu[centralBodyID];
+  real mu_central = mus[centralBodyID];
 
   m = advanceMeanAnomaly(m, n, dt);
 

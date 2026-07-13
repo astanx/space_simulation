@@ -1,12 +1,12 @@
 #pragma once
 
-#include "physics/integrators/integrator.h"
+#include "physics/integrators/integratorCPU.h"
 
 class Object;
 class OrbitalObject;
 class Integratable;
 
-class WisdomHolmanIntegrator : public Integrator
+class WisdomHolmanIntegratorCPU : public IntegratorCPU
 {
 protected:
   void halfKickLinear(Object *object, const std::vector<Object *> &objects, double dt);
@@ -21,8 +21,8 @@ protected:
   void keplerDrift(OrbitalObject *object, double dt);
 
 public:
-  WisdomHolmanIntegrator() = default;
-  ~WisdomHolmanIntegrator() = default;
+  WisdomHolmanIntegratorCPU() = default;
+  ~WisdomHolmanIntegratorCPU() = default;
 
   void step(std::vector<Integratable *> &objects, double dt) override;
 };

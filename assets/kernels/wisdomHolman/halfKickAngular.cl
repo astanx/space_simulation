@@ -2,10 +2,11 @@
 #include "momentsMaths.cl"
 #include "real.cl"
 
-__kernel void halfKickAngular(__global real3* torques, __global real3* angularVelocities, __global dmat3* tensors, 
-  __global real3* positions, __global real3* velocities, __global real* mus, __global real* meanRadii, 
-  __global int* loveIndices, __global int* tidalFactorIndices, __global real* loveNumbers, __global real* tidalFactors,
-  int count, real dt)
+__kernel void halfKickAngular(__global real3* positions, __global real* mus, __global real3* velocities,
+                              __global real3* angularVelocities, __global dmat3* tensors, __global real* meanRadii, 
+                              __global int* loveIndices, __global int* tidalFactorIndices, 
+                              __global real* loveNumbers, __global real* tidalFactors,
+                              int count, real dt)
 {
   int id = get_global_id(0);
   if (id >= count) return;

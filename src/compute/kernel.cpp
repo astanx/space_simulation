@@ -19,3 +19,8 @@ void Kernel::setArg(cl_uint index, size_t size, const void *value)
 {
   CL_CALL(clSetKernelArg(this->kernel, index, size, value));
 }
+
+void Kernel::setArg(cl_uint index, cl_mem buffer)
+{
+  CL_CALL(clSetKernelArg(this->kernel, index, sizeof(cl_mem), &buffer));
+}
