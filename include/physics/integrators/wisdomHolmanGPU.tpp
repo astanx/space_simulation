@@ -80,17 +80,21 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
   this->splitObjectsSystems(objects, objectPointers, orbitalObjectPointers, systemPointers);
 
   this->orbitalTotal = orbitalObjectPointers.size();
+
   for (System *sys : systemPointers)
   {
-    std::vector<bool> isOrbital(sys->getTotalObjects());
+    std::atomic_size_t sysOrbital = 0;
 
-    sys->forEachObject([&](Object &obj, size_t i)
-                       { isOrbital[i] = dynamic_cast<OrbitalObject *>(&obj) != nullptr; });
-    this->orbitalTotal += std::count(isOrbital.begin(), isOrbital.end(), 1);
+    sys->forEachObject([&sysOrbital](Object &obj, size_t i)
+                       { 
+                        if (dynamic_cast<OrbitalObject *>(&obj) != nullptr) 
+                          sysOrbital.fetch_add(1); });
+
+    this->orbitalTotal += sysOrbital;
   }
 
   Logger::logInfo("Integrator", "calculated total");
-  this->total = objects.size();
+  this->total = objectPointers.size() + orbitalObjectPointers.size();
 
   for (System *sys : systemPointers)
     this->total += sys->getTotalObjects();
