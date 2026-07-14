@@ -9,11 +9,13 @@ real calculateEccentricAnomaly(real M, real e)
 {
   real E = M; // initial guess
   real delta;
+  int tries = 0;
   do
   {
     delta = (E - e * sin(E) - M) / (1 - e * cos(E));
     E = E - delta;
-  } while (fabs(delta) > EPS);
+    tries++;
+  } while (fabs(delta) > EPS && tries < 100);
 
   return E;
 }

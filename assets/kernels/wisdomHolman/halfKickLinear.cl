@@ -22,7 +22,7 @@ __kernel void halfKickLinear(__global real3* positions, __global real* mus, __gl
     real3 dp = positions[j] - position;
     real distSq = dot(dp, dp);
     if (distSq < EPS)
-      return; // Avoid singularity
+      continue; // Avoid singularity
 
     real dist = sqrt(distSq);
     accelerations[id] += dp * mus[j] / (dist * distSq);

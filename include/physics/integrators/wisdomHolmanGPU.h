@@ -64,8 +64,8 @@ protected:
       this->tensors.resize(n);
       this->loveIndices.resize(n);
       this->tidalFactorIndices.resize(n);
-      this->loveNumbers.resize(n);
-      this->tidalFactors.resize(n);
+      // this->loveNumbers.resize(n);
+      // this->tidalFactors.resize(n);
     }
 
     void combine(DataGPU &data)
@@ -128,6 +128,7 @@ protected:
   int kernelTotal;
   size_t total;
   size_t orbitalTotal;
+  size_t objectTotal;
 
   std::queue<cl_event> events;
 

@@ -33,6 +33,34 @@
 #include <iterator>
 
 // Private functions
+void AsteroidSystem::forEachObjectImpl(std::function<void(Object &)> func)
+{
+  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
+  {
+    Range &work = this->threadRanges[threadIndex];
+
+    this->threadPool.enqueue([this, work, &func]()
+                             {
+        for (unsigned j = work.begin; j < work.end; j++) 
+          func(this->asteroids[j]); });
+  }
+  this->threadPool.wait();
+}
+
+void AsteroidSystem::forEachObjectImpl(std::function<void(Object &, size_t)> func)
+{
+  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
+  {
+    Range &work = this->threadRanges[threadIndex];
+
+    this->threadPool.enqueue([this, work, &func]()
+                             {
+        for (unsigned j = work.begin; j < work.end; j++) 
+          func(this->asteroids[j], j); });
+  }
+  this->threadPool.wait();
+}
+
 KeplerElements AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000)
 {
   KeplerElements e{
@@ -277,34 +305,6 @@ void AsteroidSystem::applyObjectGravitation(Object *object)
                              {
         for (unsigned j = work.begin; j < work.end; j++) 
           this->asteroids[j].applyGravitation(*object); });
-  }
-  this->threadPool.wait();
-}
-
-void AsteroidSystem::forEachObject(std::function<void(Object &)> &&func)
-{
-  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
-  {
-    Range &work = this->threadRanges[threadIndex];
-
-    this->threadPool.enqueue([this, work, &func]()
-                             {
-        for (unsigned j = work.begin; j < work.end; j++) 
-          func(this->asteroids[j]); });
-  }
-  this->threadPool.wait();
-}
-
-void AsteroidSystem::forEachObject(std::function<void(Object &, size_t)> &&func)
-{
-  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
-  {
-    Range &work = this->threadRanges[threadIndex];
-
-    this->threadPool.enqueue([this, work, &func]()
-                             {
-        for (unsigned j = work.begin; j < work.end; j++) 
-          func(this->asteroids[j], j); });
   }
   this->threadPool.wait();
 }

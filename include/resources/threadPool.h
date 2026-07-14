@@ -21,10 +21,13 @@ public:
 
   inline unsigned getThreadCount() const { return workers.size(); }
 
-  void enqueue(std::function<void()> &&task);
+  template <typename F>
+  void enqueue(F &&task);
 
   void wait();
   std::mutex &getMutex();
 
   void initRanges(std::vector<Range> &ranges, size_t total);
 };
+
+#include "resources/threadPool.tpp"

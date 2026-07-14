@@ -55,12 +55,12 @@ private:
 
   void initRanges(std::vector<unsigned int> &typeCounts);
 
+  void forEachObjectImpl(std::function<void(Object &)> func) override;
+  void forEachObjectImpl(std::function<void(Object &, size_t)> func) override;
+
 public:
   AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000, float importance, Material *material, ThreadPool &threadPool);
   ~AsteroidSystem() = default;
-
-  void forEachObject(std::function<void(Object &)> &&func) override;
-  void forEachObject(std::function<void(Object &, size_t)> &&func) override;
 
   void applyObjectGravitation(Object *object);
   void render(Shader &shader) override;

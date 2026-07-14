@@ -73,15 +73,6 @@ void ThreadPool::wait()
                 { return stop || (tasks.empty() && busy_threads == 0); });
 }
 
-void ThreadPool::enqueue(std::function<void()> &&task)
-{
-  {
-    std::unique_lock<std::mutex> lock(this->mtx);
-    this->tasks.emplace(std::move(task));
-  }
-  this->cv.notify_one();
-}
-
 std::mutex &ThreadPool::getMutex()
 {
   return this->mtx;
