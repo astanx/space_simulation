@@ -41,8 +41,6 @@ protected:
     std::vector<Mat3> tensors;
     std::vector<int> loveIndices;
     std::vector<int> tidalFactorIndices;
-    std::vector<Real> loveNumbers;
-    std::vector<Real> tidalFactors;
 
     void resize(size_t n)
     {
@@ -64,8 +62,6 @@ protected:
       this->tensors.resize(n);
       this->loveIndices.resize(n);
       this->tidalFactorIndices.resize(n);
-      // this->loveNumbers.resize(n);
-      // this->tidalFactors.resize(n);
     }
 
     void combine(DataGPU &data)
@@ -88,8 +84,6 @@ protected:
       this->tensors.insert(this->tensors.end(), std::make_move_iterator(data.tensors.begin()), std::make_move_iterator(data.tensors.end()));
       this->loveIndices.insert(this->loveIndices.end(), std::make_move_iterator(data.loveIndices.begin()), std::make_move_iterator(data.loveIndices.end()));
       this->tidalFactorIndices.insert(this->tidalFactorIndices.end(), std::make_move_iterator(data.tidalFactorIndices.begin()), std::make_move_iterator(data.tidalFactorIndices.end()));
-      this->loveNumbers.insert(this->loveNumbers.end(), std::make_move_iterator(data.loveNumbers.begin()), std::make_move_iterator(data.loveNumbers.end()));
-      this->tidalFactors.insert(this->tidalFactors.end(), std::make_move_iterator(data.tidalFactors.begin()), std::make_move_iterator(data.tidalFactors.end()));
     }
   };
 
@@ -132,8 +126,8 @@ protected:
 
   std::queue<cl_event> events;
 
-  void processObject(Object *obj, DataGPU &data, size_t i, std::mutex &loveMutex, std::mutex &tidalMutex);
-  void processOrbital(OrbitalObject *obj, DataGPU &data, size_t i, std::mutex &loveMutex, std::mutex &tidalMutex);
+  void processObject(Object *obj, DataGPU &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex);
+  void processOrbital(OrbitalObject *obj, DataGPU &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex);
 
   void initQueues(Context &ctx);
   void initKernels();

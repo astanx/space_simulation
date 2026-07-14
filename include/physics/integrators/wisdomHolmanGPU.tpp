@@ -107,12 +107,14 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
 
   std::mutex loveMutex;
   std::mutex tidalMutex;
+  std::vector<Real> loveNumbers;
+  std::vector<Real> tidalFactors;
 
   for (OrbitalObject *obj : orbitalObjectPointers)
-    this->processOrbital(obj, orbitalGPU, orbitalOffset++, loveMutex, tidalMutex);
+    this->processOrbital(obj, orbitalGPU, orbitalOffset++, loveNumbers, tidalFactors, loveMutex, tidalMutex);
 
   for (Object *obj : objectPointers)
-    this->processObject(obj, objectGPU, objectOffset++, loveMutex, tidalMutex);
+    this->processObject(obj, objectGPU, objectOffset++, loveNumbers, tidalFactors, loveMutex, tidalMutex);
 
   for (size_t i = 0; i < orbitalObjectPointers.size(); i++)
   {
@@ -134,13 +136,13 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
   std::atomic_size_t orbitalIndex{orbitalOffset};
   std::atomic_size_t objectIndex{objectOffset};
   for (System *sys : systemPointers)
-    sys->forEachObject([this, &orbitalGPU, &objectGPU, &orbitalIndex, &objectIndex, &loveMutex, &tidalMutex, &objectPointers, &orbitalObjectPointers](Object &obj)
+    sys->forEachObject([this, &orbitalGPU, &objectGPU, &orbitalIndex, &objectIndex, &loveNumbers, &tidalFactors, &loveMutex, &tidalMutex, &objectPointers, &orbitalObjectPointers](Object &obj)
                        {
       OrbitalObject* orb = dynamic_cast<OrbitalObject*>(&obj);
       if (orb)
       {
         size_t idx = orbitalIndex.fetch_add(1);
-        this->processOrbital(orb, orbitalGPU, idx, loveMutex, tidalMutex);
+        this->processOrbital(orb, orbitalGPU, idx, loveNumbers, tidalFactors, loveMutex, tidalMutex);
         Object* central = orb->getOrbit()->getCentralBody();
         for (size_t j = 0; j < objectPointers.size(); j++)
         {
@@ -157,7 +159,7 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
       else
       { 
         size_t idx = objectIndex.fetch_add(1);
-        this->processObject(&obj, objectGPU, idx, loveMutex, tidalMutex); 
+        this->processObject(&obj, objectGPU, idx, loveNumbers, tidalFactors, loveMutex, tidalMutex); 
       } });
 
   Logger::logInfo("Integrator", "processed sys");
@@ -189,12 +191,12 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
   this->tensorsBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.tensors.size() * sizeof(Mat3), orbitalGPU.tensors.data());
   this->loveIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.loveIndices.size() * sizeof(int), orbitalGPU.loveIndices.data());
   this->tidalFactorIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.tidalFactorIndices.size() * sizeof(int), orbitalGPU.tidalFactorIndices.data());
-  this->loveNumbersBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.loveNumbers.size() * sizeof(Real), orbitalGPU.loveNumbers.data());
-  this->tidalFactorsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.tidalFactors.size() * sizeof(Real), orbitalGPU.tidalFactors.data());
+  this->loveNumbersBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, loveNumbers.size() * sizeof(Real), loveNumbers.data());
+  this->tidalFactorsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, tidalFactors.size() * sizeof(Real), tidalFactors.data());
 }
 
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::processObject(Object *obj, DataGPU &data, size_t i, std::mutex &loveMutex, std::mutex &tidalMutex)
+void WisdomHolmanIntegratorGPU<Real>::processObject(Object *obj, DataGPU &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
 {
   data.positions[i] = static_cast<Vec3>(obj->getPosition());
   data.velocities[i] = static_cast<Vec3>(obj->getVelocity());
@@ -217,22 +219,22 @@ void WisdomHolmanIntegratorGPU<Real>::processObject(Object *obj, DataGPU &data, 
   {
     std::lock_guard<std::mutex> lock(loveMutex);
 
-    data.loveNumbers.push_back(static_cast<Real>(p.k2));
-    data.loveIndices[i] = data.loveNumbers.size() - 1;
+    loveNumbers.push_back(static_cast<Real>(p.k2));
+    data.loveIndices[i] = loveNumbers.size() - 1;
   }
   if (p.Q != -1)
   {
     std::lock_guard<std::mutex> lock(tidalMutex);
 
-    data.tidalFactors.push_back(static_cast<Real>(p.Q));
-    data.tidalFactorIndices[i] = data.tidalFactors.size() - 1;
+    tidalFactors.push_back(static_cast<Real>(p.Q));
+    data.tidalFactorIndices[i] = tidalFactors.size() - 1;
   }
 };
 
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::processOrbital(OrbitalObject *obj, DataGPU &data, size_t i, std::mutex &loveMutex, std::mutex &tidalMutex)
+void WisdomHolmanIntegratorGPU<Real>::processOrbital(OrbitalObject *obj, DataGPU &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
 {
-  this->processObject(obj, data, i, loveMutex, tidalMutex);
+  this->processObject(obj, data, i, loveNumbers, tidalFactors, loveMutex, tidalMutex);
 
   const KeplerElements k = obj->getOrbit()->getKeplerElements();
 
