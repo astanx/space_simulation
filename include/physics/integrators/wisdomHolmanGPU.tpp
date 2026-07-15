@@ -61,9 +61,8 @@ void WisdomHolmanIntegratorGPU<Real>::initKernels()
   this->driftObjectsLinearKernel.setArg(0, this->positionsBuffer.get());
   this->driftObjectsLinearKernel.setArg(1, this->velocitiesBuffer.get());
 
-  this->driftAngularKernel.setArg(0, this->velocitiesBuffer.get());
-  this->driftAngularKernel.setArg(1, this->angularVelocitiesBuffer.get());
-  this->driftAngularKernel.setArg(2, this->orientationsBuffer.get());
+  this->driftAngularKernel.setArg(0, this->angularVelocitiesBuffer.get());
+  this->driftAngularKernel.setArg(1, this->orientationsBuffer.get());
 }
 template <typename Real>
 void WisdomHolmanIntegratorGPU<Real>::initQueues(Context &ctx)
@@ -259,7 +258,7 @@ void WisdomHolmanIntegratorGPU<Real>::updateDt(Real dt)
   this->halfKickAngularKernel.setArg(11, sizeof(Real), &kickDt);
   this->driftOrbitalLinearKernel.setArg(11, sizeof(Real), &dt);
   this->driftObjectsLinearKernel.setArg(2, sizeof(Real), &dt);
-  this->driftAngularKernel.setArg(3, sizeof(Real), &dt);
+  this->driftAngularKernel.setArg(2, sizeof(Real), &dt);
 }
 
 // Constructor

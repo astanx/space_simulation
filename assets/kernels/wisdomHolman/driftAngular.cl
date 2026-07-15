@@ -2,7 +2,7 @@
 #include "matrix.cl"
 #include "real.cl"
 
-__kernel void driftAngular(__global real3* velocities, __global real3* angularVelocities, __global dmat3* orientations, real dt)
+__kernel void driftAngular(__global real3* angularVelocities, __global dmat3* orientations, real dt)
 {
   int id = get_global_id(0);
   real3 omega = angularVelocities[id];
