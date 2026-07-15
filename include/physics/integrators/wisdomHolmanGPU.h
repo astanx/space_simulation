@@ -22,7 +22,6 @@ protected:
   {
     std::vector<Vec3> positions;
     std::vector<Vec3> velocities;
-    std::vector<Vec3> accelerations;
     std::vector<Real> mus;
     std::vector<Real> meanRadii;
 
@@ -46,7 +45,6 @@ protected:
     {
       this->positions.resize(n);
       this->velocities.resize(n);
-      this->accelerations.resize(n);
       this->mus.resize(n);
       this->meanRadii.resize(n);
       this->orientations.resize(n);
@@ -68,7 +66,6 @@ protected:
     {
       this->positions.insert(this->positions.end(), std::make_move_iterator(data.positions.begin()), std::make_move_iterator(data.positions.end()));
       this->velocities.insert(this->velocities.end(), std::make_move_iterator(data.velocities.begin()), std::make_move_iterator(data.velocities.end()));
-      this->accelerations.insert(this->accelerations.end(), std::make_move_iterator(data.accelerations.begin()), std::make_move_iterator(data.accelerations.end()));
       this->mus.insert(this->mus.end(), std::make_move_iterator(data.mus.begin()), std::make_move_iterator(data.mus.end()));
       this->meanRadii.insert(this->meanRadii.end(), std::make_move_iterator(data.meanRadii.begin()), std::make_move_iterator(data.meanRadii.end()));
       this->orientations.insert(this->orientations.end(), std::make_move_iterator(data.orientations.begin()), std::make_move_iterator(data.orientations.end()));
@@ -90,7 +87,6 @@ protected:
   CLBuffer positionsBuffer;
   CLBuffer musBuffer;
   CLBuffer velocitiesBuffer;
-  CLBuffer accelerationsBuffer;
   CLBuffer meanRadiiBuffer;
 
   CLBuffer orientationsBuffer;
@@ -118,6 +114,7 @@ protected:
   Kernel &driftOrbitalLinearKernel;
   Kernel &halfKickLinearKernel;
   Kernel &halfKickAngularKernel;
+  Kernel &halfKickKernel;
 
   int kernelTotal;
   size_t total;

@@ -125,4 +125,5 @@ namespace Res
   const std::string DRIFT_ORBITAL_LINEAR_KERNEL = "driftOrbitalLinear";
   const std::string HALF_KICK_ANGULAR_KERNEL = "halfKickAngular";
   const std::string HALF_KICK_LINEAR_KERNEL = "halfKickLinear";
+  const std::string HALF_KICK_KERNEL = "halfKick";
 }

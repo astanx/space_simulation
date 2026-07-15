@@ -1,3 +1,6 @@
+#ifndef MOMENTS_MATHS
+#define MOMENTS_MATHS
+
 #include "matrix.cl"
 #include "constants.cl"
 #include "real.cl"
@@ -18,31 +21,26 @@ typedef struct
   int isTidal;
 } TidalProperties;
 
-real3 calculateGravitationalTorque(real3 objectPosition, dmat3 objectTensor, real bodyMu, real3 bodyPosition)
+real3 calculateGravitationalTorque(real3 dp, real d, dmat3 objectTensor, real bodyMu)
 {
-  real3 R = bodyPosition - objectPosition;
-  real d = length(R);
-
   if (d == 0.0)
     return real3(0.0);
 
-  real3 r = R / d;
+  real3 r = dp / d;
   return 3 *  bodyMu / pow(d, 3) * cross(r, dmat3_dot_d3(objectTensor, r));
 }
 
-real3 calculateTidalTorque(real3 objectPosition, real3 objectAngularVelocity, 
+real3 calculateTidalTorque(real3 dp, real d, real3 objectAngularVelocity, 
                               real3 objectVelocity, real objectMeanRadius,
                               real objectLoveNumber, real objectTidalFactor,
-                              real3 bodyVelocity, real3 bodyPosition, real bodyMu)
+                              real3 bodyVelocity, real bodyMu)
 {
-  real3 r = objectPosition - bodyPosition;
-  real d = length(r);
   if (d == 0.0)
     return real3(0.0);
 
   real3 v = objectVelocity - bodyVelocity;
 
-  real3 nVec = cross(r, v) / dot(r, r);
+  real3 nVec = cross(dp, v) / dot(dp, dp);
   real n = length(nVec);
 
   if (n < EPS)
@@ -65,11 +63,18 @@ real3 calculateTorque(ObjectState object, TidalProperties properties,
     real3 bodyPosition = positions[j];
     real bodyMu = mus[j];
 
-    torque += calculateGravitationalTorque(object.position, object.tensor, bodyMu, bodyPosition);
+    real3 dp = object.position - bodyPosition;
+    real d = length(dp);
+
+    if (d == 0.0) continue;
+
+    torque += calculateGravitationalTorque(dp, d, object.tensor, bodyMu);
     if (properties.isTidal)
-      torque += calculateTidalTorque(object.position, object.angularVelocity, object.velocity, 
+      torque += calculateTidalTorque(dp, d, object.angularVelocity, object.velocity, 
                                       object.meanRadius, properties.loveNumber, properties.tidalFactor, 
-                                      velocities[j], bodyPosition, bodyMu);
+                                      velocities[j], bodyMu);
   }
   return torque;
 }
+
+#endif

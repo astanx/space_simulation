@@ -27,12 +27,24 @@ void WisdomHolmanIntegratorGPU<Real>::initKernels()
 {
   this->kernelTotal = static_cast<int>(this->total);
 
+  this->halfKickKernel.setArg(0, this->positionsBuffer.get());
+  this->halfKickKernel.setArg(1, this->musBuffer.get());
+  this->halfKickKernel.setArg(2, this->velocitiesBuffer.get());
+  this->halfKickKernel.setArg(3, this->angularVelocitiesBuffer.get());
+  this->halfKickKernel.setArg(4, this->tensorsBuffer.get());
+  this->halfKickKernel.setArg(5, this->meanRadiiBuffer.get());
+  this->halfKickKernel.setArg(6, this->centralBodyIndicesBuffer.get());
+  this->halfKickKernel.setArg(7, this->loveIndicesBuffer.get());
+  this->halfKickKernel.setArg(8, this->tidalFactorIndicesBuffer.get());
+  this->halfKickKernel.setArg(9, this->loveNumbersBuffer.get());
+  this->halfKickKernel.setArg(10, this->tidalFactorsBuffer.get());
+  this->halfKickKernel.setArg(11, sizeof(int), &this->kernelTotal);
+
   this->halfKickLinearKernel.setArg(0, this->positionsBuffer.get());
   this->halfKickLinearKernel.setArg(1, this->musBuffer.get());
   this->halfKickLinearKernel.setArg(2, this->velocitiesBuffer.get());
-  this->halfKickLinearKernel.setArg(3, this->accelerationsBuffer.get());
-  this->halfKickLinearKernel.setArg(4, this->centralBodyIndicesBuffer.get());
-  this->halfKickLinearKernel.setArg(5, sizeof(int), &this->kernelTotal);
+  this->halfKickLinearKernel.setArg(3, this->centralBodyIndicesBuffer.get());
+  this->halfKickLinearKernel.setArg(4, sizeof(int), &this->kernelTotal);
 
   this->halfKickAngularKernel.setArg(0, this->positionsBuffer.get());
   this->halfKickAngularKernel.setArg(1, this->musBuffer.get());
@@ -176,7 +188,6 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
   this->positionsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.positions.size() * sizeof(Vec3), orbitalGPU.positions.data());
   this->musBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.mus.size() * sizeof(Real), orbitalGPU.mus.data());
   this->velocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.velocities.size() * sizeof(Vec3), orbitalGPU.velocities.data());
-  this->accelerationsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.accelerations.size() * sizeof(Vec3), orbitalGPU.accelerations.data());
   this->meanRadiiBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanRadii.size() * sizeof(Real), orbitalGPU.meanRadii.data());
 
   this->orientationsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.orientations.size() * sizeof(Mat3), orbitalGPU.orientations.data());
@@ -203,7 +214,6 @@ void WisdomHolmanIntegratorGPU<Real>::processObject(Object *obj, DataGPU &data, 
 {
   data.positions[i] = static_cast<Vec3>(obj->getPosition());
   data.velocities[i] = static_cast<Vec3>(obj->getVelocity());
-  data.accelerations[i] = static_cast<Vec3>(obj->getAcceleration());
   data.mus[i] = static_cast<Real>(obj->getMu());
   data.meanRadii[i] = static_cast<Real>(obj->getRadius());
 
@@ -254,7 +264,8 @@ template <typename Real>
 void WisdomHolmanIntegratorGPU<Real>::updateDt(Real dt)
 {
   Real kickDt = dt * 0.5;
-  this->halfKickLinearKernel.setArg(6, sizeof(Real), &kickDt);
+  this->halfKickKernel.setArg(12, sizeof(Real), &kickDt);
+  this->halfKickLinearKernel.setArg(5, sizeof(Real), &kickDt);
   this->halfKickAngularKernel.setArg(11, sizeof(Real), &kickDt);
   this->driftOrbitalLinearKernel.setArg(11, sizeof(Real), &dt);
   this->driftObjectsLinearKernel.setArg(2, sizeof(Real), &dt);
@@ -268,7 +279,8 @@ WisdomHolmanIntegratorGPU<Real>::WisdomHolmanIntegratorGPU(ResourceManager &reso
       driftObjectsLinearKernel(resourceManager.GetKernel(Res::DRIFT_OBJECTS_LINEAR_KERNEL)),
       driftOrbitalLinearKernel(resourceManager.GetKernel(Res::DRIFT_ORBITAL_LINEAR_KERNEL)),
       halfKickLinearKernel(resourceManager.GetKernel(Res::HALF_KICK_LINEAR_KERNEL)),
-      halfKickAngularKernel(resourceManager.GetKernel(Res::HALF_KICK_ANGULAR_KERNEL))
+      halfKickAngularKernel(resourceManager.GetKernel(Res::HALF_KICK_ANGULAR_KERNEL)),
+      halfKickKernel(resourceManager.GetKernel(Res::HALF_KICK_KERNEL))
 {
 }
 
@@ -296,6 +308,7 @@ void WisdomHolmanIntegratorGPU<Real>::stepReal(Real dt)
   cl_event lastEvent;
 
   // Kick
+  // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &this->total);
   this->queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &this->total);
   this->queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &this->total);
 
@@ -305,6 +318,7 @@ void WisdomHolmanIntegratorGPU<Real>::stepReal(Real dt)
   this->queue.enqueueNDKernelBuffer(this->driftAngularKernel.get(), 1, NULL, &this->total);
 
   // Kick
+  // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &this->total, &lastEvent);
   this->queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &this->total);
   this->queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &this->total, &lastEvent);
 

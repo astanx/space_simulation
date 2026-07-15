@@ -164,6 +164,7 @@ Application::Application(
   this->resourceManager.LoadKernel(Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
   this->resourceManager.LoadKernel(Res::HALF_KICK_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
   this->resourceManager.LoadKernel(Res::HALF_KICK_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::HALF_KICK_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
 
   loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, sunLuminosity);
   // loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);

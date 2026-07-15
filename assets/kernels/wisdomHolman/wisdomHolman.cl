@@ -4,3 +4,4 @@
 
 #include "wisdomHolman/halfKickAngular.cl"
 #include "wisdomHolman/halfKickLinear.cl"
+#include "wisdomHolman/halfKick.cl"
