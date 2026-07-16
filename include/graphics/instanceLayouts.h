@@ -5,6 +5,7 @@
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <map>
 
 enum class InstanceLayout
@@ -12,7 +13,8 @@ enum class InstanceLayout
   PositionRadius,
   PositionRadiusTexture,
   PositionRadiusColor,
-  ModelMatrix
+  ModelMatrix,
+  ModelMatrixParts
 };
 
 struct InstanceData
@@ -48,6 +50,13 @@ struct InstanceModelMatrix
   glm::mat4 model;
 };
 
+struct InstanceModelMatrixParts
+{
+  glm::vec3 position;
+  glm::quat orientation;
+  glm::vec3 scale;
+};
+
 inline const std::array<VertexAttribute, 2> POSITION_RADIUS = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(InstancePositionRadius, position)},
                                                                 {1, 1, GL_FLOAT, GL_FALSE, offsetof(InstancePositionRadius, radius)}}};
 
@@ -66,9 +75,16 @@ inline const std::array<VertexAttribute, 4> MODEL_MATRIX = {{
     {7, 4, GL_FLOAT, GL_FALSE, offsetof(InstanceModelMatrix, model) + 3 * sizeof(glm::vec4)},
 }};
 
+inline const std::array<VertexAttribute, 3> MODEL_MATRIX_PARTS = {{
+    {4, 3, GL_FLOAT, GL_FALSE, offsetof(InstanceModelMatrixParts, position)},
+    {5, 4, GL_FLOAT, GL_FALSE, offsetof(InstanceModelMatrixParts, orientation)},
+    {6, 3, GL_FLOAT, GL_FALSE, offsetof(InstanceModelMatrixParts, scale)},
+}};
+
 inline const std::map<InstanceLayout, LayoutDesc> INSTANCE_LAYOUTS = {
     {InstanceLayout::PositionRadius, {POSITION_RADIUS.data(), POSITION_RADIUS.size()}},
     {InstanceLayout::PositionRadiusTexture, {POSITION_RADIUS_TEXTURE.data(), POSITION_RADIUS_TEXTURE.size()}},
     {InstanceLayout::PositionRadiusColor, {POSITION_RADIUS_COLOR.data(), POSITION_RADIUS_COLOR.size()}},
     {InstanceLayout::ModelMatrix, {MODEL_MATRIX.data(), MODEL_MATRIX.size(), false}},
+    {InstanceLayout::ModelMatrixParts, {MODEL_MATRIX_PARTS.data(), MODEL_MATRIX_PARTS.size(), false}},
 };

@@ -4,6 +4,8 @@
 
 #include <vector>
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 
 class Material;
 class Shader;
@@ -19,7 +21,7 @@ protected:
 	Mesh *mesh;
 	glm::mat4 modelMatrix;
 	glm::vec3 position;
-	glm::dmat3 orientation;
+	glm::quat orientation;
 	glm::vec3 scale;
 
 	void updateUniforms(Shader &shader);
@@ -29,7 +31,7 @@ public:
 	Model(glm::vec3 position, Material &material,
 				Mesh &mesh,
 				Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
-				glm::mat3 orientation = glm::mat3(1.f), glm::vec3 scale = glm::vec3(1.f));
+				glm::quat orientation = glm::quat(1.f, 0.f, 0.f, 0.f), glm::vec3 scale = glm::vec3(1.f));
 
 	Model(glm::vec3 position, Mesh &mesh);
 
@@ -39,7 +41,7 @@ public:
 	Model(glm::vec3 position, Material &material,
 				const std::string &OBJfile,
 				Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
-				glm::mat3 orientation = glm::mat3(1.f), glm::vec3 scale = glm::vec3(1.f));
+				glm::quat orientation = glm::quat(1.f, 0.f, 0.f, 0.f), glm::vec3 scale = glm::vec3(1.f));
 
 	~Model();
 
@@ -47,9 +49,9 @@ public:
 	void renderInstanced(Shader &shader) override;
 
 	glm::vec3 getPosition() const;
-	glm::mat3 getOrientation() const;
+	glm::quat getOrientation() const;
 
-	void setOrientation(const glm::mat3 &orientation);
+	void setOrientation(const glm::quat &orientation);
 	void setScale(const glm::vec3 &scale);
 	void setPosition(const glm::vec3 &newPosition);
 

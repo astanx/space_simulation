@@ -16,7 +16,7 @@ protected:
   std::unique_ptr<Model> mainLayer;
   std::vector<std::unique_ptr<Model>> layers;
   glm::dvec3 renderPosition;
-  glm::dmat3 renderOrientation;
+  glm::dquat renderOrientation;
   const TransformSource &src;
   float renderImportance;
   double renderRadius;

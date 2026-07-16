@@ -80,6 +80,7 @@ void WisdomHolmanIntegratorCPU::driftLinear(Object *object, double dt)
   else
     object->setPosition(object->getPosition() + object->getVelocity() * dt);
 }
+
 void WisdomHolmanIntegratorCPU::driftAngular(Object *object, double dt)
 {
   glm::dvec3 omega = object->getAngularVelocity();
@@ -87,16 +88,23 @@ void WisdomHolmanIntegratorCPU::driftAngular(Object *object, double dt)
   double theta = glm::length(omega) * dt;
   if (theta > EPS)
   {
-    glm::dmat3 skew = glm::dmat3(
-        glm::dvec3(0, omega.z, -omega.y),
-        glm::dvec3(-omega.z, 0, omega.x),
-        glm::dvec3(omega.y, -omega.x, 0));
+    glm::dvec3 axis = omega / theta;
 
-    skew *= dt;
+    double half = theta * 0.5;
+    glm::dquat q_rot(cos(half), sin(half) * axis.x, sin(half) * axis.y, sin(half) * axis.z);
+    
+    object->setOrientation(glm::normalize(q_rot * object->getOrientation()));
 
-    glm::dmat3 exp = glm::dmat3(1.f) + sin(theta) * skew / theta + (1 - cos(theta)) / theta / theta * skew * skew;
+    // glm::dmat3 skew = glm::dmat3(
+    //     glm::dvec3(0, omega.z, -omega.y),
+    //     glm::dvec3(-omega.z, 0, omega.x),
+    //     glm::dvec3(omega.y, -omega.x, 0));
 
-    object->setOrientation(exp * object->getOrientation());
+    // skew *= dt;
+
+    // glm::dmat3 exp = glm::dmat3(1.f) + sin(theta) * skew / theta + (1 - cos(theta)) / theta / theta * skew * skew;
+
+    // object->setOrientation(exp * object->getOrientation());
   }
 }
 

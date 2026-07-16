@@ -15,8 +15,9 @@ template <typename Real>
 class WisdomHolmanIntegratorGPU : public IIntegratorGPU<Real>
 {
 protected:
-  using Vec3 = glm::vec<3, Real, glm::defaultp>;
-  using Mat3 = glm::mat<3, 3, Real, glm::defaultp>;
+  using Vec3 = glm::vec<3, Real>;
+  using Mat3 = glm::mat<3, 3, Real>;
+  using Quat = glm::qua<Real>;
 
   struct DataGPU
   {
@@ -25,7 +26,7 @@ protected:
     std::vector<Real> mus;
     std::vector<Real> meanRadii;
 
-    std::vector<Mat3> orientations;
+    std::vector<Quat> orientations;
     std::vector<Vec3> angularVelocities;
 
     std::vector<Real> semiAxises;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <GL/glew.h>
 
 enum CameraMovement
@@ -70,4 +71,5 @@ public:
   const Frustum getFrustum(double aspectRatio) const;
   glm::dvec3 worldToViewSpace(const glm::dvec3 &position) const;
   glm::dmat3 worldToViewSpace(const glm::dmat3 &orientation) const;
+  glm::dquat worldToViewSpace(const glm::dquat &orientation) const;
 };

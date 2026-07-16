@@ -32,7 +32,7 @@ void Model::updateModelMatrix()
 Model::Model(glm::vec3 position, Material &material,
              Mesh &mesh,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
-             glm::mat3 orientation, glm::vec3 scale)
+             glm::quat orientation, glm::vec3 scale)
 {
   this->position = position;
   this->material = &material;
@@ -42,7 +42,7 @@ Model::Model(glm::vec3 position, Material &material,
   this->scale = scale;
 
   this->mesh = &mesh;
-  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrix);
+  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
 }
 
 Model::Model(const Model &model)
@@ -54,13 +54,13 @@ Model::Model(const Model &model)
   this->orientation = model.orientation;
   this->scale = model.scale;
   this->mesh = model.mesh;
-  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrix);
+  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
 }
 
 Model::Model(glm::vec3 position, Material &material,
              const std::string &OBJfile,
              Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
-             glm::mat3 orientation, glm::vec3 scale)
+             glm::quat orientation, glm::vec3 scale)
 {
   this->position = position;
   this->material = &material;
@@ -73,14 +73,14 @@ Model::Model(glm::vec3 position, Material &material,
   std::vector<GLuint> indices;
 
   this->mesh = new Mesh(&vertices, &indices, VertexLayout::Full);
-  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrix);
+  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
 }
 
 Model::Model(glm::vec3 position, Mesh &mesh)
 {
   this->position = position;
   this->mesh = &mesh;
-  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrix);
+  this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
 }
 
 Model::~Model()
@@ -118,11 +118,10 @@ void Model::render(Shader &shader)
 void Model::renderInstanced(Shader &shader)
 {
   // Update uniforms
-  this->updateModelMatrix();
   this->updateUniforms(shader);
 
-  std::vector<InstanceModelMatrix> buf;
-  buf.emplace_back(InstanceModelMatrix{this->modelMatrix});
+  std::vector<InstanceModelMatrixParts> buf;
+  buf.emplace_back(InstanceModelMatrixParts{this->position, this->orientation, this->scale});
 
   this->mesh->setInstanceBuffer(buf.data(), buf.size());
 
@@ -155,7 +154,7 @@ glm::vec3 Model::getPosition() const
   return this->position;
 }
 
-glm::mat3 Model::getOrientation() const
+glm::quat Model::getOrientation() const
 {
   return this->orientation;
 }
@@ -165,7 +164,7 @@ bool Model::getIsTangent() const
   return this->mesh->getIsTangent();
 };
 
-void Model::setOrientation(const glm::mat3 &orientation)
+void Model::setOrientation(const glm::quat &orientation)
 {
   this->orientation = orientation;
 }

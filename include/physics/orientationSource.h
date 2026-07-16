@@ -1,14 +1,14 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 class OrientationSource
 {
 protected:
-  glm::dmat3 orientation;
+  glm::dquat orientation;
 
 public:
   virtual ~OrientationSource() = default;
-  const glm::dmat3 &getOrientation() const { return this->orientation; };
-  void setOrientation(const glm::dmat3 &orientation) { this->orientation = orientation; };
+  const glm::dquat &getOrientation() const { return this->orientation; };
+  void setOrientation(const glm::dquat &orientation) { this->orientation = orientation; };
 };

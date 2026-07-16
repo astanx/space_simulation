@@ -175,3 +175,16 @@ glm::dmat3 Camera::worldToViewSpace(const glm::dmat3 &orientation) const
 
   return C * orientation * glm::transpose(C);
 }
+
+glm::dquat Camera::worldToViewSpace(const glm::dquat &orientation) const
+{
+  glm::dmat3 C(
+      glm::vec3(1, 0, 0),
+      glm::vec3(0, 0, 1),
+      glm::vec3(0, -1, 0));
+
+  glm::dmat3 orientationMat = glm::mat3_cast(orientation);
+  glm::dmat3 resultMat = C * orientationMat * glm::transpose(C);
+  return glm::quat_cast(resultMat);
+}
+

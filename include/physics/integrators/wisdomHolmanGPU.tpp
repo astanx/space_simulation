@@ -190,7 +190,7 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
   this->velocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.velocities.size() * sizeof(Vec3), orbitalGPU.velocities.data());
   this->meanRadiiBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanRadii.size() * sizeof(Real), orbitalGPU.meanRadii.data());
 
-  this->orientationsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.orientations.size() * sizeof(Mat3), orbitalGPU.orientations.data());
+  this->orientationsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.orientations.size() * sizeof(Quat), orbitalGPU.orientations.data());
   this->angularVelocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.angularVelocities.size() * sizeof(Vec3), orbitalGPU.angularVelocities.data());
 
   this->semiAxisesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.semiAxises.size() * sizeof(Real), orbitalGPU.semiAxises.data());
@@ -217,7 +217,7 @@ void WisdomHolmanIntegratorGPU<Real>::processObject(Object *obj, DataGPU &data, 
   data.mus[i] = static_cast<Real>(obj->getMu());
   data.meanRadii[i] = static_cast<Real>(obj->getRadius());
 
-  data.orientations[i] = static_cast<Mat3>(obj->getOrientation());
+  data.orientations[i] = static_cast<Quat>(obj->getOrientation());
   data.angularVelocities[i] = static_cast<Vec3>(obj->getAngularVelocity());
 
   data.centralBodyIndices[i] = -1;
@@ -306,6 +306,10 @@ void WisdomHolmanIntegratorGPU<Real>::stepReal(Real dt)
   }
 
   cl_event lastEvent;
+
+  // make buffer from vbo
+  // make kernel / update driftAngular to write there
+  // assign to each mesh range/index in vbo
 
   // Kick
   // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &this->total);
