@@ -1,3 +1,6 @@
+#ifndef REAL
+#define REAL
+
 #ifdef USE_DOUBLE
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
@@ -12,5 +15,7 @@ typedef float real;
 typedef float2 real2;
 typedef float3 real3;
 typedef float4 real4;
+
+#endif
 
 #endif

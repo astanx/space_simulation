@@ -310,6 +310,7 @@ void WisdomHolmanIntegratorGPU<Real>::stepReal(Real dt)
   // make buffer from vbo
   // make kernel / update driftAngular to write there
   // assign to each mesh range/index in vbo
+  // use barnes-hut for objects mass < x in kick
 
   // Kick
   // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &this->total);

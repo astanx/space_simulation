@@ -1,15 +1,25 @@
 #include "constants.cl"
 #include "matrix.cl"
 #include "real.cl"
+#include "quaternion.cl"
 
-__kernel void driftAngular(__global real3* angularVelocities, __global dmat3* orientations, real dt)
+__kernel void driftAngular(__global real3* angularVelocities, __global quat* orientations, real dt)
 {
   int id = get_global_id(0);
   real3 omega = angularVelocities[id];
 
-  real theta = length(omega) * dt;
+
+  real omega_len = length(omega);
+  real theta = omega_len * dt;
   if (theta > EPS)
   {
+    real3 axis = omega / omega_len;
+    real half_theta = theta * 0.5;
+    quat q_rot = (quat)(cos(half_theta), sin(half_theta) * axis.x, sin(half_theta) * axis.y, sin(half_theta) * axis.z);
+
+    orientations[id] = normalize(quat_dot_quat(orientations[id], q_rot));
+
+/*
     dmat3 skew;
     skew.cols[0] = (real3)(0, omega.z, -omega.y);
     skew.cols[1] = (real3)(-omega.z, 0, omega.x);
@@ -22,5 +32,6 @@ __kernel void driftAngular(__global real3* angularVelocities, __global dmat3* or
     exp = dmat3_plus_dmat3(exp, dmat3_identity());
 
     orientations[id] = dmat3_dot_dmat3(orientations[id], exp);
+    */
   }
 }

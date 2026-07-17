@@ -85,15 +85,16 @@ void WisdomHolmanIntegratorCPU::driftAngular(Object *object, double dt)
 {
   glm::dvec3 omega = object->getAngularVelocity();
 
-  double theta = glm::length(omega) * dt;
+  double omega_len = glm::length(omega);
+  double theta = omega_len * dt;
   if (theta > EPS)
   {
-    glm::dvec3 axis = omega / theta;
+    glm::dvec3 axis = omega / omega_len;
 
     double half = theta * 0.5;
     glm::dquat q_rot(cos(half), sin(half) * axis.x, sin(half) * axis.y, sin(half) * axis.z);
-    
-    object->setOrientation(glm::normalize(q_rot * object->getOrientation()));
+
+    object->setOrientation(glm::normalize(object->getOrientation() * q_rot));
 
     // glm::dmat3 skew = glm::dmat3(
     //     glm::dvec3(0, omega.z, -omega.y),
