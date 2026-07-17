@@ -41,7 +41,7 @@ private:
   std::vector<size_t> asteroidTypes;
   AsteroidMaterial *asteroid_material;
 
-  std::vector<std::vector<InstancePositionRadius>> fullInstances;
+  std::vector<std::vector<InstanceModelMatrixParts>> fullInstances;
   std::vector<std::unique_ptr<Mesh>> meshes;
 
   double innerEdge;
@@ -50,7 +50,7 @@ private:
   Object *centralBody;
 
   KeplerElements createRandomKeplerElements(double timeAfterJD2000);
-  void createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstancePositionRadius> &typeInstances, Radii typeRadii, double timeAfterJD2000);
+  void createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceModelMatrixParts> &typeInstances, Radii typeRadii, double timeAfterJD2000);
   void createAsteroids(unsigned int amount, double timeAfterJD2000);
 
   void initRanges(std::vector<unsigned int> &typeCounts);

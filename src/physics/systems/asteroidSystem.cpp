@@ -77,7 +77,7 @@ KeplerElements AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000
   return e;
 }
 
-void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstancePositionRadius> &typeInstances, Radii typeRadii, double timeAfterJD2000)
+void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceModelMatrixParts> &typeInstances, Radii typeRadii, double timeAfterJD2000)
 {
   double radius = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
 
@@ -100,7 +100,7 @@ void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAste
   {
     std::lock_guard<std::mutex> lock(this->threadPool.getMutex());
     typeAsteroids.emplace_back(this->centralBody, mu, typeRadii.scaled(radius), this->createRandomKeplerElements(timeAfterJD2000));
-    typeInstances.emplace_back(InstancePositionRadius{typeAsteroids.back().getPosition(), static_cast<float>(typeRadii.scaled(600000).mean)});
+    typeInstances.emplace_back(InstanceModelMatrixParts{typeAsteroids.back().getPosition(), typeAsteroids.back().getOrientation(), glm::vec3(radius)});
   }
 }
 void AsteroidSystem::createAsteroids(unsigned amount, double timeAfterJD2000)
@@ -164,7 +164,7 @@ void AsteroidSystem::createAsteroids(unsigned amount, double timeAfterJD2000)
   {
     Mesh *mesh = this->meshes[type].get();
 
-    mesh->setInstanceLayout(InstanceLayout::PositionRadius);
+    mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
     mesh->setInstanceBuffer(this->fullInstances[type].data(), this->fullInstances[type].size(), this->vboCount);
 
     Logger::logInfo("Asteroid system", "Asteroids of type \"" + std::to_string(type) + "\" created - " + std::to_string(this->fullInstances[type].size()));
@@ -213,7 +213,7 @@ void AsteroidSystem::partitionObjects(std::vector<InstancePositionRadiusTexture>
   for (size_t i = 0; i < this->fullInstances.size(); i++)
     this->fullInstances[i].clear();
 
-  std::vector<std::vector<std::vector<InstancePositionRadius>>> threadLocalFullInstances(threadRanges.size());
+  std::vector<std::vector<std::vector<InstanceModelMatrixParts>>> threadLocalFullInstances(threadRanges.size());
   for (auto &perThread : threadLocalFullInstances)
     perThread.resize(this->fullInstances.size());
 
@@ -235,26 +235,26 @@ void AsteroidSystem::partitionObjects(std::vector<InstancePositionRadiusTexture>
                                for (unsigned i = work.begin; i < work.end; i++)
                                {
                                 const Asteroid& asteroid = this->asteroids[i];
-                                float radius = asteroid.getRadius();
+                                Radii radii = asteroid.getRadii();
                                 glm::dvec3 pos = camera.worldToViewSpace(asteroid.getPosition());
-                                float scaledRadius = manager->scaleRadius(pos, radius,fov, viewportHeight, this->importance);
+                                float scaledMeanRadius = manager->scaleRadius(pos, radii.equatorian, fov, viewportHeight, importance);
+                                float scaledEquatorianRadius = manager->scaleRadius(pos, radii.equatorian, fov, viewportHeight, importance);
+                                float scaledPolarRadius = manager->scaleRadius(pos, radii.polar, fov, viewportHeight, importance);
 
-                                if (!Frustum::shouldBeProcessed(frustum, pos, scaledRadius, force))
+                                if (!Frustum::shouldBeProcessed(frustum, pos, scaledMeanRadius, force))
                                   continue;
 
-                                int level = manager->getLODLevel(pos, radius,fov, viewportHeight, this->importance);
+                                int level = manager->getLODLevel(pos, radii.mean, fov, viewportHeight, this->importance);
                                 switch (level)
                                 {
-                                case LOD::Full: {
-                                  size_t type = this->asteroidTypes[i];
-                                  localFull[type].emplace_back(InstancePositionRadius{pos, scaledRadius});
+                                case LOD::Full:
+                                  localFull[this->asteroidTypes[i]].emplace_back(InstanceModelMatrixParts{pos, camera.worldToViewSpace(asteroid.getOrientation()), glm::vec3(scaledEquatorianRadius, scaledPolarRadius, scaledEquatorianRadius)});
                                   break;
-                                }
                                 case LOD::Impostor: 
-                                  localImpostor.emplace_back(InstancePositionRadiusTexture{pos, scaledRadius, this->impostorLayer});
+                                  localImpostor.emplace_back(InstancePositionRadiusTexture{pos, scaledMeanRadius, this->impostorLayer});
                                   break;
                                 case LOD::Point:
-                                  localPoint.emplace_back(InstancePositionRadiusColor{pos, scaledRadius, color});
+                                  localPoint.emplace_back(InstancePositionRadiusColor{pos, scaledMeanRadius, color});
                                   break;
                                 default:
                                   Logger::logError("Asteroid System", "No handler for LOD level: " + std::to_string(level));
