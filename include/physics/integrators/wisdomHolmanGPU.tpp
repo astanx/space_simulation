@@ -18,10 +18,28 @@
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
 
+#include "graphics/state/scopedBuffer.h"
+
 #include <OpenCL/cl.h>
 #include <iostream>
 
 // Private functions
+template <typename Real>
+void WisdomHolmanIntegratorGPU<Real>::initGLBuffer(Buffer &buffer, size_t size)
+{
+  if (this->total == 0)
+    Logger::logWarning("Wisdom-Holman integrator", "Total is 0");
+
+  ScopedBuffer(buffer, GL_ARRAY_BUFFER);
+  glBufferData(GL_ARRAY_BUFFER, this->total * size, nullptr, GL_DYNAMIC_DRAW);
+}
+template <typename Real>
+void WisdomHolmanIntegratorGPU<Real>::initGLBuffers()
+{
+  this->initGLBuffer(this->fullInstanceGLBuffer, sizeof(InstanceModelMatrixParts));
+  this->initGLBuffer(this->impostorInstanceGLBuffer, sizeof(InstancePositionRadiusTexture));
+  this->initGLBuffer(this->pointInstanceGLBuffer, sizeof(InstancePositionRadiusColor));
+}
 template <typename Real>
 void WisdomHolmanIntegratorGPU<Real>::initKernels()
 {
@@ -158,6 +176,7 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
       {
         size_t idx = orbitalIndex.fetch_add(1);
         this->processOrbital(orb, orbitalGPU, idx, loveNumbers, tidalFactors, loveMutex, tidalMutex);
+
         Object* central = orb->getOrbit()->getCentralBody();
         for (size_t j = 0; j < objectPointers.size(); j++)
         {
@@ -189,6 +208,9 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
   this->musBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.mus.size() * sizeof(Real), orbitalGPU.mus.data());
   this->velocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.velocities.size() * sizeof(Vec3), orbitalGPU.velocities.data());
   this->meanRadiiBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanRadii.size() * sizeof(Real), orbitalGPU.meanRadii.data());
+  //temp
+  this->polarRadiiBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanRadii.size() * sizeof(Real), orbitalGPU.meanRadii.data());
+  this->equatorianRadiiBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanRadii.size() * sizeof(Real), orbitalGPU.meanRadii.data());
 
   this->orientationsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.orientations.size() * sizeof(Quat), orbitalGPU.orientations.data());
   this->angularVelocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.angularVelocities.size() * sizeof(Vec3), orbitalGPU.angularVelocities.data());
@@ -207,6 +229,17 @@ void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &o
   this->tidalFactorIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.tidalFactorIndices.size() * sizeof(int), orbitalGPU.tidalFactorIndices.data());
   this->loveNumbersBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, loveNumbers.size() * sizeof(Real), loveNumbers.data());
   this->tidalFactorsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, tidalFactors.size() * sizeof(Real), tidalFactors.data());
+
+  this->initGLBuffers();
+
+  this->fullInstanceCLBuffer.init(ctx, CL_MEM_WRITE_ONLY, this->fullInstanceGLBuffer.getId());
+  this->impostorInstanceCLBuffer.init(ctx, CL_MEM_WRITE_ONLY, this->impostorInstanceGLBuffer.getId());
+  this->pointInstanceCLBuffer.init(ctx, CL_MEM_WRITE_ONLY, this->pointInstanceGLBuffer.getId());
+
+  this->instanceScaleBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.instanceScale.size() * sizeof(glm::vec3), orbitalGPU.instanceScale.data());
+  this->instanceTextureLayerBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.instanceTextureLayer.size() * sizeof(uint), orbitalGPU.instanceTextureLayer.data());
+  this->instanceColorBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.instanceColor.size() * sizeof(glm::vec3), orbitalGPU.instanceColor.data());
+  this->instanceImportanceBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.instanceImportance.size() * sizeof(float), orbitalGPU.instanceImportance.data());
 }
 
 template <typename Real>
@@ -242,6 +275,10 @@ void WisdomHolmanIntegratorGPU<Real>::processObject(Object *obj, DataGPU &data, 
     tidalFactors.push_back(static_cast<Real>(p.Q));
     data.tidalFactorIndices[i] = tidalFactors.size() - 1;
   }
+
+  // data.instanceTextureLayer;
+  // data.instanceScale;
+  // data.instanceColor;
 };
 
 template <typename Real>
@@ -292,6 +329,7 @@ void WisdomHolmanIntegratorGPU<Real>::init(std::vector<Integratable *> &objects,
   this->initQueues(ctx);
   this->initKernels();
 }
+
 template <typename Real>
 void WisdomHolmanIntegratorGPU<Real>::stepReal(Real dt)
 {
@@ -306,6 +344,10 @@ void WisdomHolmanIntegratorGPU<Real>::stepReal(Real dt)
   }
 
   cl_event lastEvent;
+
+  // create one gl buffer here model matrxi parts
+  // create cl buffer from it
+  // fill it parallel with basic data
 
   // make buffer from vbo
   // make kernel / update driftAngular to write there

@@ -3,7 +3,7 @@
 #include "real.cl"
 #include "quaternion.cl"
 
-__kernel void driftAngular(__global real3* angularVelocities, __global quat* orientations, real dt)
+__kernel void driftAngular(__global real3* angularVelocities, __global dquat* orientations, real dt)
 {
   int id = get_global_id(0);
   real3 omega = angularVelocities[id];
@@ -15,9 +15,9 @@ __kernel void driftAngular(__global real3* angularVelocities, __global quat* ori
   {
     real3 axis = omega / omega_len;
     real half_theta = theta * 0.5;
-    quat q_rot = (quat)(cos(half_theta), sin(half_theta) * axis.x, sin(half_theta) * axis.y, sin(half_theta) * axis.z);
+    dquat q_rot = (dquat)(cos(half_theta), sin(half_theta) * axis.x, sin(half_theta) * axis.y, sin(half_theta) * axis.z);
 
-    orientations[id] = normalize(quat_dot_quat(orientations[id], q_rot));
+    orientations[id] = normalize(dquat_dot_dquat(orientations[id], q_rot));
 
 /*
     dmat3 skew;

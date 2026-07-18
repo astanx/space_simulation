@@ -46,18 +46,6 @@ private:
   GaussianBlur blur;
   LODManager lodManager;
 
-  bool isImpostorInitialized = false;
-  std::unique_ptr<Texture> impostorTexture;
-  std::unique_ptr<Mesh> impostorMesh;
-  std::unique_ptr<Mesh> pointMesh;
-
-  std::unordered_map<GLuint, unsigned int> textureLayers;
-
-  std::unordered_map<Renderable *, RenderFlags> fullInstances;
-  std::unordered_map<Renderable *, RenderFlags> fullTangentInstances;
-  std::vector<InstancePositionRadiusTexture> impostorInstances;
-  std::vector<InstancePositionRadiusColor> pointInstances;
-
   unsigned int cameraUBO;
 
   std::unique_ptr<LightManager> lightManager;
@@ -69,13 +57,6 @@ private:
 
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
-  void initLOD(Scene &scene);
-  void initImpostor(Scene &scene);
-  void initPoint();
-  void bindLayerToImpostorTexture(const Texture &texture, unsigned int layer);
-  void partitionObjects(Scene &scene, RenderContext &ctx);
-  void partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force = false);
-
   void renderDirectionalShadow(Scene &scene);
   void renderShadowMap(Scene &scene, Shader &shader);
   void renderPointShadow(Scene &scene);
@@ -83,7 +64,7 @@ private:
   void renderSkybox(Scene &scene, RenderContext &ctx);
   void renderAsteroidSystems(Scene &scene);
   void renderObjects(Scene &scene);
-  void renderObjectsGroup(std::unordered_map<Renderable *, RenderFlags> &objects, Scene &scene, Shader& shader);
+  void renderObjectsGroup(std::unordered_map<Renderable *, int> &objects, Scene &scene, Shader& shader);
   void renderAtmospheres(Scene &scene);
   void renderTrails(Scene &scene);
   void renderImpostor(Scene &scene);
@@ -105,11 +86,7 @@ public:
 
   void render(Scene &scene, RenderContext &ctx);
 
-  void renderText(
-      const std::string &text,
-      float x, float y,
-      float scale,
-      glm::vec3 color);
+  void renderText(const std::string &text, float x, float y, float scale, glm::vec3 color);
 
   void update(Scene &scene, RenderContext &ctx);
   void init(Scene &scene, RenderContext &ctx);

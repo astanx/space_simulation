@@ -4,6 +4,8 @@
 #include "render/updatable.h"
 #include "render/renderFlags.h"
 
+#include "graphics/materials/material.h"
+
 #include "graphics/model.h"
 
 #include "physics/transformSource.h"
@@ -21,6 +23,8 @@ protected:
   float renderImportance;
   double renderRadius;
 
+  unsigned int impostorLayer;
+
 public:
   ModelSource(const TransformSource &src, double renderRadius);
   virtual ~ModelSource() = default;
@@ -31,6 +35,7 @@ public:
   virtual void addLayer(std::unique_ptr<Model> m) { layers.push_back(std::move(m)); };
   void setRenderRadius(double radius) { this->renderRadius = radius; };
   void setRenderImportance(float importance) { this->renderImportance = importance; };
+  void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
 
   virtual void update(const Camera &camera) override;
   virtual void render(Shader &shader) override;
@@ -38,7 +43,7 @@ public:
   virtual void renderLayersInstanced(Shader &shader) const;
   virtual void renderInstanced(Shader &shader) override;
 
-  void forEachModel(std::function<void(Model &, RenderFlags)> &&func);
+  void forEachModel(std::function<void(Model &, int)> &&func);
 
   const glm::dvec3 getRenderPosition() const { return this->renderPosition; };
   const double getRenderRadius() const { return this->renderRadius; };
@@ -46,4 +51,6 @@ public:
   const Radii getSrcRadii() const { return this->src.getRadii(); };
   const double getWorldRadius() const { return this->src.getRadius(); };
   const Model *getMainLayer() const { return this->mainLayer.get(); };
+  const Texture *getMainLayerTexture() const { return this->mainLayer->getMaterial()->getTexture(); };
+  unsigned int getImpostorLayer() { return this->impostorLayer; };
 };

@@ -74,10 +74,10 @@ void ModelSource::scaleRadii(Radii scaledRadii)
     layer->setScale(scale);
 }
 
-void ModelSource::forEachModel(std::function<void(Model &, RenderFlags)> &&func)
+void ModelSource::forEachModel(std::function<void(Model &, int)> &&func)
 {
-  func(*this->mainLayer, RenderFlags::Main);
+  func(*this->mainLayer, this->mainLayer->getIsTangent() ? RenderFlags::Main | RenderFlags::Tangent : RenderFlags::Main);
 
   for (auto &layer : this->layers)
-    func(*layer, RenderFlags::Layer);
+    func(*layer, layer->getIsTangent() ? RenderFlags::Layer | RenderFlags::Tangent : RenderFlags::Layer);
 }

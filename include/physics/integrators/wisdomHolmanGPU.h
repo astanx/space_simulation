@@ -2,6 +2,8 @@
 
 #include "physics/integrators/integratorGPU.h"
 
+#include "graphics/buffers/buffer.h"
+
 #include "compute/clBuffer.h"
 #include "compute/commandQueue.h"
 #include "compute/kernel.h"
@@ -42,6 +44,11 @@ protected:
     std::vector<int> loveIndices;
     std::vector<int> tidalFactorIndices;
 
+    std::vector<glm::vec3> instanceScale;
+    std::vector<glm::vec3> instanceColor;
+    std::vector<uint> instanceTextureLayer;
+    std::vector<float> instanceImportance;
+
     void resize(size_t n)
     {
       this->positions.resize(n);
@@ -61,6 +68,11 @@ protected:
       this->tensors.resize(n);
       this->loveIndices.resize(n);
       this->tidalFactorIndices.resize(n);
+
+      this->instanceScale.resize(n);
+      this->instanceColor.resize(n);
+      this->instanceTextureLayer.resize(n);
+      this->instanceImportance.resize(n);
     }
 
     void combine(DataGPU &data)
@@ -82,6 +94,11 @@ protected:
       this->tensors.insert(this->tensors.end(), std::make_move_iterator(data.tensors.begin()), std::make_move_iterator(data.tensors.end()));
       this->loveIndices.insert(this->loveIndices.end(), std::make_move_iterator(data.loveIndices.begin()), std::make_move_iterator(data.loveIndices.end()));
       this->tidalFactorIndices.insert(this->tidalFactorIndices.end(), std::make_move_iterator(data.tidalFactorIndices.begin()), std::make_move_iterator(data.tidalFactorIndices.end()));
+
+      this->instanceScale.insert(this->instanceScale.end(), std::make_move_iterator(data.instanceScale.begin()), std::make_move_iterator(data.instanceScale.end()));
+      this->instanceColor.insert(this->instanceColor.end(), std::make_move_iterator(data.instanceColor.begin()), std::make_move_iterator(data.instanceColor.end()));
+      this->instanceTextureLayer.insert(this->instanceTextureLayer.end(), std::make_move_iterator(data.instanceTextureLayer.begin()), std::make_move_iterator(data.instanceTextureLayer.end()));
+      this->instanceImportance.insert(this->instanceImportance.end(), std::make_move_iterator(data.instanceImportance.begin()), std::make_move_iterator(data.instanceImportance.end()));
     }
   };
 
@@ -89,6 +106,8 @@ protected:
   CLBuffer musBuffer;
   CLBuffer velocitiesBuffer;
   CLBuffer meanRadiiBuffer;
+  CLBuffer polarRadiiBuffer;
+  CLBuffer equatorianRadiiBuffer;
 
   CLBuffer orientationsBuffer;
   CLBuffer angularVelocitiesBuffer;
@@ -107,6 +126,22 @@ protected:
   CLBuffer tidalFactorIndicesBuffer;
   CLBuffer loveNumbersBuffer;
   CLBuffer tidalFactorsBuffer;
+
+  Buffer fullInstanceGLBuffer;
+  Buffer impostorInstanceGLBuffer;
+  Buffer pointInstanceGLBuffer;
+
+  CLBuffer fullInstanceCLBuffer;
+  CLBuffer impostorInstanceCLBuffer;
+  CLBuffer pointInstanceCLBuffer;
+
+  CLBuffer instanceScaleBuffer;
+  CLBuffer instanceTextureLayerBuffer;
+  CLBuffer instanceImportanceBuffer;
+  CLBuffer instanceColorBuffer;
+  CLBuffer instanceRadiiBuffer;
+  CLBuffer instancePositionBuffer;
+  CLBuffer instanceOrientationBuffer;
 
   CommandQueue queue;
 
@@ -129,6 +164,8 @@ protected:
 
   void initQueues(Context &ctx);
   void initKernels();
+  void initGLBuffers();
+  void initGLBuffer(Buffer &buffer, size_t size);
   void initBuffers(std::vector<Integratable *> &objects, Context &ctx);
 
   void updateDt(Real dt);

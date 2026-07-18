@@ -36,9 +36,6 @@
 #include "physics/planet.h"
 #include "physics/systems/asteroidSystem.h"
 
-#define STB_IMAGE_RESIZE2_IMPLEMENTATION
-#include "external/stb_image_resize2.h"
-
 #include <iostream>
 
 // Private functions
@@ -109,89 +106,6 @@ void Renderer::initShaderUBOBindings()
   }
 }
 
-void Renderer::initLOD(Scene &scene)
-{
-  this->initImpostor(scene);
-  this->initPoint();
-}
-
-void Renderer::initImpostor(Scene &scene)
-{
-  this->impostorMesh = std::make_unique<Mesh>(TypeTag<VertexPositionTexcoord>{}, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
-  this->impostorMesh->setInstanceLayout(InstanceLayout::PositionRadiusTexture);
-  this->impostorMesh->setInstanceBuffer(this->impostorInstances.data(), this->impostorInstances.size());
-
-  this->impostorTexture = std::make_unique<Texture>(GL_TEXTURE_2D_ARRAY);
-
-  unsigned int layer = ImpostorTextureBindingPoints::Size;
-  for (const ModelSource *object : scene.getModelSources())
-  {
-    const Texture *texture = object->getMainLayer()->getMaterial()->getTexture();
-    if (!texture)
-      Logger::logWarning("Renderer", "No texture found for object");
-
-    this->bindLayerToImpostorTexture(*texture, layer);
-    layer++;
-  }
-
-  for (System *system : scene.getPhysicsWorld().getSystems())
-  {
-    const Texture *texture = system->getTexture();
-    if (!texture)
-      Logger::logWarning("Renderer", "No texture found for system");
-
-    this->bindLayerToImpostorTexture(*texture, layer);
-
-    system->setImpostorLayer(layer);
-    layer++;
-  }
-}
-
-void Renderer::initPoint()
-{
-  this->pointMesh = std::make_unique<Mesh>(TypeTag<VertexEmpty>{}, std::make_unique<Point>(), VertexLayout::Empty, GL_POINTS);
-  this->pointMesh->setInstanceLayout(InstanceLayout::PositionRadiusColor);
-  this->pointMesh->setInstanceBuffer(this->pointInstances.data(), this->pointInstances.size());
-}
-
-void Renderer::bindLayerToImpostorTexture(const Texture &texture, unsigned int layer)
-{
-  if (!this->impostorTexture)
-    Logger::logFatal("Renderer", "No importor texture to bind layer");
-
-  ScopedTexture impostor(*this->impostorTexture);
-
-  int width = 1024;
-  int height = 512;
-
-  int srcWidth = texture.getWidth();
-  int srcHeight = texture.getHeight();
-
-  if (!this->isImpostorInitialized)
-  {
-    GL_CALL(glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, ImpostorTextureBindingPoints::MaxSize));
-    this->isImpostorInitialized = true;
-  }
-
-  if (layer >= ImpostorTextureBindingPoints::MaxSize)
-    Logger::logError("Renderer", "Maximum impostor layer size exceeded");
-
-  this->textureLayers[texture.getId()] = layer;
-
-  std::vector<uint8_t> pixels(srcWidth * srcHeight * 4);
-
-  {
-    ScopedTexture text(texture);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
-  }
-
-  std::vector<uint8_t> resized(width * height * 4);
-
-  stbir_resize_uint8_linear(pixels.data(), srcWidth, srcHeight, 0, resized.data(), width, height, 0, STBIR_RGBA);
-
-  GL_CALL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, resized.data()));
-}
-
 void Renderer::bindUBOs()
 {
   glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::Camera, this->cameraUBO);
@@ -245,14 +159,13 @@ void Renderer::renderAsteroidSystems(Scene &scene)
   }
 }
 
-void Renderer::renderObjectsGroup(std::unordered_map<Renderable *, RenderFlags> &objects, Scene &scene, Shader &shader)
+void Renderer::renderObjectsGroup(std::unordered_map<Renderable *, int> &objects, Scene &scene, Shader &shader)
 {
 
   GLuint &ID = shader.getId();
   const Skybox &skybox = scene.getActiveSkybox();
 
   ScopedShader sh(ID);
-  // ScopedShader coreTangent(coreTagentID);
 
   this->shadowManager->bindPointShadow(shader);
   this->shadowManager->bindPointShadowDepth(shader);
@@ -262,16 +175,16 @@ void Renderer::renderObjectsGroup(std::unordered_map<Renderable *, RenderFlags> 
   this->bindDummyReflector(shader);
 
   // Render all objects
-  for (auto &[object, flag] : objects)
+  for (auto &[object, flags] : objects)
   {
     std::optional<ScopedPolygonOffset> offset;
     std::optional<ScopedBlending> blend;
     std::optional<ScopedDepthMask> mask;
 
-    if (flag == RenderFlags::Main)
+    if ((flags & RenderFlags::Main) == RenderFlags::Main)
       offset.emplace(true, .1f, 4.f);
 
-    if (flag == RenderFlags::Layer)
+    if ((flags & RenderFlags::Layer) == RenderFlags::Layer)
     {
       blend.emplace(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       mask.emplace(GL_FALSE);
@@ -288,8 +201,8 @@ void Renderer::renderObjects(Scene &scene)
   Shader &coreShader = this->resourceManager.GetShader(Res::CORE_SHADER);
   Shader &coreTangentShader = this->resourceManager.GetShader(Res::CORE_TANGENT_SHADER);
 
-  this->renderObjectsGroup(this->fullInstances, scene, coreShader);
-  this->renderObjectsGroup(this->fullTangentInstances, scene, coreTangentShader);
+  this->renderObjectsGroup(this->lodManager.getFullInstances(), scene, coreShader);
+  this->renderObjectsGroup(this->lodManager.getFullTangentInstances(), scene, coreTangentShader);
 }
 
 void Renderer::renderAtmospheres(Scene &scene)
@@ -392,14 +305,14 @@ void Renderer::renderImpostor(Scene &scene)
   GLuint &impostorID = impostorShader.getId();
 
   ScopedShader impostor(impostorID);
-  ScopedTexture impostorText(*this->impostorTexture, ImpostorTextureBindingPoints::Impostor);
+  ScopedTexture impostorText(this->lodManager.getImpostorTexture(), ImpostorTextureBindingPoints::Impostor);
 
   const Skybox &skybox = scene.getActiveSkybox();
   skybox.bindIrradianceMap(impostorShader);
 
   impostorShader.set1i(ImpostorTextureBindingPoints::Impostor, "impostors");
 
-  this->impostorMesh->renderInstanced();
+  this->lodManager.getImpostorMesh().renderInstanced();
 
   skybox.unbindIrradianceMap();
 }
@@ -411,7 +324,7 @@ void Renderer::renderPoint()
 
   ScopedShader point(pointID);
 
-  this->pointMesh->renderInstanced();
+  this->lodManager.getPointMesh().renderInstanced();
 }
 
 void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, RenderContext &ctx)
@@ -463,69 +376,6 @@ void Renderer::beginFrame(RenderContext &ctx)
   glClear(GL_STENCIL_BUFFER_BIT);
 }
 
-void Renderer::partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force)
-{
-  float importance = object->getRenderImportance();
-  float radius = object->getWorldRadius();
-  const glm::dvec3 pos = object->getRenderPosition();
-  float scaledMeanRadius = this->lodManager.scaleRadius(pos, radius, fov, viewportHeight, importance);
-  object->setRenderRadius(scaledMeanRadius);
-
-  if (!Frustum::shouldBeProcessed(frustum, pos, scaledMeanRadius, force))
-    return;
-
-  const Texture *texture = object->getMainLayer()->getMaterial()->getTexture();
-
-  int level = this->lodManager.getLODLevel(pos, radius, fov, viewportHeight, importance);
-
-  switch (level)
-  {
-  case LOD::Full:
-  {
-    const Radii &radii = object->getSrcRadii();
-    float scaledEquatorianRadius = this->lodManager.scaleRadius(pos, radii.equatorian, fov, viewportHeight, importance);
-    float scaledPolarRadius = this->lodManager.scaleRadius(pos, radii.polar, fov, viewportHeight, importance);
-    object->scaleRadii(Radii{scaledEquatorianRadius, scaledPolarRadius, scaledMeanRadius});
-
-    object->forEachModel([this](Model &model, RenderFlags flag)
-                         {
-        if (model.getIsTangent())
-          this->fullTangentInstances.insert({&model, flag});
-        else
-          this->fullInstances.insert({&model, flag}); });
-    break;
-  }
-  case LOD::Impostor:
-    this->impostorInstances.emplace_back(InstancePositionRadiusTexture{pos, scaledMeanRadius, this->textureLayers[texture->getId()]});
-    break;
-  case LOD::Point:
-    this->pointInstances.emplace_back(InstancePositionRadiusColor{pos, scaledMeanRadius, texture->getAverageColor()});
-    break;
-  default:
-    Logger::logError("Asteroid System", "No handler for LOD level: " + std::to_string(level));
-    break;
-  }
-}
-
-void Renderer::partitionObjects(Scene &scene, RenderContext &ctx)
-{
-  this->fullInstances.clear();
-  this->impostorInstances.clear();
-  this->pointInstances.clear();
-
-  const Camera &camera = scene.getActiveCamera();
-  Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
-
-  for (ModelSource *object : scene.getModelSources())
-    this->partitionObject(object, &frustum, ctx.frameCtx.height, camera.getFOV());
-
-  for (auto &system : scene.getPhysicsWorld().getSystems())
-    system->partitionObjects(this->impostorInstances, this->pointInstances, camera, &this->lodManager, ctx.frameCtx.height, &frustum);
-
-  this->impostorMesh->updateInstanceBuffer(this->impostorInstances.data(), this->impostorInstances.size());
-  this->pointMesh->updateInstanceBuffer(this->pointInstances.data(), this->pointInstances.size());
-}
-
 // Constructor
 Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager), postProcess(resourceManager), blur(resourceManager) {}
 
@@ -562,7 +412,7 @@ void Renderer::init(Scene &scene, RenderContext &ctx)
 
   this->initShaderUBOBindings();
 
-  this->initLOD(scene);
+  this->lodManager.init(scene);
 }
 
 void Renderer::render(Scene &scene, RenderContext &ctx)
@@ -594,7 +444,7 @@ void Renderer::update(Scene &scene, RenderContext &ctx)
 {
   scene.update(ctx);
 
-  this->partitionObjects(scene, ctx);
+  this->lodManager.update(scene, ctx);
 
   this->updateUBO(scene, ctx);
 }

@@ -3,10 +3,10 @@
 
 #include "real.cl"
 
-typedef real4 quat;
+typedef real4 dquat;
+typedef float4 quat;
 
-
-quat quat_dot_quat(quat q1, quat q2)
+dquat dquat_dot_dquat(dquat q1, dquat q2)
 {
   real w1 = q1.x;
   real3 v1 = q1.yzw;
@@ -16,6 +16,20 @@ quat quat_dot_quat(quat q1, quat q2)
 
   real w = w1 * w2 - dot(v1, v2);
   real3 v = w1 * v2 + w2 * v1 + cross(v1, v2);
+
+  return (dquat)(w, v.x, v.y, v.z);
+}
+
+quat quat_dot_quat(quat q1, quat q2)
+{
+  float w1 = q1.x;
+  float3 v1 = q1.yzw;
+
+  float w2 = q2.x;
+  float3 v2 = q2.yzw;
+
+  float w = w1 * w2 - dot(v1, v2);
+  float3 v = w1 * v2 + w2 * v1 + cross(v1, v2);
 
   return (quat)(w, v.x, v.y, v.z);
 }
