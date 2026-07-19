@@ -56,7 +56,7 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   this->addModelSource(ptr);
   this->addUpdatable(ptr);
   this->physicsWorld.addObject(ptr);
-  this->physicsWorld.addIntegratableObject(ptr);
+  this->physicsWorld.addIntegratable(ptr);
   this->physicsWorld.addPlanetarObject(std::move(planet));
 
   return ptr;
@@ -85,7 +85,7 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
   this->addModelSource(ptr);
   this->addUpdatable(ptr);
   this->physicsWorld.addObject(ptr);
-  this->physicsWorld.addIntegratableObject(ptr);
+  this->physicsWorld.addIntegratable(ptr);
   this->physicsWorld.addStar(std::move(star));
 
   return ptr;
@@ -123,7 +123,7 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   this->addModelSource(ptr);
   this->addRenderable(ptr);
   this->physicsWorld.addObject(ptr);
-  this->physicsWorld.addIntegratableObject(ptr);
+  this->physicsWorld.addIntegratable(ptr);
   centralBody->addMoon(std::move(moon));
 
   return ptr;
@@ -138,7 +138,7 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
   AsteroidSystem *ptr = system.get();
   this->addUpdatable(ptr);
   this->physicsWorld.addSystem(ptr);
-  this->physicsWorld.addIntegratableObject(ptr);
+  this->physicsWorld.addIntegratable(ptr);
   this->physicsWorld.addAsteroidSystem(std::move(system));
 
   return ptr;

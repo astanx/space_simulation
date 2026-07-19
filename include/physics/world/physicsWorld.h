@@ -1,8 +1,13 @@
 #pragma once
 
+#include "physics/world/physicsCPUData.h"
+#include "physics/world/physicsGPUData.h"
+#include "physics/world/total.h"
+
 #include <vector>
 
 class Object;
+class OrbitalObject;
 class Planet;
 class Star;
 class AsteroidSystem;
@@ -18,23 +23,22 @@ class System;
 class PhysicsWorld
 {
 private:
+  PhysicsCPUData cpu;
+  PhysicsGPUData gpu;
+
   std::unique_ptr<IntegratorCPU> integratorCPU;
   std::unique_ptr<IntegratorGPU> integratorGPU;
 
-  std::vector<Object *> objects;
-  std::vector<Atmosphere *> atmospheres;
-  std::vector<Integratable *> integratableObjects;
-
-  std::vector<std::unique_ptr<Planet>> planetarObjects;
-  std::vector<Planet *> planetarObjectViews;
-
-  std::vector<std::unique_ptr<Star>> stars;
   Star *sun;
 
-  std::vector<System *> systems;
+  Total total;
 
-  std::vector<std::unique_ptr<AsteroidSystem>> asteroidSystems;
-  std::vector<AsteroidSystem *> asteroidSystemViews;
+  template <typename Real>
+  void processObject(Object *obj, DataGPU<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex);
+  template <typename Real>
+  void processOrbital(OrbitalObject *obj, DataGPU<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex);
+  template<typename Real>
+  void initGPUBuffers(Context &ctx);
 
 public:
   PhysicsWorld();
@@ -51,7 +55,7 @@ public:
   void addSystem(System *system);
   void addStar(std::unique_ptr<Star> star);
   void addSun(Star *sun);
-  void addIntegratableObject(Integratable *object);
+  void addIntegratable(Integratable *object);
 
   const Star &getSun() const;
 

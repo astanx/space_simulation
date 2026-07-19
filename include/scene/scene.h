@@ -7,7 +7,7 @@
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
 
-#include "physics/physicsWorld.h"
+#include "physics/world/physicsWorld.h"
 #include "physics/structs/gravityField.h"
 #include "physics/structs/tidalParameters.h"
 

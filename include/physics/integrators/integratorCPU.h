@@ -13,5 +13,5 @@ public:
   IntegratorCPU() = default;
   virtual ~IntegratorCPU() = default;
 
-  virtual void step(std::vector<Integratable *> &objects, double dt) = 0;
+  virtual void step(std::vector<Object *> &objects, std::vector<System*> &systems, double dt) = 0;
 };

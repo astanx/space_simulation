@@ -24,5 +24,5 @@ public:
   WisdomHolmanIntegratorCPU() = default;
   ~WisdomHolmanIntegratorCPU() = default;
 
-  void step(std::vector<Integratable *> &objects, double dt) override;
+  void step(std::vector<Object *> &objects, std::vector<System*> &systems, double dt) override;
 };

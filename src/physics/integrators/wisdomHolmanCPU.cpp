@@ -121,31 +121,26 @@ void WisdomHolmanIntegratorCPU::halfKick(Object *object, const std::vector<Objec
 }
 
 // Public functions
-void WisdomHolmanIntegratorCPU::step(std::vector<Integratable *> &objects, double dt)
+void WisdomHolmanIntegratorCPU::step(std::vector<Object *> &objects, std::vector<System *> &systems, double dt)
 {
-  std::vector<Object *> objectPointers;
-  std::vector<System *> systemPointers;
-
-  this->splitObjectsSystems(objects, objectPointers, systemPointers);
-
   // kick
-  for (Object *object : objectPointers)
-    this->halfKick(object, objectPointers, dt * 0.5);
-  for (System *system : systemPointers)
-    system->forEachObject([this, dt, &objectPointers](Object &object)
-                          { this->halfKick(&object, objectPointers, dt * 0.5); });
+  for (Object *object : objects)
+    this->halfKick(object, objects, dt * 0.5);
+  for (System *system : systems)
+    system->forEachObject([this, dt, &objects](Object &object)
+                          { this->halfKick(&object, objects, dt * 0.5); });
 
   // drift
-  for (Object *object : objectPointers)
+  for (Object *object : objects)
     this->drift(object, dt);
-  for (System *system : systemPointers)
+  for (System *system : systems)
     system->forEachObject([this, dt](Object &object)
                           { this->drift(&object, dt); });
 
   // kick
-  for (Object *object : objectPointers)
-    this->halfKick(object, objectPointers, dt * 0.5);
-  for (System *system : systemPointers)
-    system->forEachObject([this, dt, &objectPointers](Object &object)
-                          { this->halfKick(&object, objectPointers, dt * 0.5); });
+  for (Object *object : objects)
+    this->halfKick(object, objects, dt * 0.5);
+  for (System *system : systems)
+    system->forEachObject([this, dt, &objects](Object &object)
+                          { this->halfKick(&object, objects, dt * 0.5); });
 }

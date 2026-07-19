@@ -168,7 +168,8 @@ add_executable(Space
     src/physics/orbitalObject.cpp
     src/physics/asteroid.cpp
     src/physics/atmosphere.cpp
-    src/physics/physicsWorld.cpp
+        # World
+        src/physics/world/physicsWorld.cpp
         # Integrators
         src/physics/integrators/integrator.cpp
         src/physics/integrators/wisdomHolmanCPU.cpp

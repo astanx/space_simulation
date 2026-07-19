@@ -4,7 +4,8 @@
 
 #include <vector>
 
-class Integratable;
+struct PhysicsGPUData;
+struct Total;
 class Context;
 
 class IntegratorGPU : public Integrator
@@ -14,8 +15,8 @@ public:
   IntegratorGPU() = default;
   ~IntegratorGPU() = default;
 
-  virtual void init(std::vector<Integratable *> &objects, Context& ctx) = 0;
-  virtual void step(double dt) = 0;
+  virtual void init(PhysicsGPUData &gpu, Total &total, Context &ctx) = 0;
+  virtual void step(Total &total, double dt) = 0;
 };
 
 template <typename Real>
@@ -26,9 +27,9 @@ public:
   IIntegratorGPU() = default;
   ~IIntegratorGPU() = default;
 
-  virtual void stepReal(Real dt) = 0;
-  void step(double dt) override
+  virtual void stepReal(Total &total, Real dt) = 0;
+  void step(Total &total, double dt) override
   {
-    this->stepReal(static_cast<Real>(dt));
+    this->stepReal(total, static_cast<Real>(dt));
   };
 };

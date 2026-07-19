@@ -24,279 +24,81 @@
 #include <iostream>
 
 // Private functions
+// template <typename Real>
+// void WisdomHolmanIntegratorGPU<Real>::initGLBuffer(Buffer &buffer, size_t size)
+// {
+//   if (this->total == 0)
+//     Logger::logWarning("Wisdom-Holman integrator", "Total is 0");
+
+//   ScopedBuffer(buffer, GL_ARRAY_BUFFER);
+//   glBufferData(GL_ARRAY_BUFFER, this->total * size, nullptr, GL_DYNAMIC_DRAW);
+// }
+// template <typename Real>
+// void WisdomHolmanIntegratorGPU<Real>::initGLBuffers()
+// {
+//   this->initGLBuffer(this->fullInstanceGLBuffer, sizeof(InstanceModelMatrixParts));
+//   this->initGLBuffer(this->impostorInstanceGLBuffer, sizeof(InstancePositionRadiusTexture));
+//   this->initGLBuffer(this->pointInstanceGLBuffer, sizeof(InstancePositionRadiusColor));
+// }
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::initGLBuffer(Buffer &buffer, size_t size)
+void WisdomHolmanIntegratorGPU<Real>::initKernels(PhysicsGPUData &gpu, Total total)
 {
-  if (this->total == 0)
-    Logger::logWarning("Wisdom-Holman integrator", "Total is 0");
+  int kernelTotal = static_cast<int>(total.object + total.orbital);
 
-  ScopedBuffer(buffer, GL_ARRAY_BUFFER);
-  glBufferData(GL_ARRAY_BUFFER, this->total * size, nullptr, GL_DYNAMIC_DRAW);
-}
-template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::initGLBuffers()
-{
-  this->initGLBuffer(this->fullInstanceGLBuffer, sizeof(InstanceModelMatrixParts));
-  this->initGLBuffer(this->impostorInstanceGLBuffer, sizeof(InstancePositionRadiusTexture));
-  this->initGLBuffer(this->pointInstanceGLBuffer, sizeof(InstancePositionRadiusColor));
-}
-template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::initKernels()
-{
-  this->kernelTotal = static_cast<int>(this->total);
+  this->halfKickKernel.setArg(0, gpu.positionsBuffer.get());
+  this->halfKickKernel.setArg(1, gpu.musBuffer.get());
+  this->halfKickKernel.setArg(2, gpu.velocitiesBuffer.get());
+  this->halfKickKernel.setArg(3, gpu.angularVelocitiesBuffer.get());
+  this->halfKickKernel.setArg(4, gpu.tensorsBuffer.get());
+  this->halfKickKernel.setArg(5, gpu.meanRadiiBuffer.get());
+  this->halfKickKernel.setArg(6, gpu.centralBodyIndicesBuffer.get());
+  this->halfKickKernel.setArg(7, gpu.loveIndicesBuffer.get());
+  this->halfKickKernel.setArg(8, gpu.tidalFactorIndicesBuffer.get());
+  this->halfKickKernel.setArg(9, gpu.loveNumbersBuffer.get());
+  this->halfKickKernel.setArg(10, gpu.tidalFactorsBuffer.get());
+  this->halfKickKernel.setArg(11, sizeof(int), &kernelTotal);
 
-  this->halfKickKernel.setArg(0, this->positionsBuffer.get());
-  this->halfKickKernel.setArg(1, this->musBuffer.get());
-  this->halfKickKernel.setArg(2, this->velocitiesBuffer.get());
-  this->halfKickKernel.setArg(3, this->angularVelocitiesBuffer.get());
-  this->halfKickKernel.setArg(4, this->tensorsBuffer.get());
-  this->halfKickKernel.setArg(5, this->meanRadiiBuffer.get());
-  this->halfKickKernel.setArg(6, this->centralBodyIndicesBuffer.get());
-  this->halfKickKernel.setArg(7, this->loveIndicesBuffer.get());
-  this->halfKickKernel.setArg(8, this->tidalFactorIndicesBuffer.get());
-  this->halfKickKernel.setArg(9, this->loveNumbersBuffer.get());
-  this->halfKickKernel.setArg(10, this->tidalFactorsBuffer.get());
-  this->halfKickKernel.setArg(11, sizeof(int), &this->kernelTotal);
+  this->halfKickLinearKernel.setArg(0, gpu.positionsBuffer.get());
+  this->halfKickLinearKernel.setArg(1, gpu.musBuffer.get());
+  this->halfKickLinearKernel.setArg(2, gpu.velocitiesBuffer.get());
+  this->halfKickLinearKernel.setArg(3, gpu.centralBodyIndicesBuffer.get());
+  this->halfKickLinearKernel.setArg(4, sizeof(int), &kernelTotal);
 
-  this->halfKickLinearKernel.setArg(0, this->positionsBuffer.get());
-  this->halfKickLinearKernel.setArg(1, this->musBuffer.get());
-  this->halfKickLinearKernel.setArg(2, this->velocitiesBuffer.get());
-  this->halfKickLinearKernel.setArg(3, this->centralBodyIndicesBuffer.get());
-  this->halfKickLinearKernel.setArg(4, sizeof(int), &this->kernelTotal);
+  this->halfKickAngularKernel.setArg(0, gpu.positionsBuffer.get());
+  this->halfKickAngularKernel.setArg(1, gpu.musBuffer.get());
+  this->halfKickAngularKernel.setArg(2, gpu.velocitiesBuffer.get());
+  this->halfKickAngularKernel.setArg(3, gpu.angularVelocitiesBuffer.get());
+  this->halfKickAngularKernel.setArg(4, gpu.tensorsBuffer.get());
+  this->halfKickAngularKernel.setArg(5, gpu.meanRadiiBuffer.get());
+  this->halfKickAngularKernel.setArg(6, gpu.loveIndicesBuffer.get());
+  this->halfKickAngularKernel.setArg(7, gpu.tidalFactorIndicesBuffer.get());
+  this->halfKickAngularKernel.setArg(8, gpu.loveNumbersBuffer.get());
+  this->halfKickAngularKernel.setArg(9, gpu.tidalFactorsBuffer.get());
+  this->halfKickAngularKernel.setArg(10, sizeof(int), &kernelTotal);
 
-  this->halfKickAngularKernel.setArg(0, this->positionsBuffer.get());
-  this->halfKickAngularKernel.setArg(1, this->musBuffer.get());
-  this->halfKickAngularKernel.setArg(2, this->velocitiesBuffer.get());
-  this->halfKickAngularKernel.setArg(3, this->angularVelocitiesBuffer.get());
-  this->halfKickAngularKernel.setArg(4, this->tensorsBuffer.get());
-  this->halfKickAngularKernel.setArg(5, this->meanRadiiBuffer.get());
-  this->halfKickAngularKernel.setArg(6, this->loveIndicesBuffer.get());
-  this->halfKickAngularKernel.setArg(7, this->tidalFactorIndicesBuffer.get());
-  this->halfKickAngularKernel.setArg(8, this->loveNumbersBuffer.get());
-  this->halfKickAngularKernel.setArg(9, this->tidalFactorsBuffer.get());
-  this->halfKickAngularKernel.setArg(10, sizeof(int), &this->kernelTotal);
+  this->driftOrbitalLinearKernel.setArg(0, gpu.positionsBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(1, gpu.musBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(2, gpu.velocitiesBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(3, gpu.semiAxisesBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(4, gpu.eccentricitiesBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(5, gpu.inclinationsBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(6, gpu.longitudeBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(7, gpu.periapsisBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(8, gpu.meanAnomalyBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(9, gpu.meanMotionBuffer.get());
+  this->driftOrbitalLinearKernel.setArg(10, gpu.centralBodyIndicesBuffer.get());
 
-  this->driftOrbitalLinearKernel.setArg(0, this->positionsBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(1, this->musBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(2, this->velocitiesBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(3, this->semiAxisesBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(4, this->eccentricitiesBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(5, this->inclinationsBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(6, this->longitudeBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(7, this->periapsisBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(8, this->meanAnomalyBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(9, this->meanMotionBuffer.get());
-  this->driftOrbitalLinearKernel.setArg(10, this->centralBodyIndicesBuffer.get());
+  this->driftObjectsLinearKernel.setArg(0, gpu.positionsBuffer.get());
+  this->driftObjectsLinearKernel.setArg(1, gpu.velocitiesBuffer.get());
 
-  this->driftObjectsLinearKernel.setArg(0, this->positionsBuffer.get());
-  this->driftObjectsLinearKernel.setArg(1, this->velocitiesBuffer.get());
-
-  this->driftAngularKernel.setArg(0, this->angularVelocitiesBuffer.get());
-  this->driftAngularKernel.setArg(1, this->orientationsBuffer.get());
+  this->driftAngularKernel.setArg(0, gpu.angularVelocitiesBuffer.get());
+  this->driftAngularKernel.setArg(1, gpu.orientationsBuffer.get());
 }
 template <typename Real>
 void WisdomHolmanIntegratorGPU<Real>::initQueues(Context &ctx)
 {
   this->queue.init(ctx.get(), ctx.getDevice());
 }
-template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::initBuffers(std::vector<Integratable *> &objects, Context &context)
-{
-  std::vector<Object *> objectPointers;
-  std::vector<OrbitalObject *> orbitalObjectPointers;
-  std::vector<System *> systemPointers;
-
-  this->splitObjectsSystems(objects, objectPointers, orbitalObjectPointers, systemPointers);
-
-  this->orbitalTotal = orbitalObjectPointers.size();
-
-  for (System *sys : systemPointers)
-  {
-    std::atomic_size_t sysOrbital = 0;
-
-    sys->forEachObject([&sysOrbital](Object &obj, size_t i)
-                       { 
-                        if (dynamic_cast<OrbitalObject *>(&obj) != nullptr) 
-                          sysOrbital.fetch_add(1); });
-
-    this->orbitalTotal += sysOrbital;
-  }
-
-  Logger::logInfo("Integrator", "calculated total");
-  this->total = objectPointers.size() + orbitalObjectPointers.size();
-
-  for (System *sys : systemPointers)
-    this->total += sys->getTotalObjects();
-
-  DataGPU objectGPU;
-  DataGPU orbitalGPU;
-
-  this->objectTotal = this->total - this->orbitalTotal;
-  objectGPU.resize(this->objectTotal);
-  orbitalGPU.resize(this->orbitalTotal);
-
-  size_t orbitalOffset = 0;
-  size_t objectOffset = 0;
-
-  std::mutex loveMutex;
-  std::mutex tidalMutex;
-  std::vector<Real> loveNumbers;
-  std::vector<Real> tidalFactors;
-
-  for (OrbitalObject *obj : orbitalObjectPointers)
-    this->processOrbital(obj, orbitalGPU, orbitalOffset++, loveNumbers, tidalFactors, loveMutex, tidalMutex);
-
-  for (Object *obj : objectPointers)
-    this->processObject(obj, objectGPU, objectOffset++, loveNumbers, tidalFactors, loveMutex, tidalMutex);
-
-  for (size_t i = 0; i < orbitalObjectPointers.size(); i++)
-  {
-    Object *central = orbitalObjectPointers[i]->getOrbit()->getCentralBody();
-    for (size_t j = 0; j < objectPointers.size(); j++)
-    {
-      if (objectPointers[j] == central)
-        orbitalGPU.centralBodyIndices[i] = j + this->orbitalTotal;
-    }
-
-    for (size_t j = 0; j < orbitalObjectPointers.size(); j++)
-    {
-      if (orbitalObjectPointers[j] == central)
-        orbitalGPU.centralBodyIndices[i] = j;
-    }
-  }
-  Logger::logInfo("Integrator", "processes obj");
-
-  std::atomic_size_t orbitalIndex{orbitalOffset};
-  std::atomic_size_t objectIndex{objectOffset};
-  for (System *sys : systemPointers)
-    sys->forEachObject([this, &orbitalGPU, &objectGPU, &orbitalIndex, &objectIndex, &loveNumbers, &tidalFactors, &loveMutex, &tidalMutex, &objectPointers, &orbitalObjectPointers](Object &obj)
-                       {
-      OrbitalObject* orb = dynamic_cast<OrbitalObject*>(&obj);
-      if (orb)
-      {
-        size_t idx = orbitalIndex.fetch_add(1);
-        this->processOrbital(orb, orbitalGPU, idx, loveNumbers, tidalFactors, loveMutex, tidalMutex);
-
-        Object* central = orb->getOrbit()->getCentralBody();
-        for (size_t j = 0; j < objectPointers.size(); j++)
-        {
-          if (objectPointers[j] == central)
-            orbitalGPU.centralBodyIndices[idx] = j + this->orbitalTotal;
-        }
-
-        for (size_t j = 0; j < orbitalObjectPointers.size(); j++)
-        {
-          if (orbitalObjectPointers[j] == central)
-            orbitalGPU.centralBodyIndices[idx] = j;
-        }
-      }
-      else
-      { 
-        size_t idx = objectIndex.fetch_add(1);
-        this->processObject(&obj, objectGPU, idx, loveNumbers, tidalFactors, loveMutex, tidalMutex); 
-      } });
-
-  Logger::logInfo("Integrator", "processed sys");
-
-  // orbital MUST be first
-  orbitalGPU.combine(objectGPU);
-
-  Logger::logInfo("Integrator", "combined");
-
-  cl_context ctx = context.get();
-  this->positionsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.positions.size() * sizeof(Vec3), orbitalGPU.positions.data());
-  this->musBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.mus.size() * sizeof(Real), orbitalGPU.mus.data());
-  this->velocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.velocities.size() * sizeof(Vec3), orbitalGPU.velocities.data());
-  this->meanRadiiBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanRadii.size() * sizeof(Real), orbitalGPU.meanRadii.data());
-  //temp
-  this->polarRadiiBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanRadii.size() * sizeof(Real), orbitalGPU.meanRadii.data());
-  this->equatorianRadiiBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanRadii.size() * sizeof(Real), orbitalGPU.meanRadii.data());
-
-  this->orientationsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.orientations.size() * sizeof(Quat), orbitalGPU.orientations.data());
-  this->angularVelocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.angularVelocities.size() * sizeof(Vec3), orbitalGPU.angularVelocities.data());
-
-  this->semiAxisesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.semiAxises.size() * sizeof(Real), orbitalGPU.semiAxises.data());
-  this->eccentricitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.eccentricities.size() * sizeof(Real), orbitalGPU.eccentricities.data());
-  this->inclinationsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.inclinations.size() * sizeof(Real), orbitalGPU.inclinations.data());
-  this->longitudeBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.longitude.size() * sizeof(Real), orbitalGPU.longitude.data());
-  this->periapsisBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.periapsis.size() * sizeof(Real), orbitalGPU.periapsis.data());
-  this->meanAnomalyBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanAnomaly.size() * sizeof(Real), orbitalGPU.meanAnomaly.data());
-  this->meanMotionBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.meanMotion.size() * sizeof(Real), orbitalGPU.meanMotion.data());
-  this->centralBodyIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.centralBodyIndices.size() * sizeof(int), orbitalGPU.centralBodyIndices.data());
-
-  this->tensorsBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.tensors.size() * sizeof(Mat3), orbitalGPU.tensors.data());
-  this->loveIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.loveIndices.size() * sizeof(int), orbitalGPU.loveIndices.data());
-  this->tidalFactorIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.tidalFactorIndices.size() * sizeof(int), orbitalGPU.tidalFactorIndices.data());
-  this->loveNumbersBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, loveNumbers.size() * sizeof(Real), loveNumbers.data());
-  this->tidalFactorsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, tidalFactors.size() * sizeof(Real), tidalFactors.data());
-
-  this->initGLBuffers();
-
-  this->fullInstanceCLBuffer.init(ctx, CL_MEM_WRITE_ONLY, this->fullInstanceGLBuffer.getId());
-  this->impostorInstanceCLBuffer.init(ctx, CL_MEM_WRITE_ONLY, this->impostorInstanceGLBuffer.getId());
-  this->pointInstanceCLBuffer.init(ctx, CL_MEM_WRITE_ONLY, this->pointInstanceGLBuffer.getId());
-
-  this->instanceScaleBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, orbitalGPU.instanceScale.size() * sizeof(glm::vec3), orbitalGPU.instanceScale.data());
-  this->instanceTextureLayerBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.instanceTextureLayer.size() * sizeof(uint), orbitalGPU.instanceTextureLayer.data());
-  this->instanceColorBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.instanceColor.size() * sizeof(glm::vec3), orbitalGPU.instanceColor.data());
-  this->instanceImportanceBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, orbitalGPU.instanceImportance.size() * sizeof(float), orbitalGPU.instanceImportance.data());
-}
-
-template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::processObject(Object *obj, DataGPU &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
-{
-  data.positions[i] = static_cast<Vec3>(obj->getPosition());
-  data.velocities[i] = static_cast<Vec3>(obj->getVelocity());
-  data.mus[i] = static_cast<Real>(obj->getMu());
-  data.meanRadii[i] = static_cast<Real>(obj->getRadius());
-
-  data.orientations[i] = static_cast<Quat>(obj->getOrientation());
-  data.angularVelocities[i] = static_cast<Vec3>(obj->getAngularVelocity());
-
-  data.centralBodyIndices[i] = -1;
-
-  data.tensors[i] = static_cast<Mat3>(obj->getQuadrupoleTensor());
-
-  data.loveIndices[i] = -1;
-  data.tidalFactorIndices[i] = -1;
-
-  const TidalParameters &p = obj->getTidalParameters();
-  if (p.k2 != -1)
-  {
-    std::lock_guard<std::mutex> lock(loveMutex);
-
-    loveNumbers.push_back(static_cast<Real>(p.k2));
-    data.loveIndices[i] = loveNumbers.size() - 1;
-  }
-  if (p.Q != -1)
-  {
-    std::lock_guard<std::mutex> lock(tidalMutex);
-
-    tidalFactors.push_back(static_cast<Real>(p.Q));
-    data.tidalFactorIndices[i] = tidalFactors.size() - 1;
-  }
-
-  // data.instanceTextureLayer;
-  // data.instanceScale;
-  // data.instanceColor;
-};
-
-template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::processOrbital(OrbitalObject *obj, DataGPU &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
-{
-  this->processObject(obj, data, i, loveNumbers, tidalFactors, loveMutex, tidalMutex);
-
-  const KeplerElements k = obj->getOrbit()->getKeplerElements();
-
-  data.semiAxises[i] = static_cast<Real>(k.a);
-  data.eccentricities[i] = static_cast<Real>(k.e);
-  data.inclinations[i] = static_cast<Real>(k.i);
-  data.longitude[i] = static_cast<Real>(k.Omega);
-  data.periapsis[i] = static_cast<Real>(k.omega);
-  data.meanAnomaly[i] = static_cast<Real>(k.m);
-  data.meanMotion[i] = static_cast<Real>(k.n);
-};
-
 template <typename Real>
 void WisdomHolmanIntegratorGPU<Real>::updateDt(Real dt)
 {
@@ -323,15 +125,14 @@ WisdomHolmanIntegratorGPU<Real>::WisdomHolmanIntegratorGPU(ResourceManager &reso
 
 // Public functions
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::init(std::vector<Integratable *> &objects, Context &ctx)
+void WisdomHolmanIntegratorGPU<Real>::init(PhysicsGPUData &gpu, Total &total, Context &ctx)
 {
-  this->initBuffers(objects, ctx);
   this->initQueues(ctx);
-  this->initKernels();
+  this->initKernels(gpu, total);
 }
 
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::stepReal(Real dt)
+void WisdomHolmanIntegratorGPU<Real>::stepReal(Total &total, Real dt)
 {
   this->updateDt(dt);
 
@@ -355,19 +156,19 @@ void WisdomHolmanIntegratorGPU<Real>::stepReal(Real dt)
   // use barnes-hut for objects mass < x in kick
 
   // Kick
-  // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &this->total);
-  this->queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &this->total);
-  this->queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &this->total);
+  // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &total.total);
+  this->queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &total.total);
+  this->queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &total.total);
 
   // Drift
-  this->queue.enqueueNDKernelBuffer(this->driftObjectsLinearKernel.get(), 1, &this->orbitalTotal, &this->objectTotal);
-  this->queue.enqueueNDKernelBuffer(this->driftOrbitalLinearKernel.get(), 1, NULL, &this->orbitalTotal);
-  this->queue.enqueueNDKernelBuffer(this->driftAngularKernel.get(), 1, NULL, &this->total);
+  this->queue.enqueueNDKernelBuffer(this->driftObjectsLinearKernel.get(), 1, &total.orbital, &total.object);
+  this->queue.enqueueNDKernelBuffer(this->driftOrbitalLinearKernel.get(), 1, NULL, &total.orbital);
+  this->queue.enqueueNDKernelBuffer(this->driftAngularKernel.get(), 1, NULL, &total.total);
 
   // Kick
-  // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &this->total, &lastEvent);
-  this->queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &this->total);
-  this->queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &this->total, &lastEvent);
+  // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &total.total, &lastEvent);
+  this->queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &total.total);
+  this->queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &total.total, &lastEvent);
 
   this->events.push(lastEvent);
 }
