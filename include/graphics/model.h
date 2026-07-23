@@ -20,6 +20,8 @@ protected:
 
 	unsigned int impostorLayer;
 
+	size_t id;
+
 public:
 	Model(Material &material, Mesh &mesh, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
 
@@ -36,8 +38,10 @@ public:
 	void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;
 
 	void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
+	void setID(size_t id) { this->id = id; };
 
 	const Material *getMaterial() const { return this->material; };
 	unsigned int getImpostorLayer() { return this->impostorLayer; };
+	size_t getID() { return this->id; };
 	bool getIsTangent() const;
 };

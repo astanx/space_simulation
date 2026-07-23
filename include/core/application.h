@@ -2,6 +2,7 @@
 
 #include "scene/scene.h"
 #include "render/renderer.h"
+#include "render/modelRegistry.h"
 #include "core/inputManager.h"
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
@@ -36,6 +37,7 @@ private:
 
   // Resource management
   ResourceManager resourceManager;
+  ModelRegistry modelRegistry;
   ThreadPool threadPool;
 
   // Metrics

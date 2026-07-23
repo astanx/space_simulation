@@ -12,6 +12,8 @@
 
 #include "physics/structs/materialProperties.h"
 
+#include "render/modelRegistry.h"
+
 #include <iostream>
 
 // Loaders
@@ -60,6 +62,7 @@ Texture &ResourceManager::LoadTexture(const std::string &name, const std::string
 Model &ResourceManager::LoadModel(const std::string &name, Material &mat, Mesh &mesh)
 {
   this->models[name] = std::make_unique<Model>(mat, mesh);
+  this->modelRegistry.add(this->models[name].get());
   return *this->models[name];
 }
 Model &ResourceManager::LoadModel(const std::string &name, const std::string &material_name, const std::string &mesh_name)
