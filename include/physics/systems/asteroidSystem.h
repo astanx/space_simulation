@@ -14,23 +14,22 @@
 
 #include "render/renderable.h"
 #include "render/updatable.h"
+#include "render/renderSystem.h"
 
 #include <vector>
 
 class Model;
-class Material;
-class AsteroidMaterial;
 class Shader;
 class ThreadPool;
+class InstanceManager;
+class ResourceManager;
 class LODManager;
 
-class AsteroidSystem : public Renderable, public Updatable, public System, public Integratable
+class AsteroidSystem : public System, public RenderSystem, public Integratable
 {
 private:
   ThreadPool &threadPool;
-  std::vector<Range> threadRanges;
   std::vector<Range> typeRanges;
-  std::vector<double> meshVolumes;
 
   size_t vboCount;
 
@@ -39,10 +38,6 @@ private:
 
   std::vector<Asteroid> asteroids;
   std::vector<size_t> asteroidTypes;
-  AsteroidMaterial *asteroid_material;
-
-  std::vector<std::vector<InstanceModelMatrixParts>> fullInstances;
-  std::vector<std::unique_ptr<Mesh>> meshes;
 
   double innerEdge;
   double outerEdge;
@@ -50,8 +45,8 @@ private:
   Object *centralBody;
 
   KeplerElements createRandomKeplerElements(double timeAfterJD2000);
-  void createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceModelMatrixParts> &typeInstances, Radii typeRadii, double timeAfterJD2000);
-  void createAsteroids(unsigned int amount, double timeAfterJD2000);
+  void createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, Radii typeRadii, double volume, double timeAfterJD2000);
+  void createAsteroids(ResourceManager &resourceManager, unsigned int amount, double timeAfterJD2000);
 
   void initRanges(std::vector<unsigned int> &typeCounts);
 
@@ -59,14 +54,10 @@ private:
   void forEachObjectImpl(std::function<void(Object &, size_t)> func) override;
 
 public:
-  AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000, float importance, Material *material, ThreadPool &threadPool);
+  AsteroidSystem(ResourceManager &resourceManager, Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000, float importance, ThreadPool &threadPool);
   ~AsteroidSystem() = default;
 
-  void applyObjectGravitation(Object *object);
-  void render(Shader &shader) override;
-  void renderInstanced(Shader &shader) override;
-  void update(const Camera &camera) override;
+  void applyObjectGravitation(Object &object);
 
-  void partitionObjects(std::vector<InstancePositionRadiusTexture> &impostorInstances, std::vector<InstancePositionRadiusColor> &pointInstances, const Camera &camera, LODManager *manager, float viewportHeight, Frustum *frustum = nullptr, bool force = false) override;
-  const Texture *getTexture() override;
+  void buildRenderQueue(RenderQueue &queue, LODManager &lod, InstanceManager &instances, const Camera &camera, Frustum *frustum, float viewportHeight) override;
 };

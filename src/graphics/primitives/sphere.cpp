@@ -5,7 +5,7 @@
 #include <vector>
 #include <cmath>
 
-Sphere::Sphere(unsigned segments, float radius) : Primitive()
+Sphere::Sphere(unsigned segments, float radius, bool tangent) : Primitive()
 {
   glm::vec3 topPos(0.f, radius, 0.f);
   this->positions.push_back(topPos);
@@ -73,4 +73,7 @@ Sphere::Sphere(unsigned segments, float radius) : Primitive()
     this->indices.push_back(base + j);
     this->indices.push_back(base + j + 1);
   }
+
+  if (tangent)
+    this->computeTangents();
 }

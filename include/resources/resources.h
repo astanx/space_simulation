@@ -9,7 +9,6 @@ namespace Res
   const std::string CORE_SHADER = "core";
   const std::string CORE_TANGENT_SHADER = "core_tangent";
   const std::string SKYBOX_SHADER = "skybox";
-  const std::string ASTEROID_SHADER = "asteroid_shader";
   const std::string TRAIL_SHADER = "trail";
   const std::string POINT_SHADOW_SHADER = "point_shadow";
   const std::string DIRECTIONAL_SHADOW_SHADER = "directional_shadow";
@@ -112,6 +111,19 @@ namespace Res
 
   const std::string EARTH_ATMOSPHERE_MATERIAL = "earth_atmosphere_material";
   const std::string VENUS_ATMOSPHERE_MATERIAL = "venus_atmosphere_material";
+
+  const std::string EROS_ASTEROID_MATERIAL = "eros_asteroid_material";
+  const std::string ITOKAWA_ASTEROID_MATERIAL = "itokawa_asteroid_material";
+  const std::string BENNU_ASTEROID_MATERIAL = "bennu_asteroid_material";
+  const std::string RYUGU_ASTEROID_MATERIAL = "ryugu_asteroid_material";
+  const std::string VESTA_ASTEROID_MATERIAL = "vesta_asteroid_material";
+
+  // Asteroids
+  const std::string EROS_ASTEROID = "eros_asteroid";
+  const std::string ITOKAWA_ASTEROID = "itokawa_asteroid";
+  const std::string BENNU_ASTEROID = "bennu_asteroid";
+  const std::string RYUGU_ASTEROID = "ryugu_asteroid";
+  const std::string VESTA_ASTEROID = "vesta_asteroid";
 
   // Contexts
   const std::string MAIN_CONTEXT = "main_context";

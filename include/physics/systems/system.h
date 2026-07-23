@@ -15,7 +15,6 @@ struct InstancePositionRadiusTexture;
 class System
 {
 protected:
-  unsigned int impostorLayer;
   size_t totalObjects;
 
   virtual void forEachObjectImpl(std::function<void(Object &)> func) = 0;
@@ -34,11 +33,5 @@ public:
       forEachObjectImpl(std::function<void(Object &)>(std::forward<F>(func)));
   }
 
-  virtual void partitionObjects(std::vector<InstancePositionRadiusTexture> &impostorInstances, std::vector<InstancePositionRadiusColor> &pointInstances, const Camera &camera, LODManager *manager, float viewportHeight, Frustum *frustum = nullptr, bool force = false) = 0;
-
-  unsigned int getImpostorLayer() { return this->impostorLayer; };
   size_t getTotalObjects() { return this->totalObjects; };
-  void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
-
-  virtual const Texture *getTexture() = 0;
 };

@@ -5,7 +5,9 @@
 #include "render/gaussianBlur.h"
 #include "render/renderContext.h"
 #include "render/lodManager.h"
+#include "render/instanceManager.h"
 #include "render/renderFlags.h"
+#include "render/renderQueue.h"
 
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
@@ -45,6 +47,8 @@ private:
   PostProcess postProcess;
   GaussianBlur blur;
   LODManager lodManager;
+  InstanceManager instanceManager;
+  RenderQueue queue;
 
   unsigned int cameraUBO;
 
@@ -62,9 +66,8 @@ private:
   void renderPointShadow(Scene &scene);
   void renderMoonsRadiance(Scene &scene);
   void renderSkybox(Scene &scene, RenderContext &ctx);
-  void renderAsteroidSystems(Scene &scene);
   void renderObjects(Scene &scene);
-  void renderObjectsGroup(std::unordered_map<Renderable *, int> &objects, Scene &scene, Shader& shader);
+  void renderObjectsQueue(std::vector<RenderBatch> &batches, Scene &scene, Shader &shader, Buffer *instanceVBO);
   void renderAtmospheres(Scene &scene);
   void renderTrails(Scene &scene);
   void renderImpostor(Scene &scene);

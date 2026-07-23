@@ -5,5 +5,5 @@
 class Circle : public Primitive
 {
 public:
-  Circle(unsigned segments, float radius);
+  Circle(unsigned segments, float radius, bool tangent = false);
 };

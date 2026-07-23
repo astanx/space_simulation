@@ -6,6 +6,7 @@
 
 #include "render/renderState.h"
 #include "render/frustum.h"
+#include "render/renderBatch.h"
 
 #include "graphics/instanceLayouts.h"
 
@@ -129,37 +130,10 @@ void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferTy
 {
   glGenBuffers(1, ubo);
   glBindBuffer(bufferType, *ubo);
-  GL_CALL(glBufferData(
-      bufferType,
-      size,
-      nullptr,
-      GL_DYNAMIC_DRAW));
+  GL_CALL(glBufferData(bufferType, size, nullptr, GL_DYNAMIC_DRAW));
 }
 
-void Renderer::renderAsteroidSystems(Scene &scene)
-{
-  Shader &asteroidShader = this->resourceManager.GetShader(Res::ASTEROID_SHADER);
-
-  GLuint &asteroidID = asteroidShader.getId();
-
-  const Skybox &skybox = scene.getActiveSkybox();
-
-  {
-    ScopedShader asteroid(asteroidID);
-
-    this->shadowManager->bindPointShadow(asteroidShader);
-    this->shadowManager->bindPointShadowDepth(asteroidShader);
-
-    skybox.bindIrradianceMap(asteroidShader);
-
-    for (AsteroidSystem *asteroidSystem : scene.getPhysicsWorld().getAsteroidSystems())
-      asteroidSystem->renderInstanced(asteroidShader);
-
-    skybox.unbindIrradianceMap();
-  }
-}
-
-void Renderer::renderObjectsGroup(std::unordered_map<Renderable *, int> &objects, Scene &scene, Shader &shader)
+void Renderer::renderObjectsQueue(std::vector<RenderBatch> &batches, Scene &scene, Shader &shader, Buffer *instanceVBO)
 {
 
   GLuint &ID = shader.getId();
@@ -174,23 +148,26 @@ void Renderer::renderObjectsGroup(std::unordered_map<Renderable *, int> &objects
 
   this->bindDummyReflector(shader);
 
+  size_t size = sizeof(InstanceModelMatrixParts);
+
   // Render all objects
-  for (auto &[object, flags] : objects)
+  for (RenderBatch batch : batches)
   {
     std::optional<ScopedPolygonOffset> offset;
     std::optional<ScopedBlending> blend;
     std::optional<ScopedDepthMask> mask;
 
-    if ((flags & RenderFlags::Main) == RenderFlags::Main)
+    if (batch.flag == RenderFlags::Main)
       offset.emplace(true, .1f, 4.f);
 
-    if ((flags & RenderFlags::Layer) == RenderFlags::Layer)
+    if (batch.flag == RenderFlags::Layer)
     {
       blend.emplace(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       mask.emplace(GL_FALSE);
     }
 
-    object->renderInstanced(shader);
+    size_t count = batch.range.end - batch.range.begin;
+    batch.model->renderInstanced(shader, instanceVBO, size, count, batch.range.begin);
   }
 
   skybox.unbindIrradianceMap();
@@ -201,8 +178,8 @@ void Renderer::renderObjects(Scene &scene)
   Shader &coreShader = this->resourceManager.GetShader(Res::CORE_SHADER);
   Shader &coreTangentShader = this->resourceManager.GetShader(Res::CORE_TANGENT_SHADER);
 
-  this->renderObjectsGroup(this->lodManager.getFullInstances(), scene, coreShader);
-  this->renderObjectsGroup(this->lodManager.getFullTangentInstances(), scene, coreTangentShader);
+  this->renderObjectsQueue(this->queue.getCoreBatches(), scene, coreShader, &this->instanceManager.getFullInstancesVBO());
+  this->renderObjectsQueue(this->queue.getTangentBatches(), scene, coreTangentShader, &this->instanceManager.getFullInstancesVBO());
 }
 
 void Renderer::renderAtmospheres(Scene &scene)
@@ -312,7 +289,7 @@ void Renderer::renderImpostor(Scene &scene)
 
   impostorShader.set1i(ImpostorTextureBindingPoints::Impostor, "impostors");
 
-  this->lodManager.getImpostorMesh().renderInstanced();
+  this->lodManager.getImpostorMesh().renderInstanced(&this->instanceManager.getImpostorInstancesVBO(), sizeof(InstancePositionRadiusTexture), this->instanceManager.getImpostorCount());
 
   skybox.unbindIrradianceMap();
 }
@@ -324,7 +301,7 @@ void Renderer::renderPoint()
 
   ScopedShader point(pointID);
 
-  this->lodManager.getPointMesh().renderInstanced();
+  this->lodManager.getPointMesh().renderInstanced(&this->instanceManager.getPointInstancesVBO(), sizeof(InstancePositionRadiusColor), this->instanceManager.getPointCount());
 }
 
 void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, RenderContext &ctx)
@@ -343,7 +320,6 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
   this->renderPoint();
   // temporary off
   //  this->renderAtmospheres(scene, &frustum);
-  this->renderAsteroidSystems(scene);
   this->renderSkybox(scene, ctx);
 }
 
@@ -364,7 +340,7 @@ void Renderer::renderMoonsRadiance(Scene &scene)
   ScopedShader moon(moonsRadianceShader);
 
   moonsRadianceShader.set1f(scene.getPhysicsWorld().getSun().getLuminosity(), "lightLuminocity");
-
+// need to pass vbo data
   for (const Planet *planet : scene.getPhysicsWorld().getPlanetarObjects())
     planet->renderMoonsRadiance(moonsRadianceShader, scene.getActiveCamera());
 }
@@ -413,22 +389,31 @@ void Renderer::init(Scene &scene, RenderContext &ctx)
   this->initShaderUBOBindings();
 
   this->lodManager.init(scene);
+  this->instanceManager.init();
 }
 
 void Renderer::render(Scene &scene, RenderContext &ctx)
 {
+  std::cout << 1 << std::endl;
   this->beginFrame(ctx);
 
   this->bindUBOs();
+  std::cout << 2 << std::endl;
 
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
 
-  this->renderMoonsRadiance(scene);
+  std::cout << 3 << std::endl;
+
+  // this->renderMoonsRadiance(scene);
+
+  std::cout << 4 << std::endl;
 
   const Framebuffer &hdrFramebuffer = this->postProcess.getHDRFramebuffer();
 
   this->renderToFramebuffer(scene, hdrFramebuffer, ctx);
+
+  std::cout << 5 << std::endl;
 
   if (ctx.settings.useHDR)
   {
@@ -437,6 +422,8 @@ void Renderer::render(Scene &scene, RenderContext &ctx)
     this->blitDepthToDefault(hdrFramebuffer);
   }
 
+  std::cout << 6 << std::endl;
+
   this->renderTrails(scene);
 }
 
@@ -444,7 +431,7 @@ void Renderer::update(Scene &scene, RenderContext &ctx)
 {
   scene.update(ctx);
 
-  this->lodManager.update(scene, ctx);
+  this->queue.build(scene, this->lodManager, this->instanceManager, ctx.frameCtx);
 
   this->updateUBO(scene, ctx);
 }

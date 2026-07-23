@@ -30,7 +30,7 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
-  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
+  std::unique_ptr<Model> model = std::make_unique<Model>(mat, mesh);
 
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -67,7 +67,7 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
-  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
+  std::unique_ptr<Model> model = std::make_unique<Model>(mat, mesh);
 
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
@@ -96,7 +96,7 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
-  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
+  std::unique_ptr<Model> model = std::make_unique<Model>(mat, mesh);
 
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -131,12 +131,11 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
 
 AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000)
 {
-  std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(centralBody, amount,
+  std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(this->resourceManager, centralBody, amount,
                                                                             innerEdge, outerEdge,
-                                                                            timeAfterJD2000, this->importance.asteroid,
-                                                                            &this->resourceManager.GetMaterial(Res::ASTEROID_MATERIAL), this->threadPool);
+                                                                            timeAfterJD2000, this->importance.asteroid, this->threadPool);
   AsteroidSystem *ptr = system.get();
-  this->addUpdatable(ptr);
+  this->addRenderSystem(ptr);
   this->physicsWorld.addSystem(ptr);
   this->physicsWorld.addIntegratable(ptr);
   this->physicsWorld.addAsteroidSystem(std::move(system));
@@ -148,7 +147,7 @@ void Scene::addLayerToModelSource(std::string name, std::string material_name, M
 {
   Mesh &mesh = this->resourceManager.GetMesh(name);
   Material &mat = this->resourceManager.GetMaterial(material_name);
-  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mat, mesh);
+  std::unique_ptr<Model> model = std::make_unique<Model>(mat, mesh);
 
   object->addLayer(std::move(model));
 }
@@ -159,13 +158,13 @@ void Scene::addAtmosphereToPlanet(std::string planetName, Planet *planet)
   std::unique_ptr atmosphere = std::make_unique<Atmosphere>(planet, path, this->threadPool);
   Atmosphere *ptr = atmosphere.get();
 
-  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(32, atmosphere->getRadii().scaled(VISUAL_RADIUS_SCALE));
+  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(32, atmosphere->getRadii());
   this->resourceManager.LoadMesh<VertexPositionTexcoordNormal>(path, std::move(obj), VertexLayout::NoColor);
   Mesh &mesh = this->resourceManager.GetMesh(path);
-  std::unique_ptr<Model> model = std::make_unique<Model>(glm::dvec3(0.0), mesh);
+  std::unique_ptr<Model> model = std::make_unique<Model>(mesh);
 
   physicsWorld.addAtmosphere(ptr);
-  planet->addLayer(std::move(model));
+  // planet->addLayer(std::move(model));
   planet->addAtmosphere(std::move(atmosphere));
 }
 
@@ -276,6 +275,11 @@ void Scene::addRenderable(Renderable *object)
   this->renderable.push_back(object);
 }
 
+void Scene::addRenderSystem(RenderSystem *system)
+{
+  this->renderSystems.push_back(system);
+}
+
 void Scene::addModelSource(ModelSource *object)
 {
   this->modelSources.push_back(object);
@@ -352,6 +356,13 @@ const std::vector<Renderable *> &Scene::getRenderable() const
     Logger::logWarning("Scene", "Renderable is empty");
 
   return this->renderable;
+};
+const std::vector<RenderSystem *> &Scene::getRenderSystems() const
+{
+  if (this->renderSystems.empty())
+    Logger::logWarning("Scene", "Render systems are empty");
+
+  return this->renderSystems;
 };
 std::vector<ModelSource *> &Scene::getModelSources()
 {

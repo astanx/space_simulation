@@ -1,8 +1,11 @@
 #include "render/lodManager.h"
 
+#include "render/lodResult.h"
 #include "render/modelSource.h"
 #include "render/frustum.h"
 #include "render/renderFlags.h"
+#include "render/instanceManager.h"
+#include "render/renderSystem.h"
 
 #include "debug/logger.h"
 
@@ -13,6 +16,8 @@
 #include "camera/camera.h"
 
 #include "scene/scene.h"
+
+#include "graphics/model.h"
 
 #include "graphics/primitives/quad.h"
 #include "graphics/primitives/point.h"
@@ -29,44 +34,26 @@ void LODManager::initImpostor(Scene &scene)
 {
   this->impostorMesh = std::make_unique<Mesh>(TypeTag<VertexPositionTexcoord>{}, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
   this->impostorMesh->setInstanceLayout(InstanceLayout::PositionRadiusTexture);
-  this->impostorMesh->setInstanceBuffer(this->impostorInstances.data(), this->impostorInstances.size());
 
   this->impostorTexture = std::make_unique<Texture>(GL_TEXTURE_2D_ARRAY);
 
   unsigned int layer = ImpostorTextureBindingPoints::Size;
-  for (ModelSource *object : scene.getModelSources())
-  {
-    const Texture *texture = object->getMainLayerTexture();
-    if (!texture)
-      Logger::logWarning("LOD Manager", "No texture found for object");
+  for (ModelSource *source : scene.getModelSources())
+    source->forEachModel([this, layer](Model &model)
+                         { this->bindLayerToImpostorTexture(model, layer); });
 
-    this->bindLayerToImpostorTexture(*texture, layer);
-
-    object->setImpostorLayer(layer);
-    layer++;
-  }
-
-  for (System *system : scene.getPhysicsWorld().getSystems())
-  {
-    const Texture *texture = system->getTexture();
-    if (!texture)
-      Logger::logWarning("LOD Manager", "No texture found for system");
-
-    this->bindLayerToImpostorTexture(*texture, layer);
-
-    system->setImpostorLayer(layer);
-    layer++;
-  }
+  for (RenderSystem *system : scene.getRenderSystems())
+    for (std::unique_ptr<Model> &model : system->getModels())
+      this->bindLayerToImpostorTexture(model, layer);
 }
 
 void LODManager::initPoint()
 {
   this->pointMesh = std::make_unique<Mesh>(TypeTag<VertexEmpty>{}, std::make_unique<Point>(), VertexLayout::Empty, GL_POINTS);
   this->pointMesh->setInstanceLayout(InstanceLayout::PositionRadiusColor);
-  this->pointMesh->setInstanceBuffer(this->pointInstances.data(), this->pointInstances.size());
 }
 
-void LODManager::bindLayerToImpostorTexture(const Texture &texture, unsigned int layer)
+void LODManager::bindLayerToImpostorTexture(Model &model, unsigned int layer)
 {
   if (!this->impostorTexture)
     Logger::logFatal("LOD Manager", "No importor texture to bind layer");
@@ -75,9 +62,24 @@ void LODManager::bindLayerToImpostorTexture(const Texture &texture, unsigned int
 
   int width = 1024;
   int height = 512;
+  const Material *mat = model.getMaterial();
 
-  int srcWidth = texture.getWidth();
-  int srcHeight = texture.getHeight();
+  if (!mat)
+  {
+    Logger::logWarning("LOD Manager", "No material to get texture");
+    return;
+  }
+
+  const Texture *texture = mat->getTexture();
+
+  if (!texture)
+  {
+    Logger::logWarning("LOD Manager", "No texture to bind impostor layer");
+    return;
+  }
+
+  int srcWidth = texture->getWidth();
+  int srcHeight = texture->getHeight();
 
   if (!this->isImpostorInitialized)
   {
@@ -91,7 +93,7 @@ void LODManager::bindLayerToImpostorTexture(const Texture &texture, unsigned int
   std::vector<uint8_t> pixels(srcWidth * srcHeight * 4);
 
   {
-    ScopedTexture text(texture);
+    ScopedTexture text(*texture);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
   }
 
@@ -100,70 +102,23 @@ void LODManager::bindLayerToImpostorTexture(const Texture &texture, unsigned int
   stbir_resize_uint8_linear(pixels.data(), srcWidth, srcHeight, 0, resized.data(), width, height, 0, STBIR_RGBA);
 
   GL_CALL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, resized.data()));
+
+  model.setImpostorLayer(layer++);
 }
 
-void LODManager::partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force)
+void LODManager::bindLayerToImpostorTexture(std::unique_ptr<Model> &model, unsigned int layer)
 {
-  float importance = object->getRenderImportance();
-  float radius = object->getWorldRadius();
-  const glm::dvec3 pos = object->getRenderPosition();
-  float scaledMeanRadius = this->scaleRadius(pos, radius, fov, viewportHeight, importance);
-  object->setRenderRadius(scaledMeanRadius);
-
-  if (!Frustum::shouldBeProcessed(frustum, pos, scaledMeanRadius, force))
+  if (!model)
+  {
+    Logger::logWarning("LOD Manager", "Model is not passed for impostor binding");
     return;
-
-  const Texture *texture = object->getMainLayerTexture();
-
-  int level = this->getLODLevel(pos, radius, fov, viewportHeight, importance);
-
-  switch (level)
-  {
-  case LOD::Full:
-  {
-    const Radii &radii = object->getSrcRadii();
-    float scaledEquatorianRadius = this->scaleRadius(pos, radii.equatorian, fov, viewportHeight, importance);
-    float scaledPolarRadius = this->scaleRadius(pos, radii.polar, fov, viewportHeight, importance);
-    object->scaleRadii(Radii{scaledEquatorianRadius, scaledPolarRadius, scaledMeanRadius});
-
-    object->forEachModel([this](Model &model, int flags)
-                         {
-                          if ((flags & RenderFlags::Tangent) == RenderFlags::Tangent)
-                            this->fullTangentInstances.insert({&model, flags});
-                          else
-                            this->fullInstances.insert({&model, flags}); });
-    break;
   }
-  case LOD::Impostor:
-    this->impostorInstances.emplace_back(InstancePositionRadiusTexture{pos, scaledMeanRadius, object->getImpostorLayer()});
-    break;
-  case LOD::Point:
-    this->pointInstances.emplace_back(InstancePositionRadiusColor{pos, scaledMeanRadius, texture->getAverageColor()});
-    break;
-  default:
-    Logger::logError("LOD Manager", "No handler for LOD level: " + std::to_string(level));
-    break;
-  }
-}
 
-void LODManager::partitionObjects(Scene &scene, RenderContext &ctx)
-{
-  this->fullInstances.clear();
-  this->impostorInstances.clear();
-  this->pointInstances.clear();
-
-  const Camera &camera = scene.getActiveCamera();
-  Frustum frustum = scene.getActiveCamera().getFrustum(ctx.frameCtx.aspect);
-
-  for (ModelSource *object : scene.getModelSources())
-    this->partitionObject(object, &frustum, ctx.frameCtx.height, camera.getFOV());
-
-  for (auto &system : scene.getPhysicsWorld().getSystems())
-    system->partitionObjects(this->impostorInstances, this->pointInstances, camera, this, ctx.frameCtx.height, &frustum);
+  this->bindLayerToImpostorTexture(*model, layer);
 }
 
 // Public functions
-void LODManager::init(Scene& scene)
+void LODManager::init(Scene &scene)
 {
   this->initImpostor(scene);
   this->initPoint();
@@ -214,9 +169,38 @@ float LODManager::scaleRadius(const glm::vec3 &position, float radius, float fov
   return finalRadius;
 }
 
-void LODManager::update(Scene& scene, RenderContext& ctx)
+LODResult LODManager::partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov, bool force)
 {
-  this->partitionObjects(scene, ctx);
-  this->impostorMesh->updateInstanceBuffer(this->impostorInstances.data(), this->impostorInstances.size());
-  this->pointMesh->updateInstanceBuffer(this->pointInstances.data(), this->pointInstances.size());
+  LODResult result;
+  float radius = radii.mean;
+  result.scaledMeanRadius = this->scaleRadius(position, radius, fov, viewportHeight, importance);
+
+  if (!Frustum::shouldBeProcessed(frustum, position, result.scaledMeanRadius, force))
+  {
+    result.visible = false;
+    return result;
+  }
+
+  result.visible = true;
+
+  result.level = this->getLODLevel(position, radius, fov, viewportHeight, importance);
+
+  if (result.level == LOD::Full)
+  {
+    result.scaledEquatorianRadius = this->scaleRadius(position, radii.equatorian, fov, viewportHeight, importance);
+    result.scaledPolarRadius = this->scaleRadius(position, radii.polar, fov, viewportHeight, importance);
+
+    result.equatorianScale = result.scaledEquatorianRadius / radii.equatorian;
+    result.polarScale = result.scaledPolarRadius / radii.polar;
+  }
+
+  return result;
+}
+
+LODResult LODManager::partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force)
+{
+  const glm::vec3 &pos = object->getRenderPosition();
+  float importance = object->getRenderImportance();
+  Radii radii = object->getSrcRadii();
+  return this->partitionObject(pos, importance, radii, frustum, viewportHeight, fov, force);
 }

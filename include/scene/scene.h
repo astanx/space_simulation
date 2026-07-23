@@ -25,6 +25,7 @@ class ResourceManager;
 class ThreadPool;
 class Updatable;
 class Renderable;
+class RenderSystem;
 class ModelSource;
 
 struct KeplerElements;
@@ -53,6 +54,7 @@ private:
   
   std::vector<Updatable *> updatable;
   std::vector<Renderable *> renderable;
+  std::vector<RenderSystem *> renderSystems;
   std::vector<ModelSource *> modelSources;
 
   std::vector<std::unique_ptr<Camera>> cameras;
@@ -98,6 +100,7 @@ public:
 
   // Setters
   void addRenderable(Renderable *object);
+  void addRenderSystem(RenderSystem *system);
   void addModelSource(ModelSource *object);
   void addUpdatable(Updatable *object);
   void addTrail(std::unique_ptr<Trail> trail);
@@ -115,6 +118,7 @@ public:
 
   const glm::vec3 getActiveCameraPosition() const;
   const std::vector<Renderable *> &getRenderable() const;
+  const std::vector<RenderSystem *> &getRenderSystems() const;
   std::vector<ModelSource *> &getModelSources();
   const std::vector<PointLight *> &getPointLights() const;
   const DirectionalLight *getDirLight() const;

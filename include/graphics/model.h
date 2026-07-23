@@ -6,9 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-
 class Material;
-class Shader;
 class Texture;
 class Mesh;
 
@@ -19,42 +17,27 @@ protected:
 	Texture *overrideTextureDiffuse;
 	Texture *overrideTextureSpecular;
 	Mesh *mesh;
-	glm::mat4 modelMatrix;
-	glm::vec3 position;
-	glm::quat orientation;
-	glm::vec3 scale;
 
-	void updateUniforms(Shader &shader);
-	void updateModelMatrix();
+	unsigned int impostorLayer;
 
 public:
-	Model(glm::vec3 position, Material &material,
-				Mesh &mesh,
-				Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
-				glm::quat orientation = glm::quat(1.f, 0.f, 0.f, 0.f), glm::vec3 scale = glm::vec3(1.f));
+	Model(Material &material, Mesh &mesh, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
 
-	Model(glm::vec3 position, Mesh &mesh);
+	Model(Mesh &mesh);
 
 	Model(const Model &model);
 
 	// OBJ consturctor
-	Model(glm::vec3 position, Material &material,
-				const std::string &OBJfile,
-				Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr,
-				glm::quat orientation = glm::quat(1.f, 0.f, 0.f, 0.f), glm::vec3 scale = glm::vec3(1.f));
+	Model(Material &material, const std::string &OBJfile, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
 
 	~Model();
 
 	void render(Shader &shader) override;
-	void renderInstanced(Shader &shader) override;
+	void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;
 
-	glm::vec3 getPosition() const;
-	glm::quat getOrientation() const;
-
-	void setOrientation(const glm::quat &orientation);
-	void setScale(const glm::vec3 &scale);
-	void setPosition(const glm::vec3 &newPosition);
+	void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
 
 	const Material *getMaterial() const { return this->material; };
+	unsigned int getImpostorLayer() { return this->impostorLayer; };
 	bool getIsTangent() const;
 };

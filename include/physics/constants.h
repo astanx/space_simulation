@@ -69,10 +69,6 @@ extern const Radii saturnRadii;
 extern const Radii uranusRadii;
 extern const Radii neptuneRadii;
 
-extern const double VISUAL_SCALE;
-extern const double VISUAL_RADIUS_SCALE;
-extern const double VISUAL_ASTEROID_SCALE;
-
 extern const HapkeParameters moonHapkeParameters;
 
 // Asteroids

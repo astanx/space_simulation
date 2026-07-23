@@ -42,8 +42,7 @@ private:
   template <typename T>
   void initVAO(std::vector<T> *vertexArray, std::vector<GLuint> *indexArray);
 
-  template <typename T>
-  void bindInstanceAttributes(const T *instanceData, const Buffer &vbo) const;
+  void bindInstanceAttributes(const Buffer &vbo, size_t size, size_t offset = 0) const;
 
 public:
   template <typename T>
@@ -62,7 +61,7 @@ public:
   void setInstanceLayout(InstanceLayout layout);
 
   void render() const;
-  void renderInstanced() const;
+  void renderInstanced(Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) const;
 
   bool getIsTangent() const { return this->isTangent; };
 };

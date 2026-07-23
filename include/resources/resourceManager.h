@@ -1,5 +1,7 @@
 #pragma once
 
+#include "resources/asteroidType.h"
+
 #include "graphics/shader.h"
 #include "graphics/texture.h"
 #include "graphics/materials/material.h"
@@ -16,7 +18,7 @@
 #include <OpenCL/cl.h>
 
 class Primitive;
-class AsteroidMaterial;
+struct AsteroidShape;
 
 struct PhongMaterialProperties;
 
@@ -27,6 +29,7 @@ private:
   std::unordered_map<std::string, std::unique_ptr<Texture>> textures;
   std::unordered_map<std::string, std::unique_ptr<Material>> materials;
   std::unordered_map<std::string, std::unique_ptr<Mesh>> meshes;
+  std::unordered_map<std::string, std::unique_ptr<AsteroidType>> asteroids;
 
   std::unordered_map<std::string, std::unique_ptr<Kernel>> kernels;
   std::unordered_map<std::string, std::unique_ptr<Program>> programs;
@@ -49,15 +52,14 @@ public:
                               Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess);
   Material &LoadPhongMaterial(const std::string &name, PhongMaterialProperties material, Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture);
 
-  Material &LoadAsteroidMaterial(const std::string &name, Texture &diffuseTexture);
-
   Material &LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, Texture *nightMap, float emissiveStrength, float ao, float metallic, float roughness);
 
   template <typename T>
   Mesh &LoadMesh(const std::string &name, std::vector<T> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
   template <typename T>
   Mesh &LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
-
+  template <typename T>
+  AsteroidType &LoadAsteroid(const std::string &name, std::unique_ptr<AsteroidShape> shape, Material &material, VertexLayout layout);
   // Getters
   Kernel &GetKernel(const std::string &name);
   Program &GetProgram(const std::string &name);
@@ -66,6 +68,7 @@ public:
   Texture &GetTexture(const std::string &name);
   Material &GetMaterial(const std::string &name);
   Mesh &GetMesh(const std::string &name);
+  AsteroidType &GetAsteroid(const std::string &name);
   std::vector<Shader *> GetAllShaders();
 };
 

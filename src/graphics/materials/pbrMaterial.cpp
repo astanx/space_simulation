@@ -10,17 +10,9 @@
 #include <iostream>
 
 // Constructor and Destructor
-PBRMaterial::PBRMaterial(
-    Texture *albedoMap,
-    Texture *normalMap,
-    Texture *aoMap,
-    Texture *metallicMap,
-    Texture *roughnessMap,
-    Texture *nightMap,
-    float emissiveStrength,
-    float ao,
-    float metallic,
-    float roughness)
+PBRMaterial::PBRMaterial(Texture *albedoMap, Texture *normalMap, Texture *aoMap,
+                         Texture *metallicMap, Texture *roughnessMap, Texture *nightMap,
+                         float emissiveStrength, float ao, float metallic, float roughness)
 {
   this->albedoMap = albedoMap;
   this->normalMap = normalMap;

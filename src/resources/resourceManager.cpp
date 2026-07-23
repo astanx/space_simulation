@@ -1,8 +1,11 @@
 #include "resources/resourceManager.h"
 
+#include "resources/asteroidType.h"
+
 #include "debug/logger.h"
 
 #include "graphics/primitives/primitives.h"
+#include "graphics/primitives/asteroidShape.h"
 #include "graphics/materials/asteroidMaterial.h"
 #include "graphics/materials/phongMaterial.h"
 #include "graphics/materials/pbrMaterial.h"
@@ -66,11 +69,6 @@ Material &ResourceManager::LoadPhongMaterial(const std::string &name, PhongMater
   this->materials[name] = std::make_unique<PhongMaterial>(material, diffuseTexture, specularTexture, normalTexture);
   return *this->materials[name];
 }
-Material &ResourceManager::LoadAsteroidMaterial(const std::string &name, Texture &diffuseTexture)
-{
-  this->materials[name] = std::make_unique<AsteroidMaterial>(diffuseTexture);
-  return *this->materials[name];
-}
 
 Material &ResourceManager::LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, Texture *nightMap, float emissiveStrength, float ao, float metallic, float roughness)
 {
@@ -126,6 +124,13 @@ Mesh &ResourceManager::GetMesh(const std::string &name)
   auto it = this->meshes.find(name);
   if (it == this->meshes.end())
     Logger::logFatal("Resource manager", "Mesh not found: " + name);
+  return *it->second;
+}
+AsteroidType &ResourceManager::GetAsteroid(const std::string &name)
+{
+  auto it = this->asteroids.find(name);
+  if (it == this->asteroids.end())
+    Logger::logFatal("Resource manager", "Asteroid not found: " + name);
   return *it->second;
 }
 std::vector<Shader *> ResourceManager::GetAllShaders()

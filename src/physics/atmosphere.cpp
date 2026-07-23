@@ -495,7 +495,7 @@ Atmosphere::Atmosphere(Planet *planet, std::string &folderPath, ThreadPool &thre
   this->readFloatFile(folderPath + "/crwc.bin", this->cloud_rain_water_content);
   this->readFloatFile(folderPath + "/cswc.bin", this->cloud_snow_water_content);
 
-  this->threadPool.initRanges(this->threadRanges, this->longitude.size());
+  this->threadPool.calculateRanges(this->threadRanges, this->longitude.size());
 
   this->initVectors(planet->getFreeFallAcc(), planet->getRadii());
 

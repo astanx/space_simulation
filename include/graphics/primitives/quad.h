@@ -5,5 +5,5 @@
 class Quad : public Primitive
 {
 public:
-  Quad();
+  Quad(bool tangent = false);
 };

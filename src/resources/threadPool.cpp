@@ -78,7 +78,7 @@ std::mutex &ThreadPool::getMutex()
   return this->mtx;
 }
 
-void ThreadPool::initRanges(std::vector<Range> &ranges, size_t total)
+void ThreadPool::calculateRanges(std::vector<Range> &ranges, size_t total)
 {
   size_t threadCount = this->getThreadCount();
   ranges.resize(threadCount);

@@ -83,8 +83,17 @@ public:
   static void mouseCallback(GLFWwindow *window, double xpos, double ypos);
   static void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
   static void framebuffer_resize_callback(GLFWwindow *window, int width, int height);
+
+  void loadPBRMaterial(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
+                       float ao, float metallic, float roughness, float emissiveStrength = 0.f, const std::string &normal_name = "", const std::string &night_name = "",
+                       const std::string &roughness_name = "");
   void loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
                            Radii radii, float ao, float metallic, float roughness, float emissiveStrength = 0.0f,
                            const std::string &normal_name = "", const std::string &night_name = "", const std::string &roughness_name = "", int segments = 32);
+
+  void loadAsteroidShape(const std::string &name, const std::string &material_name,
+                         Texture &albedo, float ao, float metallic, float roughness,
+                         double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3);
+
   void processInput();
 };

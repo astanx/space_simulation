@@ -2,7 +2,6 @@
 
 #include "graphics/mesh.h"
 #include "graphics/texture.h"
-#include "graphics/shader.h"
 
 #include "graphics/bindings/texture.h"
 
@@ -14,32 +13,12 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-// Private functions
-void Model::updateUniforms(Shader &shader)
-{
-  if (this->material)
-    this->material->sendToShader(shader);
-}
-
-void Model::updateModelMatrix()
-{
-  this->modelMatrix = glm::mat4(1.f);
-  this->modelMatrix = glm::translate(this->modelMatrix, this->position);
-  this->modelMatrix *= glm::mat4(this->orientation);
-  this->modelMatrix = glm::scale(this->modelMatrix, this->scale);
-}
 // Constructor/Descructor
-Model::Model(glm::vec3 position, Material &material,
-             Mesh &mesh,
-             Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
-             glm::quat orientation, glm::vec3 scale)
+Model::Model(Material &material, Mesh &mesh, Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
 {
-  this->position = position;
   this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
-  this->orientation = orientation;
-  this->scale = scale;
 
   this->mesh = &mesh;
   this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
@@ -47,27 +26,18 @@ Model::Model(glm::vec3 position, Material &material,
 
 Model::Model(const Model &model)
 {
-  this->position = model.position;
   this->material = model.material;
   this->overrideTextureDiffuse = model.overrideTextureDiffuse;
   this->overrideTextureSpecular = model.overrideTextureSpecular;
-  this->orientation = model.orientation;
-  this->scale = model.scale;
   this->mesh = model.mesh;
   this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
 }
 
-Model::Model(glm::vec3 position, Material &material,
-             const std::string &OBJfile,
-             Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular,
-             glm::quat orientation, glm::vec3 scale)
+Model::Model(Material &material, const std::string &OBJfile, Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
 {
-  this->position = position;
   this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
   this->overrideTextureSpecular = overrideTextureSpecular;
-  this->orientation = orientation;
-  this->scale = scale;
 
   std::vector<VertexPositionTexcoordNormalColor> vertices = loadOBJmodel(OBJfile);
   std::vector<GLuint> indices;
@@ -76,25 +46,19 @@ Model::Model(glm::vec3 position, Material &material,
   this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
 }
 
-Model::Model(glm::vec3 position, Mesh &mesh)
+Model::Model(Mesh &mesh)
 {
-  this->position = position;
   this->mesh = &mesh;
   this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
 }
 
-Model::~Model()
-{
-}
+Model::~Model() = default;
 
 // Public functions
 void Model::render(Shader &shader)
 {
-  // Update uniforms
-  this->updateModelMatrix();
-  this->updateUniforms(shader);
-
-  shader.setMat4fv(this->modelMatrix, "ModelMatrix");
+  if (this->material)
+    this->material->sendToShader(shader);
 
   // Render objects
   std::optional<ScopedTexture> diffuseScope;
@@ -115,15 +79,10 @@ void Model::render(Shader &shader)
   glBindVertexArray(0);
 }
 
-void Model::renderInstanced(Shader &shader)
+void Model::renderInstanced(Shader &shader, Buffer *instanceVBO, size_t size, size_t count, size_t offset)
 {
-  // Update uniforms
-  this->updateUniforms(shader);
-
-  std::vector<InstanceModelMatrixParts> buf;
-  buf.emplace_back(InstanceModelMatrixParts{this->position, this->orientation, this->scale});
-
-  this->mesh->setInstanceBuffer(buf.data(), buf.size());
+  if (this->material)
+    this->material->sendToShader(shader);
 
   // Render objects
   std::optional<ScopedTexture> diffuseScope;
@@ -138,38 +97,13 @@ void Model::renderInstanced(Shader &shader)
                           TextureBindingPoints::Specular);
 
   if (this->mesh)
-    this->mesh->renderInstanced();
+    this->mesh->renderInstanced(instanceVBO, size, count, offset);
 
   // Unbind everything
   glBindVertexArray(0);
-}
-
-void Model::setScale(const glm::vec3 &scale)
-{
-  this->scale = scale;
-}
-
-glm::vec3 Model::getPosition() const
-{
-  return this->position;
-}
-
-glm::quat Model::getOrientation() const
-{
-  return this->orientation;
 }
 
 bool Model::getIsTangent() const
 {
   return this->mesh->getIsTangent();
 };
-
-void Model::setOrientation(const glm::quat &orientation)
-{
-  this->orientation = orientation;
-}
-
-void Model::setPosition(const glm::vec3 &newPosition)
-{
-  this->position = newPosition;
-}

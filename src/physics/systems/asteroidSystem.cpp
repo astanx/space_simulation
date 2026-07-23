@@ -21,9 +21,17 @@
 #include "maths/random.h"
 
 #include "resources/threadPool.h"
+#include "resources/resourceManager.h"
+#include "resources/resources.h"
+#include "resources/asteroidType.h"
 
 #include "render/frustum.h"
 #include "render/lodManager.h"
+#include "render/instanceManager.h"
+#include "render/lodResult.h"
+#include "render/renderQueue.h"
+#include "render/renderBatch.h"
+
 #include "scene/frameContext.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -35,30 +43,20 @@
 // Private functions
 void AsteroidSystem::forEachObjectImpl(std::function<void(Object &)> func)
 {
-  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
-  {
-    Range &work = this->threadRanges[threadIndex];
-
-    this->threadPool.enqueue([this, work, &func]()
-                             {
-        for (unsigned j = work.begin; j < work.end; j++) 
-          func(this->asteroids[j]); });
-  }
-  this->threadPool.wait();
+  this->threadPool.parallelFor(0, this->asteroids.size(),
+                               [this, &func](size_t i)
+                               {
+                                 func(this->asteroids[i]);
+                               });
 }
 
 void AsteroidSystem::forEachObjectImpl(std::function<void(Object &, size_t)> func)
 {
-  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
-  {
-    Range &work = this->threadRanges[threadIndex];
-
-    this->threadPool.enqueue([this, work, &func]()
-                             {
-        for (unsigned j = work.begin; j < work.end; j++) 
-          func(this->asteroids[j], j); });
-  }
-  this->threadPool.wait();
+  this->threadPool.parallelFor(0, this->asteroids.size(),
+                               [this, &func](size_t i)
+                               {
+                                 func(this->asteroids[i], i);
+                               });
 }
 
 KeplerElements AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000)
@@ -77,105 +75,66 @@ KeplerElements AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000
   return e;
 }
 
-void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, std::vector<InstanceModelMatrixParts> &typeInstances, Radii typeRadii, double timeAfterJD2000)
+void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, Radii typeRadii, double volume, double timeAfterJD2000)
 {
   double radius = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
 
-  if (radius * VISUAL_RADIUS_SCALE < 0.01)
-    radius = 0.01 / VISUAL_RADIUS_SCALE;
-
-  // double angle = generateRandom(0.0, 2.0 * M_PI);
-  // double distance = generateRandom(this->innerEdge, this->outerEdge);
-  // double height = generateRandom(-0.5 * AU_TO_METER, 0.5 * AU_TO_METER);
+  if (radius < 0.01)
+    radius = 0.01;
 
   glm::dvec3 pos(0.0);
-  // pos.x = cos(angle) * distance;
-  // pos.z = sin(angle) * distance;
-  // pos.y = height;
 
   double density = generateRandom(MINIMUM_ASTEROID_DENSITY, MAXIMUM_ASTEROID_DENSITY);
-  // double mu = density * this->meshVolumes[type] / (pow(VISUAL_RADIUS_SCALE, 3)) * G;
-  double mu = density * this->meshVolumes[type] * G;
+  double mu = density * volume * G;
 
   {
     std::lock_guard<std::mutex> lock(this->threadPool.getMutex());
     typeAsteroids.emplace_back(this->centralBody, mu, typeRadii.scaled(radius), this->createRandomKeplerElements(timeAfterJD2000));
-    typeInstances.emplace_back(InstanceModelMatrixParts{typeAsteroids.back().getPosition(), typeAsteroids.back().getOrientation(), glm::vec3(radius)});
   }
 }
-void AsteroidSystem::createAsteroids(unsigned amount, double timeAfterJD2000)
+
+void AsteroidSystem::createAsteroids(ResourceManager &resourceManager, unsigned amount, double timeAfterJD2000)
 {
-  std::vector<std::unique_ptr<AsteroidShape>> asteroidShapes;
-  asteroidShapes.push_back(std::make_unique<AsteroidShape>(24, 12, 2.0, 1.0, 1.0, 0.75, 0.85, 0.65, VISUAL_ASTEROID_SCALE));
-  asteroidShapes.push_back(std::make_unique<AsteroidShape>(20, 10, 2.2, 1.0, 1.1, 0.70, 0.80, 0.60, VISUAL_ASTEROID_SCALE));
-  asteroidShapes.push_back(std::make_unique<AsteroidShape>(16, 8, 3.0, 1.0, 1.2, 0.65, 0.75, 0.55, VISUAL_ASTEROID_SCALE));
-  asteroidShapes.push_back(std::make_unique<AsteroidShape>(4, 7, 2.5, 1.1, 1.3, 0.60, 0.70, 0.50, VISUAL_ASTEROID_SCALE));
-  asteroidShapes.push_back(std::make_unique<AsteroidShape>(12, 6, 4.0, 1.2, 1.4, 0.55, 0.65, 0.45, VISUAL_ASTEROID_SCALE));
-
-  std::vector<Radii> asteroidRadii;
-  for (std::unique_ptr<AsteroidShape> &asteroid : asteroidShapes)
-    asteroidRadii.push_back(asteroid->getRadii());
-
-  for (std::unique_ptr<AsteroidShape> &shape : asteroidShapes)
-    meshVolumes.push_back(shape->calculateVolume());
+  std::vector<AsteroidType *> asteroidShapes;
+  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::EROS_ASTEROID));
+  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::ITOKAWA_ASTEROID));
+  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::BENNU_ASTEROID));
+  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::RYUGU_ASTEROID));
+  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::VESTA_ASTEROID));
 
   const size_t typeCount = asteroidShapes.size();
+  this->models.reserve(typeCount);
 
-  this->meshes.reserve(typeCount);
-
-  for (std::unique_ptr<AsteroidShape> &asteroid : asteroidShapes)
-    this->meshes.push_back(std::make_unique<Mesh>(TypeTag<VertexPositionTexcoordNormal>{}, std::move(asteroid), VertexLayout::NoColor));
+  for (AsteroidType *asteroid : asteroidShapes)
+    this->models.push_back(std::move(asteroid->model));
 
   std::vector<unsigned int> typeCounts(typeCount, 0);
   this->asteroidTypes.resize(amount);
 
   for (size_t i = 0; i < amount; i++)
   {
-    unsigned type = generateRandom(0u, static_cast<unsigned>(this->meshes.size() - 1));
+    unsigned type = generateRandom(0u, static_cast<unsigned>(this->models.size() - 1));
 
     asteroidTypes[i] = type;
     typeCounts[type]++;
   }
 
-  this->fullInstances.resize(typeCount);
-  for (size_t i = 0; i < typeCount; i++)
-    this->fullInstances[i].reserve(typeCounts[i]);
-
   this->initRanges(typeCounts);
 
   std::vector<std::vector<Asteroid>> tempAsteroids(typeCount);
-  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
-  {
-    Range &work = this->threadRanges[threadIndex];
-    this->threadPool.enqueue([this, threadIndex, &work, &tempAsteroids, &asteroidRadii, timeAfterJD2000]()
-                             {
-                                 for (unsigned int i = work.begin; i < work.end; i++)
-                                   {
-                                    this->createAsteroid(this->asteroidTypes[i], tempAsteroids[this->asteroidTypes[i]], this->fullInstances[asteroidTypes[i]], asteroidRadii[asteroidTypes[i]], timeAfterJD2000);
-                                  } });
-  }
-
-  this->threadPool.wait();
+  this->threadPool.parallelFor(0, this->asteroidTypes.size(), [this, &tempAsteroids, &asteroidShapes, timeAfterJD2000](size_t i)
+                               { this->createAsteroid(this->asteroidTypes[i], tempAsteroids[this->asteroidTypes[i]], asteroidShapes[asteroidTypes[i]]->radii, asteroidShapes[asteroidTypes[i]]->volume, timeAfterJD2000); });
 
   for (size_t type = 0; type < typeCount; type++)
     this->asteroids.insert(this->asteroids.end(), std::make_move_iterator(tempAsteroids[type].begin()), std::make_move_iterator(tempAsteroids[type].end()));
 
   for (unsigned type = 0; type < typeCount; type++)
-  {
-    Mesh *mesh = this->meshes[type].get();
-
-    mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
-    mesh->setInstanceBuffer(this->fullInstances[type].data(), this->fullInstances[type].size(), this->vboCount);
-
-    Logger::logInfo("Asteroid system", "Asteroids of type \"" + std::to_string(type) + "\" created - " + std::to_string(this->fullInstances[type].size()));
-  }
+    Logger::logInfo("Asteroid system", "Asteroids of type \"" + std::to_string(type) + "\" created - " + std::to_string(typeCounts[type]));
 }
 
 void AsteroidSystem::initRanges(std::vector<unsigned int> &typeCounts)
 {
   unsigned threadCount = this->threadPool.getThreadCount();
-
-  this->threadRanges.resize(threadCount);
 
   size_t start = 0;
   for (size_t typeIndex = 0; typeIndex < typeCounts.size(); typeIndex++)
@@ -185,17 +144,11 @@ void AsteroidSystem::initRanges(std::vector<unsigned int> &typeCounts)
   }
 
   this->totalObjects = start;
-  this->threadPool.initRanges(this->threadRanges, this->totalObjects);
 }
 
 // Constructor
-AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000, float importance, Material *material, ThreadPool &threadPool) : threadPool(threadPool), Integratable(true)
+AsteroidSystem::AsteroidSystem(ResourceManager &resourceManager, Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000, float importance, ThreadPool &threadPool) : threadPool(threadPool), Integratable(true)
 {
-  AsteroidMaterial *mat = dynamic_cast<AsteroidMaterial *>(material);
-  if (!mat)
-    Logger::logFatal("Asteroid System", "Wrong material");
-
-  this->asteroid_material = mat;
   this->centralBody = centralBody;
 
   this->vboCount = 2;
@@ -204,128 +157,86 @@ AsteroidSystem::AsteroidSystem(Object *centralBody, unsigned amount, double inne
   this->innerEdge = innerEdge;
   this->outerEdge = outerEdge;
 
-  this->createAsteroids(amount, timeAfterJD2000);
+  this->createAsteroids(resourceManager, amount, timeAfterJD2000);
 }
 
 // Public functions
-void AsteroidSystem::partitionObjects(std::vector<InstancePositionRadiusTexture> &impostorInstances, std::vector<InstancePositionRadiusColor> &pointInstances, const Camera &camera, LODManager *manager, float viewportHeight, Frustum *frustum, bool force)
+void AsteroidSystem::buildRenderQueue(RenderQueue &queue, LODManager &lod, InstanceManager &instances, const Camera &camera, Frustum *frustum, float viewportHeight)
 {
-  for (size_t i = 0; i < this->fullInstances.size(); i++)
-    this->fullInstances[i].clear();
-
-  std::vector<std::vector<std::vector<InstanceModelMatrixParts>>> threadLocalFullInstances(threadRanges.size());
+  std::vector<std::vector<std::vector<InstanceModelMatrixParts>>> threadLocalFullInstances(this->threadPool.getThreadCount());
   for (auto &perThread : threadLocalFullInstances)
-    perThread.resize(this->fullInstances.size());
+    perThread.resize(this->models.size());
 
-  std::vector<std::vector<InstancePositionRadiusTexture>> threadLocalImpostorInstances(threadRanges.size());
-  std::vector<std::vector<InstancePositionRadiusColor>> threadLocalPointInstances(threadRanges.size());
+  std::vector<std::vector<InstancePositionRadiusTexture>> threadLocalImpostorInstances(this->threadPool.getThreadCount());
+  std::vector<std::vector<InstancePositionRadiusColor>> threadLocalPointInstances(this->threadPool.getThreadCount());
 
   float fov = camera.getFOV();
-  glm::vec3 color = this->asteroid_material->getTexture()->getAverageColor();
+  std::vector<glm::vec3> colors;
+  colors.resize(this->models.size());
 
-  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
-  {
-    Range &work = this->threadRanges[threadIndex];
+  for (size_t i = 0; i < this->models.size(); i++)
+    colors[i] = this->models[i]->getMaterial()->getTexture()->getAverageColor();
 
-    this->threadPool.enqueue([this, work, &camera, &threadLocalFullInstances, &threadLocalImpostorInstances, &threadLocalPointInstances, threadIndex, manager, force, &frustum, viewportHeight, fov, color]()
-                             {
-                              auto& localFull = threadLocalFullInstances[threadIndex];
-                              auto& localImpostor = threadLocalImpostorInstances[threadIndex];
-                              auto& localPoint = threadLocalPointInstances[threadIndex];
+  this->threadPool.parallelFor(0, this->asteroids.size(), [this, &threadLocalFullInstances, &threadLocalImpostorInstances, &threadLocalPointInstances, &camera, &lod, &frustum, &colors, fov, viewportHeight](Range work, size_t thread)
+                               {
+                              auto& localFull = threadLocalFullInstances[thread];
+                              auto& localImpostor = threadLocalImpostorInstances[thread];
+                              auto& localPoint = threadLocalPointInstances[thread];
                                for (unsigned i = work.begin; i < work.end; i++)
                                {
                                 const Asteroid& asteroid = this->asteroids[i];
                                 Radii radii = asteroid.getRadii();
-                                glm::dvec3 pos = camera.worldToViewSpace(asteroid.getPosition());
-                                float scaledMeanRadius = manager->scaleRadius(pos, radii.equatorian, fov, viewportHeight, importance);
-                                float scaledEquatorianRadius = manager->scaleRadius(pos, radii.equatorian, fov, viewportHeight, importance);
-                                float scaledPolarRadius = manager->scaleRadius(pos, radii.polar, fov, viewportHeight, importance);
 
-                                if (!Frustum::shouldBeProcessed(frustum, pos, scaledMeanRadius, force))
+                                glm::dvec3 pos = camera.worldToViewSpace(asteroid.getPosition());
+                                LODResult res = lod.partitionObject(pos, importance, radii, frustum, viewportHeight, fov);
+
+                                if (!res.visible)
                                   continue;
 
-                                int level = manager->getLODLevel(pos, radii.mean, fov, viewportHeight, this->importance);
-                                switch (level)
+                                switch (res.level)
                                 {
                                 case LOD::Full:
-                                  localFull[this->asteroidTypes[i]].emplace_back(InstanceModelMatrixParts{pos, camera.worldToViewSpace(asteroid.getOrientation()), glm::vec3(scaledEquatorianRadius, scaledPolarRadius, scaledEquatorianRadius)});
+                                  localFull[this->asteroidTypes[i]].emplace_back(InstanceModelMatrixParts{pos, camera.worldToViewSpace(asteroid.getOrientation()), glm::vec3(res.scaledEquatorianRadius, res.scaledPolarRadius, res.scaledEquatorianRadius)});
                                   break;
                                 case LOD::Impostor: 
-                                  localImpostor.emplace_back(InstancePositionRadiusTexture{pos, scaledMeanRadius, this->impostorLayer});
+                                  localImpostor.emplace_back(InstancePositionRadiusTexture{pos, res.scaledMeanRadius, this->models[this->asteroidTypes[i]]->getImpostorLayer()});
                                   break;
                                 case LOD::Point:
-                                  localPoint.emplace_back(InstancePositionRadiusColor{pos, scaledMeanRadius, color});
+                                  localPoint.emplace_back(InstancePositionRadiusColor{pos, res.scaledMeanRadius, colors[this->asteroidTypes[i]]});
                                   break;
                                 default:
-                                  Logger::logError("Asteroid System", "No handler for LOD level: " + std::to_string(level));
+                                  Logger::logError("Asteroid System", "No handler for LOD level: " + std::to_string(res.level));
                                   break;
                                 }
                               } });
-  }
-  this->threadPool.wait();
 
-  size_t count = 0;
+  std::vector<std::vector<InstanceModelMatrixParts>> tempFullInstances(this->threadPool.getThreadCount());
+  std::vector<InstancePositionRadiusTexture> tempImpostorInstances(this->threadPool.getThreadCount());
+  std::vector<InstancePositionRadiusColor> tempPointInstances(this->threadPool.getThreadCount());
+
   for (auto &local : threadLocalFullInstances)
     for (size_t type = 0; type < local.size(); type++)
-    {
-      this->fullInstances[type].insert(this->fullInstances[type].end(), std::make_move_iterator(local[type].begin()), std::make_move_iterator(local[type].end()));
-      count += local[type].end() - local[type].begin();
-    }
+      tempFullInstances[type].insert(tempFullInstances[type].end(), std::make_move_iterator(local[type].begin()), std::make_move_iterator(local[type].end()));
 
   for (auto &local : threadLocalImpostorInstances)
-    impostorInstances.insert(impostorInstances.end(), std::make_move_iterator(local.begin()), std::make_move_iterator(local.end()));
+    instances.add(std::move(local));
 
   for (auto &local : threadLocalPointInstances)
-    pointInstances.insert(pointInstances.end(), std::make_move_iterator(local.begin()), std::make_move_iterator(local.end()));
-}
+    instances.add(std::move(local));
 
-void AsteroidSystem::update(const Camera &camera)
-{
-  // for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
-  // {
-  //   Range &work = this->threadRanges[threadIndex];
-  //   this->threadPool.enqueue([this, work, &camera]()
-  //                            {
-  //                              for (unsigned j = work.begin; j < work.end; j++)
-  //                                this->fullInstances[j].position = camera.worldToViewSpace(this->asteroids[j].getPosition()); });
-  // }
-  // this->threadPool.wait();
-
-  for (unsigned typeIndex = 0; typeIndex < this->meshes.size(); typeIndex++)
-    this->meshes[typeIndex]->updateInstanceBuffer(this->fullInstances[typeIndex].data(), this->fullInstances[typeIndex].size(), this->vboCount);
-}
-
-void AsteroidSystem::applyObjectGravitation(Object *object)
-{
-  for (size_t threadIndex = 0; threadIndex < this->threadRanges.size(); threadIndex++)
+  for (size_t type = 0; type < this->models.size(); type++)
   {
-    Range &work = this->threadRanges[threadIndex];
+    Range range = instances.add(std::move(tempFullInstances[type]));
 
-    this->threadPool.enqueue([this, work, &object]()
-                             {
-        for (unsigned j = work.begin; j < work.end; j++) 
-          this->asteroids[j].applyGravitation(*object); });
+    if (this->models[type]->getIsTangent())
+      queue.addTangentBatch({this->models[type].get(), range});
+    else
+      queue.addCoreBatch({this->models[type].get(), range});
   }
-  this->threadPool.wait();
 }
 
-void AsteroidSystem::render(Shader &shader)
+void AsteroidSystem::applyObjectGravitation(Object &object)
 {
-  this->asteroid_material->sendToShader(shader);
-
-  for (const std::unique_ptr<Mesh> &mesh : this->meshes)
-    mesh->render();
-}
-
-void AsteroidSystem::renderInstanced(Shader &shader)
-{
-  this->asteroid_material->sendToShader(shader);
-
-  for (const std::unique_ptr<Mesh> &mesh : this->meshes)
-    mesh->renderInstanced();
-}
-
-const Texture *AsteroidSystem::getTexture()
-{
-  return this->asteroid_material->getTexture();
+  this->threadPool.parallelFor(0, this->asteroids.size(), [this, &object](size_t i)
+                               { this->asteroids[i].applyGravitation(object); });
 }

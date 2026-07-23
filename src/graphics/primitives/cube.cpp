@@ -3,7 +3,7 @@
 #include "graphics/vertex.h"
 
 // Constructor and Destructor
-Cube::Cube() : Primitive()
+Cube::Cube(bool tangent) : Primitive()
 {
   // Front face (+Z)
   this->positions.push_back(glm::vec3(-0.5f, -0.5f, 0.5f));
@@ -110,4 +110,7 @@ Cube::Cube() : Primitive()
           16, 17, 18, 16, 18, 19, // Top
           20, 21, 22, 20, 22, 23  // Bottom
       };
+
+  if (tangent)
+    this->computeTangents();
 }

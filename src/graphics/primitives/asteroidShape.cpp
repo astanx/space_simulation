@@ -17,7 +17,7 @@ double AsteroidShape::calculateR(double angle, double m, double a, double b, dou
 }
 
 // Constructor
-AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3, double scale)
+AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3, bool tangent)
     : Primitive()
 {
   for (size_t ip = 0; ip <= size_t(phiSteps); ++ip)
@@ -36,8 +36,6 @@ AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, doubl
       double z = r * std::cos(phi);
 
       glm::vec3 pos(x, y, z);
-      pos *= scale;
-
 
       glm::vec3 normal = glm::normalize(pos);
       this->positions.push_back(pos);
@@ -68,4 +66,7 @@ AsteroidShape::AsteroidShape(double thetaSteps, double phiSteps, double m, doubl
   this->radii.polar = calculateR(0, m, a, b, n1, n2, n3);
   this->radii.equatorian = calculateR(M_PI / 2, m, a, b, n1, n2, n3);
   this->radii.mean = (this->radii.polar + this->radii.equatorian) / 2;
+
+  if (tangent)
+    this->computeTangents();
 }

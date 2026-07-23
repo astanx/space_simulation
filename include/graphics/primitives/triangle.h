@@ -5,5 +5,5 @@
 class Triangle : public Primitive
 {
 public:
-  Triangle();
+  Triangle(bool tangent = false);
 };

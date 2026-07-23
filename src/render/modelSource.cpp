@@ -2,11 +2,15 @@
 
 #include "camera/camera.h"
 
+#include "graphics/shader.h"
+
 #include "graphics/state/scopedBlending.h"
 #include "graphics/state/scopedDepthMask.h"
 #include "graphics/state/scopedPolygonOffset.h"
 
 #include "physics/constants.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 
 // Constructor
 ModelSource::ModelSource(const TransformSource &src, double renderRadius) : src(src)
@@ -20,24 +24,22 @@ void ModelSource::update(const Camera &camera)
   this->renderPosition = camera.worldToViewSpace(this->src.getPosition());
   this->renderOrientation = camera.worldToViewSpace(this->src.getOrientation());
 
-  if (this->mainLayer)
-  {
-    this->mainLayer->setPosition(this->renderPosition);
-    this->mainLayer->setOrientation(this->renderOrientation);
-  }
-
-  for (auto &layer : this->layers)
-    layer->setPosition(this->renderPosition);
+  this->modelMatrix = glm::mat4(1.f);
+  this->modelMatrix = glm::translate(this->modelMatrix, this->renderPosition);
+  this->modelMatrix *= glm::mat4(this->renderOrientation);
+  this->modelMatrix = glm::scale(this->modelMatrix, this->renderScale);
 }
 
 void ModelSource::render(Shader &shader)
 {
+  shader.setMat4fv(this->modelMatrix, "ModelMatrix");
   ScopedPolygonOffset offset(true, .1f, 4.f);
   this->mainLayer->render(shader);
 }
 
 void ModelSource::renderLayers(Shader &shader) const
 {
+  shader.setMat4fv(this->modelMatrix, "ModelMatrix");
   ScopedBlending blend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   ScopedDepthMask mask(GL_FALSE);
   for (auto &layer : this->layers)
@@ -52,10 +54,10 @@ void ModelSource::renderLayersInstanced(Shader &shader) const
     layer->renderInstanced(shader);
 }
 
-void ModelSource::renderInstanced(Shader &shader)
+void ModelSource::renderInstanced(Shader &shader, Buffer *instanceVBO, size_t size, size_t count, size_t offset)
 {
-  ScopedPolygonOffset offset(true, .1f, 4.f);
-  this->mainLayer->renderInstanced(shader);
+  ScopedPolygonOffset polygonOffset(true, .1f, 4.f);
+  this->mainLayer->renderInstanced(shader, instanceVBO, size, count, offset);
 }
 
 void ModelSource::scaleRadii(Radii scaledRadii)
@@ -66,18 +68,5 @@ void ModelSource::scaleRadii(Radii scaledRadii)
   float equatorian = scaledRadii.equatorian / radii.equatorian;
   float polar = scaledRadii.polar / radii.polar;
 
-  glm::vec3 scale(equatorian, polar, equatorian);
-
-  this->mainLayer->setScale(scale);
-
-  for (auto &layer : this->layers)
-    layer->setScale(scale);
-}
-
-void ModelSource::forEachModel(std::function<void(Model &, int)> &&func)
-{
-  func(*this->mainLayer, this->mainLayer->getIsTangent() ? RenderFlags::Main | RenderFlags::Tangent : RenderFlags::Main);
-
-  for (auto &layer : this->layers)
-    func(*layer, layer->getIsTangent() ? RenderFlags::Layer | RenderFlags::Tangent : RenderFlags::Layer);
+  this->renderScale = glm::vec3(equatorian, polar, equatorian);
 }

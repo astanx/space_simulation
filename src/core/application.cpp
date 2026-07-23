@@ -8,6 +8,7 @@
 
 #include "graphics/primitives/ellipsoid.h"
 #include "graphics/primitives/quad.h"
+#include "graphics/primitives/asteroidShape.h"
 
 #include "render/renderState.h"
 
@@ -137,8 +138,6 @@ Application::Application(
   this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
   this->resourceManager.LoadShader(Res::CORE_TANGENT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_tangent_core.glsl", "assets/shaders/fragment_tangent_core.glsl");
   this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->GLmajor, this->GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
-  // this->resourceManager.LoadShader(Res::ASTEROID_SHADER, this->GLmajor, this->GLminor, "assets/shaders/asteroid/vertex.glsl", "assets/shaders/asteroid/fragment.glsl");
-  this->resourceManager.LoadShader(Res::ASTEROID_SHADER, this->GLmajor, this->GLminor, "assets/shaders/asteroid/vertex_no_matrix.glsl", "assets/shaders/asteroid/fragment.glsl");
   this->resourceManager.LoadShader(Res::TRAIL_SHADER, this->GLmajor, this->GLminor, "assets/shaders/trail/vertex.glsl", "assets/shaders/trail/fragment.glsl");
   this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
   // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
@@ -166,19 +165,23 @@ Application::Application(
   this->resourceManager.LoadKernel(Res::HALF_KICK_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
   this->resourceManager.LoadKernel(Res::HALF_KICK_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
 
-  loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, sunLuminosity);
-  // loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);
-  loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f);
-  loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f);
-  loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
-  loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
-  loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
-  loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f);
-  loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f);
-  loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f);
+  this->loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, sunLuminosity);
+  // this->loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);
+  this->loadEllipsoidObject(Res::MERCURY, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f);
+  this->loadEllipsoidObject(Res::VENUS, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f);
+  this->loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
+  this->loadEllipsoidObject(Res::EARTH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
+  this->loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
+  this->loadEllipsoidObject(Res::MOON, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f);
+  this->loadEllipsoidObject(Res::MARS, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f);
+  this->loadEllipsoidObject(Res::JUPITER, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f);
 
-  Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, "assets/textures/diffuse/asteroid.png", GL_TEXTURE_2D);
-  this->resourceManager.LoadAsteroidMaterial(Res::ASTEROID_MATERIAL, diff);
+  Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, BASE_TEXTURE_PATH + "diffuse/asteroid.png", GL_TEXTURE_2D);
+  this->loadAsteroidShape(Res::EROS_ASTEROID, Res::EROS_ASTEROID_MATERIAL, diff, 0.85f, 0.05f, 0.92f, 48, 32, 4.0, 1.0, 1.0, 2.5, 8.0, 8.0);
+  this->loadAsteroidShape(Res::ITOKAWA_ASTEROID, Res::ITOKAWA_ASTEROID_MATERIAL, diff, 0.9f, 0.08f, 0.95f, 64, 48, 7.0, 0.9, 1.1, 3.0, 12.0, 6.0);
+  this->loadAsteroidShape(Res::BENNU_ASTEROID, Res::BENNU_ASTEROID_MATERIAL, diff, 0.78f, 0.03f, 0.88f, 56, 40, 5.0, 1.0, 0.95, 1.8, 4.0, 10.0);
+  this->loadAsteroidShape(Res::RYUGU_ASTEROID, Res::RYUGU_ASTEROID_MATERIAL, diff, 0.82f, 0.06f, 0.85f, 52, 36, 3.0, 1.2, 0.8, 2.2, 5.0, 18.0);
+  this->loadAsteroidShape(Res::VESTA_ASTEROID, Res::VESTA_ASTEROID_MATERIAL, diff, 0.88f, 0.04f, 0.9f, 40, 28, 6.0, 1.0, 1.0, 4.0, 3.0, 15.0);
 
   this->resourceManager.LoadMesh<VertexPositionTexcoord>(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
 
@@ -341,10 +344,9 @@ void Application::processInput()
   if (this->input.isActionHold(Action::IncreaseTimestep))
     this->timeScale += 2;
 }
-
-void Application::loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
-                                      Radii radii, float ao, float metallic, float roughness, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
-                                      const std::string &roughness_name, int segments)
+void Application::loadPBRMaterial(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
+                                  float ao, float metallic, float roughness, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
+                                  const std::string &roughness_name)
 {
   const std::string format = ".png";
 
@@ -373,8 +375,6 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
     normal = &this->resourceManager.LoadTexture(normal_name, normalPath, GL_TEXTURE_2D);
   }
 
-  bool isTangent = normal_name != "";
-
   Texture *night = nullptr;
   const std::string nightPath = BASE_TEXTURE_PATH + "night/" + name + format;
   if (std::filesystem::exists(nightPath) && night_name != "")
@@ -383,15 +383,33 @@ void Application::loadEllipsoidObject(const std::string &name, const std::string
     night = &this->resourceManager.LoadTexture(night_name, nightPath, GL_TEXTURE_2D);
   }
 
-  // this->resourceManager.LoadPhongMaterial(material_name, material, &diff, spec, normal);
   this->resourceManager.LoadPBRMaterial(material_name, &diff, normal, nullptr, nullptr, rough, night, emissiveStrength, ao, metallic, roughness);
-  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii.scaled(VISUAL_RADIUS_SCALE), isTangent);
+}
+void Application::loadEllipsoidObject(const std::string &name, const std::string &diffuse_name, const std::string &material_name,
+                                      Radii radii, float ao, float metallic, float roughness, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
+                                      const std::string &roughness_name, int segments)
+{
+  this->loadPBRMaterial(name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
+
+  bool isTangent = normal_name != "";
+
+  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii, isTangent);
   if (isTangent)
     this->resourceManager.LoadMesh<VertexPositionTexcoordNormalTangent>(name, std::move(obj),
                                                                         VertexLayout::PositionNormalTangent);
   else
     this->resourceManager.LoadMesh<VertexPositionTexcoordNormal>(name, std::move(obj),
                                                                  VertexLayout::NoColor);
+}
+
+void Application::loadAsteroidShape(const std::string &name, const std::string &material_name,
+                                    Texture &albedo, float ao, float metallic, float roughness,
+                                    double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3)
+{
+  std::unique_ptr<AsteroidShape> shape = std::make_unique<AsteroidShape>(thetaSteps, phiSteps, m, a, b, n1, n2, n3);
+
+  Material &mat = this->resourceManager.LoadPBRMaterial(material_name, &albedo, nullptr, nullptr, nullptr, nullptr, nullptr, 0.f, ao, metallic, roughness);
+  this->resourceManager.LoadAsteroid<VertexPositionTexcoordNormal>(name, std::move(shape), mat, VertexLayout::NoColor);
 }
 
 // Static functions

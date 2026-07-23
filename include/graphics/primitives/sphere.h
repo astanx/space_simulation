@@ -5,5 +5,5 @@
 class Sphere : public Primitive
 {
 public:
-  Sphere(unsigned segments, float radius);
+  Sphere(unsigned segments, float radius, bool tangent = false);
 };

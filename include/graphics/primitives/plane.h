@@ -5,5 +5,5 @@
 class Plane : public Primitive
 {
 public:
-  Plane();
+  Plane(bool tangent = false);
 };

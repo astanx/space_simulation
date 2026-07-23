@@ -6,7 +6,7 @@
 #include <cmath>
 
 // Constructor and Destructor
-Circle::Circle(unsigned segments, float radius) : Primitive()
+Circle::Circle(unsigned segments, float radius, bool tangent) : Primitive()
 {
   this->positions.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
   this->texcoords.push_back(glm::vec2(0.5f, 0.5f));
@@ -30,4 +30,7 @@ Circle::Circle(unsigned segments, float radius) : Primitive()
   }
 
   this->indices[this->indices.size() - 1] = 1;
+
+  if (tangent)
+    this->computeTangents();
 }

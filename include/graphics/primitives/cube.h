@@ -5,5 +5,5 @@
 class Cube : public Primitive
 {
 public:
-  Cube();
+  Cube(bool tangent = false);
 };

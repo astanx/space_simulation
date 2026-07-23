@@ -4,7 +4,7 @@
 
 // Constructor and Destructor
 
-Triangle::Triangle() : Primitive()
+Triangle::Triangle(bool tangent) : Primitive()
 {
 	this->positions.push_back(glm::vec3(-0.5f, -0.5f, 0.0f));
 	this->positions.push_back(glm::vec3(0.5f, -0.5f, 0.0f));
@@ -19,4 +19,7 @@ Triangle::Triangle() : Primitive()
 	this->normals.push_back(glm::vec3(0.f, 0.f, 1.f));
 
 	this->indices = {0, 1, 2};
+
+	if (tangent)
+		this->computeTangents();
 }

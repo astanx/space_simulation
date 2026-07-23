@@ -53,14 +53,6 @@ const RotationalElements MAXIMUM_ASTEROID_ROTATIONAL_ELEMENTS(
 		glm::radians(360.0),
 		glm::radians(3000.0));
 
-// VISUAL SCALING
-const double VISUAL_SCALE = 1;
-const double VISUAL_RADIUS_SCALE = 1;
-const double VISUAL_ASTEROID_SCALE = 1;
-// const double VISUAL_SCALE = 1e-10;
-// const double VISUAL_RADIUS_SCALE = 1e-9;
-// const double VISUAL_ASTEROID_SCALE = 3e-3;
-
 // Gravitational constant
 const double G = 6.674e-11;
 

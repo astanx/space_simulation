@@ -22,11 +22,14 @@ struct LODSettings
 class Camera;
 class Scene;
 class ModelSource;
+class Model;
 class Renderable;
 struct InstancePositionRadiusTexture;
 struct InstancePositionRadiusColor;
 struct Frustum;
 struct RenderContext;
+struct LODResult;
+struct Radii;
 
 class LODManager
 {
@@ -38,24 +41,20 @@ private:
   std::unique_ptr<Mesh> impostorMesh;
   std::unique_ptr<Mesh> pointMesh;
 
-  std::unordered_map<Renderable *, int> fullInstances;
-  std::unordered_map<Renderable *, int> fullTangentInstances;
-  std::vector<InstancePositionRadiusTexture> impostorInstances;
-  std::vector<InstancePositionRadiusColor> pointInstances;
-
   void initLOD(Scene &scene);
   void initImpostor(Scene &scene);
   void initPoint();
-  void bindLayerToImpostorTexture(const Texture &texture, unsigned int layer);
-
-  void partitionObjects(Scene &scene, RenderContext &ctx);
-  void partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force = false);
+  void bindLayerToImpostorTexture(Model &model, unsigned int layer);
+  void bindLayerToImpostorTexture(std::unique_ptr<Model> &model, unsigned int layer);
 
 public:
   LODManager() = default;
   ~LODManager() = default;
 
-  void init(Scene& scene);
+  void init(Scene &scene);
+
+  LODResult partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force = false);
+  LODResult partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov, bool force = false);
 
   int getLODLevel(float pixelRadius);
   int getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
@@ -63,10 +62,6 @@ public:
   float calculatePixelRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
   float scaleRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
 
-  void update(Scene &scene, RenderContext &ctx);
-
-  std::unordered_map<Renderable *, int> &getFullInstances() { return this->fullInstances; };
-  std::unordered_map<Renderable *, int> &getFullTangentInstances() { return this->fullTangentInstances; };
   Mesh &getImpostorMesh() { return *this->impostorMesh.get(); };
   Texture &getImpostorTexture() { return *this->impostorTexture.get(); };
   Mesh &getPointMesh() { return *this->pointMesh.get(); };

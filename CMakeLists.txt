@@ -95,7 +95,6 @@ add_executable(Space
         src/graphics/materials/material.cpp
         src/graphics/materials/pbrMaterial.cpp
         src/graphics/materials/phongMaterial.cpp
-        src/graphics/materials/asteroidMaterial.cpp
         src/graphics/materials/textMaterial.cpp
         # Primitives
         src/graphics/primitives/triangle.cpp
@@ -150,6 +149,8 @@ add_executable(Space
     src/render/gaussianBlur.cpp
     src/render/modelSource.cpp
     src/render/lodManager.cpp
+    src/render/instanceManager.cpp
+    src/render/renderQueue.cpp
     
     # Resources
     src/resources/OBJloader.cpp

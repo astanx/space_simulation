@@ -3,7 +3,7 @@
 #include "graphics/vertex.h"
 
 // Constructor and Destructor
-Plane::Plane() : Primitive()
+Plane::Plane(bool tangent) : Primitive()
 {
 	this->positions.push_back(glm::vec3(-0.5f, 0.f, 0.5f));
 	this->positions.push_back(glm::vec3(0.5f, 0.f, 0.5f));
@@ -23,4 +23,7 @@ Plane::Plane() : Primitive()
 	this->indices =
 			{0, 1, 2,
 			 0, 2, 3};
+
+	if (tangent)
+		this->computeTangents();
 }

@@ -3,7 +3,7 @@
 #include "graphics/vertex.h"
 
 // Constructor and Destructor
-Quad::Quad() : Primitive()
+Quad::Quad(bool tangent) : Primitive()
 {
 	this->positions.push_back(glm::vec3(-1.f, -1.f, 0.0f));
 	this->positions.push_back(glm::vec3(1.f, -1.f, 0.0f));
@@ -23,4 +23,7 @@ Quad::Quad() : Primitive()
 	this->indices =
 			{0, 1, 2,
 			 0, 2, 3};
+
+	if (tangent)
+		this->computeTangents();
 }

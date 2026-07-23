@@ -149,37 +149,6 @@ void Mesh::updateBuffers(std::vector<T> *vertexArray, std::vector<GLuint> *index
 }
 
 template <typename T>
-void Mesh::bindInstanceAttributes(const T *instanceData, const Buffer &vbo) const
-{
-  GLuint start = this->instanceLayout.offset ? this->VAOlayout.count : 0;
-
-  ScopedBuffer buff(vbo, GL_ARRAY_BUFFER);
-
-  for (size_t i = 0; i < this->instanceLayout.count; i++)
-  {
-    const VertexAttribute &attr = this->instanceLayout.attributes[i];
-    if (attr.type == GL_UNSIGNED_INT || attr.type == GL_INT)
-      glVertexAttribIPointer(
-          start + attr.index,
-          attr.size,
-          attr.type,
-          sizeof(T),
-          (void *)attr.offset);
-    else
-      glVertexAttribPointer(
-          start + attr.index,
-          attr.size,
-          attr.type,
-          attr.normalized,
-          sizeof(T),
-          (void *)attr.offset);
-
-    glEnableVertexAttribArray(start + attr.index);
-    glVertexAttribDivisor(start + attr.index, 1);
-  }
-}
-
-template <typename T>
 void Mesh::setInstanceBuffer(const T *instanceData, size_t count, size_t vboCount)
 {
   if (vboCount == 0)
@@ -215,7 +184,7 @@ void Mesh::setInstanceBuffer(const T *instanceData, size_t count, size_t vboCoun
         GL_DYNAMIC_DRAW));
   }
 
-  bindInstanceAttributes(instanceData, *this->instanceVBOS[this->vboIndex]);
+  this->bindInstanceAttributes(*this->instanceVBOS[this->vboIndex], sizeof(T));
 }
 
 template <typename T>
@@ -241,7 +210,7 @@ void Mesh::updateInstanceBuffer(const T *instanceData, size_t count, size_t vboC
     else
       Logger::logError("Mesh", "No instanced VAO to set buffer");
 
-    this->bindInstanceAttributes(instanceData, vbo);
+    this->bindInstanceAttributes(vbo, sizeof(T));
   }
 
   ScopedBuffer buff(vbo, GL_ARRAY_BUFFER);
