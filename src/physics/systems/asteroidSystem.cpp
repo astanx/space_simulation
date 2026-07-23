@@ -229,9 +229,9 @@ void AsteroidSystem::buildRenderQueue(RenderQueue &queue, LODManager &lod, Insta
     Range range = instances.add(std::move(tempFullInstances[type]));
 
     if (this->models[type]->getIsTangent())
-      queue.addTangentBatch({this->models[type].get(), range});
+      queue.addTangentBatch({this->models[type], range});
     else
-      queue.addCoreBatch({this->models[type].get(), range});
+      queue.addCoreBatch({this->models[type], range});
   }
 }
 

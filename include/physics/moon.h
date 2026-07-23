@@ -5,8 +5,6 @@
 
 #include "render/modelSource.h"
 
-class Model;
-
 class Moon : public OrbitalObject, public ModelSource
 {
 protected:

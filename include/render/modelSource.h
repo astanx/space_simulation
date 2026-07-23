@@ -15,8 +15,8 @@
 class ModelSource : public Renderable, public Updatable
 {
 protected:
-  std::unique_ptr<Model> mainLayer;
-  std::vector<std::unique_ptr<Model>> layers;
+  Model *mainLayer;
+  std::vector<Model *> layers;
   glm::mat4 modelMatrix;
   glm::vec3 renderPosition;
   glm::vec3 renderScale;
@@ -31,8 +31,8 @@ public:
 
   void scaleRadii(Radii scaledRadii);
 
-  virtual void addMainLayer(std::unique_ptr<Model> m) { this->mainLayer = std::move(m); };
-  virtual void addLayer(std::unique_ptr<Model> m) { layers.push_back(std::move(m)); };
+  virtual void addMainLayer(Model *m) { this->mainLayer = m; };
+  virtual void addLayer(Model *m) { layers.push_back(m); };
   void setRenderRadius(double radius) { this->renderRadius = radius; };
   void setRenderImportance(float importance) { this->renderImportance = importance; };
 
@@ -51,7 +51,7 @@ public:
   const float getRenderImportance() const { return this->renderImportance; };
   const Radii getSrcRadii() const { return this->src.getRadii(); };
   const double getWorldRadius() const { return this->src.getRadius(); };
-  const Model *getMainLayer() const { return this->mainLayer.get(); };
+  const Model *getMainLayer() const { return this->mainLayer; };
   const Texture *getMainLayerTexture() const { return this->mainLayer->getMaterial()->getTexture(); };
 };
 

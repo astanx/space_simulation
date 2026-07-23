@@ -10,10 +10,10 @@ struct Frustum;
 class RenderSystem
 {
 protected:
-  std::vector<std::unique_ptr<Model>> models;
+  std::vector<Model *> models;
 
 public:
   virtual void buildRenderQueue(RenderQueue &queue, LODManager &lod, InstanceManager &instances, const Camera &camera, Frustum *frustum, float viewportHeight) = 0;
 
-  std::vector<std::unique_ptr<Model>> &getModels() { return this->models; };
+  std::vector<Model *> &getModels() { return this->models; };
 };

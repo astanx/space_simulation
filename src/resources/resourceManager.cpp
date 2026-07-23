@@ -57,6 +57,17 @@ Texture &ResourceManager::LoadTexture(const std::string &name, const std::string
   return *this->textures[name];
 }
 
+Model &ResourceManager::LoadModel(const std::string &name, Material &mat, Mesh &mesh)
+{
+  this->models[name] = std::make_unique<Model>(mat, mesh);
+  return *this->models[name];
+}
+Model &ResourceManager::LoadModel(const std::string &name, const std::string &material_name, const std::string &mesh_name)
+{
+  this->models[name] = std::make_unique<Model>(this->GetMaterial(material_name), this->GetMesh(mesh_name));
+  return *this->models[name];
+}
+
 Material &ResourceManager::LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
                                              Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess)
 {
@@ -124,6 +135,13 @@ Mesh &ResourceManager::GetMesh(const std::string &name)
   auto it = this->meshes.find(name);
   if (it == this->meshes.end())
     Logger::logFatal("Resource manager", "Mesh not found: " + name);
+  return *it->second;
+}
+Model &ResourceManager::GetModel(const std::string &name)
+{
+  auto it = this->models.find(name);
+  if (it == this->models.end())
+    Logger::logFatal("Resource manager", "Model not found: " + name);
   return *it->second;
 }
 AsteroidType &ResourceManager::GetAsteroid(const std::string &name)

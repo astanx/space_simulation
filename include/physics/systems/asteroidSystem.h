@@ -18,7 +18,6 @@
 
 #include <vector>
 
-class Model;
 class Shader;
 class ThreadPool;
 class InstanceManager;

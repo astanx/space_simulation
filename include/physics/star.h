@@ -4,8 +4,6 @@
 
 #include "render/modelSource.h"
 
-class Model;
-
 class Star : public Object, public ModelSource
 {
 protected:

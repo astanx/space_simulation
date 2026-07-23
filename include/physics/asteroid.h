@@ -3,8 +3,6 @@
 #include "physics/orbitalObject.h"
 #include "render/modelSource.h"
 
-class Model;
-
 class Asteroid : public OrbitalObject
 {
 protected:

@@ -6,6 +6,7 @@
 #include "graphics/texture.h"
 #include "graphics/materials/material.h"
 #include "graphics/mesh.h"
+#include "graphics/model.h"
 
 #include "compute/kernel.h"
 #include "compute/program.h"
@@ -29,6 +30,7 @@ private:
   std::unordered_map<std::string, std::unique_ptr<Texture>> textures;
   std::unordered_map<std::string, std::unique_ptr<Material>> materials;
   std::unordered_map<std::string, std::unique_ptr<Mesh>> meshes;
+  std::unordered_map<std::string, std::unique_ptr<Model>> models;
   std::unordered_map<std::string, std::unique_ptr<AsteroidType>> asteroids;
 
   std::unordered_map<std::string, std::unique_ptr<Kernel>> kernels;
@@ -59,7 +61,9 @@ public:
   template <typename T>
   Mesh &LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
   template <typename T>
-  AsteroidType &LoadAsteroid(const std::string &name, std::unique_ptr<AsteroidShape> shape, Material &material, VertexLayout layout);
+  AsteroidType &LoadAsteroid(const std::string &name, const std::string &model_name, const std::string &mesh_name, std::unique_ptr<AsteroidShape> shape, Material &material, VertexLayout layout);
+  Model &LoadModel(const std::string &name, Material& mat, Mesh& mesh);
+  Model &LoadModel(const std::string &name, const std::string &material_name, const std::string &mesh_name);
   // Getters
   Kernel &GetKernel(const std::string &name);
   Program &GetProgram(const std::string &name);
@@ -68,6 +72,7 @@ public:
   Texture &GetTexture(const std::string &name);
   Material &GetMaterial(const std::string &name);
   Mesh &GetMesh(const std::string &name);
+  Model &GetModel(const std::string &name);
   AsteroidType &GetAsteroid(const std::string &name);
   std::vector<Shader *> GetAllShaders();
 };

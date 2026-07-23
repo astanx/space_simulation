@@ -25,12 +25,10 @@
 #include <iostream>
 
 // Private functions
-Planet *Scene::createPlanet(std::string name, std::string material_name, double mu,
+Planet *Scene::createPlanet(std::string name, double mu,
                             Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, double g)
 {
-  Mesh &mesh = this->resourceManager.GetMesh(name);
-  Material &mat = this->resourceManager.GetMaterial(material_name);
-  std::unique_ptr<Model> model = std::make_unique<Model>(mat, mesh);
+  Model &model = this->resourceManager.GetModel(name);
 
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -44,7 +42,7 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   planet->setAngularVelocity(r.calculateAngularVelocity());
   planet->setOrientation(r.calculateOrientation());
 
-  planet->addMainLayer(std::move(model));
+  planet->addMainLayer(&model);
   planet->setRenderImportance(this->importance.planet);
 
   Planet *ptr = planet.get();
@@ -62,12 +60,10 @@ Planet *Scene::createPlanet(std::string name, std::string material_name, double 
   return ptr;
 }
 
-Star *Scene::createStar(std::string name, std::string material_name, double mu,
+Star *Scene::createStar(std::string name, double mu,
                         Radii radii, double luminosity, const RotationalElements rotationalElements, double timeAfterJD2000, glm::dvec3 position, glm::dvec3 velocity)
 {
-  Mesh &mesh = this->resourceManager.GetMesh(name);
-  Material &mat = this->resourceManager.GetMaterial(material_name);
-  std::unique_ptr<Model> model = std::make_unique<Model>(mat, mesh);
+  Model &model = this->resourceManager.GetModel(name);
 
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
@@ -77,7 +73,7 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
   star->setAngularVelocity(r.calculateAngularVelocity());
   star->setOrientation(r.calculateOrientation());
 
-  star->addMainLayer(std::move(model));
+  star->addMainLayer(&model);
   star->setRenderImportance(this->importance.star);
 
   Star *ptr = star.get();
@@ -91,12 +87,10 @@ Star *Scene::createStar(std::string name, std::string material_name, double mu,
   return ptr;
 }
 
-Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
+Moon *Scene::createMoon(std::string name, double mu,
                         Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
 {
-  Mesh &mesh = this->resourceManager.GetMesh(name);
-  Material &mat = this->resourceManager.GetMaterial(material_name);
-  std::unique_ptr<Model> model = std::make_unique<Model>(mat, mesh);
+  Model &model = this->resourceManager.GetModel(name);
 
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -111,7 +105,7 @@ Moon *Scene::createMoon(std::string name, std::string material_name, double mu,
   moon->setOrientation(r.calculateOrientation());
   moon->setRenderImportance(this->importance.moon);
 
-  moon->addMainLayer(std::move(model));
+  moon->addMainLayer(&model);
   if (moon->getUseTrail())
     this->addTrail(moon->generateTrail());
 
@@ -143,13 +137,11 @@ AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount
   return ptr;
 }
 
-void Scene::addLayerToModelSource(std::string name, std::string material_name, ModelSource *object)
+void Scene::addLayerToModelSource(std::string name, ModelSource *object)
 {
-  Mesh &mesh = this->resourceManager.GetMesh(name);
-  Material &mat = this->resourceManager.GetMaterial(material_name);
-  std::unique_ptr<Model> model = std::make_unique<Model>(mat, mesh);
+  Model &model = this->resourceManager.GetModel(name);
 
-  object->addLayer(std::move(model));
+  object->addLayer(&model);
 }
 
 void Scene::addAtmosphereToPlanet(std::string planetName, Planet *planet)
@@ -188,17 +180,17 @@ void Scene::init(RenderContext &renderCtx, double startTime)
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
 
-  Star *sunPtr = createStar(Res::SUN, Res::SUN_MATERIAL, sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
-  createPlanet(Res::MERCURY, Res::MERCURY_MATERIAL, mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
-  Planet *venusPtr = createPlanet(Res::VENUS, Res::VENUS_MATERIAL, venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
-  addLayerToModelSource(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_MATERIAL, venusPtr);
-  Planet *earthPtr = createPlanet(Res::EARTH, Res::EARTH_MATERIAL, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
-  addAtmosphereToPlanet(Res::EARTH, earthPtr);
-  addLayerToModelSource(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MATERIAL, earthPtr);
-  createMoon(Res::MOON, Res::MOON_MATERIAL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);
-  createPlanet(Res::MARS, Res::MARS_MATERIAL, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
+  Star *sunPtr = createStar(Res::SUN_MODEL, sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
+  createPlanet(Res::MERCURY_MODEL, mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
+  Planet *venusPtr = createPlanet(Res::VENUS_MODEL, venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
+  addLayerToModelSource(Res::VENUS_ATMOSPHERE_MODEL, venusPtr);
+  Planet *earthPtr = createPlanet(Res::EARTH_MODEL, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
+  addAtmosphereToPlanet(Res::EARTH_MODEL, earthPtr);
+  addLayerToModelSource(Res::EARTH_ATMOSPHERE_MODEL, earthPtr);
+  createMoon(Res::MOON_MODEL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);
+  createPlanet(Res::MARS_MODEL, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
   createAsteroidSystem(sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
-  createPlanet(Res::JUPITER, Res::JUPITER_MATERIAL, jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
+  createPlanet(Res::JUPITER_MODEL, jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
 
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
       sunPtr->getRenderPosition(),

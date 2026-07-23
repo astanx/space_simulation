@@ -51,7 +51,7 @@ private:
   Camera *activeCamera;
   Skybox *skybox;
   Importance importance;
-  
+
   std::vector<Updatable *> updatable;
   std::vector<Renderable *> renderable;
   std::vector<RenderSystem *> renderSystems;
@@ -71,18 +71,18 @@ private:
   std::vector<std::unique_ptr<Trail>> trails;
   std::vector<Trail *> trailViews;
 
-  Planet *createPlanet(std::string name, std::string material_name, double mu,
+  Planet *createPlanet(std::string name, double mu,
                        Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters(), double g = 0.0);
 
-  Star *createStar(std::string name, std::string material_name, double mu,
+  Star *createStar(std::string name, double mu,
                    Radii radii, double luminosity, const RotationalElements rotationalElements, double timeAfterJD2000, glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
 
-  Moon *createMoon(std::string name, std::string material_name, double mu,
+  Moon *createMoon(std::string name, double mu,
                    Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
 
   void addAtmosphereToPlanet(std::string planetName, Planet *planet);
 
-  void addLayerToModelSource(std::string name, std::string material_name, ModelSource *object);
+  void addLayerToModelSource(std::string name, ModelSource *object);
 
   AsteroidSystem *createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000);
 

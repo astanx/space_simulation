@@ -45,7 +45,7 @@ private:
   void initImpostor(Scene &scene);
   void initPoint();
   void bindLayerToImpostorTexture(Model &model, unsigned int layer);
-  void bindLayerToImpostorTexture(std::unique_ptr<Model> &model, unsigned int layer);
+  void bindLayerToImpostorTexture(Model *model, unsigned int layer);
 
 public:
   LODManager() = default;

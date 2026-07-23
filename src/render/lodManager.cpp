@@ -43,7 +43,7 @@ void LODManager::initImpostor(Scene &scene)
                          { this->bindLayerToImpostorTexture(model, layer); });
 
   for (RenderSystem *system : scene.getRenderSystems())
-    for (std::unique_ptr<Model> &model : system->getModels())
+    for (Model *model : system->getModels())
       this->bindLayerToImpostorTexture(model, layer);
 }
 
@@ -106,7 +106,7 @@ void LODManager::bindLayerToImpostorTexture(Model &model, unsigned int layer)
   model.setImpostorLayer(layer++);
 }
 
-void LODManager::bindLayerToImpostorTexture(std::unique_ptr<Model> &model, unsigned int layer)
+void LODManager::bindLayerToImpostorTexture(Model *model, unsigned int layer)
 {
   if (!model)
   {
