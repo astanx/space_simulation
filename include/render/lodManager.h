@@ -6,13 +6,6 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-namespace LOD
-{
-  constexpr unsigned int Full = 0;
-  constexpr unsigned int Impostor = 1;
-  constexpr unsigned int Point = 2;
-};
-
 struct LODSettings
 {
   float baseMinPixelSize = 1.f;

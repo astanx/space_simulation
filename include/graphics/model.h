@@ -10,6 +10,23 @@ class Material;
 class Texture;
 class Mesh;
 
+enum class ModelFlags : uint32_t
+{
+	None = 0,
+	CastsShadow = 1 << 0,
+	ReflectsLight = 1 << 1
+};
+
+inline ModelFlags operator|(ModelFlags a, ModelFlags b)
+{
+	return static_cast<ModelFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+}
+
+inline ModelFlags operator&(ModelFlags a, ModelFlags b)
+{
+	return static_cast<ModelFlags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+}
+
 class Model : public Renderable
 {
 protected:
@@ -20,17 +37,19 @@ protected:
 
 	unsigned int impostorLayer;
 
-	size_t id;
+	ModelFlags flags;
+
+	uint32_t queueIndex;
 
 public:
-	Model(Material &material, Mesh &mesh, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
+	Model(Material &material, Mesh &mesh, ModelFlags flags = ModelFlags::None, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
 
-	Model(Mesh &mesh);
+	Model(Mesh &mesh, ModelFlags flags = ModelFlags::None);
 
 	Model(const Model &model);
 
 	// OBJ consturctor
-	Model(Material &material, const std::string &OBJfile, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
+	Model(Material &material, const std::string &OBJfile, ModelFlags flags = ModelFlags::None, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
 
 	~Model();
 
@@ -38,10 +57,13 @@ public:
 	void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;
 
 	void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
-	void setID(size_t id) { this->id = id; };
+	void setQueueIndex(uint32_t id) { this->queueIndex = id; };
 
 	const Material *getMaterial() const { return this->material; };
 	unsigned int getImpostorLayer() { return this->impostorLayer; };
-	size_t getID() { return this->id; };
+	uint32_t getQueueIndex() { return this->queueIndex; };
 	bool getIsTangent() const;
+	const glm::vec3 &getAverageColor();
+
+	bool hasFlag(ModelFlags flag) { return (this->flags & flag) == flag; };
 };

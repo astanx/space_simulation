@@ -7,6 +7,7 @@
 class Scene;
 class LODManager;
 class ModelSource;
+class RenderQueueBuilder;
 class InstanceManager;
 struct FrameContext;
 struct Frustum;
@@ -17,7 +18,7 @@ private:
   std::vector<RenderBatch> coreBatches;
   std::vector<RenderBatch> tangentBatches;
 
-  void buildModelSource(ModelSource *source, LODManager &lod, Frustum *frustum, InstanceManager &instance, FrameContext ctx, float fov);
+  void buildModelSource(ModelSource *source, RenderQueueBuilder &builder, LODManager &lod, Frustum *frustum, InstanceManager &instance, FrameContext ctx, float fov);
 
   void clear();
 
@@ -25,12 +26,11 @@ public:
   RenderQueue() = default;
   ~RenderQueue() = default;
 
-
   void build(Scene &scene, LODManager &lod, InstanceManager &instance, FrameContext &ctx);
 
   void addCoreBatch(RenderBatch batch);
   void addTangentBatch(RenderBatch batch);
 
-  std::vector<RenderBatch>& getCoreBatches() { return this->coreBatches; };
-  std::vector<RenderBatch>& getTangentBatches() { return this->tangentBatches; };
+  std::vector<RenderBatch> &getCoreBatches() { return this->coreBatches; };
+  std::vector<RenderBatch> &getTangentBatches() { return this->tangentBatches; };
 };

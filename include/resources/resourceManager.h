@@ -19,7 +19,6 @@
 #include <OpenCL/cl.h>
 
 class Primitive;
-class ModelRegistry;
 struct AsteroidShape;
 
 struct PhongMaterialProperties;
@@ -27,8 +26,6 @@ struct PhongMaterialProperties;
 class ResourceManager
 {
 private:
-  ModelRegistry &modelRegistry;
-
   std::unordered_map<std::string, std::unique_ptr<Shader>> shaders;
   std::unordered_map<std::string, std::unique_ptr<Texture>> textures;
   std::unordered_map<std::string, std::unique_ptr<Material>> materials;
@@ -41,7 +38,7 @@ private:
   std::unordered_map<std::string, std::unique_ptr<Context>> contexts;
 
 public:
-  ResourceManager(ModelRegistry &modelRegistry) : modelRegistry(modelRegistry) {};
+  ResourceManager() = default;
   ~ResourceManager() = default;
 
   // Loaders
@@ -65,8 +62,8 @@ public:
   Mesh &LoadMesh(const std::string &name, std::unique_ptr<Primitive> primitive, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
   template <typename T>
   AsteroidType &LoadAsteroid(const std::string &name, const std::string &model_name, const std::string &mesh_name, std::unique_ptr<AsteroidShape> shape, Material &material, VertexLayout layout);
-  Model &LoadModel(const std::string &name, Material &mat, Mesh &mesh);
-  Model &LoadModel(const std::string &name, const std::string &material_name, const std::string &mesh_name);
+  Model &LoadModel(const std::string &name, Material &mat, Mesh &mesh, ModelFlags flags = ModelFlags::None);
+  Model &LoadModel(const std::string &name, const std::string &material_name, const std::string &mesh_name, ModelFlags flags = ModelFlags::None);
   // Getters
   Kernel &GetKernel(const std::string &name);
   Program &GetProgram(const std::string &name);

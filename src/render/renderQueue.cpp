@@ -9,59 +9,21 @@
 #include "render/modelSource.h"
 #include "render/renderBatch.h"
 #include "render/renderSystem.h"
+#include "render/renderQueueBuilder.h"
 
 #include "scene/scene.h"
 
 // Private functions
-void RenderQueue::buildModelSource(ModelSource *source, LODManager &lod, Frustum *frustum, InstanceManager &instance, FrameContext ctx, float fov)
+void RenderQueue::buildModelSource(ModelSource *source, RenderQueueBuilder &builder, LODManager &lod, Frustum *frustum, InstanceManager &instance, FrameContext ctx, float fov)
 {
   LODResult res = lod.partitionObject(source, frustum, ctx.height, fov);
 
-  switch (res.level)
-  {
-  case LOD::Full:
-  {
-    InstanceModelMatrixParts data;
-    data.position = source->getRenderPosition();
-    data.orientation = source->getRenderOrientation();
-    data.scale = glm::vec3(res.equatorianScale, res.polarScale, res.equatorianScale);
-    Range range = instance.add(data);
+  Transform transform;
+  transform.position = source->getRenderPosition();
+  transform.orientation = source->getRenderOrientation();
 
-    source->forEachModel([this, &range](Model &model, RenderFlags flag)
-                         { 
-                            if (model.getIsTangent())
-                              this->addTangentBatch({&model, range, flag});
-                            else 
-                              this->addCoreBatch({&model, range, flag}); });
-    break;
-  }
-
-  case LOD::Impostor:
-  {
-    source->forEachModel([this, &instance, source, res](Model &model)
-                         { 
-                      InstancePositionRadiusTexture data;
-                      data.position = source->getRenderPosition();
-                      data.radius = res.scaledMeanRadius;
-                      data.textureLayer = model.getImpostorLayer();
-                      Range range = instance.add(data); });
-    break;
-  }
-
-  case LOD::Point:
-  {
-    InstancePositionRadiusColor data;
-    data.position = source->getRenderPosition();
-    data.radius = res.scaledMeanRadius;
-    data.color = source->getMainLayerTexture()->getAverageColor();
-    Range range = instance.add(data);
-    break;
-  }
-
-  default:
-    Logger::logError("Render Queue", "No handler for LOD level: " + std::to_string(res.level));
-    break;
-  }
+  source->forEachModel([&builder, &res, &transform](Model &model)
+                       { builder.submit(&model, res, transform); });
 }
 
 void RenderQueue::clear()
@@ -80,11 +42,22 @@ void RenderQueue::build(Scene &scene, LODManager &lod, InstanceManager &instance
   float fov = camera.getFOV();
   Frustum frustum = scene.getActiveCamera().getFrustum(ctx.aspect);
 
+  std::vector<Model *> models;
+  size_t index = 0;
   for (ModelSource *source : scene.getModelSources())
-    this->buildModelSource(source, lod, &frustum, instance, ctx, fov);
+    source->forEachModel([&models, &index](Model &model)
+                         { 
+                          model.setQueueIndex(index++);
+                          models.push_back(&model); });
+
+  RenderQueueBuilder builder(models);
+  for (ModelSource *source : scene.getModelSources())
+    this->buildModelSource(source, builder, lod, &frustum, instance, ctx, fov);
 
   for (RenderSystem *system : scene.getRenderSystems())
     system->buildRenderQueue(*this, lod, instance, camera, &frustum, ctx.height);
+
+  builder.finish(instance, *this);
 
   instance.fillVBOs();
 }

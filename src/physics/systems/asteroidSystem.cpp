@@ -30,6 +30,7 @@
 #include "render/instanceManager.h"
 #include "render/lodResult.h"
 #include "render/renderQueue.h"
+#include "render/renderQueueBuilder.h"
 #include "render/renderBatch.h"
 
 #include "scene/frameContext.h"
@@ -105,8 +106,11 @@ void AsteroidSystem::createAsteroids(ResourceManager &resourceManager, unsigned 
   const size_t typeCount = asteroidShapes.size();
   this->models.reserve(typeCount);
 
-  for (AsteroidType *asteroid : asteroidShapes)
-    this->models.push_back(std::move(asteroid->model));
+  for (size_t i = 0; i < asteroidShapes.size(); i++)
+  {
+    this->models.push_back(std::move(asteroidShapes[i]->model));
+    this->models[i]->setQueueIndex(i);
+  }
 
   std::vector<unsigned int> typeCounts(typeCount, 0);
   this->asteroidTypes.resize(amount);
@@ -163,76 +167,31 @@ AsteroidSystem::AsteroidSystem(ResourceManager &resourceManager, Object *central
 // Public functions
 void AsteroidSystem::buildRenderQueue(RenderQueue &queue, LODManager &lod, InstanceManager &instances, const Camera &camera, Frustum *frustum, float viewportHeight)
 {
-  std::vector<std::vector<std::vector<InstanceModelMatrixParts>>> threadLocalFullInstances(this->threadPool.getThreadCount());
-  for (auto &perThread : threadLocalFullInstances)
-    perThread.resize(this->models.size());
-
-  std::vector<std::vector<InstancePositionRadiusTexture>> threadLocalImpostorInstances(this->threadPool.getThreadCount());
-  std::vector<std::vector<InstancePositionRadiusColor>> threadLocalPointInstances(this->threadPool.getThreadCount());
+  std::vector<RenderQueueBuilder> threadLocalBuilders(this->threadPool.getThreadCount(), RenderQueueBuilder(this->models));
 
   float fov = camera.getFOV();
-  std::vector<glm::vec3> colors;
-  colors.resize(this->models.size());
 
-  for (size_t i = 0; i < this->models.size(); i++)
-    colors[i] = this->models[i]->getMaterial()->getTexture()->getAverageColor();
-
-  this->threadPool.parallelFor(0, this->asteroids.size(), [this, &threadLocalFullInstances, &threadLocalImpostorInstances, &threadLocalPointInstances, &camera, &lod, &frustum, &colors, fov, viewportHeight](Range work, size_t thread)
+  this->threadPool.parallelFor(0, this->asteroids.size(), [this, &threadLocalBuilders, &camera, &lod, &frustum, fov, viewportHeight](Range work, size_t thread)
                                {
-                              auto& localFull = threadLocalFullInstances[thread];
-                              auto& localImpostor = threadLocalImpostorInstances[thread];
-                              auto& localPoint = threadLocalPointInstances[thread];
-                               for (unsigned i = work.begin; i < work.end; i++)
-                               {
+                              auto& localBuilder = threadLocalBuilders[thread];
+                              for (unsigned i = work.begin; i < work.end; i++)
+                              {
                                 const Asteroid& asteroid = this->asteroids[i];
                                 Radii radii = asteroid.getRadii();
 
-                                glm::dvec3 pos = camera.worldToViewSpace(asteroid.getPosition());
-                                LODResult res = lod.partitionObject(pos, importance, radii, frustum, viewportHeight, fov);
+                                Transform transform;
+                                transform.position = camera.worldToViewSpace(asteroid.getPosition());
+                                transform.orientation = camera.worldToViewSpace(asteroid.getOrientation());
+                                LODResult res = lod.partitionObject(transform.position, importance, radii, frustum, viewportHeight, fov);
 
-                                if (!res.visible)
-                                  continue;
-
-                                switch (res.level)
-                                {
-                                case LOD::Full:
-                                  localFull[this->asteroidTypes[i]].emplace_back(InstanceModelMatrixParts{pos, camera.worldToViewSpace(asteroid.getOrientation()), glm::vec3(res.scaledEquatorianRadius, res.scaledPolarRadius, res.scaledEquatorianRadius)});
-                                  break;
-                                case LOD::Impostor: 
-                                  localImpostor.emplace_back(InstancePositionRadiusTexture{pos, res.scaledMeanRadius, this->models[this->asteroidTypes[i]]->getImpostorLayer()});
-                                  break;
-                                case LOD::Point:
-                                  localPoint.emplace_back(InstancePositionRadiusColor{pos, res.scaledMeanRadius, colors[this->asteroidTypes[i]]});
-                                  break;
-                                default:
-                                  Logger::logError("Asteroid System", "No handler for LOD level: " + std::to_string(res.level));
-                                  break;
-                                }
+                                localBuilder.submit(this->models[this->asteroidTypes[i]], res, transform);
                               } });
 
-  std::vector<std::vector<InstanceModelMatrixParts>> tempFullInstances(this->threadPool.getThreadCount());
-  std::vector<InstancePositionRadiusTexture> tempImpostorInstances(this->threadPool.getThreadCount());
-  std::vector<InstancePositionRadiusColor> tempPointInstances(this->threadPool.getThreadCount());
+  RenderQueueBuilder finalBuilder(this->models);
+  for (auto &builder : threadLocalBuilders)
+    finalBuilder.merge(builder);
 
-  for (auto &local : threadLocalFullInstances)
-    for (size_t type = 0; type < local.size(); type++)
-      tempFullInstances[type].insert(tempFullInstances[type].end(), std::make_move_iterator(local[type].begin()), std::make_move_iterator(local[type].end()));
-
-  for (auto &local : threadLocalImpostorInstances)
-    instances.add(std::move(local));
-
-  for (auto &local : threadLocalPointInstances)
-    instances.add(std::move(local));
-
-  for (size_t type = 0; type < this->models.size(); type++)
-  {
-    Range range = instances.add(std::move(tempFullInstances[type]));
-
-    if (this->models[type]->getIsTangent())
-      queue.addTangentBatch({this->models[type], range});
-    else
-      queue.addCoreBatch({this->models[type], range});
-  }
+  finalBuilder.finish(instances, queue);
 }
 
 void AsteroidSystem::applyObjectGravitation(Object &object)

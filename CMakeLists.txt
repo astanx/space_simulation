@@ -151,7 +151,7 @@ add_executable(Space
     src/render/lodManager.cpp
     src/render/instanceManager.cpp
     src/render/renderQueue.cpp
-    src/render/modelRegistry.cpp
+    src/render/renderQueueBuilder.cpp
     
     # Resources
     src/resources/OBJloader.cpp

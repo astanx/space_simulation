@@ -12,3 +12,10 @@ struct LODResult
   float equatorianScale;
   float polarScale;
 };
+
+namespace LOD
+{
+  constexpr unsigned int Full = 0;
+  constexpr unsigned int Impostor = 1;
+  constexpr unsigned int Point = 2;
+};

@@ -394,26 +394,18 @@ void Renderer::init(Scene &scene, RenderContext &ctx)
 
 void Renderer::render(Scene &scene, RenderContext &ctx)
 {
-  std::cout << 1 << std::endl;
   this->beginFrame(ctx);
 
   this->bindUBOs();
-  std::cout << 2 << std::endl;
 
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
 
-  std::cout << 3 << std::endl;
-
   // this->renderMoonsRadiance(scene);
-
-  std::cout << 4 << std::endl;
 
   const Framebuffer &hdrFramebuffer = this->postProcess.getHDRFramebuffer();
 
   this->renderToFramebuffer(scene, hdrFramebuffer, ctx);
-
-  std::cout << 5 << std::endl;
 
   if (ctx.settings.useHDR)
   {
@@ -421,8 +413,6 @@ void Renderer::render(Scene &scene, RenderContext &ctx)
 
     this->blitDepthToDefault(hdrFramebuffer);
   }
-
-  std::cout << 6 << std::endl;
 
   this->renderTrails(scene);
 }

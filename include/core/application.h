@@ -2,7 +2,6 @@
 
 #include "scene/scene.h"
 #include "render/renderer.h"
-#include "render/modelRegistry.h"
 #include "core/inputManager.h"
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
@@ -37,7 +36,6 @@ private:
 
   // Resource management
   ResourceManager resourceManager;
-  ModelRegistry modelRegistry;
   ThreadPool threadPool;
 
   // Metrics
@@ -90,7 +88,7 @@ public:
                        float ao, float metallic, float roughness, float emissiveStrength = 0.f, const std::string &normal_name = "", const std::string &night_name = "",
                        const std::string &roughness_name = "");
   void loadEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
-                           Radii radii, float ao, float metallic, float roughness, float emissiveStrength = 0.0f,
+                           Radii radii, float ao, float metallic, float roughness, ModelFlags flags = ModelFlags::None, float emissiveStrength = 0.0f,
                            const std::string &normal_name = "", const std::string &night_name = "", const std::string &roughness_name = "", int segments = 32);
 
   void loadAsteroidShape(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &material_name,

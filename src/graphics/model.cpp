@@ -14,7 +14,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // Constructor/Descructor
-Model::Model(Material &material, Mesh &mesh, Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
+Model::Model(Material &material, Mesh &mesh, ModelFlags flags, Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
 {
   this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
@@ -22,18 +22,21 @@ Model::Model(Material &material, Mesh &mesh, Texture *overrideTextureDiffuse, Te
 
   this->mesh = &mesh;
   this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
+
+  this->flags = flags;
 }
 
 Model::Model(const Model &model)
 {
   this->material = model.material;
+  this->flags = model.flags;
   this->overrideTextureDiffuse = model.overrideTextureDiffuse;
   this->overrideTextureSpecular = model.overrideTextureSpecular;
   this->mesh = model.mesh;
   this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
 }
 
-Model::Model(Material &material, const std::string &OBJfile, Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
+Model::Model(Material &material, const std::string &OBJfile, ModelFlags flags, Texture *overrideTextureDiffuse, Texture *overrideTextureSpecular)
 {
   this->material = &material;
   this->overrideTextureDiffuse = overrideTextureDiffuse;
@@ -44,9 +47,11 @@ Model::Model(Material &material, const std::string &OBJfile, Texture *overrideTe
 
   this->mesh = new Mesh(&vertices, &indices, VertexLayout::Full);
   this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
+
+  this->flags = flags;
 }
 
-Model::Model(Mesh &mesh)
+Model::Model(Mesh &mesh, ModelFlags flags)
 {
   this->mesh = &mesh;
   this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
@@ -107,3 +112,16 @@ bool Model::getIsTangent() const
 {
   return this->mesh->getIsTangent();
 };
+
+const glm::vec3 &Model::getAverageColor()
+{
+  if (!this->material)
+    Logger::logFatal("Model", "No material to get average color");
+
+  const Texture *text = this->material->getTexture();
+
+  if (!text)
+    Logger::logFatal("Model", "No texture to get average color");
+
+  return text->getAverageColor();
+}
