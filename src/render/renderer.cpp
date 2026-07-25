@@ -223,14 +223,14 @@ void Renderer::renderSkybox(Scene &scene, RenderContext &ctx)
   skybox.render(skyboxShader);
 }
 
-void Renderer::renderShadowMap(Scene &scene, Shader &shader)
+void Renderer::renderShadowMap(Shader &shader)
 {
-  for (Renderable *object : scene.getRenderable())
-  {
-    if (dynamic_cast<const Star *>(object))
-      continue;
+  size_t size = sizeof(InstanceModelMatrixParts);
 
-    object->renderInstanced(shader);
+  for (RenderBatch batch : this->queue.getShadowBatches())
+  {
+    size_t count = batch.range.end - batch.range.begin;
+    batch.model->renderInstanced(shader, &this->instanceManager.getFullInstancesVBO(), size, count, batch.range.begin);
   }
 }
 
@@ -248,7 +248,7 @@ void Renderer::renderDirectionalShadow(Scene &scene)
 
   ScopedShader dirShadowSd(dirShadowShader);
 
-  this->renderShadowMap(scene, dirShadowShader);
+  this->renderShadowMap(dirShadowShader);
 }
 
 void Renderer::renderPointShadow(Scene &scene)
@@ -271,7 +271,7 @@ void Renderer::renderPointShadow(Scene &scene)
   ScopedShader pointShadowSd(pointShadowID);
   // ScopedCullFace cullFace(GL_FRONT);
 
-  this->renderShadowMap(scene, pointShadowShader);
+  this->renderShadowMap(pointShadowShader);
 
   this->blur.blur(this->shadowManager->getPointShadow()->getShadowMapTexture(), 16, true);
 }
@@ -340,7 +340,7 @@ void Renderer::renderMoonsRadiance(Scene &scene)
   ScopedShader moon(moonsRadianceShader);
 
   moonsRadianceShader.set1f(scene.getPhysicsWorld().getSun().getLuminosity(), "lightLuminocity");
-// need to pass vbo data
+  // need to pass vbo data
   for (const Planet *planet : scene.getPhysicsWorld().getPlanetarObjects())
     planet->renderMoonsRadiance(moonsRadianceShader, scene.getActiveCamera());
 }
@@ -401,6 +401,7 @@ void Renderer::render(Scene &scene, RenderContext &ctx)
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
 
+  // disabled unit planet manager
   // this->renderMoonsRadiance(scene);
 
   const Framebuffer &hdrFramebuffer = this->postProcess.getHDRFramebuffer();

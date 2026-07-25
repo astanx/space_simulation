@@ -62,7 +62,7 @@ private:
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
   void renderDirectionalShadow(Scene &scene);
-  void renderShadowMap(Scene &scene, Shader &shader);
+  void renderShadowMap(Shader &shader);
   void renderPointShadow(Scene &scene);
   void renderMoonsRadiance(Scene &scene);
   void renderSkybox(Scene &scene, RenderContext &ctx);

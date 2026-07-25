@@ -14,8 +14,7 @@ struct RenderGroup
 {
   Model *model;
   std::vector<InstanceModelMatrixParts> fullLODInstances;
-  std::vector<InstanceModelMatrixParts> fullShadowInstances;
-  std::vector<InstanceModelMatrixParts> fullReflectorInstances;
+  std::vector<InstanceModelMatrixParts> fullNonLODInstances;
 };
 
 struct Transform
