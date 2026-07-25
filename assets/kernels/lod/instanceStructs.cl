@@ -19,8 +19,4 @@ typedef struct{
   float3 color;
 } InstancePositionRadiusColor;
 
-typedef struct{
-  float4 planes[6];
-} FrustumGPU;
-
 #endif

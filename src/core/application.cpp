@@ -108,7 +108,7 @@ Application::Application(
                                                                                                                                    GLminor(GLminor),
                                                                                                                                    resourceManager(),
                                                                                                                                    threadPool(),
-                                                                                                                                   scene(resourceManager, threadPool),
+                                                                                                                                   scene(),
                                                                                                                                    input(),
                                                                                                                                    renderer(resourceManager)
 {
@@ -187,7 +187,7 @@ Application::Application(
 
   this->updateFrameContext();
 
-  this->scene.init(this->renderCtx, this->startTime);
+  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, this->startTime);
   this->renderer.init(this->scene, this->renderCtx);
 }
 

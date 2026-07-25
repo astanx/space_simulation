@@ -141,6 +141,8 @@ add_executable(Space
         src/scene/shadow/directionalShadow.cpp
         src/scene/shadow/pointShadow.cpp
         src/scene/shadow/shadowManager.cpp
+        # World
+        src/scene/world/simulationWorld.cpp
     
     # Render
     src/render/renderer.cpp
@@ -152,6 +154,7 @@ add_executable(Space
     src/render/instanceManager.cpp
     src/render/renderQueue.cpp
     src/render/renderQueueBuilder.cpp
+    src/render/renderWorld.cpp
     
     # Resources
     src/resources/OBJloader.cpp

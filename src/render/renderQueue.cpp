@@ -44,17 +44,17 @@ void RenderQueue::build(Scene &scene, LODManager &lod, InstanceManager &instance
 
   std::vector<Model *> models;
   size_t index = 0;
-  for (ModelSource *source : scene.getModelSources())
+  for (ModelSource *source : scene.getSimulationWorld().getRenderWorld().getModelSources())
     source->forEachModel([&models, &index](Model &model)
                          { 
                           model.setQueueIndex(index++);
                           models.push_back(&model); });
 
   RenderQueueBuilder builder(models);
-  for (ModelSource *source : scene.getModelSources())
+  for (ModelSource *source : scene.getSimulationWorld().getRenderWorld().getModelSources())
     this->buildModelSource(source, builder, lod, &frustum, instance, ctx, fov);
 
-  for (RenderSystem *system : scene.getRenderSystems())
+  for (RenderSystem *system : scene.getSimulationWorld().getRenderWorld().getRenderSystems())
     system->buildRenderQueue(*this, lod, instance, camera, &frustum, ctx.height);
 
   builder.finish(instance, *this);

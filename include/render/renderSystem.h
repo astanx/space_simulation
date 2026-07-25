@@ -11,6 +11,7 @@ class RenderSystem
 {
 protected:
   std::vector<Model *> models;
+  float importance;
 
 public:
   virtual void buildRenderQueue(RenderQueue &queue, LODManager &lod, InstanceManager &instances, const Camera &camera, Frustum *frustum, float viewportHeight) = 0;

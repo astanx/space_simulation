@@ -33,7 +33,6 @@ private:
   size_t vboCount;
 
   float lastUpdateTime = 0.0f;
-  float importance;
 
   std::vector<Asteroid> asteroids;
   std::vector<size_t> asteroidTypes;

@@ -14,6 +14,13 @@ void InstanceManager::init()
   this->pointInstancesVBO = std::make_unique<Buffer>();
 }
 
+void InstanceManager::initGPU(cl_context ctx)
+{
+  this->fullInstancesBuffer.init(ctx, CL_MEM_READ_WRITE, this->fullInstancesVBO->getId());
+  this->pointInstancesBuffer.init(ctx, CL_MEM_READ_WRITE, this->pointInstancesVBO->getId());
+  this->impostorInstancesBuffer.init(ctx, CL_MEM_READ_WRITE, this->impostorInstancesVBO->getId());
+}
+
 void InstanceManager::clear()
 {
   this->fullInstances.clear();

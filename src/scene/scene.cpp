@@ -2,215 +2,29 @@
 
 #include "debug/logger.h"
 
-#include "graphics/shader.h"
-#include "graphics/mesh.h"
-
-#include "graphics/primitives/ellipsoid.h"
-
-#include "physics/planet.h"
-#include "physics/orbit.h"
 #include "physics/star.h"
-#include "physics/moon.h"
-#include "physics/constants.h"
-
-#include "physics/systems/asteroidSystem.h"
-
-#include "resources/resources.h"
-#include "resources/resourceManager.h"
-
-#include "render/updatable.h"
-
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <iostream>
-
-// Private functions
-Planet *Scene::createPlanet(std::string name, double mu,
-                            Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, double g)
-{
-  Model &model = this->resourceManager.GetModel(name);
-
-  KeplerElements e = keplerElements;
-  e.calculateMeanMotion(centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
-
-  RotationalElements r = rotationalElements;
-  r.advanceFromJD2000(timeAfterJD2000);
-
-  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radii, e, tidalParameters, gravityField, g);
-
-  planet->setAngularVelocity(r.calculateAngularVelocity());
-  planet->setOrientation(r.calculateOrientation());
-
-  planet->addMainLayer(&model);
-  planet->setRenderImportance(this->importance.planet);
-
-  Planet *ptr = planet.get();
-
-  if (planet->getUseTrail())
-    this->addTrail(planet->generateTrail());
-
-  this->addRenderable(ptr);
-  this->addModelSource(ptr);
-  this->addUpdatable(ptr);
-  this->physicsWorld.addObject(ptr);
-  this->physicsWorld.addIntegratable(ptr);
-  this->physicsWorld.addPlanetarObject(std::move(planet));
-
-  return ptr;
-}
-
-Star *Scene::createStar(std::string name, double mu,
-                        Radii radii, double luminosity, const RotationalElements rotationalElements, double timeAfterJD2000, glm::dvec3 position, glm::dvec3 velocity)
-{
-  Model &model = this->resourceManager.GetModel(name);
-
-  RotationalElements r = rotationalElements;
-  r.advanceFromJD2000(timeAfterJD2000);
-
-  std::unique_ptr<Star> star = std::make_unique<Star>(mu, radii, luminosity, position, velocity);
-
-  star->setAngularVelocity(r.calculateAngularVelocity());
-  star->setOrientation(r.calculateOrientation());
-
-  star->addMainLayer(&model);
-  star->setRenderImportance(this->importance.star);
-
-  Star *ptr = star.get();
-  this->addRenderable(ptr);
-  this->addModelSource(ptr);
-  this->addUpdatable(ptr);
-  this->physicsWorld.addObject(ptr);
-  this->physicsWorld.addIntegratable(ptr);
-  this->physicsWorld.addStar(std::move(star));
-
-  return ptr;
-}
-
-Moon *Scene::createMoon(std::string name, double mu,
-                        Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
-{
-  Model &model = this->resourceManager.GetModel(name);
-
-  KeplerElements e = keplerElements;
-  e.calculateMeanMotion(centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
-
-  RotationalElements r = rotationalElements;
-  r.advanceFromJD2000(timeAfterJD2000);
-
-  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radii, e, hapkeParameters, tidalParameters, gravityField);
-
-  moon->setAngularVelocity(r.calculateAngularVelocity());
-  moon->setOrientation(r.calculateOrientation());
-  moon->setRenderImportance(this->importance.moon);
-
-  moon->addMainLayer(&model);
-  if (moon->getUseTrail())
-    this->addTrail(moon->generateTrail());
-
-  Moon *ptr = moon.get();
-
-  assert(centralBody && "[Scene] ASSERT: No central body for moon");
-
-  this->addUpdatable(ptr);
-  this->addModelSource(ptr);
-  this->addRenderable(ptr);
-  this->physicsWorld.addObject(ptr);
-  this->physicsWorld.addIntegratable(ptr);
-  centralBody->addMoon(std::move(moon));
-
-  return ptr;
-}
-
-AsteroidSystem *Scene::createAsteroidSystem(Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000)
-{
-  std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(this->resourceManager, centralBody, amount,
-                                                                            innerEdge, outerEdge,
-                                                                            timeAfterJD2000, this->importance.asteroid, this->threadPool);
-  AsteroidSystem *ptr = system.get();
-  this->addRenderSystem(ptr);
-  this->physicsWorld.addSystem(ptr);
-  this->physicsWorld.addIntegratable(ptr);
-  this->physicsWorld.addAsteroidSystem(std::move(system));
-
-  return ptr;
-}
-
-void Scene::addLayerToModelSource(std::string name, ModelSource *object)
-{
-  Model &model = this->resourceManager.GetModel(name);
-
-  object->addLayer(&model);
-}
-
-void Scene::addAtmosphereToPlanet(std::string planetName, Planet *planet)
-{
-  std::string path = "assets/data/" + planetName + "/atmosphere/32_resolution";
-  std::unique_ptr atmosphere = std::make_unique<Atmosphere>(planet, path, this->threadPool);
-  Atmosphere *ptr = atmosphere.get();
-
-  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(32, atmosphere->getRadii());
-  this->resourceManager.LoadMesh<VertexPositionTexcoordNormal>(path, std::move(obj), VertexLayout::NoColor);
-  Mesh &mesh = this->resourceManager.GetMesh(path);
-  std::unique_ptr<Model> model = std::make_unique<Model>(mesh);
-
-  physicsWorld.addAtmosphere(ptr);
-  // planet->addLayer(std::move(model));
-  planet->addAtmosphere(std::move(atmosphere));
-}
-
-// Constructor/Destructor
-Scene::Scene(ResourceManager &resourceManager, ThreadPool &threadPool) : threadPool(threadPool), resourceManager(resourceManager)
-{
-  this->activeCamera = nullptr;
-  this->skybox = nullptr;
-
-  this->importance.base = 1.f;
-  this->importance.asteroid = 2.5f;
-  this->importance.planet = 5.f;
-  this->importance.moon = 3.f;
-  this->importance.star = 12.f;
-}
-Scene::~Scene() = default;
 
 // Process functions
-void Scene::init(RenderContext &renderCtx, double startTime)
+void Scene::init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime)
 {
-  double timeAfterJD2000 = startTime - JD_2000;
-  timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
+  this->world.init(resourceManager, threadPool, startTime);
 
-  Star *sunPtr = createStar(Res::SUN_MODEL, sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
-  createPlanet(Res::MERCURY_MODEL, mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
-  Planet *venusPtr = createPlanet(Res::VENUS_MODEL, venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
-  addLayerToModelSource(Res::VENUS_ATMOSPHERE_MODEL, venusPtr);
-  Planet *earthPtr = createPlanet(Res::EARTH_MODEL, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
-  addAtmosphereToPlanet(Res::EARTH_MODEL, earthPtr);
-  addLayerToModelSource(Res::EARTH_ATMOSPHERE_MODEL, earthPtr);
-  createMoon(Res::MOON_MODEL, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);
-  createPlanet(Res::MARS_MODEL, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
-  createAsteroidSystem(sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
-  createPlanet(Res::JUPITER_MODEL, jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
-
+  const Star &sun = this->world.getPhysicsWorld().getSun();
   std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
-      sunPtr->getRenderPosition(),
+      sun.getRenderPosition(),
       glm::vec3(1.0f),
-      sunPtr->getLuminosity(),
-      sunPtr->getRadius());
+      sun.getLuminosity(),
+      sun.getRadius());
   this->addPointLight(std::move(pointLight));
 
-  this->physicsWorld.addSun(std::move(sunPtr));
-  this->physicsWorld.initGPU(this->resourceManager, this->resourceManager.GetContext(Res::MAIN_CONTEXT));
-
-  // model matrix split
-  std::unique_ptr<Camera> cam = std::make_unique<Camera>(sunPos,
+  std::unique_ptr<Camera> cam = std::make_unique<Camera>(sun.getRenderPosition(),
                                                          glm::vec3(0.0f, 0.0f, -1.0f),
                                                          glm::vec3(0.0f, 1.0f, 0.0f),
                                                          renderCtx.frameCtx.width, renderCtx.frameCtx.height);
   this->addCamera(std::move(cam));
   activeCamera = this->cameras.back().get();
 
-  std::unique_ptr<Skybox> sb = std::make_unique<Skybox>("assets/skybox/starmap.exr", this->resourceManager);
+  std::unique_ptr<Skybox> sb = std::make_unique<Skybox>("assets/skybox/starmap.exr", resourceManager);
   this->addSkybox(std::move(sb));
   this->skybox = this->skyboxes.back().get();
 }
@@ -238,19 +52,12 @@ void Scene::processMouseScroll(float yoffset)
 
 void Scene::update(RenderContext &renderCtx)
 {
-  if (!renderCtx.settings.paused)
-    this->physicsWorld.step(renderCtx.deltaTime);
-
-  for (Updatable *&object : this->updatable)
-    object->update(this->getActiveCamera());
-
-  for (std::unique_ptr<Trail> &trail : this->trails)
-    trail->update(this->getActiveCamera());
+  this->world.update(renderCtx, this->getActiveCamera());
 
   if (this->pointLights[0])
-    this->pointLights[0]->move(this->physicsWorld.getSun().getRenderPosition()); // move sun light
+    this->pointLights[0]->move(this->world.getPhysicsWorld().getSun().getRenderPosition()); // move sun light
   else
-    assert(this->pointLights[0] && "[Scene] ASSERT: No sun to update position");
+    Logger::logFatal("Scene", " No sun to update position");
 }
 
 // Setters
@@ -260,32 +67,6 @@ void Scene::addCamera(std::unique_ptr<Camera> camera)
     this->activeCamera = camera.get();
 
   this->cameras.push_back(std::move(camera));
-}
-
-void Scene::addRenderable(Renderable *object)
-{
-  this->renderable.push_back(object);
-}
-
-void Scene::addRenderSystem(RenderSystem *system)
-{
-  this->renderSystems.push_back(system);
-}
-
-void Scene::addModelSource(ModelSource *object)
-{
-  this->modelSources.push_back(object);
-}
-
-void Scene::addUpdatable(Updatable *object)
-{
-  this->updatable.push_back(object);
-}
-
-void Scene::addTrail(std::unique_ptr<Trail> trail)
-{
-  this->trailViews.push_back(trail.get());
-  this->trails.push_back(std::move(trail));
 }
 
 void Scene::addPointLight(std::unique_ptr<PointLight> pointLight)
@@ -342,27 +123,7 @@ const glm::vec3 Scene::getActiveCameraPosition() const
 
   return this->activeCamera->getPosition();
 };
-const std::vector<Renderable *> &Scene::getRenderable() const
-{
-  if (this->renderable.empty())
-    Logger::logWarning("Scene", "Renderable is empty");
 
-  return this->renderable;
-};
-const std::vector<RenderSystem *> &Scene::getRenderSystems() const
-{
-  if (this->renderSystems.empty())
-    Logger::logWarning("Scene", "Render systems are empty");
-
-  return this->renderSystems;
-};
-std::vector<ModelSource *> &Scene::getModelSources()
-{
-  if (this->modelSources.empty())
-    Logger::logWarning("Scene", "Model sources are empty");
-
-  return this->modelSources;
-};
 const std::vector<PointLight *> &Scene::getPointLights() const
 {
   if (this->pointLightViews.empty())
@@ -377,14 +138,7 @@ const DirectionalLight *Scene::getDirLight() const
 
   return this->directionalLight.get();
 };
-const std::vector<Trail *> &Scene::getTrails() const
+SimulationWorld &Scene::getSimulationWorld()
 {
-  if (this->trails.empty())
-    Logger::logWarning("Scene", "Trails are empty");
-
-  return this->trailViews;
-};
-const PhysicsWorld &Scene::getPhysicsWorld() const
-{
-  return this->physicsWorld;
+  return this->world;
 }

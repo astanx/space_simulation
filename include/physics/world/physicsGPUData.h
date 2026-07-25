@@ -81,15 +81,19 @@ struct DataGPU
 };
 
 struct PhysicsGPUData
-{  
+{ 
+  
+  //delete later
   CLBuffer positionsBuffer;
-  CLBuffer musBuffer;
-  CLBuffer velocitiesBuffer;
   CLBuffer meanRadiiBuffer;
   CLBuffer polarRadiiBuffer;
   CLBuffer equatorianRadiiBuffer;
-
   CLBuffer orientationsBuffer;
+
+  CLBuffer musBuffer;
+  CLBuffer velocitiesBuffer;
+
+
   CLBuffer angularVelocitiesBuffer;
 
   CLBuffer tensorsBuffer;

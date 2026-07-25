@@ -38,11 +38,11 @@ void LODManager::initImpostor(Scene &scene)
   this->impostorTexture = std::make_unique<Texture>(GL_TEXTURE_2D_ARRAY);
 
   unsigned int layer = ImpostorTextureBindingPoints::Size;
-  for (ModelSource *source : scene.getModelSources())
+  for (ModelSource *source : scene.getSimulationWorld().getRenderWorld().getModelSources())
     source->forEachModel([this, layer](Model &model)
                          { this->bindLayerToImpostorTexture(model, layer); });
 
-  for (RenderSystem *system : scene.getRenderSystems())
+  for (RenderSystem *system : scene.getSimulationWorld().getRenderWorld().getRenderSystems())
     for (Model *model : system->getModels())
       this->bindLayerToImpostorTexture(model, layer);
 }

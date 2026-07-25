@@ -71,7 +71,7 @@ void Renderer::updateUBO(Scene &scene, RenderContext &ctx)
   const std::vector<PointLight *> &pointLights = scene.getPointLights();
   if (!pointLights.empty())
   {
-    this->shadowManager->updatePointShadowLightPosition(scene.getPhysicsWorld().getSun().getRenderPosition());
+    this->shadowManager->updatePointShadowLightPosition(scene.getSimulationWorld().getPhysicsWorld().getSun().getRenderPosition());
     for (size_t i = 0; i < pointLights.size(); i++)
       this->lightManager->updatePointUBO(pointLights[i]);
   }
@@ -190,7 +190,7 @@ void Renderer::renderAtmospheres(Scene &scene)
 
   ScopedShader atmosphereSh(atmosphereID);
 
-  for (const Planet *planet : scene.getPhysicsWorld().getPlanetarObjects())
+  for (const Planet *planet : scene.getSimulationWorld().getPhysicsWorld().getPlanetarObjects())
     planet->renderAtmosphere(atmosphereShader);
 }
 void Renderer::renderTrails(Scene &scene)
@@ -201,7 +201,7 @@ void Renderer::renderTrails(Scene &scene)
 
   ScopedShader trail(trailID);
 
-  for (const Trail *trail : scene.getTrails())
+  for (const Trail *trail : scene.getSimulationWorld().getRenderWorld().getTrails())
     trail->render();
 }
 
@@ -339,9 +339,9 @@ void Renderer::renderMoonsRadiance(Scene &scene)
 
   ScopedShader moon(moonsRadianceShader);
 
-  moonsRadianceShader.set1f(scene.getPhysicsWorld().getSun().getLuminosity(), "lightLuminocity");
+  moonsRadianceShader.set1f(scene.getSimulationWorld().getPhysicsWorld().getSun().getLuminosity(), "lightLuminocity");
   // need to pass vbo data
-  for (const Planet *planet : scene.getPhysicsWorld().getPlanetarObjects())
+  for (const Planet *planet : scene.getSimulationWorld().getPhysicsWorld().getPlanetarObjects())
     planet->renderMoonsRadiance(moonsRadianceShader, scene.getActiveCamera());
 }
 
