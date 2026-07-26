@@ -14,7 +14,6 @@ struct LODSettings
 
 class Camera;
 class Scene;
-class ModelSource;
 class Model;
 class Renderable;
 struct InstancePositionRadiusTexture;
@@ -46,7 +45,6 @@ public:
 
   void init(Scene &scene);
 
-  LODResult partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force = false);
   LODResult partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov, bool force = false);
 
   int getLODLevel(float pixelRadius);

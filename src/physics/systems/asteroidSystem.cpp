@@ -156,12 +156,14 @@ AsteroidSystem::AsteroidSystem(ResourceManager &resourceManager, Object *central
   this->centralBody = centralBody;
 
   this->vboCount = 2;
-  this->importance = importance;
 
   this->innerEdge = innerEdge;
   this->outerEdge = outerEdge;
 
   this->createAsteroids(resourceManager, amount, timeAfterJD2000);
+
+  for (Model *model : this->models)
+    model->setImportance(importance);
 }
 
 // Public functions
@@ -182,7 +184,7 @@ void AsteroidSystem::buildRenderQueue(RenderQueue &queue, LODManager &lod, Insta
                                 Transform transform;
                                 transform.position = camera.worldToViewSpace(asteroid.getPosition());
                                 transform.orientation = camera.worldToViewSpace(asteroid.getOrientation());
-                                LODResult res = lod.partitionObject(transform.position, importance, radii, frustum, viewportHeight, fov);
+                                LODResult res = lod.partitionObject(transform.position, this->models[this->asteroidTypes[i]]->getImportance(), radii, frustum, viewportHeight, fov);
 
                                 localBuilder.submit(this->models[this->asteroidTypes[i]], res, transform);
                               } });
@@ -192,6 +194,11 @@ void AsteroidSystem::buildRenderQueue(RenderQueue &queue, LODManager &lod, Insta
     finalBuilder.merge(builder);
 
   finalBuilder.finish(instances, queue);
+}
+
+Model *AsteroidSystem::getModelFromObjectIndex(size_t i)
+{
+  return this->models[this->asteroidTypes[i]];
 }
 
 void AsteroidSystem::applyObjectGravitation(Object &object)

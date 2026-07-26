@@ -113,7 +113,7 @@ bool Model::getIsTangent() const
   return this->mesh->getIsTangent();
 };
 
-const glm::vec3 &Model::getAverageColor()
+const glm::vec3 &Model::getAverageColor() const
 {
   if (!this->material)
     Logger::logFatal("Model", "No material to get average color");

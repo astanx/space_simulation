@@ -58,4 +58,5 @@ public:
   void applyObjectGravitation(Object &object);
 
   void buildRenderQueue(RenderQueue &queue, LODManager &lod, InstanceManager &instances, const Camera &camera, Frustum *frustum, float viewportHeight) override;
+  Model* getModelFromObjectIndex(size_t i) override;
 };

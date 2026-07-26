@@ -16,14 +16,17 @@
 // Private functions
 void RenderQueue::buildModelSource(ModelSource *source, RenderQueueBuilder &builder, LODManager &lod, Frustum *frustum, InstanceManager &instance, FrameContext ctx, float fov)
 {
-  LODResult res = lod.partitionObject(source, frustum, ctx.height, fov);
-
   Transform transform;
   transform.position = source->getRenderPosition();
   transform.orientation = source->getRenderOrientation();
 
-  source->forEachModel([&builder, &res, &transform](Model &model)
-                       { builder.submit(&model, res, transform); });
+  Radii radii = source->getSrcRadii();
+
+  source->forEachModel([&builder, &radii, &transform, &lod, &ctx, &frustum, fov](Model &model)
+                       { 
+
+        LODResult res = lod.partitionObject(transform.position, model.getImportance(), radii, frustum, ctx.height, fov);
+        builder.submit(&model, res, transform); });
 }
 
 void RenderQueue::clear()

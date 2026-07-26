@@ -1,7 +1,8 @@
 #pragma once
 
-#include "physics/world/physicsCPUData.h"
-#include "physics/world/physicsGPUData.h"
+#include "physics/world/data/physicsCPUData.h"
+#include "physics/world/data/physicsGPUData.h"
+#include "physics/world/data/physicsDataGPU.h"
 #include "physics/world/total.h"
 
 #include <vector>
@@ -33,18 +34,15 @@ private:
 
   Total total;
 
-  template <typename Real>
-  void processObject(Object *obj, DataGPU<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex);
-  template <typename Real>
-  void processOrbital(OrbitalObject *obj, DataGPU<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex);
-  template<typename Real>
-  void initGPUBuffers(Context &ctx);
-
 public:
   PhysicsWorld();
   ~PhysicsWorld();
 
-  void initGPU(ResourceManager &resourceManager, Context &ctx);
+  template <typename Real>
+  void initGPUBuffers(Context &ctx, PhysicsDataGPU<Real> data);
+
+  template <typename Real>
+  void initGPUIntegrator(ResourceManager &resourceManager, Context &ctx, PhysicsDataGPU<Real> gpu);
 
   void step(double dt);
 
@@ -64,3 +62,5 @@ public:
   const std::vector<Object *> &getObjects() const;
   const std::vector<System *> &getSystems() const;
 };
+
+#include "physics/world/physicsWorld.hpp"

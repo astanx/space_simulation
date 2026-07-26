@@ -196,11 +196,3 @@ LODResult LODManager::partitionObject(const glm::vec3 &position, float importanc
 
   return result;
 }
-
-LODResult LODManager::partitionObject(ModelSource *object, Frustum *frustum, float viewportHeight, float fov, bool force)
-{
-  const glm::vec3 &pos = object->getRenderPosition();
-  float importance = object->getRenderImportance();
-  Radii radii = object->getSrcRadii();
-  return this->partitionObject(pos, importance, radii, frustum, viewportHeight, fov, force);
-}

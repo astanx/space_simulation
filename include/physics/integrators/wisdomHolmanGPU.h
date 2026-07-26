@@ -8,6 +8,7 @@
 #include "compute/commandQueue.h"
 #include "compute/kernel.h"
 
+struct WisdomHolmanGPUData;
 class Object;
 class OrbitalObject;
 class Integratable;
@@ -29,7 +30,7 @@ protected:
   std::queue<cl_event> events;
 
   void initQueues(Context &ctx);
-  void initKernels(PhysicsGPUData &gpu, Total total);
+  void initKernels(WisdomHolmanGPUData &gpu, Total total);
   void initGLBuffers();
   void initGLBuffer(Buffer &buffer, size_t size);
   void initBuffers(std::vector<Integratable *> &objects, Context &ctx);
@@ -40,7 +41,7 @@ public:
   WisdomHolmanIntegratorGPU(ResourceManager &resourceManager);
   ~WisdomHolmanIntegratorGPU() = default;
 
-  void init(PhysicsGPUData &gpu, Total &total, Context &ctx) override;
+  void init(WisdomHolmanGPUData &gpu, Total &total, Context &ctx) override;
 
   void stepReal(Total &total, Real dt) override;
 };

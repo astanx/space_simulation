@@ -3,6 +3,7 @@
 #include "debug/logger.h"
 
 #include "physics/integrators/integratable.h"
+#include "physics/integrators/wisdomHolmanGPUData.h"
 
 #include "physics/systems/system.h"
 
@@ -24,24 +25,8 @@
 #include <iostream>
 
 // Private functions
-// template <typename Real>
-// void WisdomHolmanIntegratorGPU<Real>::initGLBuffer(Buffer &buffer, size_t size)
-// {
-//   if (this->total == 0)
-//     Logger::logWarning("Wisdom-Holman integrator", "Total is 0");
-
-//   ScopedBuffer(buffer, GL_ARRAY_BUFFER);
-//   glBufferData(GL_ARRAY_BUFFER, this->total * size, nullptr, GL_DYNAMIC_DRAW);
-// }
-// template <typename Real>
-// void WisdomHolmanIntegratorGPU<Real>::initGLBuffers()
-// {
-//   this->initGLBuffer(this->fullInstanceGLBuffer, sizeof(InstanceModelMatrixParts));
-//   this->initGLBuffer(this->impostorInstanceGLBuffer, sizeof(InstancePositionRadiusTexture));
-//   this->initGLBuffer(this->pointInstanceGLBuffer, sizeof(InstancePositionRadiusColor));
-// }
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::initKernels(PhysicsGPUData &gpu, Total total)
+void WisdomHolmanIntegratorGPU<Real>::initKernels(WisdomHolmanGPUData &gpu, Total total)
 {
   int kernelTotal = static_cast<int>(total.object + total.orbital);
 
@@ -125,7 +110,7 @@ WisdomHolmanIntegratorGPU<Real>::WisdomHolmanIntegratorGPU(ResourceManager &reso
 
 // Public functions
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::init(PhysicsGPUData &gpu, Total &total, Context &ctx)
+void WisdomHolmanIntegratorGPU<Real>::init(WisdomHolmanGPUData &gpu, Total &total, Context &ctx)
 {
   this->initQueues(ctx);
   this->initKernels(gpu, total);

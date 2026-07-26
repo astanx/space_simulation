@@ -4,7 +4,7 @@
 
 #include <vector>
 
-struct PhysicsGPUData;
+struct IntegratorGPUData;
 struct Total;
 class Context;
 
@@ -15,7 +15,7 @@ public:
   IntegratorGPU() = default;
   ~IntegratorGPU() = default;
 
-  virtual void init(PhysicsGPUData &gpu, Total &total, Context &ctx) = 0;
+  virtual void init(IntegratorGPUData &gpu, Total &total, Context &ctx) = 0;
   virtual void step(Total &total, double dt) = 0;
 };
 

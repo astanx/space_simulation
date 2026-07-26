@@ -22,7 +22,6 @@ protected:
   glm::vec3 renderScale;
   glm::quat renderOrientation;
   const TransformSource &src;
-  float renderImportance;
   double renderRadius;
 
 public:
@@ -34,7 +33,6 @@ public:
   virtual void addMainLayer(Model *m) { this->mainLayer = m; };
   virtual void addLayer(Model *m) { layers.push_back(m); };
   void setRenderRadius(double radius) { this->renderRadius = radius; };
-  void setRenderImportance(float importance) { this->renderImportance = importance; };
 
   virtual void update(const Camera &camera) override;
   virtual void render(Shader &shader) override;
@@ -48,7 +46,6 @@ public:
   const glm::vec3 getRenderPosition() const { return this->renderPosition; };
   const glm::quat getRenderOrientation() const { return this->renderOrientation; };
   const double getRenderRadius() const { return this->renderRadius; };
-  const float getRenderImportance() const { return this->renderImportance; };
   const Radii getSrcRadii() const { return this->src.getRadii(); };
   const double getWorldRadius() const { return this->src.getRadius(); };
   const Model *getMainLayer() const { return this->mainLayer; };

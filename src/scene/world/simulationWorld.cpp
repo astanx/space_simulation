@@ -1,5 +1,7 @@
 #include "scene/world/simulationWorld.h"
 
+#include "scene/world/worldGPUBuilder.h"
+
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
 
@@ -32,14 +34,15 @@ Planet *SimulationWorld::createPlanet(Model &model, double mu, Radii radii, Obje
   planet->setAngularVelocity(r.calculateAngularVelocity());
   planet->setOrientation(r.calculateOrientation());
 
+  model.setImportance(this->importance.planet);
   planet->addMainLayer(&model);
-  planet->setRenderImportance(this->importance.planet);
 
   Planet *ptr = planet.get();
 
   if (planet->getUseTrail())
     this->render.addTrail(planet->generateTrail());
 
+  this->addWorldObject({ptr, ptr});
   this->render.addRenderable(ptr);
   this->render.addModelSource(ptr);
   this->render.addUpdatable(ptr);
@@ -61,10 +64,12 @@ Star *SimulationWorld::createStar(Model &model, double mu,
   star->setAngularVelocity(r.calculateAngularVelocity());
   star->setOrientation(r.calculateOrientation());
 
+  model.setImportance(this->importance.star);
   star->addMainLayer(&model);
-  star->setRenderImportance(this->importance.star);
 
   Star *ptr = star.get();
+
+  this->addWorldObject({ptr, ptr});
   this->render.addRenderable(ptr);
   this->render.addModelSource(ptr);
   this->render.addUpdatable(ptr);
@@ -89,7 +94,8 @@ Moon *SimulationWorld::createMoon(Model &model, double mu,
 
   moon->setAngularVelocity(r.calculateAngularVelocity());
   moon->setOrientation(r.calculateOrientation());
-  moon->setRenderImportance(this->importance.moon);
+
+  model.setImportance(this->importance.moon);
 
   moon->addMainLayer(&model);
   if (moon->getUseTrail())
@@ -99,6 +105,7 @@ Moon *SimulationWorld::createMoon(Model &model, double mu,
 
   assert(centralBody && "[SimulationWorld] ASSERT: No central body for moon");
 
+  this->addWorldObject({ptr, ptr});
   this->render.addUpdatable(ptr);
   this->render.addModelSource(ptr);
   this->render.addRenderable(ptr);
@@ -115,6 +122,8 @@ AsteroidSystem *SimulationWorld::createAsteroidSystem(ResourceManager &resourceM
                                                                             innerEdge, outerEdge,
                                                                             timeAfterJD2000, this->importance.asteroid, threadPool);
   AsteroidSystem *ptr = system.get();
+
+  this->addWorldSystem({ptr, ptr});
   this->render.addRenderSystem(ptr);
   this->physics.addSystem(ptr);
   this->physics.addIntegratable(ptr);
@@ -177,7 +186,19 @@ void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadP
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
-  this->physics.initGPU(resourceManager, resourceManager.GetContext(Res::MAIN_CONTEXT));
+  Context &ctx = resourceManager.GetContext(Res::MAIN_CONTEXT);
+  if (ctx.getSupportsDouble())
+  {
+    WorldGPUBuilder<double> builder;
+    WorldDataGPU<double> data = builder.build(this->worldObjects, this->worldSystems);
+    this->physics.initGPUBuffers<double>(ctx, data.physics);
+  }
+  else
+  {
+    WorldGPUBuilder<float> builder;
+    WorldDataGPU<float> data = builder.build(this->worldObjects, this->worldSystems);
+    this->physics.initGPUBuffers<float>(ctx, data.physics);
+  }
 }
 
 void SimulationWorld::update(RenderContext &renderCtx, const Camera &camera)

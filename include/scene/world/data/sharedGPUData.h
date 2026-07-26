@@ -2,11 +2,12 @@
 
 #include "compute/clBuffer.h"
 
-struct WorldGPUData
+struct SharedGPUData
 {
   CLBuffer positionsBuffer;
+  CLBuffer orientationsBuffer;
+
   CLBuffer meanRadiiBuffer;
   CLBuffer polarRadiiBuffer;
   CLBuffer equatorianRadiiBuffer;
-  CLBuffer orientationsBuffer;
 };

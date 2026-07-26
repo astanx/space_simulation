@@ -1,27 +1,15 @@
 #pragma once
 
-#include "compute/clBuffer.h"
+#include "resources/gpuTypes.h"
 
-#include <glm/glm.hpp>
-
-template <typename Real>
-using Vec3 = glm::vec<3, Real>;
+#include <vector>
 
 template <typename Real>
-using Mat3 = glm::mat<3, 3, Real>;
-
-template <typename Real>
-using Quat = glm::qua<Real>;
-
-template <typename Real>
-struct DataGPU
+struct PhysicsDataGPU
 {
-  std::vector<Vec3<Real>> positions;
   std::vector<Vec3<Real>> velocities;
   std::vector<Real> mus;
-  std::vector<Real> meanRadii;
 
-  std::vector<Quat<Real>> orientations;
   std::vector<Vec3<Real>> angularVelocities;
 
   std::vector<Real> semiAxises;
@@ -36,14 +24,13 @@ struct DataGPU
   std::vector<Mat3<Real>> tensors;
   std::vector<int> loveIndices;
   std::vector<int> tidalFactorIndices;
+  std::vector<Real> loveNumbers;
+  std::vector<Real> tidalFactors;
 
   void resize(size_t n)
   {
-    this->positions.resize(n);
     this->velocities.resize(n);
     this->mus.resize(n);
-    this->meanRadii.resize(n);
-    this->orientations.resize(n);
     this->angularVelocities.resize(n);
     this->semiAxises.resize(n);
     this->eccentricities.resize(n);
@@ -58,13 +45,10 @@ struct DataGPU
     this->tidalFactorIndices.resize(n);
   }
 
-  void combine(DataGPU &data)
+  void combine(PhysicsDataGPU &data)
   {
-    this->positions.insert(this->positions.end(), std::make_move_iterator(data.positions.begin()), std::make_move_iterator(data.positions.end()));
     this->velocities.insert(this->velocities.end(), std::make_move_iterator(data.velocities.begin()), std::make_move_iterator(data.velocities.end()));
     this->mus.insert(this->mus.end(), std::make_move_iterator(data.mus.begin()), std::make_move_iterator(data.mus.end()));
-    this->meanRadii.insert(this->meanRadii.end(), std::make_move_iterator(data.meanRadii.begin()), std::make_move_iterator(data.meanRadii.end()));
-    this->orientations.insert(this->orientations.end(), std::make_move_iterator(data.orientations.begin()), std::make_move_iterator(data.orientations.end()));
     this->angularVelocities.insert(this->angularVelocities.end(), std::make_move_iterator(data.angularVelocities.begin()), std::make_move_iterator(data.angularVelocities.end()));
     this->semiAxises.insert(this->semiAxises.end(), std::make_move_iterator(data.semiAxises.begin()), std::make_move_iterator(data.semiAxises.end()));
     this->eccentricities.insert(this->eccentricities.end(), std::make_move_iterator(data.eccentricities.begin()), std::make_move_iterator(data.eccentricities.end()));
@@ -78,36 +62,4 @@ struct DataGPU
     this->loveIndices.insert(this->loveIndices.end(), std::make_move_iterator(data.loveIndices.begin()), std::make_move_iterator(data.loveIndices.end()));
     this->tidalFactorIndices.insert(this->tidalFactorIndices.end(), std::make_move_iterator(data.tidalFactorIndices.begin()), std::make_move_iterator(data.tidalFactorIndices.end()));
   }
-};
-
-struct PhysicsGPUData
-{ 
-  
-  //delete later
-  CLBuffer positionsBuffer;
-  CLBuffer meanRadiiBuffer;
-  CLBuffer polarRadiiBuffer;
-  CLBuffer equatorianRadiiBuffer;
-  CLBuffer orientationsBuffer;
-
-  CLBuffer musBuffer;
-  CLBuffer velocitiesBuffer;
-
-
-  CLBuffer angularVelocitiesBuffer;
-
-  CLBuffer tensorsBuffer;
-  CLBuffer loveIndicesBuffer;
-  CLBuffer tidalFactorIndicesBuffer;
-  CLBuffer loveNumbersBuffer;
-  CLBuffer tidalFactorsBuffer;
-
-  CLBuffer semiAxisesBuffer;
-  CLBuffer eccentricitiesBuffer;
-  CLBuffer inclinationsBuffer;
-  CLBuffer longitudeBuffer;
-  CLBuffer periapsisBuffer;
-  CLBuffer meanAnomalyBuffer;
-  CLBuffer meanMotionBuffer;
-  CLBuffer centralBodyIndicesBuffer;
 };

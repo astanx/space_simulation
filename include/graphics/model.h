@@ -36,6 +36,7 @@ protected:
 	Mesh *mesh;
 
 	unsigned int impostorLayer;
+	float importance;
 
 	ModelFlags flags;
 
@@ -57,13 +58,15 @@ public:
 	void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;
 
 	void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
+	void setImportance(float importance) { this->importance = importance; };
 	void setQueueIndex(uint32_t id) { this->queueIndex = id; };
 
 	const Material *getMaterial() const { return this->material; };
-	unsigned int getImpostorLayer() { return this->impostorLayer; };
+	unsigned int getImpostorLayer() const { return this->impostorLayer; };
+	float getImportance() const { return this->importance; };
 	uint32_t getQueueIndex() { return this->queueIndex; };
 	bool getIsTangent() const;
-	const glm::vec3 &getAverageColor();
+	const glm::vec3 &getAverageColor() const;
 
 	bool hasFlag(ModelFlags flag) { return (this->flags & flag) == flag; };
 };
