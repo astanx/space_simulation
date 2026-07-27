@@ -25,6 +25,17 @@ PhysicsWorld::PhysicsWorld()
 PhysicsWorld::~PhysicsWorld() = default;
 
 // Public functions
+void PhysicsWorld::initGPUIntegrator(ResourceManager &resourceManager, Context &ctx, IntegratorGPUData &gpu, Total &total)
+{
+  bool supportsDouble = ctx.getSupportsDouble();
+  if (supportsDouble)
+    this->integratorGPU = std::make_unique<WisdomHolmanIntegratorGPU<double>>(resourceManager);
+  else
+    this->integratorGPU = std::make_unique<WisdomHolmanIntegratorGPU<float>>(resourceManager);
+
+  this->integratorGPU->init(gpu, total, ctx);
+}
+
 void PhysicsWorld::step(double dt)
 {
   this->integratorCPU->step(this->cpu.integratableObjects, this->cpu.integratableSystems, dt);

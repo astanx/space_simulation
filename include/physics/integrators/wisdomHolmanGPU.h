@@ -41,7 +41,7 @@ public:
   WisdomHolmanIntegratorGPU(ResourceManager &resourceManager);
   ~WisdomHolmanIntegratorGPU() = default;
 
-  void init(WisdomHolmanGPUData &gpu, Total &total, Context &ctx) override;
+  void init(IntegratorGPUData &gpu, Total &total, Context &ctx) override;
 
   void stepReal(Total &total, Real dt) override;
 };

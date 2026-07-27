@@ -32,19 +32,3 @@ void PhysicsWorld::initGPUBuffers(Context &context, PhysicsDataGPU<Real> data)
   this->gpu.loveNumbersBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.loveNumbers.size() * sizeof(Real), data.loveNumbers.data());
   this->gpu.tidalFactorsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.tidalFactors.size() * sizeof(Real), data.tidalFactors.data());
 }
-
-template <typename Real>
-void PhysicsWorld::initGPUIntegrator(ResourceManager &resourceManager, Context &ctx, PhysicsDataGPU<Real> gpu)
-{
-  // bool supportsDouble = ctx.getSupportsDouble();
-  // if (supportsDouble)
-  // {
-  //   this->integratorGPU = std::make_unique<WisdomHolmanIntegratorGPU<Real>>(resourceManager);
-  // }
-  // else
-  // {
-  //   this->integratorGPU = std::make_unique<WisdomHolmanIntegratorGPU<Real>>(resourceManager);
-  // }
-
-  // this->integratorGPU->init(this->gpu, this->total, ctx);
-}

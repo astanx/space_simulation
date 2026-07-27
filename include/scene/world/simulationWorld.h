@@ -54,6 +54,7 @@ private:
   AsteroidSystem *createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000);
 
   void initObjects(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000);
+  void initGPU(ResourceManager &resourceManager);
 
 public:
   SimulationWorld();

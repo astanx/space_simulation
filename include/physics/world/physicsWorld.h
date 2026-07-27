@@ -3,7 +3,6 @@
 #include "physics/world/data/physicsCPUData.h"
 #include "physics/world/data/physicsGPUData.h"
 #include "physics/world/data/physicsDataGPU.h"
-#include "physics/world/total.h"
 
 #include <vector>
 
@@ -20,6 +19,8 @@ class Integratable;
 class Trail;
 class Atmosphere;
 class System;
+struct IntegratorGPUData;
+struct Total;
 
 class PhysicsWorld
 {
@@ -32,8 +33,6 @@ private:
 
   Star *sun;
 
-  Total total;
-
 public:
   PhysicsWorld();
   ~PhysicsWorld();
@@ -41,8 +40,7 @@ public:
   template <typename Real>
   void initGPUBuffers(Context &ctx, PhysicsDataGPU<Real> data);
 
-  template <typename Real>
-  void initGPUIntegrator(ResourceManager &resourceManager, Context &ctx, PhysicsDataGPU<Real> gpu);
+  void initGPUIntegrator(ResourceManager &resourceManager, Context &ctx, IntegratorGPUData &gpu, Total &total);
 
   void step(double dt);
 
@@ -54,6 +52,8 @@ public:
   void addStar(std::unique_ptr<Star> star);
   void addSun(Star *sun);
   void addIntegratable(Integratable *object);
+
+  PhysicsGPUData &getGPUData() { return this->gpu; };
 
   const Star &getSun() const;
 

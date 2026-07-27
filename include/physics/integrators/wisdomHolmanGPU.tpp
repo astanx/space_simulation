@@ -5,6 +5,8 @@
 #include "physics/integrators/integratable.h"
 #include "physics/integrators/wisdomHolmanGPUData.h"
 
+#include "physics/world/total.h"
+
 #include "physics/systems/system.h"
 
 #include "physics/object.h"
@@ -110,10 +112,13 @@ WisdomHolmanIntegratorGPU<Real>::WisdomHolmanIntegratorGPU(ResourceManager &reso
 
 // Public functions
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::init(WisdomHolmanGPUData &gpu, Total &total, Context &ctx)
+void WisdomHolmanIntegratorGPU<Real>::init(IntegratorGPUData &gpu, Total &total, Context &ctx)
 {
+  WisdomHolmanGPUData *whGpu = dynamic_cast<WisdomHolmanGPUData *>(&gpu);
+  if (!whGpu)
+    Logger::logFatal("Wisdom Holman Integrator", "Wrong GPU data passed");
   this->initQueues(ctx);
-  this->initKernels(gpu, total);
+  this->initKernels(*whGpu, total);
 }
 
 template <typename Real>

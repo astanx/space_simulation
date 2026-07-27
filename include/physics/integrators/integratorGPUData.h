@@ -5,4 +5,5 @@ struct SharedGPUData;
 
 struct IntegratorGPUData
 {
+  virtual ~IntegratorGPUData() = default;
 };

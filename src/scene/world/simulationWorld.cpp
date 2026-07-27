@@ -15,6 +15,8 @@
 #include "physics/structs/keplerElements.h"
 #include "physics/structs/rotationalElements.h"
 
+#include "physics/integrators/wisdomHolmanGPUData.h"
+
 #include "graphics/primitives/ellipsoid.h"
 
 #include "render/renderContext.h"
@@ -170,6 +172,29 @@ void SimulationWorld::initObjects(ResourceManager &resourceManager, ThreadPool &
   this->physics.addSun(std::move(sunPtr));
 }
 
+void SimulationWorld::initGPU(ResourceManager &resourceManager)
+{
+  Context &ctx = resourceManager.GetContext(Res::MAIN_CONTEXT);
+  if (ctx.getSupportsDouble())
+  {
+    WorldGPUBuilder<double> builder;
+    WorldDataGPU<double> data = builder.build(this->worldObjects, this->worldSystems);
+    this->physics.initGPUBuffers<double>(ctx, data.physics);
+
+    WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
+    this->physics.initGPUIntegrator(resourceManager, ctx, integratorData, data.total);
+  }
+  else
+  {
+    WorldGPUBuilder<float> builder;
+    WorldDataGPU<float> data = builder.build(this->worldObjects, this->worldSystems);
+    this->physics.initGPUBuffers<float>(ctx, data.physics);
+
+    WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
+    this->physics.initGPUIntegrator(resourceManager, ctx, integratorData, data.total);
+  }
+}
+
 // Constructor
 SimulationWorld::SimulationWorld()
 {
@@ -186,19 +211,7 @@ void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadP
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
-  Context &ctx = resourceManager.GetContext(Res::MAIN_CONTEXT);
-  if (ctx.getSupportsDouble())
-  {
-    WorldGPUBuilder<double> builder;
-    WorldDataGPU<double> data = builder.build(this->worldObjects, this->worldSystems);
-    this->physics.initGPUBuffers<double>(ctx, data.physics);
-  }
-  else
-  {
-    WorldGPUBuilder<float> builder;
-    WorldDataGPU<float> data = builder.build(this->worldObjects, this->worldSystems);
-    this->physics.initGPUBuffers<float>(ctx, data.physics);
-  }
+  this->initGPU(resourceManager);
 }
 
 void SimulationWorld::update(RenderContext &renderCtx, const Camera &camera)

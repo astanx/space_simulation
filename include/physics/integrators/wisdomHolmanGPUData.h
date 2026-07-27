@@ -8,60 +8,58 @@
 
 struct WisdomHolmanGPUData : IntegratorGPUData
 {
-  CLBuffer positionsBuffer;
-  CLBuffer orientationsBuffer;
+  CLBuffer &positionsBuffer;
+  CLBuffer &orientationsBuffer;
 
-  CLBuffer meanRadiiBuffer;
-  CLBuffer polarRadiiBuffer;
-  CLBuffer equatorianRadiiBuffer;
+  CLBuffer &meanRadiiBuffer;
+  CLBuffer &polarRadiiBuffer;
+  CLBuffer &equatorianRadiiBuffer;
 
-  CLBuffer musBuffer;
-  CLBuffer velocitiesBuffer;
+  CLBuffer &musBuffer;
+  CLBuffer &velocitiesBuffer;
 
-  CLBuffer angularVelocitiesBuffer;
+  CLBuffer &angularVelocitiesBuffer;
 
-  CLBuffer tensorsBuffer;
-  CLBuffer loveIndicesBuffer;
-  CLBuffer tidalFactorIndicesBuffer;
-  CLBuffer loveNumbersBuffer;
-  CLBuffer tidalFactorsBuffer;
+  CLBuffer &tensorsBuffer;
+  CLBuffer &loveIndicesBuffer;
+  CLBuffer &tidalFactorIndicesBuffer;
+  CLBuffer &loveNumbersBuffer;
+  CLBuffer &tidalFactorsBuffer;
 
-  CLBuffer semiAxisesBuffer;
-  CLBuffer eccentricitiesBuffer;
-  CLBuffer inclinationsBuffer;
-  CLBuffer longitudeBuffer;
-  CLBuffer periapsisBuffer;
-  CLBuffer meanAnomalyBuffer;
-  CLBuffer meanMotionBuffer;
-  CLBuffer centralBodyIndicesBuffer;
+  CLBuffer &semiAxisesBuffer;
+  CLBuffer &eccentricitiesBuffer;
+  CLBuffer &inclinationsBuffer;
+  CLBuffer &longitudeBuffer;
+  CLBuffer &periapsisBuffer;
+  CLBuffer &meanAnomalyBuffer;
+  CLBuffer &meanMotionBuffer;
+  CLBuffer &centralBodyIndicesBuffer;
 
-  WisdomHolmanGPUData(PhysicsGPUData physics, SharedGPUData shared)
-  {
-    this->positionsBuffer = shared.positionsBuffer;
-    this->orientationsBuffer = shared.orientationsBuffer;
+  WisdomHolmanGPUData(PhysicsGPUData &physics, SharedGPUData &shared)
+      : positionsBuffer(shared.positionsBuffer),
+        orientationsBuffer(shared.orientationsBuffer),
 
-    this->meanRadiiBuffer = shared.meanRadiiBuffer;
-    this->polarRadiiBuffer = shared.polarRadiiBuffer;
-    this->equatorianRadiiBuffer = shared.equatorianRadiiBuffer;
+        meanRadiiBuffer(shared.meanRadiiBuffer),
+        polarRadiiBuffer(shared.polarRadiiBuffer),
+        equatorianRadiiBuffer(shared.equatorianRadiiBuffer),
 
-    this->musBuffer = physics.musBuffer;
-    this->velocitiesBuffer = physics.velocitiesBuffer;
+        musBuffer(physics.musBuffer),
+        velocitiesBuffer(physics.velocitiesBuffer),
 
-    this->angularVelocitiesBuffer = physics.angularVelocitiesBuffer;
+        angularVelocitiesBuffer(physics.angularVelocitiesBuffer),
 
-    this->tensorsBuffer = physics.tensorsBuffer;
-    this->loveIndicesBuffer = physics.loveIndicesBuffer;
-    this->tidalFactorIndicesBuffer = physics.tidalFactorIndicesBuffer;
-    this->loveNumbersBuffer = physics.loveNumbersBuffer;
-    this->tidalFactorsBuffer = physics.tidalFactorsBuffer;
+        tensorsBuffer(physics.tensorsBuffer),
+        loveIndicesBuffer(physics.loveIndicesBuffer),
+        tidalFactorIndicesBuffer(physics.tidalFactorIndicesBuffer),
+        loveNumbersBuffer(physics.loveNumbersBuffer),
+        tidalFactorsBuffer(physics.tidalFactorsBuffer),
 
-    this->semiAxisesBuffer = physics.semiAxisesBuffer;
-    this->eccentricitiesBuffer = physics.eccentricitiesBuffer;
-    this->inclinationsBuffer = physics.inclinationsBuffer;
-    this->longitudeBuffer = physics.longitudeBuffer;
-    this->periapsisBuffer = physics.periapsisBuffer;
-    this->meanAnomalyBuffer = physics.meanAnomalyBuffer;
-    this->meanMotionBuffer = physics.meanMotionBuffer;
-    this->centralBodyIndicesBuffer = physics.centralBodyIndicesBuffer;
-  };
+        semiAxisesBuffer(physics.semiAxisesBuffer),
+        eccentricitiesBuffer(physics.eccentricitiesBuffer),
+        inclinationsBuffer(physics.inclinationsBuffer),
+        longitudeBuffer(physics.longitudeBuffer),
+        periapsisBuffer(physics.periapsisBuffer),
+        meanAnomalyBuffer(physics.meanAnomalyBuffer),
+        meanMotionBuffer(physics.meanMotionBuffer),
+        centralBodyIndicesBuffer(physics.centralBodyIndicesBuffer) {};
 };
