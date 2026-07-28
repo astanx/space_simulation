@@ -15,6 +15,7 @@
 #include "graphics/skybox.h"
 
 class ResourceManager;
+class RenderQueue;
 class ThreadPool;
 
 class Scene
@@ -46,7 +47,7 @@ public:
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);
 
-  void update(RenderContext &renderCtx);
+  void update(RenderQueue& queue, RenderContext &renderCtx);
 
   // Setters
   void addPointLight(std::unique_ptr<PointLight> pointLight);

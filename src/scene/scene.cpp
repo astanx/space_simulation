@@ -50,9 +50,9 @@ void Scene::processMouseScroll(float yoffset)
   this->activeCamera->processMouseScroll(yoffset);
 }
 
-void Scene::update(RenderContext &renderCtx)
+void Scene::update(RenderQueue& queue, RenderContext &renderCtx)
 {
-  this->world.update(renderCtx, this->getActiveCamera());
+  this->world.update(this->getActiveCamera(), queue, renderCtx);
 
   if (this->pointLights[0])
     this->pointLights[0]->move(this->world.getPhysicsWorld().getSun().getRenderPosition()); // move sun light

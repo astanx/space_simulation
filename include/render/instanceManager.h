@@ -30,7 +30,7 @@ public:
   ~InstanceManager() = default;
 
   void init();
-  void initGPU(cl_context ctx);
+  void initGPU(cl_context ctx, size_t totalObjects);
 
   void clear();
 

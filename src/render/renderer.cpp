@@ -178,8 +178,8 @@ void Renderer::renderObjects(Scene &scene)
   Shader &coreShader = this->resourceManager.GetShader(Res::CORE_SHADER);
   Shader &coreTangentShader = this->resourceManager.GetShader(Res::CORE_TANGENT_SHADER);
 
-  this->renderObjectsQueue(this->queue.getCoreBatches(), scene, coreShader, &this->instanceManager.getFullInstancesVBO());
-  this->renderObjectsQueue(this->queue.getTangentBatches(), scene, coreTangentShader, &this->instanceManager.getFullInstancesVBO());
+  this->renderObjectsQueue(this->queue.getCoreBatches(), scene, coreShader, &scene.getSimulationWorld().getRenderWorld().getFullInstancesVBO());
+  this->renderObjectsQueue(this->queue.getTangentBatches(), scene, coreTangentShader, &scene.getSimulationWorld().getRenderWorld().getFullInstancesVBO());
 }
 
 void Renderer::renderAtmospheres(Scene &scene)
@@ -223,14 +223,14 @@ void Renderer::renderSkybox(Scene &scene, RenderContext &ctx)
   skybox.render(skyboxShader);
 }
 
-void Renderer::renderShadowMap(Shader &shader)
+void Renderer::renderShadowMap(Scene &scene, Shader &shader)
 {
   size_t size = sizeof(InstanceModelMatrixParts);
 
   for (RenderBatch batch : this->queue.getShadowBatches())
   {
     size_t count = batch.range.end - batch.range.begin;
-    batch.model->renderInstanced(shader, &this->instanceManager.getFullInstancesVBO(), size, count, batch.range.begin);
+    batch.model->renderInstanced(shader, &scene.getSimulationWorld().getRenderWorld().getFullInstancesVBO(), size, count, batch.range.begin);
   }
 }
 
@@ -248,7 +248,7 @@ void Renderer::renderDirectionalShadow(Scene &scene)
 
   ScopedShader dirShadowSd(dirShadowShader);
 
-  this->renderShadowMap(dirShadowShader);
+  this->renderShadowMap(scene, dirShadowShader);
 }
 
 void Renderer::renderPointShadow(Scene &scene)
@@ -271,7 +271,7 @@ void Renderer::renderPointShadow(Scene &scene)
   ScopedShader pointShadowSd(pointShadowID);
   // ScopedCullFace cullFace(GL_FRONT);
 
-  this->renderShadowMap(pointShadowShader);
+  this->renderShadowMap(scene, pointShadowShader);
 
   this->blur.blur(this->shadowManager->getPointShadow()->getShadowMapTexture(), 16, true);
 }
@@ -282,26 +282,26 @@ void Renderer::renderImpostor(Scene &scene)
   GLuint &impostorID = impostorShader.getId();
 
   ScopedShader impostor(impostorID);
-  ScopedTexture impostorText(this->lodManager.getImpostorTexture(), ImpostorTextureBindingPoints::Impostor);
+  ScopedTexture impostorText(scene.getSimulationWorld().getRenderWorld().getImpostorTexture(), ImpostorTextureBindingPoints::Impostor);
 
   const Skybox &skybox = scene.getActiveSkybox();
   skybox.bindIrradianceMap(impostorShader);
 
   impostorShader.set1i(ImpostorTextureBindingPoints::Impostor, "impostors");
 
-  this->lodManager.getImpostorMesh().renderInstanced(&this->instanceManager.getImpostorInstancesVBO(), sizeof(InstancePositionRadiusTexture), this->instanceManager.getImpostorCount());
+  scene.getSimulationWorld().getRenderWorld().renderImpostorMeshInstanced();
 
   skybox.unbindIrradianceMap();
 }
 
-void Renderer::renderPoint()
+void Renderer::renderPoint(Scene &scene)
 {
   Shader &pointShader = this->resourceManager.GetShader(Res::POINT_SHADER);
   GLuint &pointID = pointShader.getId();
 
   ScopedShader point(pointID);
 
-  this->lodManager.getPointMesh().renderInstanced(&this->instanceManager.getPointInstancesVBO(), sizeof(InstancePositionRadiusColor), this->instanceManager.getPointCount());
+  scene.getSimulationWorld().getRenderWorld().renderPointMeshInstanced();
 }
 
 void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, RenderContext &ctx)
@@ -317,7 +317,7 @@ void Renderer::renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer,
 
   this->renderObjects(scene);
   this->renderImpostor(scene);
-  this->renderPoint();
+  this->renderPoint(scene);
   // temporary off
   //  this->renderAtmospheres(scene, &frustum);
   this->renderSkybox(scene, ctx);
@@ -387,9 +387,6 @@ void Renderer::init(Scene &scene, RenderContext &ctx)
   this->postProcess.init(ctx.frameCtx);
 
   this->initShaderUBOBindings();
-
-  this->lodManager.init(scene);
-  this->instanceManager.init();
 }
 
 void Renderer::render(Scene &scene, RenderContext &ctx)
@@ -420,9 +417,7 @@ void Renderer::render(Scene &scene, RenderContext &ctx)
 
 void Renderer::update(Scene &scene, RenderContext &ctx)
 {
-  scene.update(ctx);
-
-  this->queue.build(scene, this->lodManager, this->instanceManager, ctx.frameCtx);
+  scene.update(this->queue, ctx);
 
   this->updateUBO(scene, ctx);
 }

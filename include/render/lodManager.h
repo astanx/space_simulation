@@ -15,7 +15,9 @@ struct LODSettings
 class Camera;
 class Scene;
 class Model;
+class ModelSource;
 class Renderable;
+class RenderSystem;
 struct InstancePositionRadiusTexture;
 struct InstancePositionRadiusColor;
 struct Frustum;
@@ -33,8 +35,8 @@ private:
   std::unique_ptr<Mesh> impostorMesh;
   std::unique_ptr<Mesh> pointMesh;
 
-  void initLOD(Scene &scene);
-  void initImpostor(Scene &scene);
+  void initLOD(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems);
+  void initImpostor(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems);
   void initPoint();
   void bindLayerToImpostorTexture(Model &model, unsigned int layer);
   void bindLayerToImpostorTexture(Model *model, unsigned int layer);
@@ -43,7 +45,7 @@ public:
   LODManager() = default;
   ~LODManager() = default;
 
-  void init(Scene &scene);
+  void init(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems);
 
   LODResult partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov, bool force = false);
 

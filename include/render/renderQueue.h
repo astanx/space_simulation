@@ -20,15 +20,11 @@ private:
   std::vector<RenderBatch> shadowBatches;
   std::vector<RenderBatch> reflectorBatches;
 
-  void buildModelSource(ModelSource *source, RenderQueueBuilder &builder, LODManager &lod, Frustum *frustum, InstanceManager &instance, FrameContext ctx, float fov);
-
-  void clear();
-
 public:
   RenderQueue() = default;
   ~RenderQueue() = default;
 
-  void build(Scene &scene, LODManager &lod, InstanceManager &instance, FrameContext &ctx);
+  void clear();
 
   void addCoreBatch(RenderBatch batch);
   void addTangentBatch(RenderBatch batch);

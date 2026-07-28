@@ -212,12 +212,14 @@ void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadP
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
   this->initGPU(resourceManager);
+  
+  this->render.init();
 }
 
-void SimulationWorld::update(RenderContext &renderCtx, const Camera &camera)
+void SimulationWorld::update(const Camera &camera, RenderQueue& queue, RenderContext &renderCtx)
 {
   if (!renderCtx.settings.paused)
     this->physics.step(renderCtx.deltaTime);
 
-  this->render.update(camera);
+  this->render.update(camera, queue, renderCtx.frameCtx);
 }

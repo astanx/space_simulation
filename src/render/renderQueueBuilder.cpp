@@ -5,8 +5,32 @@
 #include "render/lodResult.h"
 #include "render/instanceManager.h"
 #include "render/renderQueue.h"
+#include "render/frustum.h"
+#include "render/modelSource.h"
+#include "render/renderSystem.h"
+#include "render/lodManager.h"
 
 #include "graphics/model.h"
+
+#include "camera/camera.h"
+
+#include "scene/scene.h"
+
+// Private functions
+void RenderQueueBuilder::buildModelSource(ModelSource *source, LODManager &lod, Frustum *frustum, FrameContext ctx, float fov)
+{
+  Transform transform;
+  transform.position = source->getRenderPosition();
+  transform.orientation = source->getRenderOrientation();
+
+  Radii radii = source->getSrcRadii();
+
+  source->forEachModel([this, &radii, &transform, &lod, &ctx, &frustum, fov](Model &model)
+                       { 
+
+        LODResult res = lod.partitionObject(transform.position, model.getImportance(), radii, frustum, ctx.height, fov);
+        this->submit(&model, res, transform); });
+}
 
 // Constructor / Destructor
 RenderQueueBuilder::RenderQueueBuilder(std::vector<Model *> models)
@@ -16,6 +40,25 @@ RenderQueueBuilder::RenderQueueBuilder(std::vector<Model *> models)
 }
 
 // Public functions
+void RenderQueueBuilder::build(RenderQueue &queue, const Camera& camera, std::vector<ModelSource*> &modelSources, std::vector<RenderSystem*> renderSystems, LODManager &lod, InstanceManager &instance, FrameContext &ctx)
+{
+  queue.clear();
+  instance.clear();
+
+  float fov = camera.getFOV();
+  Frustum frustum = camera.getFrustum(ctx.aspect);
+
+  for (ModelSource *source : modelSources)
+    this->buildModelSource(source, lod, &frustum, ctx, fov);
+
+  for (RenderSystem *system :renderSystems)
+    system->buildRenderQueue(queue, lod, instance, camera, &frustum, ctx.height);
+
+  this->finish(instance, queue);
+
+  instance.fillVBOs();
+}
+
 void RenderQueueBuilder::submit(Model *model, const LODResult &lod, const Transform &transform)
 {
   InstanceModelMatrixParts fullInstanceData;

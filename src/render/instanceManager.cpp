@@ -14,8 +14,24 @@ void InstanceManager::init()
   this->pointInstancesVBO = std::make_unique<Buffer>();
 }
 
-void InstanceManager::initGPU(cl_context ctx)
+void InstanceManager::initGPU(cl_context ctx, size_t totalObjects)
 {
+  // vbo must be allocated beforehand
+  {
+    ScopedBuffer buff(*this->fullInstancesVBO, GL_ARRAY_BUFFER);
+    GL_CALL(glBufferData(GL_ARRAY_BUFFER, totalObjects * sizeof(InstanceModelMatrixParts), nullptr, GL_DYNAMIC_DRAW));
+  }
+
+  {
+    ScopedBuffer buff(*this->impostorInstancesVBO, GL_ARRAY_BUFFER);
+    GL_CALL(glBufferData(GL_ARRAY_BUFFER, totalObjects * sizeof(InstancePositionRadiusTexture), nullptr, GL_DYNAMIC_DRAW));
+  }
+
+  {
+    ScopedBuffer buff(*this->pointInstancesVBO, GL_ARRAY_BUFFER);
+    GL_CALL(glBufferData(GL_ARRAY_BUFFER, totalObjects * sizeof(InstancePositionRadiusColor), nullptr, GL_DYNAMIC_DRAW));
+  }
+
   this->fullInstancesBuffer.init(ctx, CL_MEM_READ_WRITE, this->fullInstancesVBO->getId());
   this->pointInstancesBuffer.init(ctx, CL_MEM_READ_WRITE, this->pointInstancesVBO->getId());
   this->impostorInstancesBuffer.init(ctx, CL_MEM_READ_WRITE, this->impostorInstancesVBO->getId());

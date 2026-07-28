@@ -13,56 +13,11 @@
 
 #include "scene/scene.h"
 
-// Private functions
-void RenderQueue::buildModelSource(ModelSource *source, RenderQueueBuilder &builder, LODManager &lod, Frustum *frustum, InstanceManager &instance, FrameContext ctx, float fov)
-{
-  Transform transform;
-  transform.position = source->getRenderPosition();
-  transform.orientation = source->getRenderOrientation();
-
-  Radii radii = source->getSrcRadii();
-
-  source->forEachModel([&builder, &radii, &transform, &lod, &ctx, &frustum, fov](Model &model)
-                       { 
-
-        LODResult res = lod.partitionObject(transform.position, model.getImportance(), radii, frustum, ctx.height, fov);
-        builder.submit(&model, res, transform); });
-}
-
+// Public functions
 void RenderQueue::clear()
 {
   this->coreBatches.clear();
   this->tangentBatches.clear();
-}
-
-// Public functions
-void RenderQueue::build(Scene &scene, LODManager &lod, InstanceManager &instance, FrameContext &ctx)
-{
-  this->clear();
-  instance.clear();
-
-  const Camera &camera = scene.getActiveCamera();
-  float fov = camera.getFOV();
-  Frustum frustum = scene.getActiveCamera().getFrustum(ctx.aspect);
-
-  std::vector<Model *> models;
-  size_t index = 0;
-  for (ModelSource *source : scene.getSimulationWorld().getRenderWorld().getModelSources())
-    source->forEachModel([&models, &index](Model &model)
-                         { 
-                          model.setQueueIndex(index++);
-                          models.push_back(&model); });
-
-  RenderQueueBuilder builder(models);
-  for (ModelSource *source : scene.getSimulationWorld().getRenderWorld().getModelSources())
-    this->buildModelSource(source, builder, lod, &frustum, instance, ctx, fov);
-
-  for (RenderSystem *system : scene.getSimulationWorld().getRenderWorld().getRenderSystems())
-    system->buildRenderQueue(*this, lod, instance, camera, &frustum, ctx.height);
-
-  builder.finish(instance, *this);
-
-  instance.fillVBOs();
 }
 
 void RenderQueue::addCoreBatch(RenderBatch batch)

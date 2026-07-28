@@ -62,7 +62,7 @@ public:
 
   void init(ResourceManager &resourceManager, ThreadPool &threadPool, double startTime);
 
-  void update(RenderContext &renderCtx, const Camera &camera);
+  void update(const Camera &camera, RenderQueue &queue, RenderContext &renderCtx);
 
   void addWorldObject(WorldObject object) { this->worldObjects.push_back(object); };
   void addWorldSystem(WorldSystem system) { this->worldSystems.push_back(system); };

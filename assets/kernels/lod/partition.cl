@@ -1,6 +1,5 @@
 #include "real.cl"
 #include "quaternion.cl"
-#include "frustum.cl"
 #include "lod/instanceStructs.cl"
 #include "lod/lodHelper.cl"
 
@@ -13,7 +12,7 @@ __kernel partitionObjects(
   __global real3* positions, __global dquat* orientations,
   __global real* meanRadii, __global real* polarRadii, __global real* equatorianRadii, 
   __global float3* instanceColor, __global uint* instanceTextureLayer, __global float* instanceImportance,
-  float fov, float viewportHeight, float baseMinPixelSize, FrustumGPU frustum)
+  float fov, float viewportHeight, float baseMinPixelSize)
 {
   int id = get_global_id(0);
 

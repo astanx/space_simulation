@@ -30,7 +30,7 @@
 #include "external/stb_image_resize2.h"
 
 // Private functions
-void LODManager::initImpostor(Scene &scene)
+void LODManager::initImpostor(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems)
 {
   this->impostorMesh = std::make_unique<Mesh>(TypeTag<VertexPositionTexcoord>{}, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
   this->impostorMesh->setInstanceLayout(InstanceLayout::PositionRadiusTexture);
@@ -38,11 +38,11 @@ void LODManager::initImpostor(Scene &scene)
   this->impostorTexture = std::make_unique<Texture>(GL_TEXTURE_2D_ARRAY);
 
   unsigned int layer = ImpostorTextureBindingPoints::Size;
-  for (ModelSource *source : scene.getSimulationWorld().getRenderWorld().getModelSources())
+  for (ModelSource *source : modelSources)
     source->forEachModel([this, layer](Model &model)
                          { this->bindLayerToImpostorTexture(model, layer); });
 
-  for (RenderSystem *system : scene.getSimulationWorld().getRenderWorld().getRenderSystems())
+  for (RenderSystem *system : renderSystems)
     for (Model *model : system->getModels())
       this->bindLayerToImpostorTexture(model, layer);
 }
@@ -118,9 +118,9 @@ void LODManager::bindLayerToImpostorTexture(Model *model, unsigned int layer)
 }
 
 // Public functions
-void LODManager::init(Scene &scene)
+void LODManager::init(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems)
 {
-  this->initImpostor(scene);
+  this->initImpostor(modelSources, renderSystems);
   this->initPoint();
 }
 int LODManager::getLODLevel(float pixelRadius)

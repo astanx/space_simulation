@@ -46,8 +46,6 @@ private:
   TextRenderer textRenderer;
   PostProcess postProcess;
   GaussianBlur blur;
-  LODManager lodManager;
-  InstanceManager instanceManager;
   RenderQueue queue;
 
   unsigned int cameraUBO;
@@ -62,7 +60,7 @@ private:
   void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
 
   void renderDirectionalShadow(Scene &scene);
-  void renderShadowMap(Shader &shader);
+  void renderShadowMap(Scene& scene, Shader &shader);
   void renderPointShadow(Scene &scene);
   void renderMoonsRadiance(Scene &scene);
   void renderSkybox(Scene &scene, RenderContext &ctx);
@@ -71,7 +69,7 @@ private:
   void renderAtmospheres(Scene &scene);
   void renderTrails(Scene &scene);
   void renderImpostor(Scene &scene);
-  void renderPoint();
+  void renderPoint(Scene& scene);
 
   void initShaderUBOBindings();
   void bindUBOs();

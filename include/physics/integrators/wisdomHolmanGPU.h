@@ -31,9 +31,6 @@ protected:
 
   void initQueues(Context &ctx);
   void initKernels(WisdomHolmanGPUData &gpu, Total total);
-  void initGLBuffers();
-  void initGLBuffer(Buffer &buffer, size_t size);
-  void initBuffers(std::vector<Integratable *> &objects, Context &ctx);
 
   void updateDt(Real dt);
 
