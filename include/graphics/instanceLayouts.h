@@ -2,6 +2,7 @@
 
 #include "graphics/vertex.h"
 #include "graphics/vertexAttribute.h"
+#include "graphics/instanceStructs.h"
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -15,46 +16,6 @@ enum class InstanceLayout
   PositionRadiusColor,
   ModelMatrix,
   ModelMatrixParts
-};
-
-struct InstanceData
-{
-  glm::vec3 position;
-  glm::vec3 color;
-  uint textureLayer;
-  float radius;
-};
-
-struct InstancePositionRadius
-{
-  glm::vec3 position;
-  float radius;
-};
-
-struct InstancePositionRadiusTexture
-{
-  glm::vec3 position;
-  float radius;
-  uint textureLayer;
-};
-
-struct InstancePositionRadiusColor
-{
-  glm::vec3 position;
-  float radius;
-  glm::vec3 color;
-};
-
-struct InstanceModelMatrix
-{
-  glm::mat4 model;
-};
-
-struct InstanceModelMatrixParts
-{
-  glm::vec3 position;
-  glm::quat orientation;
-  glm::vec3 scale;
 };
 
 inline const std::array<VertexAttribute, 2> POSITION_RADIUS = {{{0, 3, GL_FLOAT, GL_FALSE, offsetof(InstancePositionRadius, position)},

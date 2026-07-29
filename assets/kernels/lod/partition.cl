@@ -1,6 +1,6 @@
 #include "real.cl"
 #include "quaternion.cl"
-#include "lod/instanceStructs.cl"
+#include "graphics/instanceStructs.h"
 #include "lod/lodHelper.cl"
 
 __kernel void partitionObjects(

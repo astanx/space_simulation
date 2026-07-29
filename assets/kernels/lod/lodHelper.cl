@@ -3,7 +3,7 @@
 
 #include "real.cl"
 #include "constants.cl"
-#include "lod/instanceStructs.cl"
+#include "graphics/instanceStructs.h"
 
 constant uint LOD_FULL = 1;
 constant uint LOD_IMPOSTOR = 2;

@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 // Private functions
 std::string Program::loadProgramSrc(const std::string filePath, bool isInclude)
@@ -18,20 +19,8 @@ std::string Program::loadProgramSrc(const std::string filePath, bool isInclude)
   inFile.open(filePath);
 
   if (inFile.is_open())
-  {
     while (std::getline(inFile, temp))
-    {
-      if (temp.find("#include") == 0)
-      {
-        long start = temp.find("\"") + 1;
-        long end = temp.find("\"", start);
-        std::string includePath = temp.substr(start, end - start);
-        src += this->loadProgramSrc(("assets/kernels/" + includePath).c_str(), true) + "\n";
-      }
-      else
-        src += temp + "\n";
-    }
-  }
+      src += temp + "\n";
   else
     Logger::logError("Program", "Could not open program file: " + filePath);
 
@@ -67,6 +56,9 @@ void Program::build(Context &context)
 
   if (context.getSupportsDouble())
     options = "-DUSE_DOUBLE";
+
+  options += " -I include";
+  options += " -I assets/kernels";
 
   CL_CALL(clBuildProgram(this->program, 1, &device, options.c_str(), nullptr, nullptr));
 
