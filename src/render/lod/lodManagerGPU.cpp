@@ -1,4 +1,4 @@
-#include "render/lod/lodManagerGPU.h"
+#include "render/lod/manager/lodManagerGPU.h"
 
 #include "render/lod/lodSettings.h"
 

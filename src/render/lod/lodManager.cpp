@@ -170,13 +170,13 @@ float LODManager::scaleRadius(const glm::vec3 &position, float radius, float fov
   return finalRadius;
 }
 
-LODResult LODManager::partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov, bool force)
+LODResult LODManager::partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov)
 {
   LODResult result;
   float radius = radii.mean;
   result.scaledMeanRadius = this->scaleRadius(position, radius, fov, viewportHeight, importance);
 
-  if (!Frustum::shouldBeProcessed(frustum, position, result.scaledMeanRadius, force))
+  if (!shouldBeProcessed(frustum, position, result.scaledMeanRadius))
   {
     result.visible = false;
     return result;

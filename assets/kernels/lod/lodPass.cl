@@ -1,8 +1,8 @@
 #include "real.cl"
-#include "frustum.cl"
+#include "render/frustum.h"
 #include "lod/lodHelper.cl"
 
-__kernel void lodPass(__global uint* isFull, __global uint* isImpostor, __global uint* isPoint, __global real3* positions, __global real* meanRadii, __global float* instanceImportance, float fov, float viewportHeight, float baseMinPixelSize, float fullThreshold, float impostorThreshold, FrustumGPU frustum)
+__kernel void lodPass(__global uint* isFull, __global uint* isImpostor, __global uint* isPoint, __global real3* positions, __global real* meanRadii, __global float* instanceImportance, float fov, float viewportHeight, float baseMinPixelSize, float fullThreshold, float impostorThreshold, Frustum frustum)
 {
   uint id = get_global_id(0);
 

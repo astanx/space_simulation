@@ -46,7 +46,7 @@ public:
 
   void init(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems);
 
-  LODResult partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov, bool force = false);
+  LODResult partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov);
 
   float calculatePixelRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
   float scaleRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);

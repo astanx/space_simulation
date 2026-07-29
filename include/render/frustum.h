@@ -1,8 +1,14 @@
-#pragma once
+#ifndef FRUSTUM
+#define FRUSTUM
 
+#ifdef __OPENCL_VERSION__
+typedef float3 vec3;
+typedef float4 vec4;
+#else
 #include <glm/glm.hpp>
-#include <array>
-#include <iostream>
+using vec3 = glm::vec3;
+using vec4 = glm::vec4;
+using glm::dot;
 
 enum FaceSide
 {
@@ -13,27 +19,31 @@ enum FaceSide
   NEAR_FACE,
   FAR_FACE
 };
+#endif
 
-struct Frustum
+typedef struct Frustum
 {
-  std::array<glm::vec4, 6> faces;
+  vec4 faces[6];
+} Frustum;
 
-  bool isVisibleSphere(glm::vec3 center, float radius)
+inline bool isVisibleSphere(const Frustum *frustum, vec3 pos, float radius)
+{
+  for (int face = 0; face < 6; face++)
   {
-    for (auto &face : faces)
-    {
-      float d = dot(glm::vec3(face), center) + face.w;
-      if (d < -radius)
-        return false;
-    }
-    return true;
-  }
-
-  static bool shouldBeProcessed(Frustum *frustum, glm::vec3 center, float radius, bool force)
-  {
-    if (!force && frustum && !frustum->isVisibleSphere(center, radius))
+    vec4 plane = frustum->faces[face];
+    float d = dot((vec3)plane, pos) + plane.w;
+    if (d < -radius)
       return false;
-
-    return true;
   }
-};
+  return true;
+}
+
+inline bool shouldBeProcessed(const Frustum *frustum, vec3 pos, float radius)
+{
+  if (!frustum || !isVisibleSphere(frustum, pos, radius))
+    return false;
+
+  return true;
+}
+
+#endif
