@@ -1,7 +1,9 @@
 #pragma once
 
-#include "render/lodManager.h"
+#include "render/lod/manager/lodManager.h"
 #include "render/instanceManager.h"
+
+#include "compute/clBuffer.h"
 
 #include "physics/trail.h"
 
@@ -13,7 +15,10 @@ class RenderSystem;
 class RenderQueue;
 class ModelSource;
 class Camera;
+class Context;
 struct FrameContext;
+struct RenderDataGPU;
+struct LODGPUData;
 
 class RenderWorld
 {
@@ -29,6 +34,10 @@ private:
   std::vector<std::unique_ptr<Trail>> trails;
   std::vector<Trail *> trailViews;
 
+  CLBuffer instanceColorsBuffer;
+  CLBuffer instanceTextureLayersBuffer;
+  CLBuffer instanceImportancesBuffer;
+
   void buildQueue(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
 
 public:
@@ -36,6 +45,10 @@ public:
   ~RenderWorld() = default;
 
   void init();
+  void initGPU(Context &ctx, RenderDataGPU &gpu);
+  void initLODGPU(Context &ctx, LODGPUData &data, LODSettings &settings, size_t totalObjects);
+
+  void initLODGPU();
 
   void update(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
 

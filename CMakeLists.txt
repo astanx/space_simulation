@@ -150,11 +150,14 @@ add_executable(Space
     src/render/postProcess.cpp
     src/render/gaussianBlur.cpp
     src/render/modelSource.cpp
-    src/render/lodManager.cpp
     src/render/instanceManager.cpp
-    src/render/renderQueue.cpp
-    src/render/renderQueueBuilder.cpp
-    src/render/renderWorld.cpp
+    # LOD
+    src/render/lod/lodManager.cpp
+    # Queue
+    src/render/queue/renderQueue.cpp
+    src/render/queue/builder/renderQueueBuilder.cpp
+    # World
+    src/render/world/renderWorld.cpp
     
     # Resources
     src/resources/OBJloader.cpp

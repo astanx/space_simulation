@@ -2,11 +2,46 @@
 #define LOD_HELPER
 
 #include "real.cl"
+#include "constants.cl"
 #include "lod/instanceStructs.cl"
 
-constant uint FULL = 0;
-constant uint IMPOSTOR = 1;
-constant uint POINT = 2;
+constant uint LOD_FULL = 1;
+constant uint LOD_IMPOSTOR = 2;
+constant uint LOD_POINT = 3;
+
+uint getLODLevelFromPixelRadius(float pixelRadius, float fullThreshold, float impostorThreshold)
+{
+  if (pixelRadius >= fullThreshold)
+    return LOD_FULL;
+  else if (pixelRadius >= impostorThreshold)
+    return LOD_IMPOSTOR;
+  else
+    return LOD_POINT;
+}
+
+float calculatePixelRadius(real3 position, float radius, float fov, float viewportHeight, float importance, float baseMinPixelSize)
+{
+  float d = length(position);
+
+  if (d < EPS)
+    d = 1e-4f;
+
+  float worldToPixel = (viewportHeight * 0.5f) / (d * tan(radians(fov / 2.f)));
+
+  float pixelRadius = radius * worldToPixel * importance;
+
+  float minPixel = baseMinPixelSize * importance;
+  pixelRadius = max(pixelRadius, minPixel);
+
+  return pixelRadius;
+}
+
+uint getLODLevel(real3 position, float radius, float fov, float viewportHeight, float importance, float baseMinPixelSize, float fullThreshold, float impostorThreshold)
+{
+  float pixelRadius = calculatePixelRadius(position, radius, fov, viewportHeight, importance, baseMinPixelSize);
+
+  return getLODLevelFromPixelRadius(pixelRadius, fullThreshold, impostorThreshold);
+}
 
 float scaleRadius(real3 position, real radius, float fov, float viewportHeight, float importance, float baseMinPixelSize)
 {
@@ -18,26 +53,6 @@ float scaleRadius(real3 position, real radius, float fov, float viewportHeight, 
   float finalRadius = max(radius, minWorldRadius);
 
   return finalRadius;
-}
-
-bool isVisibleSphere(const FrustumGPU* frustum, real3 pos, float radius)
-{
-  for (int face = 0; face < 6; face++)
-  {
-    float4 plane = frustum->planes[face];
-    float d = dot(plane.xyz, center) + plane.w;
-    if (d < -radius)
-      return false;
-  }
-  return true;
-}
-
-bool shouldBeProcessed(const FrustumGPU* frustum, real3 pos, float radius)
-{
-  if (!frustum || !isVisibleSphere(frustum, center, radius))
-    return false;
-
-  return true;
 }
 
 #endif

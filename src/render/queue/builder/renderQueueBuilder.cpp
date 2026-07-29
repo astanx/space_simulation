@@ -1,14 +1,14 @@
-#include "render/renderQueueBuilder.h"
+#include "render/queue/builder/renderQueueBuilder.h"
 
 #include "debug/logger.h"
 
-#include "render/lodResult.h"
+#include "render/lod/lodResult.h"
 #include "render/instanceManager.h"
-#include "render/renderQueue.h"
+#include "render/queue/renderQueue.h"
 #include "render/frustum.h"
 #include "render/modelSource.h"
 #include "render/renderSystem.h"
-#include "render/lodManager.h"
+#include "render/lod/manager/lodManager.h"
 
 #include "graphics/model.h"
 
@@ -40,7 +40,7 @@ RenderQueueBuilder::RenderQueueBuilder(std::vector<Model *> models)
 }
 
 // Public functions
-void RenderQueueBuilder::build(RenderQueue &queue, const Camera& camera, std::vector<ModelSource*> &modelSources, std::vector<RenderSystem*> renderSystems, LODManager &lod, InstanceManager &instance, FrameContext &ctx)
+void RenderQueueBuilder::build(RenderQueue &queue, const Camera &camera, std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> renderSystems, LODManager &lod, InstanceManager &instance, FrameContext &ctx)
 {
   queue.clear();
   instance.clear();
@@ -51,7 +51,7 @@ void RenderQueueBuilder::build(RenderQueue &queue, const Camera& camera, std::ve
   for (ModelSource *source : modelSources)
     this->buildModelSource(source, lod, &frustum, ctx, fov);
 
-  for (RenderSystem *system :renderSystems)
+  for (RenderSystem *system : renderSystems)
     system->buildRenderQueue(queue, lod, instance, camera, &frustum, ctx.height);
 
   this->finish(instance, queue);

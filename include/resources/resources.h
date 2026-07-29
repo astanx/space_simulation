@@ -157,6 +157,7 @@ namespace Res
 
   // Programs
   const std::string WISDOM_HOLMAN_INTERGATOR_PROGRAM = "wisdom_holman_intergator";
+  const std::string LOD_PROGRAM = "lod_program";
 
   // Kernels
   const std::string DRIFT_ANGULAR_KERNEL = "driftAngular";
@@ -165,4 +166,10 @@ namespace Res
   const std::string HALF_KICK_ANGULAR_KERNEL = "halfKickAngular";
   const std::string HALF_KICK_LINEAR_KERNEL = "halfKickLinear";
   const std::string HALF_KICK_KERNEL = "halfKick";
+
+  const std::string LOD_FULL_SCAN_KERNEL = "scan";
+  const std::string LOD_IMPOSTOR_SCAN_KERNEL = "scan";
+  const std::string LOD_POINT_SCAN_KERNEL = "scan";
+  const std::string LOD_PARTITION_OBJECTS_KERNEL = "partitionObjects";
+  const std::string LOD_PASS_KERNEL = "lodPass";
 }

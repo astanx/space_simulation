@@ -1,16 +1,12 @@
 #pragma once
 
+#include "render/lod/lodSettings.h"
+
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
 
 #include <vector>
 #include <glm/glm.hpp>
-
-struct LODSettings
-{
-  float baseMinPixelSize = 1.f;
-  std::vector<float> pixelRadiusThreshold = {8, 3}; // >= [0] - full, >= [1] - impostor, else - point
-};
 
 class Camera;
 class Scene;
@@ -41,6 +37,9 @@ private:
   void bindLayerToImpostorTexture(Model &model, unsigned int layer);
   void bindLayerToImpostorTexture(Model *model, unsigned int layer);
 
+  int getLODLevel(float pixelRadius);
+  int getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
+
 public:
   LODManager() = default;
   ~LODManager() = default;
@@ -48,9 +47,6 @@ public:
   void init(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems);
 
   LODResult partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov, bool force = false);
-
-  int getLODLevel(float pixelRadius);
-  int getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
 
   float calculatePixelRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
   float scaleRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);

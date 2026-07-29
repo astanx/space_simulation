@@ -1,6 +1,8 @@
 #include "render/world/renderWorld.h"
 
-#include "render/renderQueueBuilder.h"
+#include "render/world/data/renderDataGPU.h"
+
+#include "render/queue/builder/renderQueueBuilder.h"
 #include "render/modelSource.h"
 #include "render/updatable.h"
 
@@ -29,6 +31,19 @@ void RenderWorld::init()
 {
   this->lodManager.init(this->modelSources, this->renderSystems);
   this->instanceManager.init();
+}
+
+void RenderWorld::initGPU(Context &ctx, RenderDataGPU &gpu)
+{
+  cl_context context = ctx.get();
+
+  this->instanceColorsBuffer.init(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, gpu.instanceColors.size() * sizeof(glm::vec3), gpu.instanceColors.data());
+  this->instanceImportancesBuffer.init(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, gpu.instanceImportances.size() * sizeof(float), gpu.instanceImportances.data());
+  this->instanceTextureLayersBuffer.init(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, gpu.instanceTextureLayers.size() * sizeof(uint32_t), gpu.instanceTextureLayers.data());
+}
+
+void RenderWorld::initLODGPU(Context &ctx, LODGPUData &data, LODSettings &settings, size_t totalObjects)
+{
 }
 
 void RenderWorld::update(const Camera &camera, RenderQueue &queue, FrameContext &ctx)

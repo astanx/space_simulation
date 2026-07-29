@@ -1,8 +1,8 @@
-__kernel scan(__global uint* input, __global uint* output, __local uint* scratch)
+__kernel void scan(__global uint* input, __global uint* output, __local uint* scratch)
 {
-  int id = get_global_id(0);
-  int lid = get_local_id(0);
-  int groupSize = get_local_size(0);
+  uint id = get_global_id(0);
+  uint lid = get_local_id(0);
+  uint groupSize = get_local_size(0);
 
   scratch[lid] = input[id];
   barrier(CLK_LOCAL_MEM_FENCE);
@@ -21,5 +21,5 @@ __kernel scan(__global uint* input, __global uint* output, __local uint* scratch
     barrier(CLK_LOCAL_MEM_FENCE);
   }
 
-  output[gid] = scratch[lid];
+  output[id] = scratch[lid];
 }

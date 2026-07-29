@@ -22,6 +22,10 @@ void CommandQueue::init(cl_context context, cl_device_id device)
   CL_CREATE(this->queue = clCreateCommandQueue(context, device, 0, &errNum), errNum);
 }
 
+void CommandQueue::enqueueFillBuffer(cl_mem buffer, const void *pattern, size_t pattern_size, size_t size, cl_event *event)
+{
+  CL_CALL(clEnqueueFillBuffer(this->queue, buffer, pattern, pattern_size, 0, size, 0, nullptr, event));
+}
 void CommandQueue::enqueueWriteBuffer(cl_mem buffer, cl_bool blockWrite, size_t offset, size_t size, const void *data)
 {
   CL_CALL(clEnqueueWriteBuffer(this->queue, buffer, blockWrite, offset, size, data, 0, nullptr, nullptr));

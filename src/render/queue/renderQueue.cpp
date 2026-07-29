@@ -1,17 +1,10 @@
-#include "render/renderQueue.h"
+#include "render/queue/renderQueue.h"
 
 #include "debug/logger.h"
 
-#include "render/lodManager.h"
-#include "render/instanceManager.h"
-#include "render/frustum.h"
-#include "render/lodResult.h"
-#include "render/modelSource.h"
 #include "render/renderBatch.h"
-#include "render/renderSystem.h"
-#include "render/renderQueueBuilder.h"
 
-#include "scene/scene.h"
+#include "graphics/model.h"
 
 // Public functions
 void RenderQueue::clear()

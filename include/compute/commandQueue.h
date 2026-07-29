@@ -14,6 +14,7 @@ public:
 
   void init(cl_context context, cl_device_id device);
 
+  void enqueueFillBuffer(cl_mem buffer, const void *pattern, size_t pattern_size, size_t size, cl_event *event = nullptr);
   void enqueueWriteBuffer(cl_mem buffer, cl_bool blockWrite, size_t offset, size_t size, const void *data);
   void enqueueReadBuffer(cl_mem buffer, cl_bool blockRead, size_t offset, size_t size, void *store);
   void enqueueAcquireGLBuffer(const cl_mem buffer);

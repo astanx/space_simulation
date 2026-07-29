@@ -4,10 +4,10 @@
 #include "render/postProcess.h"
 #include "render/gaussianBlur.h"
 #include "render/renderContext.h"
-#include "render/lodManager.h"
+#include "render/lod/manager/lodManager.h"
 #include "render/instanceManager.h"
 #include "render/renderFlags.h"
-#include "render/renderQueue.h"
+#include "render/queue/renderQueue.h"
 
 #include "graphics/texture.h"
 #include "graphics/mesh.h"

@@ -1,6 +1,8 @@
 #ifndef INSTANCE_STRUCTS
 #define INSTANCE_STRUCTS
 
+#include "quaternion.cl"
+
 typedef struct{
   float3 position;
   quat orientation;

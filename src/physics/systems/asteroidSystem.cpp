@@ -26,11 +26,11 @@
 #include "resources/asteroidType.h"
 
 #include "render/frustum.h"
-#include "render/lodManager.h"
+#include "render/lod/manager/lodManager.h"
 #include "render/instanceManager.h"
-#include "render/lodResult.h"
-#include "render/renderQueue.h"
-#include "render/renderQueueBuilder.h"
+#include "render/lod/lodResult.h"
+#include "render/queue/renderQueue.h"
+#include "render/queue/builder/renderQueueBuilder.h"
 #include "render/renderBatch.h"
 
 #include "scene/frameContext.h"

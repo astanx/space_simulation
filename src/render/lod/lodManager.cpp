@@ -1,6 +1,6 @@
-#include "render/lodManager.h"
+#include "render/lod/manager/lodManager.h"
 
-#include "render/lodResult.h"
+#include "render/lod/lodResult.h"
 #include "render/modelSource.h"
 #include "render/frustum.h"
 #include "render/renderFlags.h"
@@ -117,12 +117,6 @@ void LODManager::bindLayerToImpostorTexture(Model *model, unsigned int layer)
   this->bindLayerToImpostorTexture(*model, layer);
 }
 
-// Public functions
-void LODManager::init(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems)
-{
-  this->initImpostor(modelSources, renderSystems);
-  this->initPoint();
-}
 int LODManager::getLODLevel(float pixelRadius)
 {
   if (pixelRadius >= this->settings.pixelRadiusThreshold[LOD::Full])
@@ -138,6 +132,13 @@ int LODManager::getLODLevel(const glm::vec3 &position, float radius, float fov, 
   float pixelRadius = this->calculatePixelRadius(position, radius, fov, viewportHeight, importance);
 
   return this->getLODLevel(pixelRadius);
+}
+
+// Public functions
+void LODManager::init(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems)
+{
+  this->initImpostor(modelSources, renderSystems);
+  this->initPoint();
 }
 
 float LODManager::calculatePixelRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance)
