@@ -5,6 +5,8 @@
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
 
+#include "maths/constants.h"
+
 #include "physics/constants.h"
 #include "physics/object.h"
 #include "physics/planet.h"

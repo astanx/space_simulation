@@ -4,14 +4,12 @@
 #include "physics/structs/materialProperties.h"
 #include "physics/structs/radii.h"
 
-#include <glm/glm.hpp>
+#include "maths/constants.h"
 
-const double AU_TO_METER = 1.49597870700e11;
+#include <glm/glm.hpp>
 
 const double INNER_ASTEROID_BELT_EDGE = 2.1 * AU_TO_METER;
 const double OUTER_ASTEROID_BELT_EDGE = 3.3 * AU_TO_METER;
-
-const double JD_2000 = 2451545.0;
 
 // Meters
 const double MINIMUM_ASTEROID_RADIUS = 1.0;
@@ -52,9 +50,6 @@ const RotationalElements MAXIMUM_ASTEROID_ROTATIONAL_ELEMENTS(
 		glm::radians(0.1),
 		glm::radians(360.0),
 		glm::radians(3000.0));
-
-// Gravitational constant
-const double G = 6.674e-11;
 
 // Time step
 // const double TIME_SCALE = 3600.0 * 24;

@@ -5,6 +5,8 @@
 #include "constants.cl"
 #include "real.cl"
 
+#include "maths/momentsMaths.h"
+
 typedef struct
 {
   real3 position;
@@ -20,34 +22,6 @@ typedef struct
   real tidalFactor;
   int isTidal;
 } TidalProperties;
-
-real3 calculateGravitationalTorque(real3 dp, real d, dmat3 objectTensor, real bodyMu)
-{
-  if (d == 0.0)
-    return real3(0.0);
-
-  real3 r = dp / d;
-  return 3 *  bodyMu / pow(d, 3) * cross(r, dmat3_dot_d3(objectTensor, r));
-}
-
-real3 calculateTidalTorque(real3 dp, real d, real3 objectAngularVelocity, 
-                              real3 objectVelocity, real objectMeanRadius,
-                              real objectLoveNumber, real objectTidalFactor,
-                              real3 bodyVelocity, real bodyMu)
-{
-  if (d == 0.0)
-    return real3(0.0);
-
-  real3 v = objectVelocity - bodyVelocity;
-
-  real3 nVec = cross(dp, v) / dot(dp, dp);
-  real n = length(nVec);
-
-  if (n < EPS)
-    return real3(0.0);
-
-  return -3 * objectLoveNumber * 1 / (2 * n * objectTidalFactor) * bodyMu * bodyMu * pow(objectMeanRadius, 5) / G / pow(d, 6) * (objectAngularVelocity - nVec);
-}
 
 real3 calculateTorque(ObjectState object, TidalProperties properties, 
                         __global real3* positions, __global real3* velocities, __global real* mus, 

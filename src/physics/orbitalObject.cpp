@@ -4,6 +4,7 @@
 #include "physics/structs/tidalParameters.h"
 
 #include "maths/orbitalMaths.h"
+#include "maths/constants.h"
 
 #include "graphics/vertex.h"
 #include "graphics/shader.h"

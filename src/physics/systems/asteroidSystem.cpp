@@ -4,6 +4,8 @@
 
 #include "physics/constants.h"
 
+#include "maths/constants.h"
+
 #include "graphics/mesh.h"
 #include "graphics/texture.h"
 #include "graphics/shader.h"

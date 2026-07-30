@@ -10,12 +10,6 @@
 
 #include <glm/glm.hpp>
 
-extern const double G;
-extern const double AU_TO_METER;
-extern const double JD_2000;
-
-// extern const double TIME_SCALE;
-
 extern const double sunMu;
 extern const double mercuryMu;
 extern const double venusMu;

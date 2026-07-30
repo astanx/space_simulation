@@ -191,7 +191,6 @@ add_executable(Space
     src/maths/orbitalMaths.cpp
     src/maths/momentsMaths.cpp
     src/maths/dateToJD.cpp
-    src/maths/constants.cpp
     
     # Debug
     src/debug/logger.cpp
