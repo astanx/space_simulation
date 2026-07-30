@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cmath>
+#include "physics/structs/keplerMaths.h"
 
 struct KeplerElements
 {
@@ -24,15 +24,13 @@ struct KeplerElements
 			double m)
 			: a(a), e(e), i(i), Omega(Omega), omega(omega), m(m) {};
 
-	void calculateMeanMotion(double mu)
+	void calculateMeanMotionForObject(double mu)
 	{
-		this->n = sqrt(mu / (this->a * this->a * this->a));
+		this->n = calculateMeanMotion(mu, this->a);
 	}
 
-	void advanceMeanAnomaly(double dt)
+	void advanceMeanAnomalyForObject(double dt)
 	{
-		this->m = fmod(this->m + this->n * dt, 2 * M_PI);
-		if (this->m < 0)
-			this->m += 2 * M_PI;
+		this->m = advanceMeanAnomaly(this->m, this->n, dt);
 	}
 };

@@ -72,8 +72,8 @@ KeplerElements AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.omega, MAXIMUM_ASTEROID_ELEMENTS.omega),
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.m, MAXIMUM_ASTEROID_ELEMENTS.m)};
 
-  e.calculateMeanMotion(this->centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
+  e.calculateMeanMotionForObject(this->centralBody->getMu());
+  e.advanceMeanAnomalyForObject(timeAfterJD2000);
 
   return e;
 }

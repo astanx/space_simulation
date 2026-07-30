@@ -27,8 +27,8 @@
 Planet *SimulationWorld::createPlanet(Model &model, double mu, Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, double g)
 {
   KeplerElements e = keplerElements;
-  e.calculateMeanMotion(centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
+  e.calculateMeanMotionForObject(centralBody->getMu());
+  e.advanceMeanAnomalyForObject(timeAfterJD2000);
 
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
@@ -88,8 +88,8 @@ Moon *SimulationWorld::createMoon(Model &model, double mu,
                                   Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
 {
   KeplerElements e = keplerElements;
-  e.calculateMeanMotion(centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
+  e.calculateMeanMotionForObject(centralBody->getMu());
+  e.advanceMeanAnomalyForObject(timeAfterJD2000);
 
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);

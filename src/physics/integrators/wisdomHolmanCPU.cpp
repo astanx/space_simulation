@@ -50,7 +50,7 @@ void WisdomHolmanIntegratorCPU::keplerDrift(OrbitalObject *object, double dt)
   Orbit *orbit = object->getOrbit();
   KeplerElements keplerElements = orbit->getKeplerElements();
   Object *centralBody = orbit->getCentralBody();
-  keplerElements.advanceMeanAnomaly(dt);
+  keplerElements.advanceMeanAnomalyForObject(dt);
 
   double E = OrbitalMaths::calculateEccentricAnomaly(keplerElements.m, keplerElements.e);
 
