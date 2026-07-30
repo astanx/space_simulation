@@ -24,13 +24,13 @@ struct KeplerElements
 			double m)
 			: a(a), e(e), i(i), Omega(Omega), omega(omega), m(m) {};
 
-	void calculateMeanMotionForObject(double mu)
+	void calculateMeanMotion(double mu)
 	{
-		this->n = calculateMeanMotion(mu, this->a);
+		this->n = ::calculateMeanMotion(mu, this->a);
 	}
 
-	void advanceMeanAnomalyForObject(double dt)
+	void advanceMeanAnomaly(double dt)
 	{
-		this->m = advanceMeanAnomaly(this->m, this->n, dt);
+		this->m = ::advanceMeanAnomaly(this->m, this->n, dt);
 	}
 };

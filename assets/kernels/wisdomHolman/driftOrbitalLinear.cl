@@ -1,5 +1,5 @@
 #include "physics/structs/keplerMaths.h"
-#include "orbitalMaths.cl"
+#include "maths/orbitalMathsFormulas.h"
 #include "matrix.cl"
 #include "real.cl"
 

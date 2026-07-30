@@ -77,20 +77,20 @@ glm::dvec3 MomentsMaths::calculateTorque(Object *object, const std::vector<Objec
     if (body == object)
       continue;
 
-    torque += MomentsMaths::calculateGravitationalTorqueForObject(object, body);
-    torque += MomentsMaths::calculateTidalTorqueForObject(object, body);
+    torque += MomentsMaths::calculateGravitationalTorque(object, body);
+    torque += MomentsMaths::calculateTidalTorque(object, body);
   }
   return torque;
 }
 
-glm::dvec3 MomentsMaths::calculateGravitationalTorqueForObject(Object *object, const Object *body)
+glm::dvec3 MomentsMaths::calculateGravitationalTorque(Object *object, const Object *body)
 {
   glm::dvec3 dp = body->getPosition() - object->getPosition();
   double d = glm::length(dp);
-  return calculateGravitationalTorque(dp, d, object->getQuadrupoleTensor(), body->getMu());
+  return ::calculateGravitationalTorque(dp, d, object->getQuadrupoleTensor(), body->getMu());
 }
 
-glm::dvec3 MomentsMaths::calculateTidalTorqueForObject(Object *object, const Object *body)
+glm::dvec3 MomentsMaths::calculateTidalTorque(Object *object, const Object *body)
 {
   const TidalParameters &p = object->getTidalParameters();
   if (p.k2 == -1 && p.Q == -1)
@@ -100,5 +100,5 @@ glm::dvec3 MomentsMaths::calculateTidalTorqueForObject(Object *object, const Obj
   glm::dvec3 dp = object->getPosition() - body->getPosition();
   double d = glm::length(dp);
 
-  return calculateTidalTorque(dp, d, object->getAngularVelocity(), object->getVelocity(), object->getRadius(), p.k2, p.Q, body->getVelocity(), body->getMu());
+  return ::calculateTidalTorque(dp, d, object->getAngularVelocity(), object->getVelocity(), object->getRadius(), p.k2, p.Q, body->getVelocity(), body->getMu());
 }
