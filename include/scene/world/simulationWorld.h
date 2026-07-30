@@ -6,6 +6,7 @@
 #include "render/world/renderWorld.h"
 
 #include "physics/world/physicsWorld.h"
+#include "physics/world/total.h"
 
 #include "physics/structs/gravityField.h"
 #include "physics/structs/hapkeParameters.h"
@@ -37,6 +38,7 @@ struct RenderContext;
 class SimulationWorld
 {
 private:
+  Total total;
   Importance importance;
 
   PhysicsWorld physics;

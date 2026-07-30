@@ -29,8 +29,8 @@ public:
   InstanceManager() = default;
   ~InstanceManager() = default;
 
-  void init();
-  void initGPU(cl_context ctx, size_t totalObjects);
+  void init(size_t totalObjects);
+  void initGPU(cl_context ctx);
 
   void clear();
 

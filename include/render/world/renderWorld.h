@@ -44,7 +44,7 @@ public:
   RenderWorld() = default;
   ~RenderWorld() = default;
 
-  void init();
+  void init(size_t totalObjects);
   void initGPU(Context &ctx, RenderDataGPU &gpu);
   void initLODGPU(Context &ctx, LODGPUData &data, LODSettings &settings, size_t totalObjects);
 

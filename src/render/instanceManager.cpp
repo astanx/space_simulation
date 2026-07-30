@@ -7,16 +7,12 @@
 #include "graphics/instanceLayouts.h"
 
 // Public functions
-void InstanceManager::init()
+void InstanceManager::init(size_t totalObjects)
 {
   this->fullInstancesVBO = std::make_unique<Buffer>();
   this->impostorInstancesVBO = std::make_unique<Buffer>();
   this->pointInstancesVBO = std::make_unique<Buffer>();
-}
 
-void InstanceManager::initGPU(cl_context ctx, size_t totalObjects)
-{
-  // vbo must be allocated beforehand
   {
     ScopedBuffer buff(*this->fullInstancesVBO, GL_ARRAY_BUFFER);
     GL_CALL(glBufferData(GL_ARRAY_BUFFER, totalObjects * sizeof(InstanceModelMatrixParts), nullptr, GL_DYNAMIC_DRAW));
@@ -31,7 +27,10 @@ void InstanceManager::initGPU(cl_context ctx, size_t totalObjects)
     ScopedBuffer buff(*this->pointInstancesVBO, GL_ARRAY_BUFFER);
     GL_CALL(glBufferData(GL_ARRAY_BUFFER, totalObjects * sizeof(InstancePositionRadiusColor), nullptr, GL_DYNAMIC_DRAW));
   }
+}
 
+void InstanceManager::initGPU(cl_context ctx)
+{
   this->fullInstancesBuffer.init(ctx, CL_MEM_READ_WRITE, this->fullInstancesVBO->getId());
   this->pointInstancesBuffer.init(ctx, CL_MEM_READ_WRITE, this->pointInstancesVBO->getId());
   this->impostorInstancesBuffer.init(ctx, CL_MEM_READ_WRITE, this->impostorInstancesVBO->getId());
@@ -48,17 +47,35 @@ void InstanceManager::fillVBOs()
 {
   {
     ScopedBuffer buff(*this->fullInstancesVBO, GL_ARRAY_BUFFER);
-    GL_CALL(glBufferData(GL_ARRAY_BUFFER, this->fullInstances.size() * sizeof(InstanceModelMatrixParts), this->fullInstances.data(), GL_DYNAMIC_DRAW));
+    void *ptr = glMapBufferRange(GL_ARRAY_BUFFER, 0, this->fullInstances.size() * sizeof(InstanceModelMatrixParts), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+
+    if (!ptr)
+      Logger::logFatal("Instance Manager", "Failed to map full instances");
+
+    memcpy(ptr, this->fullInstances.data(), this->fullInstances.size() * sizeof(InstanceModelMatrixParts));
+    glUnmapBuffer(GL_ARRAY_BUFFER);
   }
 
   {
     ScopedBuffer buff(*this->impostorInstancesVBO, GL_ARRAY_BUFFER);
-    GL_CALL(glBufferData(GL_ARRAY_BUFFER, this->impostorInstances.size() * sizeof(InstancePositionRadiusTexture), this->impostorInstances.data(), GL_DYNAMIC_DRAW));
+    void *ptr = glMapBufferRange(GL_ARRAY_BUFFER, 0, this->impostorInstances.size() * sizeof(InstancePositionRadiusTexture), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+
+    if (!ptr)
+      Logger::logFatal("Instance Manager", "Failed to map impostor instances");
+
+    memcpy(ptr, this->impostorInstances.data(), this->impostorInstances.size() * sizeof(InstancePositionRadiusTexture));
+    glUnmapBuffer(GL_ARRAY_BUFFER);
   }
 
   {
     ScopedBuffer buff(*this->pointInstancesVBO, GL_ARRAY_BUFFER);
-    GL_CALL(glBufferData(GL_ARRAY_BUFFER, this->pointInstances.size() * sizeof(InstancePositionRadiusColor), this->pointInstances.data(), GL_DYNAMIC_DRAW));
+    void *ptr = glMapBufferRange(GL_ARRAY_BUFFER, 0, this->pointInstances.size() * sizeof(InstancePositionRadiusColor), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+
+    if (!ptr)
+      Logger::logFatal("Instance Manager", "Failed to map point instances");
+
+    memcpy(ptr, this->pointInstances.data(), this->pointInstances.size() * sizeof(InstancePositionRadiusColor));
+    glUnmapBuffer(GL_ARRAY_BUFFER);
   }
 }
 

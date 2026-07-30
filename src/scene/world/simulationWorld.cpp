@@ -53,6 +53,8 @@ Planet *SimulationWorld::createPlanet(Model &model, double mu, Radii radii, Obje
   this->physics.addObject(ptr);
   this->physics.addIntegratable(ptr);
   this->physics.addPlanetarObject(std::move(planet));
+  this->total.orbital++;
+  this->total.total++;
 
   return ptr;
 }
@@ -80,6 +82,8 @@ Star *SimulationWorld::createStar(Model &model, double mu,
   this->physics.addObject(ptr);
   this->physics.addIntegratable(ptr);
   this->physics.addStar(std::move(star));
+  this->total.object++;
+  this->total.total++;
 
   return ptr;
 }
@@ -116,6 +120,8 @@ Moon *SimulationWorld::createMoon(Model &model, double mu,
   this->physics.addObject(ptr);
   this->physics.addIntegratable(ptr);
   centralBody->addMoon(std::move(moon));
+  this->total.orbital++;
+  this->total.total++;
 
   return ptr;
 }
@@ -126,6 +132,9 @@ AsteroidSystem *SimulationWorld::createAsteroidSystem(ResourceManager &resourceM
                                                                             innerEdge, outerEdge,
                                                                             timeAfterJD2000, this->importance.asteroid, threadPool);
   AsteroidSystem *ptr = system.get();
+
+  this->total.orbital += system->getTotalObjects();
+  this->total.total += system->getTotalObjects();
 
   this->addWorldSystem({ptr, ptr});
   this->render.addRenderSystem(ptr);
@@ -168,7 +177,7 @@ void SimulationWorld::initObjects(ResourceManager &resourceManager, ThreadPool &
   addLayerToModelSource(resourceManager.GetModel(Res::EARTH_ATMOSPHERE_MODEL), earthPtr);
   createMoon(resourceManager.GetModel(Res::MOON_MODEL), moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);
   createPlanet(resourceManager.GetModel(Res::MARS_MODEL), marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
-  createAsteroidSystem(resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
+  createAsteroidSystem(resourceManager, threadPool, sunPtr, 100000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
   createPlanet(resourceManager.GetModel(Res::JUPITER_MODEL), jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
 
   this->physics.addSun(std::move(sunPtr));
@@ -215,7 +224,7 @@ void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadP
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
   this->initGPU(resourceManager);
 
-  this->render.init();
+  this->render.init(total.total);
 }
 
 void SimulationWorld::update(const Camera &camera, RenderQueue &queue, RenderContext &renderCtx)

@@ -27,10 +27,10 @@ void RenderWorld::buildQueue(const Camera &camera, RenderQueue &queue, FrameCont
 }
 
 // Public functions
-void RenderWorld::init()
+void RenderWorld::init(size_t totalObjects)
 {
   this->lodManager.init(this->modelSources, this->renderSystems);
-  this->instanceManager.init();
+  this->instanceManager.init(totalObjects);
 }
 
 void RenderWorld::initGPU(Context &ctx, RenderDataGPU &gpu)
