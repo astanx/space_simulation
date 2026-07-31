@@ -40,7 +40,7 @@ protected:
 
 	ModelFlags flags;
 
-	uint32_t queueIndex;
+	uint32_t id;
 
 public:
 	Model(Material &material, Mesh &mesh, ModelFlags flags = ModelFlags::None, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
@@ -59,12 +59,12 @@ public:
 
 	void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
 	void setImportance(float importance) { this->importance = importance; };
-	void setQueueIndex(uint32_t id) { this->queueIndex = id; };
+	void setID(uint32_t id) { this->id = id; };
 
 	const Material *getMaterial() const { return this->material; };
 	unsigned int getImpostorLayer() const { return this->impostorLayer; };
 	float getImportance() const { return this->importance; };
-	uint32_t getQueueIndex() { return this->queueIndex; };
+	uint32_t getID() { return this->id; };
 	bool getIsTangent() const;
 	const glm::vec3 &getAverageColor() const;
 

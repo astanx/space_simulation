@@ -12,6 +12,8 @@
 #include "compute/program.h"
 #include "compute/context.h"
 
+#include "resources/modelRegistry.h"
+
 #include <unordered_map>
 #include <string>
 #include <GL/glew.h>
@@ -26,6 +28,8 @@ struct PhongMaterialProperties;
 class ResourceManager
 {
 private:
+  ModelRegistry registry;
+
   std::unordered_map<std::string, std::unique_ptr<Shader>> shaders;
   std::unordered_map<std::string, std::unique_ptr<Texture>> textures;
   std::unordered_map<std::string, std::unique_ptr<Material>> materials;

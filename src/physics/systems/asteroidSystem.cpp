@@ -109,10 +109,7 @@ void AsteroidSystem::createAsteroids(ResourceManager &resourceManager, unsigned 
   this->models.reserve(typeCount);
 
   for (size_t i = 0; i < asteroidShapes.size(); i++)
-  {
     this->models.push_back(std::move(asteroidShapes[i]->model));
-    this->models[i]->setQueueIndex(i);
-  }
 
   std::vector<unsigned int> typeCounts(typeCount, 0);
   this->asteroidTypes.resize(amount);

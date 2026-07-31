@@ -17,9 +17,7 @@ void RenderWorld::buildQueue(const Camera &camera, RenderQueue &queue, FrameCont
   size_t index = 0;
   for (ModelSource *source : this->modelSources)
     source->forEachModel([&models, &index](Model &model)
-                         { 
-                          model.setQueueIndex(index++);
-                          models.push_back(&model); });
+                         { models.push_back(&model); });
 
   RenderQueueBuilder builder(models);
 

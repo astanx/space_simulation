@@ -163,6 +163,7 @@ add_executable(Space
     src/resources/OBJloader.cpp
     src/resources/resourceManager.cpp
     src/resources/threadPool.cpp
+    src/resources/modelRegistry.cpp
     
     # Physics
     src/physics/object.cpp

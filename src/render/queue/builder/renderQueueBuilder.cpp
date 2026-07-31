@@ -35,8 +35,14 @@ void RenderQueueBuilder::buildModelSource(ModelSource *source, LODManager &lod, 
 // Constructor / Destructor
 RenderQueueBuilder::RenderQueueBuilder(std::vector<Model *> models)
 {
-  for (size_t i = 0; i < models.size(); i++)
-    this->groups.push_back(RenderGroup{models[i]});
+  uint32_t maxId = 0;
+  for (Model *model : models)
+    maxId = std::max(maxId, model->getID());
+
+  this->groups.resize(maxId + 1);
+
+  for (Model *model : models)
+    this->groups[model->getID()] = RenderGroup{model};
 }
 
 // Public functions
@@ -68,7 +74,7 @@ void RenderQueueBuilder::submit(Model *model, const LODResult &lod, const Transf
 
   // Shadow pass & Reflector pass
   if (lod.level != LOD::Full && (model->hasFlag(ModelFlags::CastsShadow) || model->hasFlag(ModelFlags::ReflectsLight)))
-    this->groups[model->getQueueIndex()].fullNonLODInstances.push_back(fullInstanceData);
+    this->groups[model->getID()].fullNonLODInstances.push_back(fullInstanceData);
 
   // LOD pass
   if (lod.visible)
@@ -76,7 +82,7 @@ void RenderQueueBuilder::submit(Model *model, const LODResult &lod, const Transf
     {
     case LOD::Full:
     {
-      this->groups[model->getQueueIndex()].fullLODInstances.push_back(fullInstanceData);
+      this->groups[model->getID()].fullLODInstances.push_back(fullInstanceData);
       break;
     }
 
@@ -127,6 +133,9 @@ void RenderQueueBuilder::finish(InstanceManager &instances, RenderQueue &queue)
 {
   for (auto &group : this->groups)
   {
+    if (!group.model)
+      continue;
+
     size_t lodSize = group.fullLODInstances.size();
 
     group.fullLODInstances.insert(group.fullLODInstances.end(), std::make_move_iterator(group.fullNonLODInstances.begin()), std::make_move_iterator(group.fullNonLODInstances.end()));
