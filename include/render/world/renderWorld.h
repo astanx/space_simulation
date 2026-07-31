@@ -27,7 +27,6 @@ private:
   InstanceManager instanceManager;
 
   std::vector<Updatable *> updatable;
-  std::vector<Renderable *> renderable;
   std::vector<RenderSystem *> renderSystems;
   std::vector<ModelSource *> modelSources;
 
@@ -39,7 +38,7 @@ private:
   CLBuffer instanceImportancesBuffer;
 
   void buildQueue(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
-
+  void reserveModelInstances();
 public:
   RenderWorld() = default;
   ~RenderWorld() = default;
@@ -55,7 +54,6 @@ public:
   void renderImpostorMeshInstanced();
   void renderPointMeshInstanced();
 
-  void addRenderable(Renderable *object);
   void addRenderSystem(RenderSystem *system);
   void addModelSource(ModelSource *object);
   void addUpdatable(Updatable *object);
@@ -63,8 +61,5 @@ public:
 
   Texture &getImpostorTexture() { return this->lodManager.getImpostorTexture(); };
   Buffer &getFullInstancesVBO() { return this->instanceManager.getFullInstancesVBO(); };
-  std::vector<Renderable *> &getRenderable();
-  std::vector<RenderSystem *> &getRenderSystems();
-  std::vector<ModelSource *> &getModelSources();
   std::vector<Trail *> &getTrails();
 };

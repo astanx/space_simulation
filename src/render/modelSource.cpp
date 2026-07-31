@@ -1,5 +1,7 @@
 #include "render/modelSource.h"
 
+#include "render/instanceManager.h"
+
 #include "camera/camera.h"
 
 #include "graphics/shader.h"
@@ -69,4 +71,10 @@ void ModelSource::scaleRadii(Radii scaledRadii)
   float polar = scaledRadii.polar / radii.polar;
 
   this->renderScale = glm::vec3(equatorian, polar, equatorian);
+}
+
+void ModelSource::reserveInstances(InstanceManager &instanceManager)
+{
+  this->forEachModel([&instanceManager](Model &model)
+                     { instanceManager.reserve(&model, 1); });
 }

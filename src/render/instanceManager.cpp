@@ -5,10 +5,13 @@
 #include "graphics/state/scopedBuffer.h"
 
 #include "graphics/instanceLayouts.h"
+#include "graphics/model.h"
 
 // Public functions
 void InstanceManager::init(size_t totalObjects)
 {
+  this->fullInstances.resize(totalObjects);
+
   this->fullInstancesVBO = std::make_unique<Buffer>();
   this->impostorInstancesVBO = std::make_unique<Buffer>();
   this->pointInstancesVBO = std::make_unique<Buffer>();
@@ -38,7 +41,6 @@ void InstanceManager::initGPU(cl_context ctx)
 
 void InstanceManager::clear()
 {
-  this->fullInstances.clear();
   this->impostorInstances.clear();
   this->pointInstances.clear();
 }
@@ -79,15 +81,31 @@ void InstanceManager::fillVBOs()
   }
 }
 
-Range InstanceManager::add(const InstanceModelMatrixParts &data)
+void InstanceManager::reserve(Model *model, size_t capacity)
 {
-  Range range;
-  range.begin = this->fullInstances.size();
-  this->fullInstances.push_back(data);
-  range.end = this->fullInstances.size();
+  if (this->allocations.size() <= model->getID())
+    this->allocations.resize(model->getID() + 1);
 
-  if (range.begin != range.end - 1)
-    Logger::logWarning("Instance Manager", "Full instance range error");
+  if (this->allocations[model->getID()].end != 0)
+    Logger::logFatal("Instance Manager", "Same model reserved twice");
+
+  this->allocations[model->getID()] = Range{this->lastAllocation, this->lastAllocation + capacity};
+
+  this->lastAllocation += capacity;
+}
+
+Range InstanceManager::add(Model *model, const InstanceModelMatrixParts &data)
+{
+  if (this->allocations[model->getID()].end == 0)
+    Logger::logFatal("Instance Manager", "Model must be reserved to add full instance");
+
+  Range range;
+  range.begin = this->allocations[model->getID()].begin;
+  this->fullInstances[range.begin] = data;
+  range.end = this->allocations[model->getID()].begin + 1;
+
+  if (range.end > this->allocations[model->getID()].end)
+    Logger::logFatal("Instance Manager", "Full instance range error");
 
   return range;
 }
@@ -116,17 +134,20 @@ Range InstanceManager::add(const InstancePositionRadiusColor &data)
   return range;
 }
 
-Range InstanceManager::add(std::vector<InstanceModelMatrixParts> &&data)
+Range InstanceManager::add(Model *model, std::vector<InstanceModelMatrixParts> &&data)
 {
+  if (model->getID() >= this->allocations.size() || this->allocations[model->getID()].end == 0)
+    Logger::logFatal("Instance Manager", "Model must be reserved to add full instances");
+
   size_t size = data.size();
 
   Range range;
-  range.begin = this->fullInstances.size();
-  this->fullInstances.insert(fullInstances.end(), std::make_move_iterator(data.begin()), std::make_move_iterator(data.end()));
-  range.end = this->fullInstances.size();
+  range.begin = this->allocations[model->getID()].begin;
+  std::move(data.begin(), data.end(), this->fullInstances.begin() + range.begin);
+  range.end = this->allocations[model->getID()].begin + size;
 
-  if (range.begin != range.end - size)
-    Logger::logWarning("Instance Manager", "Full instance vector range error");
+  if (range.end > this->allocations[model->getID()].end)
+    Logger::logFatal("Instance Manager", "Full instances range error");
 
   return range;
 }

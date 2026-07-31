@@ -200,6 +200,16 @@ Model *AsteroidSystem::getModelFromObjectIndex(size_t i)
   return this->models[this->asteroidTypes[i]];
 }
 
+void AsteroidSystem::reserveInstances(InstanceManager &instanceManager)
+{
+  for (size_t type = 0; type < this->typeRanges.size(); type++)
+  {
+    Range range = this->typeRanges[type];
+    size_t size = range.end - range.begin;
+    instanceManager.reserve(this->models[type], size);
+  }
+}
+
 void AsteroidSystem::applyObjectGravitation(Object &object)
 {
   this->threadPool.parallelFor(0, this->asteroids.size(), [this, &object](size_t i)

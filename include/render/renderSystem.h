@@ -15,6 +15,8 @@ protected:
 public:
   virtual void buildRenderQueue(RenderQueue &queue, LODManager &lod, InstanceManager &instances, const Camera &camera, Frustum *frustum, float viewportHeight) = 0;
 
+  virtual void reserveInstances(InstanceManager &instanceManager) = 0;
+
   std::vector<Model *> &getModels() { return this->models; };
-  virtual Model* getModelFromObjectIndex(size_t i) = 0;
+  virtual Model *getModelFromObjectIndex(size_t i) = 0;
 };

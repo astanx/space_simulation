@@ -139,7 +139,7 @@ void RenderQueueBuilder::finish(InstanceManager &instances, RenderQueue &queue)
     size_t lodSize = group.fullLODInstances.size();
 
     group.fullLODInstances.insert(group.fullLODInstances.end(), std::make_move_iterator(group.fullNonLODInstances.begin()), std::make_move_iterator(group.fullNonLODInstances.end()));
-    Range fullRange = instances.add(std::move(group.fullLODInstances));
+    Range fullRange = instances.add(group.model, std::move(group.fullLODInstances));
 
     Range fullLODRange;
     fullLODRange.begin = fullRange.begin;

@@ -12,7 +12,6 @@
 
 #include "resources/range.h"
 
-#include "render/renderable.h"
 #include "render/updatable.h"
 #include "render/renderSystem.h"
 
@@ -58,5 +57,7 @@ public:
   void applyObjectGravitation(Object &object);
 
   void buildRenderQueue(RenderQueue &queue, LODManager &lod, InstanceManager &instances, const Camera &camera, Frustum *frustum, float viewportHeight) override;
+  void reserveInstances(InstanceManager &instanceManager) override;
+
   Model* getModelFromObjectIndex(size_t i) override;
 };

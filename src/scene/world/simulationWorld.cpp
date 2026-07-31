@@ -47,7 +47,6 @@ Planet *SimulationWorld::createPlanet(Model &model, double mu, Radii radii, Obje
     this->render.addTrail(planet->generateTrail());
 
   this->addWorldObject({ptr, ptr});
-  this->render.addRenderable(ptr);
   this->render.addModelSource(ptr);
   this->render.addUpdatable(ptr);
   this->physics.addObject(ptr);
@@ -76,7 +75,6 @@ Star *SimulationWorld::createStar(Model &model, double mu,
   Star *ptr = star.get();
 
   this->addWorldObject({ptr, ptr});
-  this->render.addRenderable(ptr);
   this->render.addModelSource(ptr);
   this->render.addUpdatable(ptr);
   this->physics.addObject(ptr);
@@ -116,7 +114,6 @@ Moon *SimulationWorld::createMoon(Model &model, double mu,
   this->addWorldObject({ptr, ptr});
   this->render.addUpdatable(ptr);
   this->render.addModelSource(ptr);
-  this->render.addRenderable(ptr);
   this->physics.addObject(ptr);
   this->physics.addIntegratable(ptr);
   centralBody->addMoon(std::move(moon));

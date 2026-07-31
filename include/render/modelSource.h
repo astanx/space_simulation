@@ -12,6 +12,8 @@
 
 #include <functional>
 
+class InstanceManager;
+
 class ModelSource : public Renderable, public Updatable
 {
 protected:
@@ -42,6 +44,8 @@ public:
 
   template <typename F>
   void forEachModel(F &&func);
+
+  void reserveInstances(InstanceManager& instanceManager);
 
   const glm::vec3 getRenderPosition() const { return this->renderPosition; };
   const glm::quat getRenderOrientation() const { return this->renderOrientation; };

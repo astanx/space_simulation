@@ -10,6 +10,8 @@
 
 #include <vector>
 
+class Model;
+
 class InstanceManager
 {
 private:
@@ -25,6 +27,9 @@ private:
   std::unique_ptr<Buffer> impostorInstancesVBO;
   std::unique_ptr<Buffer> pointInstancesVBO;
 
+  std::vector<Range> allocations;
+  size_t lastAllocation;
+
 public:
   InstanceManager() = default;
   ~InstanceManager() = default;
@@ -36,11 +41,13 @@ public:
 
   void fillVBOs();
 
-  Range add(const InstanceModelMatrixParts &data);
+  void reserve(Model *model, size_t capacity);
+
+  Range add(Model *model, const InstanceModelMatrixParts &data);
   Range add(const InstancePositionRadiusTexture &data);
   Range add(const InstancePositionRadiusColor &data);
 
-  Range add(std::vector<InstanceModelMatrixParts> &&data);
+  Range add(Model *model, std::vector<InstanceModelMatrixParts> &&data);
   Range add(std::vector<InstancePositionRadiusTexture> &&data);
   Range add(std::vector<InstancePositionRadiusColor> &&data);
 

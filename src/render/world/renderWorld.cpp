@@ -5,6 +5,7 @@
 #include "render/queue/builder/renderQueueBuilder.h"
 #include "render/modelSource.h"
 #include "render/updatable.h"
+#include "render/renderSystem.h"
 
 #include "scene/scene.h"
 
@@ -24,9 +25,24 @@ void RenderWorld::buildQueue(const Camera &camera, RenderQueue &queue, FrameCont
   builder.build(queue, camera, this->modelSources, this->renderSystems, this->lodManager, this->instanceManager, ctx);
 }
 
+void RenderWorld::reserveModelInstances()
+{
+  std::cout << "aa" << std::endl;
+  for (ModelSource* source : this->modelSources)
+    source->reserveInstances(this->instanceManager);
+  std::cout << "bb" << std::endl;
+
+  for (RenderSystem* system : this->renderSystems)
+    system->reserveInstances(this->instanceManager);
+  std::cout << "cc" << std::endl;
+
+}
+
+
 // Public functions
 void RenderWorld::init(size_t totalObjects)
 {
+  this->reserveModelInstances();
   this->lodManager.init(this->modelSources, this->renderSystems);
   this->instanceManager.init(totalObjects);
 }
@@ -65,11 +81,6 @@ void RenderWorld::renderPointMeshInstanced()
   this->lodManager.getPointMesh().renderInstanced(&this->instanceManager.getPointInstancesVBO(), sizeof(InstancePositionRadiusColor), this->instanceManager.getPointCount());
 }
 
-void RenderWorld::addRenderable(Renderable *object)
-{
-  this->renderable.push_back(object);
-}
-
 void RenderWorld::addRenderSystem(RenderSystem *system)
 {
   this->renderSystems.push_back(system);
@@ -90,28 +101,6 @@ void RenderWorld::addTrail(std::unique_ptr<Trail> trail)
   this->trailViews.push_back(trail.get());
   this->trails.push_back(std::move(trail));
 }
-
-std::vector<Renderable *> &RenderWorld::getRenderable()
-{
-  if (this->renderable.empty())
-    Logger::logWarning("RenderWorld", "Renderable is empty");
-
-  return this->renderable;
-};
-std::vector<RenderSystem *> &RenderWorld::getRenderSystems()
-{
-  if (this->renderSystems.empty())
-    Logger::logWarning("RenderWorld", "Render systems are empty");
-
-  return this->renderSystems;
-};
-std::vector<ModelSource *> &RenderWorld::getModelSources()
-{
-  if (this->modelSources.empty())
-    Logger::logWarning("RenderWorld", "Model sources are empty");
-
-  return this->modelSources;
-};
 
 std::vector<Trail *> &RenderWorld::getTrails()
 {
