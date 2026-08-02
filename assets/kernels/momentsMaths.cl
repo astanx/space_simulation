@@ -2,10 +2,10 @@
 #define MOMENTS_MATHS
 
 #include "matrix.cl"
-#include "constants.cl"
+#include "maths/constants.h"
 #include "real.cl"
 
-#include "maths/momentsMaths.h"
+#include "maths/torqueMaths.h"
 
 typedef struct
 {

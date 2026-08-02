@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scene/world/data/sharedGPUData.h"
+#include "scene/world/data/sharedDataGPU.h"
 #include "scene/world/worldObject.h"
 
 #include "render/world/renderWorld.h"
@@ -57,6 +58,8 @@ private:
 
   void initObjects(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000);
   void initGPU(ResourceManager &resourceManager);
+  template <typename Real>
+  void initGPUBuffers(Context &ctx, SharedDataGPU<Real> &data);
 
 public:
   SimulationWorld();

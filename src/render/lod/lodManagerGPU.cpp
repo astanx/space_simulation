@@ -71,7 +71,12 @@ void LODManagerGPU::initKernels(LODGPUData &data, LODSettings &settings)
   this->lodPartitionKernel.setArg(14, data.instanceColors.get());
   this->lodPartitionKernel.setArg(15, data.instanceTextureLayers.get());
   this->lodPartitionKernel.setArg(16, data.instanceImportances.get());
-  this->lodPartitionKernel.setArg(19, sizeof(settings.baseMinPixelSize), &settings.baseMinPixelSize);
+  this->lodPartitionKernel.setArg(17, data.modelRangeStart.get());
+  this->lodPartitionKernel.setArg(18, data.modelRangeEnd.get());
+  this->lodPartitionKernel.setArg(19, data.modelFullCount.get());
+  this->lodPartitionKernel.setArg(20, sizeof(data.rangeCount), &data.rangeCount);
+
+  this->lodPartitionKernel.setArg(23, sizeof(settings.baseMinPixelSize), &settings.baseMinPixelSize);
 
   this->fullScanKernel.setArg(0, this->isFullBuffer.get());
   this->fullScanKernel.setArg(1, this->fullOffsetBuffer.get());
@@ -94,8 +99,8 @@ void LODManagerGPU::updateKernels(const Camera &camera, FrameContext &ctx)
   this->lodPassKernel.setArg(7, sizeof(ctx.height), &ctx.height);
   this->lodPassKernel.setArg(11, sizeof(frustum.faces), &frustum.faces);
 
-  this->lodPartitionKernel.setArg(17, sizeof(fov), &fov);
-  this->lodPartitionKernel.setArg(18, sizeof(ctx.height), &ctx.height);
+  this->lodPartitionKernel.setArg(21, sizeof(fov), &fov);
+  this->lodPartitionKernel.setArg(22, sizeof(ctx.height), &ctx.height);
 }
 
 // Constructor
@@ -111,5 +116,12 @@ void LODManagerGPU::init(Context &ctx, LODGPUData &data, LODSettings &settings, 
 {
   this->initQueue(ctx);
   this->initBuffers(ctx, totalObjects);
+
+  uint32_t zero = 0;
+  cl_event event;
+  this->queue.enqueueFillBuffer(data.modelFullCount.get(), &zero, sizeof(zero), data.rangeCount * sizeof(uint32_t), &event);
+  clWaitForEvents(1, &event);
+  clReleaseEvent(event);
+
   this->initKernels(data, settings);
 };

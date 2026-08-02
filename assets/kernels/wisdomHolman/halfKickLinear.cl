@@ -1,4 +1,4 @@
-#include "constants.cl"
+#include "maths/constants.h"
 #include "real.cl"
 
 __kernel void halfKickLinear(__global real3* positions, __global real* mus, __global real3* velocities, __global int* centralBodyIndices, int count, real dt)

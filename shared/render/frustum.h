@@ -31,7 +31,11 @@ inline bool isVisibleSphere(const Frustum *frustum, vec3 pos, float radius)
   for (int face = 0; face < 6; face++)
   {
     vec4 plane = frustum->faces[face];
-    float d = dot((vec3)plane, pos) + plane.w;
+#ifdef __OPENCL_VERSION__
+    float d = dot(plane.xyz, pos) + plane.w;
+#else
+    float d = dot(vec3(plane.x, plane.y, plane.z), pos) + plane.w;
+#endif
     if (d < -radius)
       return false;
   }

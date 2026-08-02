@@ -180,26 +180,46 @@ void SimulationWorld::initObjects(ResourceManager &resourceManager, ThreadPool &
   this->physics.addSun(std::move(sunPtr));
 }
 
+template <typename Real>
+void SimulationWorld::initGPUBuffers(Context &ctx, SharedDataGPU<Real> &data)
+{
+  this->gpu.positionsBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.positions.size() * sizeof(Vec3<Real>), data.positions.data());
+  this->gpu.orientationsBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.orientations.size() * sizeof(Quat<Real>), data.orientations.data());
+  this->gpu.meanRadiiBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.meanRadii.size() * sizeof(Real), data.meanRadii.data());
+  this->gpu.polarRadiiBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.polarRadii.size() * sizeof(Real), data.polarRadii.data());
+  this->gpu.equatorianRadiiBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.equatorianRadii.size() * sizeof(Real), data.equatorianRadii.data());
+}
+
 void SimulationWorld::initGPU(ResourceManager &resourceManager)
 {
   Context &ctx = resourceManager.GetContext(Res::MAIN_CONTEXT);
   if (ctx.getSupportsDouble())
   {
     WorldGPUBuilder<double> builder;
-    WorldDataGPU<double> data = builder.build(this->worldObjects, this->worldSystems);
+    WorldDataGPU<double> data = builder.build(this->worldObjects, this->worldSystems, this->render.getInstanceManager());
     this->physics.initGPUBuffers<double>(ctx, data.physics);
+
+    this->initGPUBuffers<double>(ctx, data.shared);
 
     WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
     this->physics.initGPUIntegrator(resourceManager, ctx, integratorData, data.total);
+
+    this->render.initGPU(ctx, data.render);
+    this->render.initLODGPU(ctx, resourceManager, this->gpu, data.total.total);
   }
   else
   {
     WorldGPUBuilder<float> builder;
-    WorldDataGPU<float> data = builder.build(this->worldObjects, this->worldSystems);
+    WorldDataGPU<float> data = builder.build(this->worldObjects, this->worldSystems, this->render.getInstanceManager());
     this->physics.initGPUBuffers<float>(ctx, data.physics);
+
+    this->initGPUBuffers<float>(ctx, data.shared);
 
     WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
     this->physics.initGPUIntegrator(resourceManager, ctx, integratorData, data.total);
+
+    this->render.initGPU(ctx, data.render);
+    this->render.initLODGPU(ctx, resourceManager, this->gpu, data.total.total);
   }
 }
 
@@ -219,7 +239,7 @@ void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadP
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
-  this->initGPU(resourceManager);
+  // this->initGPU(resourceManager);
 
   this->render.init(total.total);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/lod/manager/lodManager.h"
+#include "render/lod/manager/lodManagerGPU.h"
 #include "render/instanceManager.h"
 
 #include "compute/clBuffer.h"
@@ -16,14 +17,18 @@ class RenderQueue;
 class ModelSource;
 class Camera;
 class Context;
+class ResourceManager;
 struct FrameContext;
 struct RenderDataGPU;
-struct LODGPUData;
+struct SharedGPUData;
 
 class RenderWorld
 {
 private:
   LODManager lodManager;
+  std::unique_ptr<LODManagerGPU> lodManagerGPU;
+  LODSettings lodSettings;
+
   InstanceManager instanceManager;
 
   std::vector<Updatable *> updatable;
@@ -36,16 +41,20 @@ private:
   CLBuffer instanceColorsBuffer;
   CLBuffer instanceTextureLayersBuffer;
   CLBuffer instanceImportancesBuffer;
+  CLBuffer modelRangeStart;
+  CLBuffer modelRangeEnd;
+  CLBuffer modelFullCount;
+  uint32_t rangeCount;
 
   void buildQueue(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
   void reserveModelInstances();
 public:
-  RenderWorld() = default;
+  RenderWorld() : lodManager(lodSettings) {};
   ~RenderWorld() = default;
 
   void init(size_t totalObjects);
   void initGPU(Context &ctx, RenderDataGPU &gpu);
-  void initLODGPU(Context &ctx, LODGPUData &data, LODSettings &settings, size_t totalObjects);
+  void initLODGPU(Context &ctx, ResourceManager &resourceManager, SharedGPUData &data, size_t totalObjects);
 
   void initLODGPU();
 
@@ -59,6 +68,8 @@ public:
   void addUpdatable(Updatable *object);
   void addTrail(std::unique_ptr<Trail> trail);
 
+  InstanceManager &getInstanceManager() { return this->instanceManager; };
+  LODManager &getLODManager() { return this->lodManager; };
   Texture &getImpostorTexture() { return this->lodManager.getImpostorTexture(); };
   Buffer &getFullInstancesVBO() { return this->instanceManager.getFullInstancesVBO(); };
   std::vector<Trail *> &getTrails();

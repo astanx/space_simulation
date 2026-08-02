@@ -64,7 +64,7 @@ public:
 	const Material *getMaterial() const { return this->material; };
 	unsigned int getImpostorLayer() const { return this->impostorLayer; };
 	float getImportance() const { return this->importance; };
-	uint32_t getID() { return this->id; };
+	const uint32_t getID() const { return this->id; };
 	bool getIsTangent() const;
 	const glm::vec3 &getAverageColor() const;
 

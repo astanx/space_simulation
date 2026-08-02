@@ -81,7 +81,7 @@ void InstanceManager::fillVBOs()
   }
 }
 
-void InstanceManager::reserve(Model *model, size_t capacity)
+Range InstanceManager::reserve(const Model *model, size_t capacity)
 {
   if (this->allocations.size() <= model->getID())
     this->allocations.resize(model->getID() + 1);
@@ -92,9 +92,11 @@ void InstanceManager::reserve(Model *model, size_t capacity)
   this->allocations[model->getID()] = Range{this->lastAllocation, this->lastAllocation + capacity};
 
   this->lastAllocation += capacity;
+
+  return this->allocations[model->getID()];
 }
 
-Range InstanceManager::add(Model *model, const InstanceModelMatrixParts &data)
+Range InstanceManager::add(const Model *model, const InstanceModelMatrixParts &data)
 {
   if (this->allocations[model->getID()].end == 0)
     Logger::logFatal("Instance Manager", "Model must be reserved to add full instance");
@@ -134,7 +136,7 @@ Range InstanceManager::add(const InstancePositionRadiusColor &data)
   return range;
 }
 
-Range InstanceManager::add(Model *model, std::vector<InstanceModelMatrixParts> &&data)
+Range InstanceManager::add(const Model *model, std::vector<InstanceModelMatrixParts> &&data)
 {
   if (model->getID() >= this->allocations.size() || this->allocations[model->getID()].end == 0)
     Logger::logFatal("Instance Manager", "Model must be reserved to add full instances");

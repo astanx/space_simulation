@@ -27,6 +27,11 @@ struct LODGPUData
   CLBuffer &fullInstances;
   CLBuffer &impostorInstances;
   CLBuffer &pointInstances;
+  CLBuffer &modelRangeStart;
+  CLBuffer &modelRangeEnd;
+  CLBuffer &modelFullCount;
+
+  uint32_t rangeCount;
 };
 
 class LODManagerGPU

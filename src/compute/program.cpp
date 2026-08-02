@@ -9,7 +9,7 @@
 #include <iostream>
 
 // Private functions
-std::string Program::loadProgramSrc(const std::string filePath, bool isInclude)
+std::string Program::loadProgramSrc(const std::filesystem::path &filePath, std::vector<std::filesystem::path> includes)
 {
   std::string temp = "";
   std::string src = "";
@@ -18,11 +18,36 @@ std::string Program::loadProgramSrc(const std::string filePath, bool isInclude)
 
   inFile.open(filePath);
 
+  std::filesystem::path currentDir = filePath.parent_path();
+
   if (inFile.is_open())
+  {
     while (std::getline(inFile, temp))
-      src += temp + "\n";
+    {
+      if (temp.find("#include \"") == 0)
+      {
+        long start = temp.find("\"") + 1;
+        long end = temp.find("\"", start);
+        std::string includePath = temp.substr(start, end - start);
+
+        bool found = false;
+        for (const auto &includeDir : includes)
+
+          if (std::filesystem::exists(includeDir / includePath))
+          {
+            src += this->loadProgramSrc(includeDir / includePath, includes);
+            found = true;
+            break;
+          }
+        if (!found)
+          Logger::logError("Program", "Could not find include file: " + includePath);
+      }
+      else
+        src += temp + "\n";
+    }
+  }
   else
-    Logger::logError("Program", "Could not open program file: " + filePath);
+    Logger::logError("Program", "Could not open program file: " + filePath.string());
 
   inFile.close();
 
@@ -30,9 +55,9 @@ std::string Program::loadProgramSrc(const std::string filePath, bool isInclude)
 }
 
 // Constructor / Destructor
-Program::Program(const std::string filePath, Context &context)
+Program::Program(const std::string filePath, Context &context, std::vector<std::filesystem::path> includes)
 {
-  std::string src = this->loadProgramSrc(filePath);
+  std::string src = this->loadProgramSrc(filePath, includes);
   const char *source = src.c_str();
 
   cl_int errNum;
@@ -56,9 +81,6 @@ void Program::build(Context &context)
 
   if (context.getSupportsDouble())
     options = "-DUSE_DOUBLE";
-
-  options += " -I include";
-  options += " -I assets/kernels";
 
   CL_CALL(clBuildProgram(this->program, 1, &device, options.c_str(), nullptr, nullptr));
 

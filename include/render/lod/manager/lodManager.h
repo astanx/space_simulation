@@ -24,7 +24,7 @@ struct Radii;
 class LODManager
 {
 private:
-  LODSettings settings;
+  LODSettings &settings;
 
   bool isImpostorInitialized = false;
   std::unique_ptr<Texture> impostorTexture;
@@ -41,7 +41,7 @@ private:
   int getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
 
 public:
-  LODManager() = default;
+  LODManager(LODSettings &settings) : settings(settings) {}
   ~LODManager() = default;
 
   void init(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems);

@@ -1,4 +1,4 @@
-#include "constants.cl"
+#include "maths/constants.h"
 #include "matrix.cl"
 #include "real.cl"
 #include "quaternion.cl"
@@ -7,7 +7,6 @@ __kernel void driftAngular(__global real3* angularVelocities, __global dquat* or
 {
   int id = get_global_id(0);
   real3 omega = angularVelocities[id];
-
 
   real omega_len = length(omega);
   real theta = omega_len * dt;

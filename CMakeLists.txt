@@ -153,6 +153,7 @@ add_executable(Space
     src/render/instanceManager.cpp
     # LOD
     src/render/lod/lodManager.cpp
+    src/render/lod/lodManagerGPU.cpp
     # Queue
     src/render/queue/renderQueue.cpp
     src/render/queue/builder/renderQueueBuilder.cpp
@@ -200,6 +201,7 @@ add_executable(Space
 
 target_include_directories(Space PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/shared
 )
 
 # Link libraries
@@ -213,6 +215,8 @@ target_link_libraries(Space PRIVATE
     miniz
 )
 
+target_compile_definitions(Space PRIVATE PROJECT_ROOT="${CMAKE_SOURCE_DIR}")
+
 # ---- Copy runtime resources (shaders, assets) next to the executable ----
 add_custom_command(TARGET Space POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Space>/assets
@@ -220,4 +224,12 @@ add_custom_command(TARGET Space POST_BUILD
         ${CMAKE_SOURCE_DIR}/assets
         $<TARGET_FILE_DIR:Space>/assets
     COMMENT "Copying assets/ to output directory"
+)
+
+add_custom_command(TARGET Space POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Space>/shared
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/shared
+        $<TARGET_FILE_DIR:Space>/shared
+    COMMENT "Copying shared/ to output directory"
 )

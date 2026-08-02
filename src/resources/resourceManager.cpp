@@ -32,12 +32,12 @@ Kernel &ResourceManager::LoadKernel(const std::string &name, const std::string &
 }
 Program &ResourceManager::LoadProgram(const std::string &name, const std::string &filePath, Context &context)
 {
-  this->programs[name] = std::make_unique<Program>(filePath, context);
+  this->programs[name] = std::make_unique<Program>(filePath, context, std::vector<std::filesystem::path>{"assets/kernels", "shared"});
   return *this->programs[name];
 }
 Program &ResourceManager::LoadProgram(const std::string &name, const std::string &filePath, const std::string &contextName)
 {
-  this->programs[name] = std::make_unique<Program>(filePath, this->GetContext(contextName));
+  this->programs[name] = std::make_unique<Program>(filePath, this->GetContext(contextName), std::vector<std::filesystem::path>{"assets/kernels", "shared"});
   return *this->programs[name];
 }
 Context &ResourceManager::LoadContext(const std::string &name)

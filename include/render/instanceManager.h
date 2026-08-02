@@ -41,19 +41,23 @@ public:
 
   void fillVBOs();
 
-  void reserve(Model *model, size_t capacity);
+  Range reserve(const Model *model, size_t capacity);
 
-  Range add(Model *model, const InstanceModelMatrixParts &data);
+  Range add(const Model *model, const InstanceModelMatrixParts &data);
   Range add(const InstancePositionRadiusTexture &data);
   Range add(const InstancePositionRadiusColor &data);
 
-  Range add(Model *model, std::vector<InstanceModelMatrixParts> &&data);
+  Range add(const Model *model, std::vector<InstanceModelMatrixParts> &&data);
   Range add(std::vector<InstancePositionRadiusTexture> &&data);
   Range add(std::vector<InstancePositionRadiusColor> &&data);
 
   Buffer &getFullInstancesVBO() { return *this->fullInstancesVBO; };
   Buffer &getImpostorInstancesVBO() { return *this->impostorInstancesVBO; };
   Buffer &getPointInstancesVBO() { return *this->pointInstancesVBO; };
+
+  CLBuffer &getFullInstancesBuffer() { return this->fullInstancesBuffer; };
+  CLBuffer &getImpostorInstancesBuffer() { return this->impostorInstancesBuffer; };
+  CLBuffer &getPointInstancesBuffer() { return this->pointInstancesBuffer; };
 
   size_t getImpostorCount() { return this->impostorInstances.size(); };
   size_t getPointCount() { return this->pointInstances.size(); };

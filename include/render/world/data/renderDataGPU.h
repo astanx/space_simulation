@@ -2,11 +2,15 @@
 
 #include <glm/glm.hpp>
 
+#include <vector>
+
 struct RenderDataGPU
 {
   std::vector<glm::vec3> instanceColors;
   std::vector<uint32_t> instanceTextureLayers;
   std::vector<float> instanceImportances;
+  std::vector<uint32_t> modelRangeStart;
+  std::vector<uint32_t> modelRangeEnd;
 
   void resize(size_t n)
   {
