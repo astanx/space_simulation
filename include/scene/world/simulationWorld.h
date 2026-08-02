@@ -13,6 +13,8 @@
 #include "physics/structs/hapkeParameters.h"
 #include "physics/structs/tidalParameters.h"
 
+#include "compute/commandQueue.h"
+
 struct Importance
 {
   float base;
@@ -45,6 +47,8 @@ private:
   PhysicsWorld physics;
   RenderWorld render;
   SharedGPUData gpu;
+
+  CommandQueue queue;
 
   std::vector<WorldObject> worldObjects;
   std::vector<WorldSystem> worldSystems;

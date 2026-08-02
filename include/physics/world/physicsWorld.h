@@ -19,6 +19,7 @@ class Integratable;
 class Trail;
 class Atmosphere;
 class System;
+class CommandQueue;
 struct IntegratorGPUData;
 struct Total;
 
@@ -33,8 +34,10 @@ private:
 
   Star *sun;
 
+  CommandQueue &queue;
+
 public:
-  PhysicsWorld();
+  PhysicsWorld(CommandQueue &queue);
   ~PhysicsWorld();
 
   template <typename Real>

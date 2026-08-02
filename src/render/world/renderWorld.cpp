@@ -81,7 +81,7 @@ void RenderWorld::initLODGPU(Context &ctx, ResourceManager &resourceManager, Sha
       this->rangeCount};
 
   this->lodManagerGPU = std::make_unique<LODManagerGPU>(resourceManager);
-  this->lodManagerGPU->init(ctx, lodData, this->lodSettings, totalObjects);
+  this->lodManagerGPU->init(ctx, this->queue, lodData, this->lodSettings, totalObjects);
 }
 
 void RenderWorld::update(const Camera &camera, RenderQueue &queue, FrameContext &ctx)

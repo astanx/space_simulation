@@ -82,11 +82,6 @@ void WisdomHolmanIntegratorGPU<Real>::initKernels(WisdomHolmanGPUData &gpu, Tota
   this->driftAngularKernel.setArg(1, gpu.orientationsBuffer.get());
 }
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::initQueues(Context &ctx)
-{
-  this->queue.init(ctx.get(), ctx.getDevice());
-}
-template <typename Real>
 void WisdomHolmanIntegratorGPU<Real>::updateDt(Real dt)
 {
   Real kickDt = dt * 0.5;
@@ -117,24 +112,13 @@ void WisdomHolmanIntegratorGPU<Real>::init(IntegratorGPUData &gpu, Total &total,
   WisdomHolmanGPUData *whGpu = dynamic_cast<WisdomHolmanGPUData *>(&gpu);
   if (!whGpu)
     Logger::logFatal("Wisdom Holman Integrator", "Wrong GPU data passed");
-  this->initQueues(ctx);
   this->initKernels(*whGpu, total);
 }
 
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::stepReal(Total &total, Real dt)
+void WisdomHolmanIntegratorGPU<Real>::stepReal(CommandQueue &queue, Total &total, Real dt)
 {
   this->updateDt(dt);
-
-  if (this->events.size() >= 2)
-  {
-    cl_event event = this->events.front();
-    this->events.pop();
-    clWaitForEvents(1, &event);
-    clReleaseEvent(event);
-  }
-
-  cl_event lastEvent;
 
   // create one gl buffer here model matrxi parts
   // create cl buffer from it
@@ -147,18 +131,16 @@ void WisdomHolmanIntegratorGPU<Real>::stepReal(Total &total, Real dt)
 
   // Kick
   // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &total.total);
-  this->queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &total.total);
-  this->queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &total.total);
+  queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &total.total);
+  queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &total.total);
 
   // Drift
-  this->queue.enqueueNDKernelBuffer(this->driftObjectsLinearKernel.get(), 1, &total.orbital, &total.object);
-  this->queue.enqueueNDKernelBuffer(this->driftOrbitalLinearKernel.get(), 1, NULL, &total.orbital);
-  this->queue.enqueueNDKernelBuffer(this->driftAngularKernel.get(), 1, NULL, &total.total);
+  queue.enqueueNDKernelBuffer(this->driftObjectsLinearKernel.get(), 1, &total.orbital, &total.object);
+  queue.enqueueNDKernelBuffer(this->driftOrbitalLinearKernel.get(), 1, NULL, &total.orbital);
+  queue.enqueueNDKernelBuffer(this->driftAngularKernel.get(), 1, NULL, &total.total);
 
   // Kick
-  // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &total.total, &lastEvent);
-  this->queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &total.total);
-  this->queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &total.total, &lastEvent);
-
-  this->events.push(lastEvent);
+  // this->queue.enqueueNDKernelBuffer(this->halfKickKernel.get(), 1, NULL, &total.total);
+  queue.enqueueNDKernelBuffer(this->halfKickLinearKernel.get(), 1, NULL, &total.total);
+  queue.enqueueNDKernelBuffer(this->halfKickAngularKernel.get(), 1, NULL, &total.total);
 }

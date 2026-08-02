@@ -3,7 +3,7 @@
 #include "graphics/instanceStructs.h"
 #include "lod/lodHelper.cl"
 
-__kernel void partitionObjectsXYZ(
+__kernel void partitionObjects(
   __global InstanceModelMatrixParts* fullInstances,
   __global InstancePositionRadiusTexture* impostorInstances,
   __global InstancePositionRadiusColor* pointInstances,

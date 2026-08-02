@@ -18,6 +18,7 @@ class ModelSource;
 class Camera;
 class Context;
 class ResourceManager;
+class CommandQueue;
 struct FrameContext;
 struct RenderDataGPU;
 struct SharedGPUData;
@@ -38,6 +39,8 @@ private:
   std::vector<std::unique_ptr<Trail>> trails;
   std::vector<Trail *> trailViews;
 
+  CommandQueue &queue;
+
   CLBuffer instanceColorsBuffer;
   CLBuffer instanceTextureLayersBuffer;
   CLBuffer instanceImportancesBuffer;
@@ -49,14 +52,12 @@ private:
   void buildQueue(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
   void reserveModelInstances();
 public:
-  RenderWorld() : lodManager(lodSettings) {};
+  RenderWorld(CommandQueue &queue) : queue(queue), lodManager(lodSettings) {};
   ~RenderWorld() = default;
 
   void init(size_t totalObjects);
   void initGPU(Context &ctx, RenderDataGPU &gpu);
   void initLODGPU(Context &ctx, ResourceManager &resourceManager, SharedGPUData &data, size_t totalObjects);
-
-  void initLODGPU();
 
   void update(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
 

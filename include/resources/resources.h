@@ -170,6 +170,6 @@ namespace Res
   const std::string LOD_FULL_SCAN_KERNEL = "scan";
   const std::string LOD_IMPOSTOR_SCAN_KERNEL = "scan";
   const std::string LOD_POINT_SCAN_KERNEL = "scan";
-  const std::string LOD_PARTITION_OBJECTS_KERNEL = "partitionObjectsXYZ";
+  const std::string LOD_PARTITION_OBJECTS_KERNEL = "partitionObjects";
   const std::string LOD_PASS_KERNEL = "lodPass";
 }

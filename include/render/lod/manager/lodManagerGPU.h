@@ -39,8 +39,6 @@ class LODManagerGPU
 private:
   size_t localScanSize = 128;
 
-  CommandQueue queue;
-
   Kernel &fullScanKernel;
   Kernel &impostorScanKernel;
   Kernel &pointScanKernel;
@@ -57,8 +55,7 @@ private:
 
   std::queue<cl_event> events;
 
-  void initQueue(Context &ctx);
-  void initBuffers(Context &ctx, size_t totalObjects);
+  void initBuffers(Context &ctx, CommandQueue &queue, size_t totalObjects);
   void initKernels(LODGPUData &data, LODSettings &settings);
   void updateKernels(const Camera &camera, FrameContext &ctx);
 
@@ -66,5 +63,5 @@ public:
   LODManagerGPU(ResourceManager &resourceManager);
   ~LODManagerGPU() = default;
 
-  void init(Context &ctx, LODGPUData &data, LODSettings &settings, size_t totalObjects);
+  void init(Context &ctx, CommandQueue &queue, LODGPUData &data, LODSettings &settings, size_t totalObjects);
 };

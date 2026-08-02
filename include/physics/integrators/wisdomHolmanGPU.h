@@ -18,8 +18,6 @@ template <typename Real>
 class WisdomHolmanIntegratorGPU : public IIntegratorGPU<Real>
 {
 protected:
-  CommandQueue queue;
-
   Kernel &driftAngularKernel;
   Kernel &driftObjectsLinearKernel;
   Kernel &driftOrbitalLinearKernel;
@@ -27,9 +25,6 @@ protected:
   Kernel &halfKickAngularKernel;
   Kernel &halfKickKernel;
 
-  std::queue<cl_event> events;
-
-  void initQueues(Context &ctx);
   void initKernels(WisdomHolmanGPUData &gpu, Total total);
 
   void updateDt(Real dt);
@@ -40,7 +35,7 @@ public:
 
   void init(IntegratorGPUData &gpu, Total &total, Context &ctx) override;
 
-  void stepReal(Total &total, Real dt) override;
+  void stepReal(CommandQueue &queue, Total &total, Real dt) override;
 };
 
 #include "physics/integrators/wisdomHolmanGPU.tpp"

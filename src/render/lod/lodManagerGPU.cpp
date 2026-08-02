@@ -14,11 +14,7 @@
 #include "resources/resourceManager.h"
 
 // Private functions
-void LODManagerGPU::initQueue(Context &ctx)
-{
-  this->queue.init(ctx.get(), ctx.getDevice());
-}
-void LODManagerGPU::initBuffers(Context &ctx, size_t totalObjects)
+void LODManagerGPU::initBuffers(Context &ctx, CommandQueue &queue, size_t totalObjects)
 {
   this->isFullBuffer.init(ctx.get(), CL_MEM_READ_WRITE, totalObjects * sizeof(uint32_t), nullptr);
   this->isImpostorBuffer.init(ctx.get(), CL_MEM_READ_WRITE, totalObjects * sizeof(uint32_t), nullptr);
@@ -30,13 +26,13 @@ void LODManagerGPU::initBuffers(Context &ctx, size_t totalObjects)
 
   uint32_t zero = 0;
   cl_event event;
-  this->queue.enqueueFillBuffer(this->isFullBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
-  this->queue.enqueueFillBuffer(this->isImpostorBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
-  this->queue.enqueueFillBuffer(this->isPointBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
+  queue.enqueueFillBuffer(this->isFullBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
+  queue.enqueueFillBuffer(this->isImpostorBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
+  queue.enqueueFillBuffer(this->isPointBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
 
-  this->queue.enqueueFillBuffer(this->fullOffsetBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
-  this->queue.enqueueFillBuffer(this->impostorOffsetBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
-  this->queue.enqueueFillBuffer(this->pointOffsetBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t), &event);
+  queue.enqueueFillBuffer(this->fullOffsetBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
+  queue.enqueueFillBuffer(this->impostorOffsetBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t));
+  queue.enqueueFillBuffer(this->pointOffsetBuffer.get(), &zero, sizeof(zero), totalObjects * sizeof(uint32_t), &event);
 
   clWaitForEvents(1, &event);
   clReleaseEvent(event);
@@ -112,14 +108,13 @@ LODManagerGPU::LODManagerGPU(ResourceManager &resourceManager)
       lodPartitionKernel(resourceManager.GetKernel(Res::LOD_PARTITION_OBJECTS_KERNEL)) {};
 
 // Public functions
-void LODManagerGPU::init(Context &ctx, LODGPUData &data, LODSettings &settings, size_t totalObjects)
+void LODManagerGPU::init(Context &ctx, CommandQueue &queue, LODGPUData &data, LODSettings &settings, size_t totalObjects)
 {
-  this->initQueue(ctx);
-  this->initBuffers(ctx, totalObjects);
+  this->initBuffers(ctx, queue, totalObjects);
 
   uint32_t zero = 0;
   cl_event event;
-  this->queue.enqueueFillBuffer(data.modelFullCount.get(), &zero, sizeof(zero), data.rangeCount * sizeof(uint32_t), &event);
+  queue.enqueueFillBuffer(data.modelFullCount.get(), &zero, sizeof(zero), data.rangeCount * sizeof(uint32_t), &event);
   clWaitForEvents(1, &event);
   clReleaseEvent(event);
 

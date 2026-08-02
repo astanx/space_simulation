@@ -193,6 +193,9 @@ void SimulationWorld::initGPUBuffers(Context &ctx, SharedDataGPU<Real> &data)
 void SimulationWorld::initGPU(ResourceManager &resourceManager)
 {
   Context &ctx = resourceManager.GetContext(Res::MAIN_CONTEXT);
+
+  this->queue.init(ctx.get(), ctx.getDevice());
+
   if (ctx.getSupportsDouble())
   {
     WorldGPUBuilder<double> builder;
@@ -224,7 +227,7 @@ void SimulationWorld::initGPU(ResourceManager &resourceManager)
 }
 
 // Constructor
-SimulationWorld::SimulationWorld()
+SimulationWorld::SimulationWorld() : render(this->queue), physics(this->queue)
 {
   this->importance.base = 1.f;
   this->importance.asteroid = 2.5f;
