@@ -45,15 +45,15 @@ public:
   template <typename F>
   void forEachModel(F &&func);
 
-  void reserveInstances(InstanceManager& instanceManager);
+  void reserveInstances(InstanceManager &instanceManager);
 
   const glm::vec3 getRenderPosition() const { return this->renderPosition; };
   const glm::quat getRenderOrientation() const { return this->renderOrientation; };
   const double getRenderRadius() const { return this->renderRadius; };
   const Radii getSrcRadii() const { return this->src.getRadii(); };
   const double getWorldRadius() const { return this->src.getRadius(); };
-  const Model *getMainLayer() const { return this->mainLayer; };
   const Texture *getMainLayerTexture() const { return this->mainLayer->getMaterial()->getTexture(); };
+  Model *getMainLayer() const { return this->mainLayer; };
 };
 
 #include "render/modelSource.tpp"

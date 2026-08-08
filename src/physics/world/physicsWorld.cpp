@@ -18,7 +18,7 @@
 #include "debug/logger.h"
 
 // Constructor / Destructor
-PhysicsWorld::PhysicsWorld(CommandQueue &queue) : queue(queue)
+PhysicsWorld::PhysicsWorld(CommandQueue &queue, Total &total) : queue(queue), total(total)
 {
   this->integratorCPU = std::make_unique<WisdomHolmanIntegratorCPU>();
 }
@@ -38,8 +38,11 @@ void PhysicsWorld::initGPUIntegrator(ResourceManager &resourceManager, Context &
 
 void PhysicsWorld::step(double dt)
 {
+  if (bool GPU = true)
+  this->integratorGPU->step(this->queue, this->total, dt);
+  else
   this->integratorCPU->step(this->cpu.integratableObjects, this->cpu.integratableSystems, dt);
-  // this->integratorGPU->step(this->queue, this->total, dt);
+
 }
 
 void PhysicsWorld::addObject(Object *object)

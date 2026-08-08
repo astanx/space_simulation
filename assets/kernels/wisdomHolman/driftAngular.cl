@@ -14,10 +14,11 @@ __kernel void driftAngular(__global real3* angularVelocities, __global dquat* or
   {
     real3 axis = omega / omega_len;
     real half_theta = theta * 0.5;
-    dquat q_rot = (dquat)(cos(half_theta), sin(half_theta) * axis.x, sin(half_theta) * axis.y, sin(half_theta) * axis.z);
+    dquat q_rot = (dquat)(sin(half_theta) * axis.x, sin(half_theta) * axis.y, sin(half_theta) * axis.z, cos(half_theta));
 
-    orientations[id] = normalize(dquat_dot_dquat(orientations[id], q_rot));
-
+    orientations[id] = dquat_normalize(dquat_dot_dquat(orientations[id], q_rot));
+    if (id == 0)
+      printf("ORIENTATION: %f %f %f %f , DT: %f \n", orientations[id].x, orientations[id].y, orientations[id].z, orientations[id].w, dt);
 /*
     dmat3 skew;
     skew.cols[0] = (real3)(0, omega.z, -omega.y);

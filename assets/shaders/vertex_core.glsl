@@ -12,9 +12,9 @@ layout (location = 2) in vec3 vertex_normal;
 layout (location = 3) in vec4 vertex_tangent;
 #endif
 //layout (location = 4) in mat4 ModelMatrix;
-layout (location = 4) in vec3 instancePosition;
+layout (location = 4) in vec4 instancePosition;
 layout (location = 5) in vec4 instanceOrientation;
-layout (location = 6) in vec3 instanceScale;
+layout (location = 6) in vec4 instanceScale;
 
 
 out VS_OUT {
@@ -41,7 +41,7 @@ void main()
   #ifdef TANGENT
     vec3 T;
 
-    transform(instancePosition, instanceOrientation, instanceScale, vertex_position, vertex_normal, vertex_tangent.xyz, p, N, T);
+    transform(instancePosition.xyz, instanceOrientation, instanceScale.xyz, vertex_position, vertex_normal, vertex_tangent.xyz, p, N, T);
 
     // Gram-Schmidt re-orthogonalization
     T = normalize(T - dot(T, N) * N);
@@ -50,7 +50,7 @@ void main()
 
     vs_out.TBN = mat3(T, B, N);
   #else 
-    transform(instancePosition, instanceOrientation, instanceScale, vertex_position, vertex_normal, p, N);
+    transform(instancePosition.xyz, instanceOrientation, instanceScale.xyz, vertex_position, vertex_normal, p, N);
   #endif
 
   vs_out.vs_position = p;

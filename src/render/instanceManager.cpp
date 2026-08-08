@@ -43,6 +43,8 @@ void InstanceManager::clear()
 {
   this->impostorInstances.clear();
   this->pointInstances.clear();
+  this->impostorCount = 0;
+  this->pointCount = 0;
 }
 
 void InstanceManager::fillVBOs()
@@ -79,6 +81,9 @@ void InstanceManager::fillVBOs()
     memcpy(ptr, this->pointInstances.data(), this->pointInstances.size() * sizeof(InstancePositionRadiusColor));
     glUnmapBuffer(GL_ARRAY_BUFFER);
   }
+
+  this->impostorCount = this->impostorInstances.size();
+  this->pointCount = this->pointInstances.size();
 }
 
 Range InstanceManager::reserve(const Model *model, size_t capacity)
@@ -180,4 +185,12 @@ Range InstanceManager::add(std::vector<InstancePositionRadiusColor> &&data)
     Logger::logWarning("Instance Manager", "Point instance vector range error");
 
   return range;
+}
+
+Range InstanceManager::getAllocation(const Model *model)
+{
+  if (model->getID() >= this->allocations.size() || this->allocations[model->getID()].end == 0)
+    Logger::logFatal("Instance Manager", "Model must be reserved to get allocation");
+
+  return this->allocations[model->getID()];
 }

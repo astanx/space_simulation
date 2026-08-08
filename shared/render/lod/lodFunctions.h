@@ -1,13 +1,20 @@
-#ifndef LOD_HELPER
-#define LOD_HELPER
+#ifndef LOD_HELPER_H
+#define LOD_HELPER_H
 
+#ifdef __OPENCL_VERSION__
 #include "real.cl"
-#include "graphics/instanceStructs.h"
-#include "maths/constants.h"
+#else
+#include <glm/glm.hpp>
+#include <cstdint>
+using uint = uint32_t;
+using real3 = glm::vec3;
+using glm::length;
+using glm::radians;
+using std::max;
+#endif
 
-constant uint LOD_FULL = 1;
-constant uint LOD_IMPOSTOR = 2;
-constant uint LOD_POINT = 3;
+#include "maths/constants.h"
+#include "render/lod/lodConstants.h"
 
 uint getLODLevelFromPixelRadius(float pixelRadius, float fullThreshold, float impostorThreshold)
 {
@@ -43,35 +50,16 @@ uint getLODLevel(real3 position, float radius, float fov, float viewportHeight, 
   return getLODLevelFromPixelRadius(pixelRadius, fullThreshold, impostorThreshold);
 }
 
-float scaleRadius(real3 position, real radius, float fov, float viewportHeight, float importance, float baseMinPixelSize)
+float scaleRadius(real3 position, float radius, float fov, float viewportHeight, float importance, float baseMinPixelSize)
 {
   float minPixelSize = baseMinPixelSize * importance;
 
-  float pixelWorldSize = (length(position) * 2.f * tan(fov / 2.f)) / viewportHeight;
+  float pixelWorldSize = (length(position) * 2.f * tan(radians(fov / 2.f))) / viewportHeight;
   float minWorldRadius = minPixelSize * pixelWorldSize * 0.5f;
 
   float finalRadius = max(radius, minWorldRadius);
 
   return finalRadius;
-}
-
-uint findModelID(uint globalID, __global uint* modelRangeStart, __global uint* modelRangeEnd, uint rangeCount)
-{
-  uint left = 0;
-  uint right = rangeCount - 1;
-
-  while (left != right)
-  {
-    uint mid = (right + left) / 2;
-    if (globalID >= modelRangeEnd[mid])
-      left = mid + 1;
-    else if (globalID < modelRangeStart[mid])
-      right = mid - 1;
-    else
-      return mid;
-  }
-
-  return left;
 }
 
 #endif

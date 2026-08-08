@@ -15,20 +15,15 @@
 #include <iostream>
 
 // Loaders
-Kernel &ResourceManager::LoadKernel(const std::string &name, cl_program program)
-{
-  this->kernels[name] = std::make_unique<Kernel>(name, program);
-  return *this->kernels[name];
-}
 Kernel &ResourceManager::LoadKernel(const std::string &storeName, const std::string &kernelName, cl_program program)
 {
   this->kernels[storeName] = std::make_unique<Kernel>(kernelName, program);
   return *this->kernels[storeName];
 }
-Kernel &ResourceManager::LoadKernel(const std::string &name, const std::string &programName)
+Kernel &ResourceManager::LoadKernel(const std::string &storeName, const std::string &kernelName, const std::string &programName)
 {
-  this->kernels[name] = std::make_unique<Kernel>(name, this->GetProgram(programName).get());
-  return *this->kernels[name];
+  this->kernels[storeName] = std::make_unique<Kernel>(kernelName, this->GetProgram(programName).get());
+  return *this->kernels[storeName];
 }
 Program &ResourceManager::LoadProgram(const std::string &name, const std::string &filePath, Context &context)
 {

@@ -157,6 +157,7 @@ add_executable(Space
     # Queue
     src/render/queue/renderQueue.cpp
     src/render/queue/builder/renderQueueBuilder.cpp
+    src/render/queue/builder/renderQueueBuilderGPU.cpp
     # World
     src/render/world/renderWorld.cpp
     

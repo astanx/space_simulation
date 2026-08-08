@@ -37,8 +37,8 @@ private:
   void bindLayerToImpostorTexture(Model &model, unsigned int layer);
   void bindLayerToImpostorTexture(Model *model, unsigned int layer);
 
-  int getLODLevel(float pixelRadius);
-  int getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
+  uint getLODLevel(float pixelRadius);
+  uint getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance = 1.f);
 
 public:
   LODManager(LODSettings &settings) : settings(settings) {}

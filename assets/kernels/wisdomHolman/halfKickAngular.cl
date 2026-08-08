@@ -38,5 +38,6 @@ __kernel void halfKickAngular(__global real3* positions, __global real* mus, __g
   //real3 acc = pow(dmat3_dot_d3(tensor, 1 / (torque - cross(omega, dmat3_dot_d3(tensor, omega)))), -1);
   //real3 acc = (torque - cross(omega, dmat3_dot_d3(tensor, omega))) / tensor;
 
+// wrong velocity here fix
   angularVelocities[id] += acc * dt;
 }

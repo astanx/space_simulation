@@ -23,6 +23,11 @@ CLBuffer::~CLBuffer()
 // Public functions
 void CLBuffer::init(cl_context context, cl_mem_flags flag, size_t size, void *data)
 {
+  if (size == 0)
+  {
+    Logger::logWarning("CLBuffer", "Buffer with size 0 initialized, setting to nullptr");
+    return;
+  }
   cl_int errNum;
   CL_CREATE(this->buffer = clCreateBuffer(context, flag, size, data, &errNum), errNum);
 }

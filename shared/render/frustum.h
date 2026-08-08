@@ -6,7 +6,8 @@ typedef float3 vec3;
 typedef float4 vec4;
 #else
 #include <glm/glm.hpp>
-using vec3 = glm::vec3;
+#include <resources/gpuTypes.h>
+using vec3 = Vec3<float>;
 using vec4 = glm::vec4;
 using glm::dot;
 
@@ -34,7 +35,7 @@ inline bool isVisibleSphere(const Frustum *frustum, vec3 pos, float radius)
 #ifdef __OPENCL_VERSION__
     float d = dot(plane.xyz, pos) + plane.w;
 #else
-    float d = dot(vec3(plane.x, plane.y, plane.z), pos) + plane.w;
+    float d = dot(glm::vec3(plane.x, plane.y, plane.z), glm::vec3(pos.x, pos.y, pos.z)) + plane.w;
 #endif
     if (d < -radius)
       return false;

@@ -3,6 +3,7 @@
 #include "debug/logger.h"
 
 #include <OpenCL/cl_gl.h>
+#include <iostream>
 
 // Constructor / Destructor
 CommandQueue::CommandQueue(cl_context context, cl_device_id device)
@@ -30,9 +31,9 @@ void CommandQueue::enqueueWriteBuffer(cl_mem buffer, cl_bool blockWrite, size_t 
 {
   CL_CALL(clEnqueueWriteBuffer(this->queue, buffer, blockWrite, offset, size, data, 0, nullptr, nullptr));
 }
-void CommandQueue::enqueueReadBuffer(cl_mem buffer, cl_bool blockRead, size_t offset, size_t size, void *store)
+void CommandQueue::enqueueReadBuffer(cl_mem buffer, cl_bool blockRead, size_t offset, size_t size, void *store, cl_event *event)
 {
-  CL_CALL(clEnqueueReadBuffer(this->queue, buffer, blockRead, offset, size, store, 0, nullptr, nullptr));
+  CL_CALL(clEnqueueReadBuffer(this->queue, buffer, blockRead, offset, size, store, 0, nullptr, event));
 }
 void CommandQueue::enqueueAcquireGLBuffer(const cl_mem buffer)
 {
@@ -44,19 +45,31 @@ void CommandQueue::enqueueReleaseGLBuffer(const cl_mem buffer)
 }
 void CommandQueue::enqueueNDKernelBuffer(cl_kernel kernel, cl_uint dimensions, const size_t *offset, const size_t *globalWorkSize, const size_t *localWorkSize)
 {
-  CL_CALL(clEnqueueNDRangeKernel(this->queue, kernel, dimensions, offset, globalWorkSize, localWorkSize, 0, nullptr, nullptr));
+  if (globalWorkSize && *globalWorkSize == 0)
+    Logger::logWarning("Command Queue", "Kernel with 0 global work size enqueued, skipping");
+  else
+    CL_CALL(clEnqueueNDRangeKernel(this->queue, kernel, dimensions, offset, globalWorkSize, localWorkSize, 0, nullptr, nullptr));
 }
 void CommandQueue::enqueueNDKernelBuffer(cl_kernel kernel, cl_uint dimensions, const size_t *offset, const size_t *globalWorkSize, const size_t *localWorkSize, cl_event *event)
 {
-  CL_CALL(clEnqueueNDRangeKernel(this->queue, kernel, dimensions, offset, globalWorkSize, localWorkSize, 0, nullptr, event));
+  if (globalWorkSize && *globalWorkSize == 0)
+    Logger::logWarning("Command Queue", "Kernel with 0 global work size enqueued, skipping");
+  else
+    CL_CALL(clEnqueueNDRangeKernel(this->queue, kernel, dimensions, offset, globalWorkSize, localWorkSize, 0, nullptr, event));
 }
 void CommandQueue::enqueueNDKernelBuffer(cl_kernel kernel, cl_uint dimensions, const size_t *offset, const size_t *globalWorkSize)
 {
-  CL_CALL(clEnqueueNDRangeKernel(this->queue, kernel, dimensions, offset, globalWorkSize, nullptr, 0, nullptr, nullptr));
+  if (globalWorkSize && *globalWorkSize == 0)
+    Logger::logWarning("Command Queue", "Kernel with 0 global work size enqueued, skipping");
+  else
+    CL_CALL(clEnqueueNDRangeKernel(this->queue, kernel, dimensions, offset, globalWorkSize, nullptr, 0, nullptr, nullptr));
 }
 void CommandQueue::enqueueNDKernelBuffer(cl_kernel kernel, cl_uint dimensions, const size_t *offset, const size_t *globalWorkSize, cl_event *event)
 {
-  CL_CALL(clEnqueueNDRangeKernel(this->queue, kernel, dimensions, offset, globalWorkSize, nullptr, 0, nullptr, event));
+  if (globalWorkSize && *globalWorkSize == 0)
+    Logger::logWarning("Command Queue", "Kernel with 0 global work size enqueued, skipping");
+  else
+    CL_CALL(clEnqueueNDRangeKernel(this->queue, kernel, dimensions, offset, globalWorkSize, nullptr, 0, nullptr, event));
 }
 
 void CommandQueue::finish()

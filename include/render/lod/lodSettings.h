@@ -5,5 +5,6 @@
 struct LODSettings
 {
   float baseMinPixelSize = 1.f;
-  std::vector<float> pixelRadiusThreshold = {8, 3}; // >= [0] - full, >= [1] - impostor, else - point
+  float fullThreshold = 8.f;
+  float impostorThreshold = 3.f;
 };

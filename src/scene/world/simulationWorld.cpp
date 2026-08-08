@@ -165,6 +165,7 @@ void SimulationWorld::addAtmosphereToPlanet(ResourceManager &resourceManager, Th
 
 void SimulationWorld::initObjects(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000)
 {
+  // orientation is fixed for earth
   Star *sunPtr = createStar(resourceManager.GetModel(Res::SUN_MODEL), sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
   createPlanet(resourceManager.GetModel(Res::MERCURY_MODEL), mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
   Planet *venusPtr = createPlanet(resourceManager.GetModel(Res::VENUS_MODEL), venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
@@ -208,7 +209,7 @@ void SimulationWorld::initGPU(ResourceManager &resourceManager)
     this->physics.initGPUIntegrator(resourceManager, ctx, integratorData, data.total);
 
     this->render.initGPU(ctx, data.render);
-    this->render.initLODGPU(ctx, resourceManager, this->gpu, data.total.total);
+    this->render.initRenderQueueGPU(ctx, resourceManager, this->gpu);
   }
   else
   {
@@ -222,12 +223,12 @@ void SimulationWorld::initGPU(ResourceManager &resourceManager)
     this->physics.initGPUIntegrator(resourceManager, ctx, integratorData, data.total);
 
     this->render.initGPU(ctx, data.render);
-    this->render.initLODGPU(ctx, resourceManager, this->gpu, data.total.total);
+    this->render.initRenderQueueGPU(ctx, resourceManager, this->gpu);
   }
 }
 
 // Constructor
-SimulationWorld::SimulationWorld() : render(this->queue), physics(this->queue)
+SimulationWorld::SimulationWorld() : render(this->queue, this->total), physics(this->queue, this->total)
 {
   this->importance.base = 1.f;
   this->importance.asteroid = 2.5f;
@@ -242,9 +243,10 @@ void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadP
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
-  // this->initGPU(resourceManager);
+  this->render.init();
 
-  this->render.init(total.total);
+  if (bool GPU = true)
+    this->initGPU(resourceManager);
 }
 
 void SimulationWorld::update(const Camera &camera, RenderQueue &queue, RenderContext &renderCtx)

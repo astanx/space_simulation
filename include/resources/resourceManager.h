@@ -46,9 +46,8 @@ public:
   ~ResourceManager() = default;
 
   // Loaders
-  Kernel &LoadKernel(const std::string &name, cl_program program);
   Kernel &LoadKernel(const std::string &storeName, const std::string &kernelName, cl_program program);
-  Kernel &LoadKernel(const std::string &name, const std::string &programName);
+  Kernel &LoadKernel(const std::string &storeName, const std::string &kernelName, const std::string &programName);
   Program &LoadProgram(const std::string &name, const std::string &filePath, Context &context);
   Program &LoadProgram(const std::string &name, const std::string &filePath, const std::string &contextName);
   Context &LoadContext(const std::string &name);

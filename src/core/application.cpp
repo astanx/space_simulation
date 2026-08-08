@@ -158,19 +158,26 @@ Application::Application(
   // OpenCL
   this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
   this->resourceManager.LoadProgram(Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM, "assets/kernels/wisdomHolman/wisdomHolman.cl", Res::MAIN_CONTEXT);
-  this->resourceManager.LoadKernel(Res::DRIFT_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::HALF_KICK_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::HALF_KICK_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::HALF_KICK_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::DRIFT_ANGULAR_KERNEL, Res::DRIFT_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::HALF_KICK_LINEAR_KERNEL, Res::HALF_KICK_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::HALF_KICK_ANGULAR_KERNEL, Res::HALF_KICK_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::HALF_KICK_KERNEL, Res::HALF_KICK_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
 
-  this->resourceManager.LoadProgram(Res::LOD_PROGRAM, "assets/kernels/lod/lod.cl", Res::MAIN_CONTEXT);
-  this->resourceManager.LoadKernel(Res::LOD_FULL_SCAN_KERNEL, Res::LOD_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_SCAN_KERNEL, Res::LOD_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_POINT_SCAN_KERNEL, Res::LOD_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_PARTITION_OBJECTS_KERNEL, Res::LOD_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_PASS_KERNEL, Res::LOD_PROGRAM);
+  this->resourceManager.LoadProgram(Res::RENDER_QUEUE_PROGRAM, "assets/kernels/render/render.cl", Res::MAIN_CONTEXT);
+  this->resourceManager.LoadKernel(Res::LOD_FULL_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_POINT_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_PASS_KERNEL, Res::LOD_PASS_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+
+  this->resourceManager.LoadKernel(Res::PARTITION_OBJECTS_KERNEL, Res::PARTITION_OBJECTS_KERNEL, Res::RENDER_QUEUE_PROGRAM);
 
   this->loadEllipsoidObject(Res::SUN_MODEL, Res::SUN_MESH, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, ModelFlags::None, sunLuminosity);
   // this->loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);

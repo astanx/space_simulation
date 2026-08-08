@@ -1,10 +1,13 @@
-__kernel void scan(__global uint* input, __global uint* output, __local uint* scratch)
+__kernel void scanGroup(__global uint* groupSums, __global uint* groupOffsets, __local uint* scratch, uint groupCount)
 {
   uint id = get_global_id(0);
   uint lid = get_local_id(0);
   uint groupSize = get_local_size(0);
 
-  scratch[lid] = input[id];
+  if (id < groupCount)
+    scratch[lid] = groupSums[id];
+  else
+    scratch[lid] = 0;
   barrier(CLK_LOCAL_MEM_FENCE);
 
   for (uint offset = 1; offset < groupSize; offset <<= 1)
@@ -21,5 +24,10 @@ __kernel void scan(__global uint* input, __global uint* output, __local uint* sc
     barrier(CLK_LOCAL_MEM_FENCE);
   }
 
-  output[id] = scratch[lid];
+  if (id < groupCount)
+    {if (lid == 0)
+      groupOffsets[id] = 0;
+    else
+      groupOffsets[id] = scratch[lid - 1];
+    }
 }

@@ -1,5 +1,7 @@
 #include "camera/camera.h"
 
+#include "camera/worldToView.h"
+
 #include "render/frustum.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -159,32 +161,15 @@ const Frustum Camera::getFrustum(double aspectRatio) const
 
 glm::dvec3 Camera::worldToViewSpace(const glm::dvec3 &position) const
 {
-  return (glm::dvec3(
-              position.x,
-              -position.z,
-              position.y) -
-          this->position);
+  return ::worldToViewSpace(position, this->position);
 }
 
 glm::dmat3 Camera::worldToViewSpace(const glm::dmat3 &orientation) const
 {
-  glm::dmat3 C(
-      glm::vec3(1, 0, 0),
-      glm::vec3(0, 0, 1),
-      glm::vec3(0, -1, 0));
-
-  return C * orientation * glm::transpose(C);
+  return ::worldToViewSpace(orientation);
 }
 
 glm::dquat Camera::worldToViewSpace(const glm::dquat &orientation) const
 {
-  glm::dmat3 C(
-      glm::vec3(1, 0, 0),
-      glm::vec3(0, 0, 1),
-      glm::vec3(0, -1, 0));
-
-  glm::dmat3 orientationMat = glm::mat3_cast(orientation);
-  glm::dmat3 resultMat = C * orientationMat * glm::transpose(C);
-  return glm::quat_cast(resultMat);
+  return ::worldToViewSpace(orientation);
 }
-

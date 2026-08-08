@@ -1,11 +1,10 @@
 #version 410
 
 #include "ubo/camera.glsl"
-#include "scale/scale.glsl"
 
 layout (location = 0) in vec3 vertex_position;
 layout (location = 1) in vec2 vertex_texcoord;
-layout (location = 2) in vec3 instancePosition;
+layout (location = 2) in vec4 instancePosition;
 layout (location = 3) in float instanceRadius;
 layout (location = 4) in uint instanceTextureLayer;
 
@@ -22,7 +21,7 @@ void main()
 
   vs_out.vs_texcoord = vertex_texcoord;
 
-  vs_out.vs_position = instancePosition + right * vertex_position.x * instanceRadius + up * vertex_position.y * instanceRadius;
+  vs_out.vs_position = instancePosition.xyz + right * vertex_position.x * instanceRadius + up * vertex_position.y * instanceRadius;
 
   vs_out.textureLayer = instanceTextureLayer;
 

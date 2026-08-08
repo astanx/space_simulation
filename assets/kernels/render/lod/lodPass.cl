@@ -1,10 +1,14 @@
 #include "real.cl"
-#include "render/frustum.h"
-#include "lod/lodHelper.cl"
+#include "render/lod/lodHelper.cl"
 
-__kernel void lodPass(__global uint* isFull, __global uint* isImpostor, __global uint* isPoint, __global real3* positions, __global real* meanRadii, __global float* instanceImportance, float fov, float viewportHeight, float baseMinPixelSize, float fullThreshold, float impostorThreshold, Frustum frustum)
+#include "render/frustum.h"
+#include "camera/worldToView.h"
+
+__kernel void lodPass(__global uint* isFull, __global uint* isImpostor, __global uint* isPoint, __global real3* positions, __global real* meanRadii, __global float* instanceImportance, float fov, float viewportHeight, float baseMinPixelSize, float fullThreshold, float impostorThreshold, uint count, Frustum frustum, real3 camPosition)
 {
   uint id = get_global_id(0);
+
+  if (id >= count) return;
 
   isFull[id] = 0;
   isImpostor[id] = 0;
@@ -12,7 +16,7 @@ __kernel void lodPass(__global uint* isFull, __global uint* isImpostor, __global
 
   float importance = instanceImportance[id];
   real meanRadius = meanRadii[id];
-  real3 pos = positions[id];
+  real3 pos = worldToViewSpaceVec(positions[id], camPosition);
 
   float scaledMeanRadius = scaleRadius(pos, meanRadius, fov, viewportHeight, importance, baseMinPixelSize);
 

@@ -2,6 +2,7 @@
 #define MATRIX
 
 #include "real.cl"
+#include "maths/constants.h"
 
 typedef struct {
   real4 cols[4];
@@ -428,5 +429,26 @@ mat3 mat3_inverse(mat3 m)
 
   return mat;
 }
+
+mat3 mat3_transpose(mat3 m)
+{
+  mat3 m2;
+  m2.cols[0] = (float3)(m.cols[0].x, m.cols[1].x, m.cols[2].x);
+  m2.cols[1] = (float3)(m.cols[0].y, m.cols[1].y, m.cols[2].y);
+  m2.cols[2] = (float3)(m.cols[0].z, m.cols[1].z, m.cols[2].z);
+
+  return m2;
+}
+
+dmat3 dmat3_transpose(dmat3 m)
+{
+  dmat3 m2;
+  m2.cols[0] = (real3)(m.cols[0].x, m.cols[1].x, m.cols[2].x);
+  m2.cols[1] = (real3)(m.cols[0].y, m.cols[1].y, m.cols[2].y);
+  m2.cols[2] = (real3)(m.cols[0].z, m.cols[1].z, m.cols[2].z);
+
+  return m2;
+}
+
 
 #endif

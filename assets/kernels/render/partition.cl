@@ -1,7 +1,8 @@
 #include "real.cl"
 #include "quaternion.cl"
+#include "render/lod/lodHelper.cl"
 #include "graphics/instanceStructs.h"
-#include "lod/lodHelper.cl"
+#include "camera/worldToView.h"
 
 __kernel void partitionObjects(
   __global InstanceModelMatrixParts* fullInstances,
@@ -12,16 +13,27 @@ __kernel void partitionObjects(
   __global real3* positions, __global dquat* orientations,
   __global real* meanRadii, __global real* polarRadii, __global real* equatorianRadii,
   __global float3* instanceColor, __global uint* instanceTextureLayer, __global float* instanceImportance,
-  __global uint* modelRangeStart, __global uint* modelRangeEnd, __global uint* modelFullCount, uint rangeCount,
-  float fov, float viewportHeight, float baseMinPixelSize
+  __global uint* modelRangeStart, __global uint* modelRangeEnd, __global uint* modelFullCount, __global uint* impostorCount, __global uint* pointCount, 
+  uint rangeCount, float fov, float viewportHeight, float baseMinPixelSize, real3 camPosition
   )
 {
   uint id = get_global_id(0);
 
-  float3 pos = positions[id]; // modify later
+  real3 pos = worldToViewSpaceVec(positions[id], camPosition);
+
   float importance = instanceImportance[id];
   float scaledMeanRadius = scaleRadius(pos, meanRadii[id], fov, viewportHeight, importance, baseMinPixelSize);
-  
+
+  if (id == 0)
+  {
+    pointCount[0] = pointOffset[get_global_size(0) - 1] + isPoint[get_global_size(0) - 1];
+    impostorCount[0] = impostorOffset[get_global_size(0) - 1] + isImpostor[get_global_size(0) - 1];
+  }
+
+  uint modelID = findModelID(id, modelRangeStart, modelRangeEnd, rangeCount);
+  if (id == modelRangeStart[modelID])
+   modelFullCount[modelID] = fullOffset[modelRangeEnd[modelID] - 1] + isFull[modelRangeEnd[modelID] - 1] - fullOffset[modelRangeStart[modelID]];
+
   if (isFull[id])
   {
     real equatorianRadius = equatorianRadii[id];
@@ -33,16 +45,12 @@ __kernel void partitionObjects(
     float equatorian = scaledEquatorianRadius / equatorianRadius;
     float polar = scaledPolarRadius / polarRadius;
 
-    quat orientation = orientations[id]; // modify later
+    quat orientation = worldToViewSpaceQuat(orientations[id]);
 
     InstanceModelMatrixParts instance;
-    instance.position = pos;
+    instance.position = (float3)(pos);
     instance.orientation = orientation;
     instance.scale = (float3)(equatorian, polar, equatorian);
-
-    uint modelID = findModelID(id, modelRangeStart, modelRangeEnd, rangeCount);
-    if (id == modelRangeStart[modelID])
-      modelFullCount[modelID] = fullOffset[modelRangeEnd[modelID]] - fullOffset[modelRangeStart[modelID]];
 
     uint localOffset = fullOffset[id] - fullOffset[modelRangeStart[modelID]];
 
@@ -51,8 +59,12 @@ __kernel void partitionObjects(
 
   if (isImpostor[id])
   {
+        printf("POS: %f %f %f \n", pos.x, pos.y, pos.z);
+    printf("COLOR: %f %f %f, TEXTURE: %u, IMPORTANCE: %f \n", instanceColor[id].x,  instanceColor[id].y, instanceColor[id].z, instanceTextureLayer[id], instanceImportance[id]);
+
+
     InstancePositionRadiusTexture instance;
-    instance.position = pos;
+    instance.position = (float3)(pos);
     instance.radius = scaledMeanRadius;
     instance.textureLayer = instanceTextureLayer[id];
     impostorInstances[impostorOffset[id]] = instance;
@@ -61,7 +73,7 @@ __kernel void partitionObjects(
   if (isPoint[id])
   {
     InstancePositionRadiusColor instance;
-    instance.position = pos;
+    instance.position = (float3)(pos);
     instance.radius = scaledMeanRadius;
     instance.color = instanceColor[id];
     pointInstances[pointOffset[id]] = instance;

@@ -71,13 +71,13 @@ void WorldGPUBuilder<Real>::processOrbital(OrbitalObject *obj, WorldDataGPU<Real
 };
 
 template <typename Real>
-void WorldGPUBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, LookupTable &lookup, const Model *model, WorldDataGPU<Real> &data, size_t i, std::mutex &modelMutex)
+void WorldGPUBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, LookupTable &lookup, Model *model, WorldDataGPU<Real> &data, size_t i, std::mutex &modelMutex)
 {
   if (!model)
     Logger::logFatal("World GPU Builder", "Model is null");
 
   data.render.instanceTextureLayers[i] = model->getImpostorLayer();
-  data.render.instanceColors[i] = model->getAverageColor();
+  data.render.instanceColors[i] = static_cast<Vec3<float>>(model->getAverageColor());
   data.render.instanceImportances[i] = model->getImportance();
 
   {
@@ -101,7 +101,7 @@ void WorldGPUBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, L
 }
 
 template <typename Real>
-void WorldGPUBuilder<Real>::processModelSource(std::vector<size_t> &modelCapacities, LookupTable &lookup, const ModelSource *modelSource, WorldDataGPU<Real> &data, size_t i, std::mutex &modelMutex)
+void WorldGPUBuilder<Real>::processModelSource(std::vector<size_t> &modelCapacities, LookupTable &lookup, ModelSource *modelSource, WorldDataGPU<Real> &data, size_t i, std::mutex &modelMutex)
 {
   if (!modelSource)
     Logger::logFatal("World GPU Builder", "ModelSource is null");
@@ -154,10 +154,12 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
 
   total.object = total.total - total.orbital;
   objectGPU.resize(total.object);
-  orbitalGPU.resize(total.total);
+  orbitalGPU.resize(total.orbital);
 
   size_t orbitalOffset = 0;
   size_t objectOffset = 0;
+
+  std::cout << "BUILD" << std::endl;
 
   std::mutex loveMutex;
   std::mutex tidalMutex;
@@ -165,14 +167,14 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
   std::vector<Real> loveNumbers;
   std::vector<Real> tidalFactors;
 
-  for (WorldOrbitalObject obj : orbitalObjects)
+  for (WorldOrbitalObject &obj : orbitalObjects)
   {
     this->processOrbital(obj.physics, orbitalGPU, orbitalOffset, loveNumbers, tidalFactors, loveMutex, tidalMutex);
     this->processModelSource(orbitalModelCapacities, orbitalLookup, obj.render, orbitalGPU, orbitalOffset, modelMutex);
     orbitalOffset++;
   }
 
-  for (WorldObject obj : objects)
+  for (WorldObject &obj : objects)
   {
     this->processObject(obj.physics, objectGPU, objectOffset, loveNumbers, tidalFactors, loveMutex, tidalMutex);
     this->processModelSource(objectModelCapacities, objectLookup, obj.render, objectGPU, objectOffset, modelMutex);
@@ -197,7 +199,7 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
 
   std::atomic_size_t orbitalIndex{orbitalOffset};
   std::atomic_size_t objectIndex{objectOffset};
-  for (WorldSystem sys : worldSystems)
+  for (WorldSystem &sys : worldSystems)
     sys.physics->forEachObject([this, &sys, &orbitalGPU, &objectGPU, &orbitalLookup, &objectLookup, &orbitalModelCapacities, &objectModelCapacities, &orbitalIndex, &objectIndex, &loveNumbers, &tidalFactors, &loveMutex, &tidalMutex, &modelMutex, &objects, &orbitalObjects, &total](Object &obj, size_t i)
                                {
       OrbitalObject* orb = dynamic_cast<OrbitalObject*>(&obj);
@@ -227,20 +229,13 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
         this->processModel(objectModelCapacities, objectLookup, sys.render->getModelFromObjectIndex(i), objectGPU, idx, modelMutex);
       } });
 
-  // orbital MUST be first
-  orbitalGPU.combine(objectGPU);
-
-  orbitalGPU.physics.loveNumbers = loveNumbers;
-  orbitalGPU.physics.tidalFactors = tidalFactors;
-
-  orbitalGPU.total = total;
-
   for (size_t i = 0; i < orbitalLookup.models.size(); i++)
   {
     Range range = instanceManager.reserve(orbitalLookup.models[i], orbitalModelCapacities[i]);
     orbitalGPU.render.modelRangeStart.push_back(range.begin);
     orbitalGPU.render.modelRangeEnd.push_back(range.end);
   }
+  orbitalGPU.render.models = std::move(orbitalLookup.models);
 
   for (size_t i = 0; i < objectLookup.models.size(); i++)
   {
@@ -248,6 +243,15 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
     objectGPU.render.modelRangeStart.push_back(range.begin);
     objectGPU.render.modelRangeEnd.push_back(range.end);
   }
+  objectGPU.render.models = std::move(objectLookup.models);
+
+  // orbital MUST be first
+  orbitalGPU.combine(objectGPU);
+
+  orbitalGPU.physics.loveNumbers = loveNumbers;
+  orbitalGPU.physics.tidalFactors = tidalFactors;
+
+  orbitalGPU.total = total;
 
   return orbitalGPU;
 }

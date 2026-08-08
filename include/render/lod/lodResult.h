@@ -3,7 +3,7 @@
 struct LODResult
 {
   bool visible;
-  int level;
+  uint level;
 
   float scaledMeanRadius;
   float scaledEquatorianRadius;
@@ -11,11 +11,4 @@ struct LODResult
 
   float equatorianScale;
   float polarScale;
-};
-
-namespace LOD
-{
-  constexpr unsigned int Full = 0;
-  constexpr unsigned int Impostor = 1;
-  constexpr unsigned int Point = 2;
 };

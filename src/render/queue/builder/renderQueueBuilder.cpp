@@ -9,6 +9,7 @@
 #include "render/modelSource.h"
 #include "render/renderSystem.h"
 #include "render/lod/manager/lodManager.h"
+#include "render/lod/lodConstants.h"
 
 #include "graphics/model.h"
 
@@ -73,20 +74,20 @@ void RenderQueueBuilder::submit(Model *model, const LODResult &lod, const Transf
   fullInstanceData.scale = glm::vec3(lod.equatorianScale, lod.polarScale, lod.equatorianScale);
 
   // Shadow pass & Reflector pass
-  if (lod.level != LOD::Full && (model->hasFlag(ModelFlags::CastsShadow) || model->hasFlag(ModelFlags::ReflectsLight)))
+  if (lod.level != LOD_FULL && (model->hasFlag(ModelFlags::CastsShadow) || model->hasFlag(ModelFlags::ReflectsLight)))
     this->groups[model->getID()].fullNonLODInstances.push_back(fullInstanceData);
 
   // LOD pass
   if (lod.visible)
     switch (lod.level)
     {
-    case LOD::Full:
+    case LOD_FULL:
     {
       this->groups[model->getID()].fullLODInstances.push_back(fullInstanceData);
       break;
     }
 
-    case LOD::Impostor:
+    case LOD_IMPOSTOR:
     {
       InstancePositionRadiusTexture data;
       data.position = transform.position;
@@ -97,7 +98,7 @@ void RenderQueueBuilder::submit(Model *model, const LODResult &lod, const Transf
       break;
     }
 
-    case LOD::Point:
+    case LOD_POINT:
     {
       InstancePositionRadiusColor data;
       data.position = transform.position;

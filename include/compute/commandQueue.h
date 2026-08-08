@@ -16,7 +16,7 @@ public:
 
   void enqueueFillBuffer(cl_mem buffer, const void *pattern, size_t pattern_size, size_t size, cl_event *event = nullptr);
   void enqueueWriteBuffer(cl_mem buffer, cl_bool blockWrite, size_t offset, size_t size, const void *data);
-  void enqueueReadBuffer(cl_mem buffer, cl_bool blockRead, size_t offset, size_t size, void *store);
+  void enqueueReadBuffer(cl_mem buffer, cl_bool blockRead, size_t offset, size_t size, void *store, cl_event *event = nullptr);
   void enqueueAcquireGLBuffer(const cl_mem buffer);
   void enqueueReleaseGLBuffer(const cl_mem buffer);
   void enqueueNDKernelBuffer(cl_kernel kernel, cl_uint dimensions, const size_t *offset, const size_t *globalWorkSize, const size_t *localWorkSize);

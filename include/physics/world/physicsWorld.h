@@ -35,9 +35,10 @@ private:
   Star *sun;
 
   CommandQueue &queue;
+  Total& total;
 
 public:
-  PhysicsWorld(CommandQueue &queue);
+  PhysicsWorld(CommandQueue &queue, Total& total);
   ~PhysicsWorld();
 
   template <typename Real>

@@ -3,6 +3,7 @@
 #include "render/lod/manager/lodManager.h"
 #include "render/lod/manager/lodManagerGPU.h"
 #include "render/instanceManager.h"
+#include "render/queue/builder/renderQueueBuilderGPU.h"
 
 #include "compute/clBuffer.h"
 
@@ -28,6 +29,7 @@ class RenderWorld
 private:
   LODManager lodManager;
   std::unique_ptr<LODManagerGPU> lodManagerGPU;
+  std::unique_ptr<RenderQueueBuilderGPU> renderQueueBuilderGPU;
   LODSettings lodSettings;
 
   InstanceManager instanceManager;
@@ -40,24 +42,28 @@ private:
   std::vector<Trail *> trailViews;
 
   CommandQueue &queue;
+  Total &total;
 
   CLBuffer instanceColorsBuffer;
   CLBuffer instanceTextureLayersBuffer;
   CLBuffer instanceImportancesBuffer;
-  CLBuffer modelRangeStart;
-  CLBuffer modelRangeEnd;
-  CLBuffer modelFullCount;
+  CLBuffer modelRangeStartBuffer;
+  CLBuffer modelRangeEndBuffer;
+  CLBuffer modelFullCountBuffer;
   uint32_t rangeCount;
+
+  std::vector<Model *> models;
 
   void buildQueue(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
   void reserveModelInstances();
+
 public:
-  RenderWorld(CommandQueue &queue) : queue(queue), lodManager(lodSettings) {};
+  RenderWorld(CommandQueue &queue, Total &total) : queue(queue), lodManager(lodSettings), total(total) {};
   ~RenderWorld() = default;
 
-  void init(size_t totalObjects);
+  void init();
   void initGPU(Context &ctx, RenderDataGPU &gpu);
-  void initLODGPU(Context &ctx, ResourceManager &resourceManager, SharedGPUData &data, size_t totalObjects);
+  void initRenderQueueGPU(Context &ctx, ResourceManager &resourceManager, SharedGPUData &data);
 
   void update(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
 

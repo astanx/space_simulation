@@ -1,5 +1,7 @@
 #include "render/lod/manager/lodManager.h"
 
+#include "render/lod/lodFunctions.h"
+
 #include "render/lod/lodResult.h"
 #include "render/modelSource.h"
 #include "render/frustum.h"
@@ -39,12 +41,12 @@ void LODManager::initImpostor(std::vector<ModelSource *> &modelSources, std::vec
 
   unsigned int layer = ImpostorTextureBindingPoints::Size;
   for (ModelSource *source : modelSources)
-    source->forEachModel([this, layer](Model &model)
-                         { this->bindLayerToImpostorTexture(model, layer); });
+    source->forEachModel([this, &layer](Model &model)
+                         { this->bindLayerToImpostorTexture(model, layer++); });
 
   for (RenderSystem *system : renderSystems)
     for (Model *model : system->getModels())
-      this->bindLayerToImpostorTexture(model, layer);
+      this->bindLayerToImpostorTexture(model, layer++);
 }
 
 void LODManager::initPoint()
@@ -103,7 +105,7 @@ void LODManager::bindLayerToImpostorTexture(Model &model, unsigned int layer)
 
   GL_CALL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, resized.data()));
 
-  model.setImpostorLayer(layer++);
+  model.setImpostorLayer(layer);
 }
 
 void LODManager::bindLayerToImpostorTexture(Model *model, unsigned int layer)
@@ -117,21 +119,14 @@ void LODManager::bindLayerToImpostorTexture(Model *model, unsigned int layer)
   this->bindLayerToImpostorTexture(*model, layer);
 }
 
-int LODManager::getLODLevel(float pixelRadius)
+uint LODManager::getLODLevel(float pixelRadius)
 {
-  if (pixelRadius >= this->settings.pixelRadiusThreshold[LOD::Full])
-    return LOD::Full;
-  else if (pixelRadius >= this->settings.pixelRadiusThreshold[LOD::Impostor])
-    return LOD::Impostor;
-  else
-    return LOD::Point;
+  return ::getLODLevelFromPixelRadius(pixelRadius, this->settings.fullThreshold, this->settings.impostorThreshold);
 }
 
-int LODManager::getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance)
+uint LODManager::getLODLevel(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance)
 {
-  float pixelRadius = this->calculatePixelRadius(position, radius, fov, viewportHeight, importance);
-
-  return this->getLODLevel(pixelRadius);
+  return ::getLODLevel(position, radius, fov, viewportHeight, importance, this->settings.baseMinPixelSize, this->settings.fullThreshold, this->settings.impostorThreshold);
 }
 
 // Public functions
@@ -143,31 +138,12 @@ void LODManager::init(std::vector<ModelSource *> &modelSources, std::vector<Rend
 
 float LODManager::calculatePixelRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance)
 {
-  float d = glm::length(position);
-
-  if (d < EPS)
-    d = 1e-4f;
-
-  float worldToPixel = (viewportHeight * 0.5f) / (d * tan(glm::radians(fov / 2.f)));
-
-  float pixelRadius = radius * worldToPixel * importance;
-
-  float minPixel = this->settings.baseMinPixelSize * importance;
-  pixelRadius = std::max(pixelRadius, minPixel);
-
-  return pixelRadius;
+  return ::calculatePixelRadius(position, radius, fov, viewportHeight, importance, this->settings.baseMinPixelSize);
 }
 
 float LODManager::scaleRadius(const glm::vec3 &position, float radius, float fov, float viewportHeight, float importance)
 {
-  float minPixelSize = this->settings.baseMinPixelSize * importance;
-
-  float pixelWorldSize = (length(position) * 2.f * tan(glm::radians(fov / 2.f))) / viewportHeight;
-  float minWorldRadius = minPixelSize * pixelWorldSize * 0.5f;
-
-  float finalRadius = std::max(radius, minWorldRadius);
-
-  return finalRadius;
+  return ::scaleRadius(position, radius, fov, viewportHeight, importance, this->settings.baseMinPixelSize);
 }
 
 LODResult LODManager::partitionObject(const glm::vec3 &position, float importance, Radii radii, Frustum *frustum, float viewportHeight, float fov)
@@ -186,7 +162,7 @@ LODResult LODManager::partitionObject(const glm::vec3 &position, float importanc
 
   result.level = this->getLODLevel(position, radius, fov, viewportHeight, importance);
 
-  if (result.level == LOD::Full)
+  if (result.level == LOD_FULL)
   {
     result.scaledEquatorianRadius = this->scaleRadius(position, radii.equatorian, fov, viewportHeight, importance);
     result.scaledPolarRadius = this->scaleRadius(position, radii.polar, fov, viewportHeight, importance);
