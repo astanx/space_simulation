@@ -20,7 +20,8 @@ struct WisdomHolmanGPUData : IntegratorGPUData
 
   CLBuffer &angularVelocitiesBuffer;
 
-  CLBuffer &tensorsBuffer;
+  CLBuffer &quadrupoleTensorsBuffer;
+  CLBuffer &inertiaTensorsBuffer;
   CLBuffer &loveIndicesBuffer;
   CLBuffer &tidalFactorIndicesBuffer;
   CLBuffer &loveNumbersBuffer;
@@ -48,7 +49,8 @@ struct WisdomHolmanGPUData : IntegratorGPUData
 
         angularVelocitiesBuffer(physics.angularVelocitiesBuffer),
 
-        tensorsBuffer(physics.tensorsBuffer),
+        quadrupoleTensorsBuffer(physics.quadrupoleTensorsBuffer),
+        inertiaTensorsBuffer(physics.inertiaTensorsBuffer),
         loveIndicesBuffer(physics.loveIndicesBuffer),
         tidalFactorIndicesBuffer(physics.tidalFactorIndicesBuffer),
         loveNumbersBuffer(physics.loveNumbersBuffer),

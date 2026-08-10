@@ -16,6 +16,7 @@ Object::Object(double mass, Radii radii, TidalParameters tidalParameters, Gravit
   this->position = position;
   this->velocity = velocity;
   this->quadrupoleTensor = MomentsMaths::calculateQuadrupoleTensor(mass, radii, this->inertiaProperties, gravityField);
+  this->inertiaTensor = this->inertiaProperties.getInertiaTensor();
   this->acceleration = glm::dvec3(0.0);
   this->orientation = glm::dmat3(1.0);
   this->radii = radii;
@@ -41,6 +42,11 @@ glm::dmat3 Object::getQuadrupoleTensor() const
 {
   return this->quadrupoleTensor;
 }
+glm::dmat3 Object::getInertiaTensor() const
+{
+  return this->inertiaTensor;
+}
+
 glm::dvec3 Object::getAcceleration() const
 {
   return this->acceleration;

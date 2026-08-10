@@ -21,7 +21,8 @@ struct PhysicsDataGPU
   std::vector<Real> meanMotion;
   std::vector<int> centralBodyIndices;
 
-  std::vector<Mat3<Real>> tensors;
+  std::vector<Mat3<Real>> quadrupoleTensors;
+  std::vector<Mat3<Real>> inertiaTensors;
   std::vector<int> loveIndices;
   std::vector<int> tidalFactorIndices;
   std::vector<Real> loveNumbers;
@@ -40,7 +41,8 @@ struct PhysicsDataGPU
     this->meanAnomaly.resize(n);
     this->meanMotion.resize(n);
     this->centralBodyIndices.resize(n);
-    this->tensors.resize(n);
+    this->quadrupoleTensors.resize(n);
+    this->inertiaTensors.resize(n);
     this->loveIndices.resize(n);
     this->tidalFactorIndices.resize(n);
   }
@@ -58,7 +60,8 @@ struct PhysicsDataGPU
     this->meanAnomaly.insert(this->meanAnomaly.end(), std::make_move_iterator(data.meanAnomaly.begin()), std::make_move_iterator(data.meanAnomaly.end()));
     this->meanMotion.insert(this->meanMotion.end(), std::make_move_iterator(data.meanMotion.begin()), std::make_move_iterator(data.meanMotion.end()));
     this->centralBodyIndices.insert(this->centralBodyIndices.end(), std::make_move_iterator(data.centralBodyIndices.begin()), std::make_move_iterator(data.centralBodyIndices.end()));
-    this->tensors.insert(this->tensors.end(), std::make_move_iterator(data.tensors.begin()), std::make_move_iterator(data.tensors.end()));
+    this->quadrupoleTensors.insert(this->quadrupoleTensors.end(), std::make_move_iterator(data.quadrupoleTensors.begin()), std::make_move_iterator(data.quadrupoleTensors.end()));
+    this->inertiaTensors.insert(this->inertiaTensors.end(), std::make_move_iterator(data.inertiaTensors.begin()), std::make_move_iterator(data.inertiaTensors.end()));
     this->loveIndices.insert(this->loveIndices.end(), std::make_move_iterator(data.loveIndices.begin()), std::make_move_iterator(data.loveIndices.end()));
     this->tidalFactorIndices.insert(this->tidalFactorIndices.end(), std::make_move_iterator(data.tidalFactorIndices.begin()), std::make_move_iterator(data.tidalFactorIndices.end()));
   }

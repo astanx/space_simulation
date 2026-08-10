@@ -36,7 +36,7 @@ void WisdomHolmanIntegratorGPU<Real>::initKernels(WisdomHolmanGPUData &gpu, Tota
   this->halfKickKernel.setArg(1, gpu.musBuffer.get());
   this->halfKickKernel.setArg(2, gpu.velocitiesBuffer.get());
   this->halfKickKernel.setArg(3, gpu.angularVelocitiesBuffer.get());
-  this->halfKickKernel.setArg(4, gpu.tensorsBuffer.get());
+  this->halfKickKernel.setArg(4, gpu.quadrupoleTensorsBuffer.get());
   this->halfKickKernel.setArg(5, gpu.meanRadiiBuffer.get());
   this->halfKickKernel.setArg(6, gpu.centralBodyIndicesBuffer.get());
   this->halfKickKernel.setArg(7, gpu.loveIndicesBuffer.get());
@@ -55,13 +55,14 @@ void WisdomHolmanIntegratorGPU<Real>::initKernels(WisdomHolmanGPUData &gpu, Tota
   this->halfKickAngularKernel.setArg(1, gpu.musBuffer.get());
   this->halfKickAngularKernel.setArg(2, gpu.velocitiesBuffer.get());
   this->halfKickAngularKernel.setArg(3, gpu.angularVelocitiesBuffer.get());
-  this->halfKickAngularKernel.setArg(4, gpu.tensorsBuffer.get());
-  this->halfKickAngularKernel.setArg(5, gpu.meanRadiiBuffer.get());
-  this->halfKickAngularKernel.setArg(6, gpu.loveIndicesBuffer.get());
-  this->halfKickAngularKernel.setArg(7, gpu.tidalFactorIndicesBuffer.get());
-  this->halfKickAngularKernel.setArg(8, gpu.loveNumbersBuffer.get());
-  this->halfKickAngularKernel.setArg(9, gpu.tidalFactorsBuffer.get());
-  this->halfKickAngularKernel.setArg(10, sizeof(int), &kernelTotal);
+  this->halfKickAngularKernel.setArg(4, gpu.quadrupoleTensorsBuffer.get());
+  this->halfKickAngularKernel.setArg(5, gpu.inertiaTensorsBuffer.get());
+  this->halfKickAngularKernel.setArg(6, gpu.meanRadiiBuffer.get());
+  this->halfKickAngularKernel.setArg(7, gpu.loveIndicesBuffer.get());
+  this->halfKickAngularKernel.setArg(8, gpu.tidalFactorIndicesBuffer.get());
+  this->halfKickAngularKernel.setArg(9, gpu.loveNumbersBuffer.get());
+  this->halfKickAngularKernel.setArg(10, gpu.tidalFactorsBuffer.get());
+  this->halfKickAngularKernel.setArg(11, sizeof(int), &kernelTotal);
 
   this->driftOrbitalLinearKernel.setArg(0, gpu.positionsBuffer.get());
   this->driftOrbitalLinearKernel.setArg(1, gpu.musBuffer.get());
@@ -87,7 +88,7 @@ void WisdomHolmanIntegratorGPU<Real>::updateDt(Real dt)
   Real kickDt = dt * 0.5;
   this->halfKickKernel.setArg(12, sizeof(Real), &kickDt);
   this->halfKickLinearKernel.setArg(5, sizeof(Real), &kickDt);
-  this->halfKickAngularKernel.setArg(11, sizeof(Real), &kickDt);
+  this->halfKickAngularKernel.setArg(12, sizeof(Real), &kickDt);
   this->driftOrbitalLinearKernel.setArg(11, sizeof(Real), &dt);
   this->driftObjectsLinearKernel.setArg(2, sizeof(Real), &dt);
   this->driftAngularKernel.setArg(2, sizeof(Real), &dt);

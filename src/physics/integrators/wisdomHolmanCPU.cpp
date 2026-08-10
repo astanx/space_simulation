@@ -38,7 +38,7 @@ void WisdomHolmanIntegratorCPU::halfKickAngular(Object *object, const std::vecto
 {
   glm::dvec3 torque = MomentsMaths::calculateTorque(object, objects);
   glm::dvec3 omega = object->getAngularVelocity();
-  glm::dmat3 tensor = object->getInertiaProperties().getInertiaTensor();
+  glm::dmat3 tensor = object->getInertiaTensor();
 
   glm::dvec3 acc = (torque - glm::cross(omega, (tensor * omega))) / tensor;
 

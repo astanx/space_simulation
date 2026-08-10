@@ -247,7 +247,7 @@ dmat4 dmat4_inverse(dmat4 matrix)
 
   real det = a * A11 + b * A12 + c * A13 + d * A14;
 
-  if (fabs(det) < EPS)
+  if (!isfinite(det) || fabs(det) < EPS)
     return dmat4_identity();
 
   real invDet = 1.0 / det;
@@ -281,47 +281,69 @@ dmat4 dmat4_inverse(dmat4 matrix)
 
 dmat3 dmat3_inverse(dmat3 m)
 {
-  real a = m.cols[0].x;
-  real d = m.cols[0].y;
-  real g = m.cols[0].z;
+  real scale = 0.0;
 
-  real b = m.cols[1].x;
-  real e = m.cols[1].y;
-  real h = m.cols[1].z;
+  for (int i = 0; i < 3; i++)
+  {
+    scale = max(scale, fabs(m.cols[i].x));
+    scale = max(scale, fabs(m.cols[i].y));
+    scale = max(scale, fabs(m.cols[i].z));
+  }
 
-  real c = m.cols[2].x;
-  real f = m.cols[2].y;
-  real i = m.cols[2].z;
+  if (!isfinite(scale) || scale < EPS)
+    return dmat3_identity();
 
-  real det = a * (e * i - f * h) -
-                b * (d * i - f * g) +
-                c * (d * h - e * g);
+  real invScale = 1.0 / scale;
 
-  if (fabs(det) < EPS)
+  dmat3 n;
+  n.cols[0] = m.cols[0] * invScale;
+  n.cols[1] = m.cols[1] * invScale;
+  n.cols[2] = m.cols[2] * invScale;
+
+  real a = n.cols[0].x;
+  real d = n.cols[0].y;
+  real g = n.cols[0].z;
+
+  real b = n.cols[1].x;
+  real e = n.cols[1].y;
+  real h = n.cols[1].z;
+
+  real c = n.cols[2].x;
+  real f = n.cols[2].y;
+  real i = n.cols[2].z;
+
+  real det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+
+  if (!isfinite(det) || fabs(det) < EPS)
     return dmat3_identity();
 
   real invDet = 1.0 / det;
 
-  dmat3 mat;
-  mat.cols[0] = (real3)(
-      (e * i - f * h),
-      (f * g - d * i),
-      (d * h - e * g)
+  dmat3 inv;
+
+  inv.cols[0] = (real3)(
+    (e * i - f * h),
+    (f * g - d * i),
+    (d * h - e * g)
   ) * invDet;
 
-  mat.cols[1] = (real3)(
-      (c * h - b * i),
-      (a * i - c * g),
-      (b * g - a * h)
+  inv.cols[1] = (real3)(
+    (c * h - b * i),
+    (a * i - c * g),
+    (b * g - a * h)
   ) * invDet;
 
-  mat.cols[2] = (real3)(
-      (b * f - c * e),
-      (c * d - a * f),
-      (a * e - b * d)
+  inv.cols[2] = (real3)(
+    (b * f - c * e),
+    (c * d - a * f),
+    (a * e - b * d)
   ) * invDet;
 
-  return mat;
+  inv.cols[0] *= invScale;
+  inv.cols[1] *= invScale;
+  inv.cols[2] *= invScale;
+
+  return inv;
 }
 
 mat4 mat4_inverse(mat4 matrix)
@@ -387,47 +409,69 @@ mat4 mat4_inverse(mat4 matrix)
 
 mat3 mat3_inverse(mat3 m)
 {
-  float a = m.cols[0].x;
-  float d = m.cols[0].y;
-  float g = m.cols[0].z;
+  float scale = 0.0;
 
-  float b = m.cols[1].x;
-  float e = m.cols[1].y;
-  float h = m.cols[1].z;
+  for (int i = 0; i < 3; i++)
+  {
+    scale = fmax(scale, fabs(m.cols[i].x));
+    scale = fmax(scale, fabs(m.cols[i].y));
+    scale = fmax(scale, fabs(m.cols[i].z));
+  }
 
-  float c = m.cols[2].x;
-  float f = m.cols[2].y;
-  float i = m.cols[2].z;
+  if (!isfinite(scale) || scale < EPS)
+    return mat3_identity();
 
-  float det = a * (e * i - f * h) -
-                b * (d * i - f * g) +
-                c * (d * h - e * g);
+  float invScale = 1.0 / scale;
 
-  if (fabs(det) < EPS)
+  mat3 n;
+  n.cols[0] = m.cols[0] * invScale;
+  n.cols[1] = m.cols[1] * invScale;
+  n.cols[2] = m.cols[2] * invScale;
+
+  float a = n.cols[0].x;
+  float d = n.cols[0].y;
+  float g = n.cols[0].z;
+
+  float b = n.cols[1].x;
+  float e = n.cols[1].y;
+  float h = n.cols[1].z;
+
+  float c = n.cols[2].x;
+  float f = n.cols[2].y;
+  float i = n.cols[2].z;
+
+  float det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+
+  if (!isfinite(det) || fabs(det) < EPS)
     return mat3_identity();
 
   float invDet = 1.0 / det;
 
-  mat3 mat;
-  mat.cols[0] = (float3)(
-      (e * i - f * h),
-      (f * g - d * i),
-      (d * h - e * g)
+  mat3 inv;
+
+  inv.cols[0] = (float3)(
+    (e * i - f * h),
+    (f * g - d * i),
+    (d * h - e * g)
   ) * invDet;
 
-  mat.cols[1] = (float3)(
-      (c * h - b * i),
-      (a * i - c * g),
-      (b * g - a * h)
+  inv.cols[1] = (float3)(
+    (c * h - b * i),
+    (a * i - c * g),
+    (b * g - a * h)
   ) * invDet;
 
-  mat.cols[2] = (float3)(
-      (b * f - c * e),
-      (c * d - a * f),
-      (a * e - b * d)
+  inv.cols[2] = (float3)(
+    (b * f - c * e),
+    (c * d - a * f),
+    (a * e - b * d)
   ) * invDet;
 
-  return mat;
+  inv.cols[0] *= invScale;
+  inv.cols[1] *= invScale;
+  inv.cols[2] *= invScale;
+
+  return inv;
 }
 
 mat3 mat3_transpose(mat3 m)

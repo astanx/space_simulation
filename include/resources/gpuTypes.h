@@ -1,6 +1,36 @@
 #pragma once
 
+#include "debug/logger.h"
+
 #include <glm/glm.hpp>
+
+template <typename To, typename From>
+constexpr To cast(From value)
+{
+  if constexpr (std::is_floating_point_v<To>)
+  {
+    constexpr To limit = std::numeric_limits<To>::max() * To(0.1);
+    if (value > limit)
+    {
+      Logger::logWarning("GPU Types", "Clamping the value to the positive limit because of float precision");
+      return limit;
+    }
+
+    if (value < -limit)
+    {
+      Logger::logWarning("GPU Types", "Clamping the value to the negative limit because of float precision");
+      return -limit;
+    }
+
+    if (!std::isfinite(value))
+    {
+      Logger::logWarning("GPU Types", "Setting the value to limit because it is not finite");
+      return value > 0 ? limit : -limit;
+    }
+  }
+
+  return static_cast<To>(value);
+}
 
 template <typename Real>
 struct Vec3
@@ -14,9 +44,9 @@ struct Vec3
 
   template <typename T>
   Vec3(const glm::vec<3, T> &v)
-      : x(static_cast<Real>(v.x)),
-        y(static_cast<Real>(v.y)),
-        z(static_cast<Real>(v.z)),
+      : x(cast<Real>(v.x)),
+        y(cast<Real>(v.y)),
+        z(cast<Real>(v.z)),
         pad(0)
   {
   }
@@ -52,10 +82,10 @@ struct Quat
 
   template <typename T>
   Quat(const glm::qua<T> &q)
-      : x(static_cast<Real>(q.x)),
-        y(static_cast<Real>(q.y)),
-        z(static_cast<Real>(q.z)),
-        w(static_cast<Real>(q.w))
+      : x(cast<Real>(q.x)),
+        y(cast<Real>(q.y)),
+        z(cast<Real>(q.z)),
+        w(cast<Real>(q.w))
   {
   }
 };

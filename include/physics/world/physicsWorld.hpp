@@ -26,7 +26,8 @@ void PhysicsWorld::initGPUBuffers(Context &context, PhysicsDataGPU<Real> data)
   this->gpu.meanMotionBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.meanMotion.size() * sizeof(Real), data.meanMotion.data());
   this->gpu.centralBodyIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.centralBodyIndices.size() * sizeof(int), data.centralBodyIndices.data());
 
-  this->gpu.tensorsBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.tensors.size() * sizeof(Mat3<Real>), data.tensors.data());
+  this->gpu.quadrupoleTensorsBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.quadrupoleTensors.size() * sizeof(Mat3<Real>), data.quadrupoleTensors.data());
+  this->gpu.inertiaTensorsBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.inertiaTensors.size() * sizeof(Mat3<Real>), data.inertiaTensors.data());
   this->gpu.loveIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.loveIndices.size() * sizeof(int), data.loveIndices.data());
   this->gpu.tidalFactorIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.tidalFactorIndices.size() * sizeof(int), data.tidalFactorIndices.data());
   this->gpu.loveNumbersBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.loveNumbers.size() * sizeof(Real), data.loveNumbers.data());

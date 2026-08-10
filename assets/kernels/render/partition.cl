@@ -59,10 +59,6 @@ __kernel void partitionObjects(
 
   if (isImpostor[id])
   {
-        printf("POS: %f %f %f \n", pos.x, pos.y, pos.z);
-    printf("COLOR: %f %f %f, TEXTURE: %u, IMPORTANCE: %f \n", instanceColor[id].x,  instanceColor[id].y, instanceColor[id].z, instanceTextureLayer[id], instanceImportance[id]);
-
-
     InstancePositionRadiusTexture instance;
     instance.position = (float3)(pos);
     instance.radius = scaledMeanRadius;

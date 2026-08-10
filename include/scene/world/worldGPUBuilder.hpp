@@ -32,7 +32,8 @@ void WorldGPUBuilder<Real>::processObject(Object *obj, WorldDataGPU<Real> &data,
 
   data.physics.centralBodyIndices[i] = -1;
 
-  data.physics.tensors[i] = static_cast<Mat3<Real>>(obj->getQuadrupoleTensor());
+  data.physics.quadrupoleTensors[i] = static_cast<Mat3<Real>>(obj->getQuadrupoleTensor());
+  data.physics.inertiaTensors[i] = static_cast<Mat3<Real>>(obj->getInertiaTensor());
 
   data.physics.loveIndices[i] = -1;
   data.physics.tidalFactorIndices[i] = -1;
@@ -158,8 +159,6 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
 
   size_t orbitalOffset = 0;
   size_t objectOffset = 0;
-
-  std::cout << "BUILD" << std::endl;
 
   std::mutex loveMutex;
   std::mutex tidalMutex;

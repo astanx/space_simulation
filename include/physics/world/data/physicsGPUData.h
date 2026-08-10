@@ -9,7 +9,8 @@ struct PhysicsGPUData
 
   CLBuffer angularVelocitiesBuffer;
 
-  CLBuffer tensorsBuffer;
+  CLBuffer quadrupoleTensorsBuffer;
+  CLBuffer inertiaTensorsBuffer;
   CLBuffer loveIndicesBuffer;
   CLBuffer tidalFactorIndicesBuffer;
   CLBuffer loveNumbersBuffer;

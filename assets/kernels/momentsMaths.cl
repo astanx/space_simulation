@@ -27,7 +27,7 @@ real3 calculateTorque(ObjectState object, TidalProperties properties,
                         __global real3* positions, __global real3* velocities, __global real* mus, 
                         int i, int count)
 {
-  real3 torque = (real3)(0.0);
+  real3 torque = (real3)(0.0, 0.0, 0.0);
 
   for (int j = 0; j < count; j++)
   {
@@ -40,7 +40,7 @@ real3 calculateTorque(ObjectState object, TidalProperties properties,
     real3 dp = object.position - bodyPosition;
     real d = length(dp);
 
-    if (d == 0.0) continue;
+    if (!isfinite(d) || d < EPS) continue;
 
     torque += calculateGravitationalTorque(dp, d, object.tensor, bodyMu);
     if (properties.isTidal)

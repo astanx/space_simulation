@@ -3,7 +3,7 @@
 #include "real.cl"
 
 __kernel void halfKickAngular(__global real3* positions, __global real* mus, __global real3* velocities,
-                              __global real3* angularVelocities, __global dmat3* tensors, __global real* meanRadii, 
+                              __global real3* angularVelocities, __global dmat3* quadrupoleTensors, __global dmat3* inertiaTensors, __global real* meanRadii, 
                               __global int* loveIndices, __global int* tidalFactorIndices, 
                               __global real* loveNumbers, __global real* tidalFactors,
                               int count, real dt)
@@ -16,7 +16,7 @@ __kernel void halfKickAngular(__global real3* positions, __global real* mus, __g
 
   ObjectState object;
   object.position = positions[id];
-  object.tensor = tensors[id];
+  object.tensor = quadrupoleTensors[id];
   object.angularVelocity = angularVelocities[id];
   object.velocity = velocities[id];
   object.meanRadius = meanRadii[id];
@@ -30,14 +30,11 @@ __kernel void halfKickAngular(__global real3* positions, __global real* mus, __g
   }
 
   real3 torque = calculateTorque(object, properties, positions, velocities, mus, id, count);
-  
+
   real3 omega = angularVelocities[id];
-  dmat3 tensor = tensors[id];
 
-  real3 acc = dmat3_dot_d3(dmat3_inverse(tensor), torque - cross(omega, dmat3_dot_d3(tensor, omega)));
-  //real3 acc = pow(dmat3_dot_d3(tensor, 1 / (torque - cross(omega, dmat3_dot_d3(tensor, omega)))), -1);
-  //real3 acc = (torque - cross(omega, dmat3_dot_d3(tensor, omega))) / tensor;
+  dmat3 inertiaTensor = inertiaTensors[id];
+  real3 acc = dmat3_dot_d3(dmat3_inverse(inertiaTensor), torque - cross(omega, dmat3_dot_d3(inertiaTensor, omega)));
 
-// wrong velocity here fix
   angularVelocities[id] += acc * dt;
 }

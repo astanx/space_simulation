@@ -126,7 +126,7 @@ Application::Application(
   this->renderCtx.settings.exposure = 5e-4;
   this->renderCtx.settings.bloomPower = 0.5;
 
-  this->timeScale = 3600 * 24;
+  this->timeScale =  1;
   this->deltaTime = 0.f;
   this->lastFrame = static_cast<float>(glfwGetTime());
 

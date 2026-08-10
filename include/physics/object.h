@@ -20,6 +20,7 @@ protected:
   glm::dvec3 acceleration;
   glm::dvec3 angularVelocity;
   glm::dmat3 quadrupoleTensor;
+  glm::dmat3 inertiaTensor;
   InertiaProperties inertiaProperties;
   TidalParameters tidalParameters;
 
@@ -34,6 +35,7 @@ public:
   glm::dvec3 getAngularVelocity() const;
   glm::dvec3 getAcceleration() const;
   glm::dmat3 getQuadrupoleTensor() const;
+  glm::dmat3 getInertiaTensor() const;
   const TidalParameters &getTidalParameters();
   InertiaProperties &getInertiaProperties();
   double getMass() const;
