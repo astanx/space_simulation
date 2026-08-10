@@ -8,8 +8,8 @@ __kernel void partitionObjects(
   __global InstanceModelMatrixParts* fullInstances,
   __global InstancePositionRadiusTexture* impostorInstances,
   __global InstancePositionRadiusColor* pointInstances,
-  __global uint* isFull, __global uint* isImpostor, __global uint* isPoint,
-  __global uint* fullOffset, __global uint* impostorOffset, __global uint* pointOffset,
+  __global uint* isFull, __global uint* isNonFull, __global uint* isImpostor, __global uint* isPoint,
+  __global uint* fullOffset, __global uint* nonFullOffset, __global uint* impostorOffset, __global uint* pointOffset,
   __global real3* positions, __global dquat* orientations,
   __global real* meanRadii, __global real* polarRadii, __global real* equatorianRadii,
   __global float3* instanceColor, __global uint* instanceTextureLayer, __global float* instanceImportance,
@@ -34,7 +34,7 @@ __kernel void partitionObjects(
   if (id == modelRangeStart[modelID])
    modelFullCount[modelID] = fullOffset[modelRangeEnd[modelID] - 1] + isFull[modelRangeEnd[modelID] - 1] - fullOffset[modelRangeStart[modelID]];
 
-  if (isFull[id])
+  if (isFull[id] || isNonFull[id])
   {
     real equatorianRadius = equatorianRadii[id];
     real polarRadius = polarRadii[id];
@@ -51,10 +51,16 @@ __kernel void partitionObjects(
     instance.position = (float3)(pos);
     instance.orientation = orientation;
     instance.scale = (float3)(equatorian, polar, equatorian);
-
-    uint localOffset = fullOffset[id] - fullOffset[modelRangeStart[modelID]];
-
-    fullInstances[modelRangeStart[modelID] + localOffset] = instance;
+    if (isFull[id])
+    {
+      uint localOffset = fullOffset[id] - fullOffset[modelRangeStart[modelID]];
+      fullInstances[modelRangeStart[modelID] + localOffset] = instance;
+    }
+    else if (isNonFull[id])
+    {
+      uint localOffset = nonFullOffset[id] - nonFullOffset[modelRangeStart[modelID]];
+      fullInstances[modelRangeStart[modelID] + modelFullCount[modelID]] = instance;
+    }
   }
 
   if (isImpostor[id])

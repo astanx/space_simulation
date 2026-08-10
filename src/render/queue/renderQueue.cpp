@@ -11,6 +11,8 @@ void RenderQueue::clear()
 {
   this->coreBatches.clear();
   this->tangentBatches.clear();
+  this->shadowBatches.clear();
+  this->reflectorBatches.clear();
 }
 
 void RenderQueue::addCoreBatch(RenderBatch batch)

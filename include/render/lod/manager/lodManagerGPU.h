@@ -1,5 +1,7 @@
 #pragma once
 
+#include "render/lod/manager/scan.h"
+
 #include "render/world/data/renderDataGPU.h"
 
 #include "compute/commandQueue.h"
@@ -20,6 +22,10 @@ struct LODGPUData
   CLBuffer &positions;
   CLBuffer &meanRadii;
   CLBuffer &instanceImportances;
+  CLBuffer &modelRangeStart;
+  CLBuffer &modelRangeEnd;
+  CLBuffer &isNonFullable;
+  uint32_t rangeCount;
 };
 
 class LODManagerGPU
@@ -28,32 +34,12 @@ private:
   size_t localScanSize = 128;
   size_t groupCount;
 
-  Kernel &fullLocalScanKernel;
-  Kernel &impostorLocalScanKernel;
-  Kernel &pointLocalScanKernel;
-  Kernel &fullGroupScanKernel;
-  Kernel &impostorGroupScanKernel;
-  Kernel &pointGroupScanKernel;
-  Kernel &fullGroupOffsetScanKernel;
-  Kernel &impostorGroupOffsetScanKernel;
-  Kernel &pointGroupOffsetScanKernel;
+  Scan fullScan;
+  Scan nonFullScan;
+  Scan impostorScan;
+  Scan pointScan;
+
   Kernel &lodPassKernel;
-
-  CLBuffer isFullBuffer;
-  CLBuffer isImpostorBuffer;
-  CLBuffer isPointBuffer;
-
-  CLBuffer fullOffsetBuffer;
-  CLBuffer impostorOffsetBuffer;
-  CLBuffer pointOffsetBuffer;
-
-  CLBuffer fullGroupSumsBuffer;
-  CLBuffer impostorGroupSumsBuffer;
-  CLBuffer pointGroupSumsBuffer;
-
-  CLBuffer fullGroupOffsetsBuffer;
-  CLBuffer impostorGroupOffsetsBuffer;
-  CLBuffer pointGroupOffsetsBuffer;
 
   std::queue<cl_event> events;
 
@@ -66,13 +52,15 @@ public:
   ~LODManagerGPU() = default;
 
   void init(Context &ctx, CommandQueue &queue, LODGPUData &data, LODSettings &settings, size_t totalObjects);
-  void update(CommandQueue &queue, const Camera& camera, FrameContext& ctx, size_t totalObjects);
+  void update(CommandQueue &queue, const Camera &camera, FrameContext &ctx, size_t totalObjects);
 
-  CLBuffer &getIsFullBuffer() { return this->isFullBuffer; };
-  CLBuffer &getIsImpostorBuffer() { return this->isImpostorBuffer; };
-  CLBuffer &getIsPointBuffer() { return this->isPointBuffer; };
+  CLBuffer &getIsFullBuffer() { return this->fullScan.getIsBuffer(); };
+  CLBuffer &getIsNonFullBuffer() { return this->nonFullScan.getIsBuffer(); };
+  CLBuffer &getIsImpostorBuffer() { return this->impostorScan.getIsBuffer(); };
+  CLBuffer &getIsPointBuffer() { return this->pointScan.getIsBuffer(); };
 
-  CLBuffer &getFullOffsetBuffer() { return this->fullOffsetBuffer; };
-  CLBuffer &getImpostorOffsetBuffer() { return this->impostorOffsetBuffer; };
-  CLBuffer &getPointOffsetBuffer() { return this->pointOffsetBuffer; };
+  CLBuffer &getFullOffsetBuffer() { return this->fullScan.getOffsetBuffer(); };
+  CLBuffer &getNonFullOffsetBuffer() { return this->nonFullScan.getOffsetBuffer(); };
+  CLBuffer &getImpostorOffsetBuffer() { return this->impostorScan.getOffsetBuffer(); };
+  CLBuffer &getPointOffsetBuffer() { return this->pointScan.getOffsetBuffer(); };
 };

@@ -75,7 +75,10 @@ void RenderQueueBuilder::submit(Model *model, const LODResult &lod, const Transf
 
   // Shadow pass & Reflector pass
   if (lod.level != LOD_FULL && (model->hasFlag(ModelFlags::CastsShadow) || model->hasFlag(ModelFlags::ReflectsLight)))
+  {
+    std::cout << "NE LOH" << std::endl;
     this->groups[model->getID()].fullNonLODInstances.push_back(fullInstanceData);
+  }
 
   // LOD pass
   if (lod.visible)

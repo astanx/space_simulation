@@ -152,6 +152,7 @@ add_executable(Space
     src/render/modelSource.cpp
     src/render/instanceManager.cpp
     # LOD
+    src/render/lod/scan.cpp
     src/render/lod/lodManager.cpp
     src/render/lod/lodManagerGPU.cpp
     # Queue

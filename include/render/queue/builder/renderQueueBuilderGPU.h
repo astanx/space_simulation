@@ -37,9 +37,11 @@ struct RenderQueueGPUData
   CLBuffer &modelRangeEnd;
 
   CLBuffer &isFullBuffer;
+  CLBuffer &isNonFullBuffer;
   CLBuffer &isImpostorBuffer;
   CLBuffer &isPointBuffer;
   CLBuffer &fullOffsetBuffer;
+  CLBuffer &nonFullOffsetBuffer;
   CLBuffer &impostorOffsetBuffer;
   CLBuffer &pointOffsetBuffer;
 

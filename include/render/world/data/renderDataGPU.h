@@ -15,6 +15,7 @@ struct RenderDataGPU
   std::vector<float> instanceImportances;
   std::vector<uint32_t> modelRangeStart;
   std::vector<uint32_t> modelRangeEnd;
+  std::vector<uint32_t> isNonFullable;
   std::vector<Model *> models;
 
   void resize(size_t n)
@@ -31,6 +32,7 @@ struct RenderDataGPU
     this->instanceImportances.insert(this->instanceImportances.end(), std::make_move_iterator(data.instanceImportances.begin()), std::make_move_iterator(data.instanceImportances.end()));
     this->modelRangeStart.insert(this->modelRangeStart.end(), std::make_move_iterator(data.modelRangeStart.begin()), std::make_move_iterator(data.modelRangeStart.end()));
     this->modelRangeEnd.insert(this->modelRangeEnd.end(), std::make_move_iterator(data.modelRangeEnd.begin()), std::make_move_iterator(data.modelRangeEnd.end()));
+    this->isNonFullable.insert(this->isNonFullable.end(), std::make_move_iterator(data.isNonFullable.begin()), std::make_move_iterator(data.isNonFullable.end()));
     this->models.insert(this->models.end(), std::make_move_iterator(data.models.begin()), std::make_move_iterator(data.models.end()));
   }
 };

@@ -50,6 +50,7 @@ private:
   CLBuffer modelRangeStartBuffer;
   CLBuffer modelRangeEndBuffer;
   CLBuffer modelFullCountBuffer;
+  CLBuffer isNonFullableBuffer;
   uint32_t rangeCount;
 
   std::vector<Model *> models;

@@ -172,12 +172,15 @@ namespace Res
   const std::string GROUP_OFFSET_SCAN_KERNEL = "scanGroupOffset";
 
   const std::string LOD_FULL_LOCAL_SCAN_KERNEL = "scanLocalFullLOD";
+  const std::string LOD_NON_FULL_LOCAL_SCAN_KERNEL = "scanLocalNonFullLOD";
   const std::string LOD_IMPOSTOR_LOCAL_SCAN_KERNEL = "scanLocalImpostorLOD";
   const std::string LOD_POINT_LOCAL_SCAN_KERNEL = "scanLocalPointLOD";
   const std::string LOD_FULL_GROUP_SCAN_KERNEL = "scanGroupFullLOD";
+  const std::string LOD_NON_FULL_GROUP_SCAN_KERNEL = "scanGroupNonFullLOD";
   const std::string LOD_IMPOSTOR_GROUP_SCAN_KERNEL = "scanGroupImpostorLOD";
   const std::string LOD_POINT_GROUP_SCAN_KERNEL = "scanGroupPointGroudLOD";
   const std::string LOD_FULL_GROUP_OFFSET_SCAN_KERNEL = "scanGroupOffsetFullLOD";
+  const std::string LOD_NON_FULL_GROUP_OFFSET_SCAN_KERNEL = "scanGroupOffsetNonFullLOD";
   const std::string LOD_IMPOSTOR_GROUP_OFFSET_SCAN_KERNEL = "scanGroupOffsetImpostorLOD";
   const std::string LOD_POINT_GROUP_OFFSET_SCAN_KERNEL = "scanGroupOffsetPointLOD";
   const std::string LOD_PASS_KERNEL = "lodPass";

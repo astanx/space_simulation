@@ -54,6 +54,7 @@ Model::Model(Material &material, const std::string &OBJfile, ModelFlags flags, T
 Model::Model(Mesh &mesh, ModelFlags flags)
 {
   this->mesh = &mesh;
+  this->flags = flags;
   this->mesh->setInstanceLayout(InstanceLayout::ModelMatrixParts);
 }
 

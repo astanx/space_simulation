@@ -233,6 +233,7 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
     Range range = instanceManager.reserve(orbitalLookup.models[i], orbitalModelCapacities[i]);
     orbitalGPU.render.modelRangeStart.push_back(range.begin);
     orbitalGPU.render.modelRangeEnd.push_back(range.end);
+    orbitalGPU.render.isNonFullable.push_back(orbitalLookup.models[i]->hasFlag(ModelFlags::None) ? 0 : 1);
   }
   orbitalGPU.render.models = std::move(orbitalLookup.models);
 
@@ -241,6 +242,7 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
     Range range = instanceManager.reserve(objectLookup.models[i], objectModelCapacities[i]);
     objectGPU.render.modelRangeStart.push_back(range.begin);
     objectGPU.render.modelRangeEnd.push_back(range.end);
+    objectGPU.render.isNonFullable.push_back(objectLookup.models[i]->hasFlag(ModelFlags::CastsShadow | ModelFlags::ReflectsLight) ? 0 : 1);
   }
   objectGPU.render.models = std::move(objectLookup.models);
 

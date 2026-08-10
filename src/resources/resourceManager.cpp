@@ -54,13 +54,13 @@ Texture &ResourceManager::LoadTexture(const std::string &name, const std::string
 
 Model &ResourceManager::LoadModel(const std::string &name, Material &mat, Mesh &mesh, ModelFlags flags)
 {
-  this->models[name] = std::make_unique<Model>(mat, mesh);
+  this->models[name] = std::make_unique<Model>(mat, mesh, flags);
   registry.registerModel(this->models[name].get());
   return *this->models[name];
 }
 Model &ResourceManager::LoadModel(const std::string &name, const std::string &material_name, const std::string &mesh_name, ModelFlags flags)
 {
-  this->models[name] = std::make_unique<Model>(this->GetMaterial(material_name), this->GetMesh(mesh_name));
+  this->models[name] = std::make_unique<Model>(this->GetMaterial(material_name), this->GetMesh(mesh_name), flags);
   registry.registerModel(this->models[name].get());
   return *this->models[name];
 }

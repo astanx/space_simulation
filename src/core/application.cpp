@@ -126,7 +126,7 @@ Application::Application(
   this->renderCtx.settings.exposure = 5e-4;
   this->renderCtx.settings.bloomPower = 0.5;
 
-  this->timeScale =  1;
+  this->timeScale = 86400;
   this->deltaTime = 0.f;
   this->lastFrame = static_cast<float>(glfwGetTime());
 
@@ -167,12 +167,15 @@ Application::Application(
 
   this->resourceManager.LoadProgram(Res::RENDER_QUEUE_PROGRAM, "assets/kernels/render/render.cl", Res::MAIN_CONTEXT);
   this->resourceManager.LoadKernel(Res::LOD_FULL_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
   this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
   this->resourceManager.LoadKernel(Res::LOD_POINT_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
   this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
   this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
   this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
   this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
   this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
   this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
   this->resourceManager.LoadKernel(Res::LOD_PASS_KERNEL, Res::LOD_PASS_KERNEL, Res::RENDER_QUEUE_PROGRAM);

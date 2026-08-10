@@ -27,26 +27,28 @@ void RenderQueueBuilderGPU::initKernels(RenderQueueGPUData &data, LODSettings &s
   this->partitionObjectsKernel.setArg(1, data.impostorInstances.get());
   this->partitionObjectsKernel.setArg(2, data.pointInstances.get());
   this->partitionObjectsKernel.setArg(3, data.isFullBuffer.get());
-  this->partitionObjectsKernel.setArg(4, data.isImpostorBuffer.get());
-  this->partitionObjectsKernel.setArg(5, data.isPointBuffer.get());
-  this->partitionObjectsKernel.setArg(6, data.fullOffsetBuffer.get());
-  this->partitionObjectsKernel.setArg(7, data.impostorOffsetBuffer.get());
-  this->partitionObjectsKernel.setArg(8, data.pointOffsetBuffer.get());
-  this->partitionObjectsKernel.setArg(9, data.positions.get());
-  this->partitionObjectsKernel.setArg(10, data.orientations.get());
-  this->partitionObjectsKernel.setArg(11, data.meanRadii.get());
-  this->partitionObjectsKernel.setArg(12, data.polarRadii.get());
-  this->partitionObjectsKernel.setArg(13, data.equatorianRadii.get());
-  this->partitionObjectsKernel.setArg(14, data.instanceColors.get());
-  this->partitionObjectsKernel.setArg(15, data.instanceTextureLayers.get());
-  this->partitionObjectsKernel.setArg(16, data.instanceImportances.get());
-  this->partitionObjectsKernel.setArg(17, data.modelRangeStart.get());
-  this->partitionObjectsKernel.setArg(18, data.modelRangeEnd.get());
-  this->partitionObjectsKernel.setArg(19, this->modelFullCountBuffer.get());
-  this->partitionObjectsKernel.setArg(20, this->impostorCountBuffer.get());
-  this->partitionObjectsKernel.setArg(21, this->pointCountBuffer.get());
-  this->partitionObjectsKernel.setArg(22, sizeof(data.rangeCount), &data.rangeCount);
-  this->partitionObjectsKernel.setArg(25, sizeof(settings.baseMinPixelSize), &settings.baseMinPixelSize);
+  this->partitionObjectsKernel.setArg(4, data.isNonFullBuffer.get());
+  this->partitionObjectsKernel.setArg(5, data.isImpostorBuffer.get());
+  this->partitionObjectsKernel.setArg(6, data.isPointBuffer.get());
+  this->partitionObjectsKernel.setArg(7, data.fullOffsetBuffer.get());
+  this->partitionObjectsKernel.setArg(8, data.nonFullOffsetBuffer.get());
+  this->partitionObjectsKernel.setArg(9, data.impostorOffsetBuffer.get());
+  this->partitionObjectsKernel.setArg(10, data.pointOffsetBuffer.get());
+  this->partitionObjectsKernel.setArg(11, data.positions.get());
+  this->partitionObjectsKernel.setArg(12, data.orientations.get());
+  this->partitionObjectsKernel.setArg(13, data.meanRadii.get());
+  this->partitionObjectsKernel.setArg(14, data.polarRadii.get());
+  this->partitionObjectsKernel.setArg(15, data.equatorianRadii.get());
+  this->partitionObjectsKernel.setArg(16, data.instanceColors.get());
+  this->partitionObjectsKernel.setArg(17, data.instanceTextureLayers.get());
+  this->partitionObjectsKernel.setArg(18, data.instanceImportances.get());
+  this->partitionObjectsKernel.setArg(19, data.modelRangeStart.get());
+  this->partitionObjectsKernel.setArg(20, data.modelRangeEnd.get());
+  this->partitionObjectsKernel.setArg(21, this->modelFullCountBuffer.get());
+  this->partitionObjectsKernel.setArg(22, this->impostorCountBuffer.get());
+  this->partitionObjectsKernel.setArg(23, this->pointCountBuffer.get());
+  this->partitionObjectsKernel.setArg(24, sizeof(data.rangeCount), &data.rangeCount);
+  this->partitionObjectsKernel.setArg(27, sizeof(settings.baseMinPixelSize), &settings.baseMinPixelSize);
 }
 
 void RenderQueueBuilderGPU::initBuffers(Context &ctx, CommandQueue &queue, size_t modelCount)
@@ -67,9 +69,9 @@ void RenderQueueBuilderGPU::updateKernels(const Camera &camera, FrameContext &ct
   float fov = camera.getFOV();
   // size fix here
   Vec3<float> camPos = static_cast<Vec3<float>>(camera.getPosition());
-  this->partitionObjectsKernel.setArg(23, sizeof(fov), &fov);
-  this->partitionObjectsKernel.setArg(24, sizeof(ctx.height), &ctx.height);
-  this->partitionObjectsKernel.setArg(26, sizeof(camPos), &camPos);
+  this->partitionObjectsKernel.setArg(25, sizeof(fov), &fov);
+  this->partitionObjectsKernel.setArg(26, sizeof(ctx.height), &ctx.height);
+  this->partitionObjectsKernel.setArg(28, sizeof(camPos), &camPos);
 }
 
 // Constructor
@@ -123,10 +125,16 @@ void RenderQueueBuilderGPU::build(CommandQueue &commandQueue, RenderQueue &rende
 
   for (size_t i = 0; i < models.size(); i++)
   {
+    Range allocation = instanceManager.getAllocation(models[i]);
+    if (models[i]->hasFlag(ModelFlags::CastsShadow))
+      renderQueue.addShadowBatch({models[i], allocation});
+
+    if (models[i]->hasFlag(ModelFlags::ReflectsLight))
+      renderQueue.addReflectorBatch({models[i], allocation});
+
     if (fullCounts[i] == 0)
       continue;
 
-    Range allocation = instanceManager.getAllocation(models[i]);
     Range range;
     range.begin = allocation.begin;
     range.end = allocation.begin + fullCounts[i];
@@ -135,12 +143,5 @@ void RenderQueueBuilderGPU::build(CommandQueue &commandQueue, RenderQueue &rende
       renderQueue.addTangentBatch({models[i], range});
     else
       renderQueue.addCoreBatch({models[i], range});
-
-    // fix later
-    // if (models[i]->hasFlag(ModelFlags::CastsShadow))
-    //   renderQueue.addShadowBatch({models[i], fullRange});
-
-    // if (models[i]->hasFlag(ModelFlags::ReflectsLight))
-    //   renderQueue.addReflectorBatch({models[i], fullRange});
   }
 }
