@@ -12,7 +12,7 @@ __kernel void partitionObjects(
   __global uint* fullOffset, __global uint* nonFullOffset, __global uint* impostorOffset, __global uint* pointOffset,
   __global real3* positions, __global dquat* orientations,
   __global real* meanRadii, __global real* polarRadii, __global real* equatorianRadii,
-  __global float3* instanceColor, __global uint* instanceTextureLayer, __global float* instanceImportance,
+  __global float3* modelColor, __global uint* modelTextureLayer, __global float* modelImportance,
   __global uint* modelRangeStart, __global uint* modelRangeEnd, __global uint* modelFullCount, __global uint* impostorCount, __global uint* pointCount, 
   uint rangeCount, float fov, float viewportHeight, float baseMinPixelSize, real3 camPosition
   )
@@ -20,8 +20,9 @@ __kernel void partitionObjects(
   uint id = get_global_id(0);
 
   real3 pos = worldToViewSpaceVec(positions[id], camPosition);
+  uint modelID = findModelID(id, modelRangeStart, modelRangeEnd, rangeCount);
 
-  float importance = instanceImportance[id];
+  float importance = modelImportance[modelID];
   float scaledMeanRadius = scaleRadius(pos, meanRadii[id], fov, viewportHeight, importance, baseMinPixelSize);
 
   if (id == 0)
@@ -30,7 +31,6 @@ __kernel void partitionObjects(
     impostorCount[0] = impostorOffset[get_global_size(0) - 1] + isImpostor[get_global_size(0) - 1];
   }
 
-  uint modelID = findModelID(id, modelRangeStart, modelRangeEnd, rangeCount);
   if (id == modelRangeStart[modelID])
    modelFullCount[modelID] = fullOffset[modelRangeEnd[modelID] - 1] + isFull[modelRangeEnd[modelID] - 1] - fullOffset[modelRangeStart[modelID]];
 
@@ -68,7 +68,7 @@ __kernel void partitionObjects(
     InstancePositionRadiusTexture instance;
     instance.position = (float3)(pos);
     instance.radius = scaledMeanRadius;
-    instance.textureLayer = instanceTextureLayer[id];
+    instance.textureLayer = modelTextureLayer[modelID];
     impostorInstances[impostorOffset[id]] = instance;
   }
 
@@ -77,7 +77,7 @@ __kernel void partitionObjects(
     InstancePositionRadiusColor instance;
     instance.position = (float3)(pos);
     instance.radius = scaledMeanRadius;
-    instance.color = instanceColor[id];
+    instance.color = modelColor[modelID];
     pointInstances[pointOffset[id]] = instance;
   }
 }

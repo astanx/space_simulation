@@ -21,7 +21,7 @@ struct LODGPUData
 {
   CLBuffer &positions;
   CLBuffer &meanRadii;
-  CLBuffer &instanceImportances;
+  CLBuffer &modelImportances;
   CLBuffer &modelRangeStart;
   CLBuffer &modelRangeEnd;
   CLBuffer &isNonFullable;

@@ -35,7 +35,7 @@ void LODManagerGPU::initKernels(LODGPUData &data, LODSettings &settings, size_t 
   this->lodPassKernel.setArg(3, this->getIsPointBuffer().get());
   this->lodPassKernel.setArg(4, data.positions.get());
   this->lodPassKernel.setArg(5, data.meanRadii.get());
-  this->lodPassKernel.setArg(6, data.instanceImportances.get());
+  this->lodPassKernel.setArg(6, data.modelImportances.get());
   this->lodPassKernel.setArg(7, data.modelRangeStart.get());
   this->lodPassKernel.setArg(8, data.modelRangeEnd.get());
   this->lodPassKernel.setArg(9, data.isNonFullable.get());

@@ -27,9 +27,9 @@ struct RenderQueueGPUData
   CLBuffer &meanRadii;
   CLBuffer &polarRadii;
   CLBuffer &equatorianRadii;
-  CLBuffer &instanceImportances;
-  CLBuffer &instanceColors;
-  CLBuffer &instanceTextureLayers;
+  CLBuffer &modelImportances;
+  CLBuffer &modelColors;
+  CLBuffer &modelTextureLayers;
   CLBuffer &fullInstances;
   CLBuffer &impostorInstances;
   CLBuffer &pointInstances;

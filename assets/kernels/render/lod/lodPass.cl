@@ -4,10 +4,9 @@
 #include "render/frustum.h"
 #include "camera/worldToView.h"
 
-//may be should move intanceImportance to modelID -> importance
 __kernel void lodPass(
   __global uint* isFull, __global uint* isNotFull, __global uint* isImpostor, __global uint* isPoint, __global real3* positions, 
-  __global real* meanRadii, __global float* instanceImportance, 
+  __global real* meanRadii, __global float* modelImportance, 
   __global uint* modelRangeStart, __global uint* modelRangeEnd,
   __global uint* isNonFullable,
   uint rangeCount,  float fov, float viewportHeight, float baseMinPixelSize, 
@@ -22,7 +21,9 @@ __kernel void lodPass(
   isImpostor[id] = 0;
   isPoint[id] = 0;
 
-  float importance = instanceImportance[id];
+  uint modelID = findModelID(id, modelRangeStart, modelRangeEnd, rangeCount);
+
+  float importance = modelImportance[modelID];
   real meanRadius = meanRadii[id];
   real3 pos = worldToViewSpaceVec(positions[id], camPosition);
 
@@ -42,8 +43,6 @@ __kernel void lodPass(
   case LOD_IMPOSTOR:
   {
     isImpostor[id] = 1;
-    
-    uint modelID = findModelID(id, modelRangeStart, modelRangeEnd, rangeCount);
     if (isNonFullable[modelID])
       isNotFull[id] = 1;
     break;
@@ -51,8 +50,6 @@ __kernel void lodPass(
   case LOD_POINT:
   {
     isPoint[id] = 1;
-
-    uint modelID = findModelID(id, modelRangeStart, modelRangeEnd, rangeCount);
     if (isNonFullable[modelID])
       isNotFull[id] = 1;
     break;

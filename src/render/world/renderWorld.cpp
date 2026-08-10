@@ -57,9 +57,9 @@ void RenderWorld::initGPU(Context &ctx, RenderDataGPU &gpu)
 {
   cl_context context = ctx.get();
 
-  this->instanceColorsBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.instanceColors.size() * sizeof(Vec3<float>), gpu.instanceColors.data());
-  this->instanceImportancesBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.instanceImportances.size() * sizeof(float), gpu.instanceImportances.data());
-  this->instanceTextureLayersBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.instanceTextureLayers.size() * sizeof(uint32_t), gpu.instanceTextureLayers.data());
+  this->modelColorsBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelColors.size() * sizeof(Vec3<float>), gpu.modelColors.data());
+  this->modelImportancesBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelImportances.size() * sizeof(float), gpu.modelImportances.data());
+  this->modelTextureLayersBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelTextureLayers.size() * sizeof(uint32_t), gpu.modelTextureLayers.data());
   this->modelRangeStartBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelRangeStart.size() * sizeof(uint32_t), gpu.modelRangeStart.data());
   this->modelRangeEndBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelRangeEnd.size() * sizeof(uint32_t), gpu.modelRangeEnd.data());
   this->isNonFullableBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.isNonFullable.size() * sizeof(uint32_t), gpu.isNonFullable.data());
@@ -74,7 +74,7 @@ void RenderWorld::initRenderQueueGPU(Context &ctx, ResourceManager &resourceMana
 {
   LODGPUData lodData{data.positionsBuffer,
                      data.meanRadiiBuffer,
-                     this->instanceImportancesBuffer,
+                     this->modelImportancesBuffer,
                      this->modelRangeStartBuffer,
                      this->modelRangeEndBuffer,
                      this->isNonFullableBuffer,
@@ -89,9 +89,9 @@ void RenderWorld::initRenderQueueGPU(Context &ctx, ResourceManager &resourceMana
       data.meanRadiiBuffer,
       data.polarRadiiBuffer,
       data.equatorianRadiiBuffer,
-      this->instanceImportancesBuffer,
-      this->instanceColorsBuffer,
-      this->instanceTextureLayersBuffer,
+      this->modelImportancesBuffer,
+      this->modelColorsBuffer,
+      this->modelTextureLayersBuffer,
       this->instanceManager.getFullInstancesBuffer(),
       this->instanceManager.getImpostorInstancesBuffer(),
       this->instanceManager.getPointInstancesBuffer(),

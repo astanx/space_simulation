@@ -77,10 +77,6 @@ void WorldGPUBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, L
   if (!model)
     Logger::logFatal("World GPU Builder", "Model is null");
 
-  data.render.instanceTextureLayers[i] = model->getImpostorLayer();
-  data.render.instanceColors[i] = static_cast<Vec3<float>>(model->getAverageColor());
-  data.render.instanceImportances[i] = model->getImportance();
-
   {
     std::lock_guard<std::mutex> lock(modelMutex);
     size_t modelIndex;
@@ -92,6 +88,10 @@ void WorldGPUBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, L
 
       lookup.table[model] = modelIndex;
       lookup.models.push_back(model);
+      data.render.isNonFullable.push_back(model->hasFlag(ModelFlags::None) ? 0 : 1);
+      data.render.modelImportances.push_back(model->getImportance());
+      data.render.modelColors.push_back(model->getAverageColor());
+      data.render.modelTextureLayers.push_back(model->getImpostorLayer());
       modelCapacities.push_back(0);
     }
     else
@@ -233,7 +233,6 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
     Range range = instanceManager.reserve(orbitalLookup.models[i], orbitalModelCapacities[i]);
     orbitalGPU.render.modelRangeStart.push_back(range.begin);
     orbitalGPU.render.modelRangeEnd.push_back(range.end);
-    orbitalGPU.render.isNonFullable.push_back(orbitalLookup.models[i]->hasFlag(ModelFlags::None) ? 0 : 1);
   }
   orbitalGPU.render.models = std::move(orbitalLookup.models);
 
@@ -242,7 +241,6 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
     Range range = instanceManager.reserve(objectLookup.models[i], objectModelCapacities[i]);
     objectGPU.render.modelRangeStart.push_back(range.begin);
     objectGPU.render.modelRangeEnd.push_back(range.end);
-    objectGPU.render.isNonFullable.push_back(objectLookup.models[i]->hasFlag(ModelFlags::CastsShadow | ModelFlags::ReflectsLight) ? 0 : 1);
   }
   objectGPU.render.models = std::move(objectLookup.models);
 

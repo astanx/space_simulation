@@ -44,9 +44,9 @@ private:
   CommandQueue &queue;
   Total &total;
 
-  CLBuffer instanceColorsBuffer;
-  CLBuffer instanceTextureLayersBuffer;
-  CLBuffer instanceImportancesBuffer;
+  CLBuffer modelColorsBuffer;
+  CLBuffer modelTextureLayersBuffer;
+  CLBuffer modelImportancesBuffer;
   CLBuffer modelRangeStartBuffer;
   CLBuffer modelRangeEndBuffer;
   CLBuffer modelFullCountBuffer;

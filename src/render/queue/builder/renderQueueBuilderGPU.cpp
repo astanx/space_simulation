@@ -39,9 +39,9 @@ void RenderQueueBuilderGPU::initKernels(RenderQueueGPUData &data, LODSettings &s
   this->partitionObjectsKernel.setArg(13, data.meanRadii.get());
   this->partitionObjectsKernel.setArg(14, data.polarRadii.get());
   this->partitionObjectsKernel.setArg(15, data.equatorianRadii.get());
-  this->partitionObjectsKernel.setArg(16, data.instanceColors.get());
-  this->partitionObjectsKernel.setArg(17, data.instanceTextureLayers.get());
-  this->partitionObjectsKernel.setArg(18, data.instanceImportances.get());
+  this->partitionObjectsKernel.setArg(16, data.modelColors.get());
+  this->partitionObjectsKernel.setArg(17, data.modelTextureLayers.get());
+  this->partitionObjectsKernel.setArg(18, data.modelImportances.get());
   this->partitionObjectsKernel.setArg(19, data.modelRangeStart.get());
   this->partitionObjectsKernel.setArg(20, data.modelRangeEnd.get());
   this->partitionObjectsKernel.setArg(21, this->modelFullCountBuffer.get());
