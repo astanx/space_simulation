@@ -250,7 +250,5 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
   orbitalGPU.physics.loveNumbers = loveNumbers;
   orbitalGPU.physics.tidalFactors = tidalFactors;
 
-  orbitalGPU.total = total;
-
   return orbitalGPU;
 }

@@ -182,6 +182,9 @@ add_executable(Space
     src/physics/atmosphere.cpp
         # World
         src/physics/world/physicsWorld.cpp
+            # Backend
+            src/physics/world/backend/physicsBackendCPU.cpp
+            src/physics/world/backend/physicsBackendGPU.cpp
         # Integrators
         src/physics/integrators/integrator.cpp
         src/physics/integrators/wisdomHolmanCPU.cpp

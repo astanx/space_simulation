@@ -4,6 +4,8 @@
 #include "physics/world/data/physicsGPUData.h"
 #include "physics/world/data/physicsDataGPU.h"
 
+#include "physics/world/backend/physicsBackend.h"
+
 #include <vector>
 
 class Object;
@@ -29,22 +31,19 @@ private:
   PhysicsCPUData cpu;
   PhysicsGPUData gpu;
 
-  std::unique_ptr<IntegratorCPU> integratorCPU;
-  std::unique_ptr<IntegratorGPU> integratorGPU;
+  std::unique_ptr<PhysicsBackend> backend;
 
   Star *sun;
 
-  CommandQueue &queue;
-  Total& total;
-
 public:
-  PhysicsWorld(CommandQueue &queue, Total& total);
+  PhysicsWorld();
   ~PhysicsWorld();
 
   template <typename Real>
   void initGPUBuffers(Context &ctx, PhysicsDataGPU<Real> data);
 
-  void initGPUIntegrator(ResourceManager &resourceManager, Context &ctx, IntegratorGPUData &gpu, Total &total);
+  void initCPUBackend();
+  void initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUData &gpu, Total &total);
 
   void step(double dt);
 

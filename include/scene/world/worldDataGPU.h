@@ -13,8 +13,6 @@ struct WorldDataGPU
   PhysicsDataGPU<Real> physics;
   RenderDataGPU render;
 
-  Total total;
-
   void resize(size_t n)
   {
     this->shared.resize(n);

@@ -178,7 +178,7 @@ void SimulationWorld::initObjects(ResourceManager &resourceManager, ThreadPool &
   createAsteroidSystem(resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
   Planet *jupiter = createPlanet(resourceManager.GetModel(Res::JUPITER_MODEL), jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
 
-  this->physics.addSun(std::move(sunPtr));
+  this->physics.addSun(sunPtr);
 }
 
 template <typename Real>
@@ -206,7 +206,7 @@ void SimulationWorld::initGPU(ResourceManager &resourceManager)
     this->initGPUBuffers<double>(ctx, data.shared);
 
     WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
-    this->physics.initGPUIntegrator(resourceManager, ctx, integratorData, data.total);
+    this->physics.initGPUBackend(resourceManager, ctx, this->queue, integratorData, this->total);
 
     this->render.initGPU(ctx, data.render);
     this->render.initRenderQueueGPU(ctx, resourceManager, this->gpu);
@@ -220,15 +220,20 @@ void SimulationWorld::initGPU(ResourceManager &resourceManager)
     this->initGPUBuffers<float>(ctx, data.shared);
 
     WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
-    this->physics.initGPUIntegrator(resourceManager, ctx, integratorData, data.total);
+    this->physics.initGPUBackend(resourceManager, ctx, this->queue, integratorData, this->total);
 
     this->render.initGPU(ctx, data.render);
     this->render.initRenderQueueGPU(ctx, resourceManager, this->gpu);
   }
 }
 
+void SimulationWorld::initCPU()
+{
+  this->physics.initCPUBackend();
+}
+
 // Constructor
-SimulationWorld::SimulationWorld() : render(this->queue, this->total), physics(this->queue, this->total)
+SimulationWorld::SimulationWorld() : render(this->queue, this->total), physics()
 {
   this->importance.base = 1.f;
   this->importance.asteroid = 2.5f;
@@ -247,6 +252,8 @@ void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadP
 
   if (bool GPU = true)
     this->initGPU(resourceManager);
+  else
+    this->initCPU();
 }
 
 void SimulationWorld::update(const Camera &camera, RenderQueue &queue, RenderContext &renderCtx)

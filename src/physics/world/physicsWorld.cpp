@@ -12,36 +12,32 @@
 #include "physics/integrators/wisdomHolmanCPU.h"
 #include "physics/integrators/wisdomHolmanGPU.h"
 
+#include "physics/world/backend/physicsBackendCPU.h"
+#include "physics/world/backend/physicsBackendGPU.h"
+
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
 
 #include "debug/logger.h"
 
 // Constructor / Destructor
-PhysicsWorld::PhysicsWorld(CommandQueue &queue, Total &total) : queue(queue), total(total)
-{
-  this->integratorCPU = std::make_unique<WisdomHolmanIntegratorCPU>();
-}
+PhysicsWorld::PhysicsWorld() = default;
 PhysicsWorld::~PhysicsWorld() = default;
 
 // Public functions
-void PhysicsWorld::initGPUIntegrator(ResourceManager &resourceManager, Context &ctx, IntegratorGPUData &gpu, Total &total)
+void PhysicsWorld::initCPUBackend()
 {
-  bool supportsDouble = ctx.getSupportsDouble();
-  if (supportsDouble)
-    this->integratorGPU = std::make_unique<WisdomHolmanIntegratorGPU<double>>(resourceManager);
-  else
-    this->integratorGPU = std::make_unique<WisdomHolmanIntegratorGPU<float>>(resourceManager);
+  this->backend = std::make_unique<PhysicsBackendCPU>(this->cpu);
+}
 
-  this->integratorGPU->init(gpu, total, ctx);
+void PhysicsWorld::initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUData &gpu, Total &total)
+{
+  this->backend = std::make_unique<PhysicsBackendGPU>(resourceManager, ctx, gpu, queue, total);
 }
 
 void PhysicsWorld::step(double dt)
 {
-  if (bool GPU = true)
-    this->integratorGPU->step(this->queue, this->total, dt);
-  else
-    this->integratorCPU->step(this->cpu.integratableObjects, this->cpu.integratableSystems, dt);
+  this->backend->step(dt);
 }
 
 void PhysicsWorld::addObject(Object *object)
