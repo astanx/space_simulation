@@ -2,7 +2,6 @@
 
 #include "compute/clBuffer.h"
 
-#include <cstdint>
 #include <vector>
 #include <queue>
 
@@ -19,34 +18,7 @@ class LODManagerGPU;
 struct Total;
 struct LODSettings;
 struct FrameContext;
-
-struct RenderQueueGPUData
-{
-  CLBuffer &positions;
-  CLBuffer &orientations;
-  CLBuffer &meanRadii;
-  CLBuffer &polarRadii;
-  CLBuffer &equatorianRadii;
-  CLBuffer &modelImportances;
-  CLBuffer &modelColors;
-  CLBuffer &modelTextureLayers;
-  CLBuffer &fullInstances;
-  CLBuffer &impostorInstances;
-  CLBuffer &pointInstances;
-  CLBuffer &modelRangeStart;
-  CLBuffer &modelRangeEnd;
-
-  CLBuffer &isFullBuffer;
-  CLBuffer &isNonFullBuffer;
-  CLBuffer &isImpostorBuffer;
-  CLBuffer &isPointBuffer;
-  CLBuffer &fullOffsetBuffer;
-  CLBuffer &nonFullOffsetBuffer;
-  CLBuffer &impostorOffsetBuffer;
-  CLBuffer &pointOffsetBuffer;
-
-  uint32_t rangeCount;
-};
+struct RenderQueueGPUData;
 
 class RenderQueueBuilderGPU
 {

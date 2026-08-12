@@ -151,17 +151,21 @@ add_executable(Space
     src/render/gaussianBlur.cpp
     src/render/modelSource.cpp
     src/render/instanceManager.cpp
-    # LOD
-    src/render/lod/scan.cpp
-    src/render/lod/lodManager.cpp
-    src/render/lod/lodManagerGPU.cpp
-    # Queue
-    src/render/queue/renderQueue.cpp
-    src/render/queue/builder/renderQueueBuilder.cpp
-    src/render/queue/builder/renderQueueBuilderGPU.cpp
-    # World
-    src/render/world/renderWorld.cpp
-    
+        # LOD
+        src/render/lod/scan.cpp
+        src/render/lod/lodManager.cpp
+        src/render/lod/lodManagerGPU.cpp
+        src/render/lod/lodRenderResourcesManager.cpp
+        # Queue
+        src/render/queue/renderQueue.cpp
+        src/render/queue/builder/renderQueueBuilder.cpp
+        src/render/queue/builder/renderQueueBuilderGPU.cpp
+        # World
+        src/render/world/renderWorld.cpp
+            # Backend
+            src/render/world/backend/renderWorldBackendCPU.cpp
+            src/render/world/backend/renderWorldBackendGPU.cpp
+
     # Resources
     src/resources/OBJloader.cpp
     src/resources/resourceManager.cpp

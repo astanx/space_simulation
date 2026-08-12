@@ -1,9 +1,9 @@
 #pragma once
 
-#include "render/lod/manager/lodManager.h"
-#include "render/lod/manager/lodManagerGPU.h"
+#include "render/world/backend/renderWorldBackend.h"
+
+#include "render/lod/lodRenderResourcesManager.h"
 #include "render/instanceManager.h"
-#include "render/queue/builder/renderQueueBuilderGPU.h"
 
 #include "compute/clBuffer.h"
 
@@ -23,16 +23,15 @@ class CommandQueue;
 struct FrameContext;
 struct RenderDataGPU;
 struct SharedGPUData;
+struct Total;
 
 class RenderWorld
 {
 private:
-  LODManager lodManager;
-  std::unique_ptr<LODManagerGPU> lodManagerGPU;
-  std::unique_ptr<RenderQueueBuilderGPU> renderQueueBuilderGPU;
-  LODSettings lodSettings;
-
+  LODRenderResourcesManager lodResourceManager;
   InstanceManager instanceManager;
+
+  std::unique_ptr<RenderWorldBackend> backend;
 
   std::vector<Updatable *> updatable;
   std::vector<RenderSystem *> renderSystems;
@@ -40,9 +39,6 @@ private:
 
   std::vector<std::unique_ptr<Trail>> trails;
   std::vector<Trail *> trailViews;
-
-  CommandQueue &queue;
-  Total &total;
 
   CLBuffer modelColorsBuffer;
   CLBuffer modelTextureLayersBuffer;
@@ -59,12 +55,13 @@ private:
   void reserveModelInstances();
 
 public:
-  RenderWorld(CommandQueue &queue, Total &total) : queue(queue), lodManager(lodSettings), total(total) {};
+  RenderWorld() = default;
   ~RenderWorld() = default;
 
-  void init();
-  void initGPU(Context &ctx, RenderDataGPU &gpu);
-  void initRenderQueueGPU(Context &ctx, ResourceManager &resourceManager, SharedGPUData &data);
+  void init(Total &total);
+  void initCPUBackend();
+  void initGPUBuffers(Context &ctx, RenderDataGPU &gpu);
+  void initGPUBackend(Context &ctx, CommandQueue &queue, Total& total, ResourceManager &resourceManager, SharedGPUData &data);
 
   void update(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
 
@@ -77,8 +74,7 @@ public:
   void addTrail(std::unique_ptr<Trail> trail);
 
   InstanceManager &getInstanceManager() { return this->instanceManager; };
-  LODManager &getLODManager() { return this->lodManager; };
-  Texture &getImpostorTexture() { return this->lodManager.getImpostorTexture(); };
+  Texture &getImpostorTexture() { return this->lodResourceManager.getImpostorTexture(); };
   Buffer &getFullInstancesVBO() { return this->instanceManager.getFullInstancesVBO(); };
   std::vector<Trail *> &getTrails();
 };

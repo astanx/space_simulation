@@ -2,6 +2,8 @@
 
 #include "render/queue/renderQueue.h"
 
+#include "render/queue/data/renderQueueGPUData.h"
+
 #include "render/lod/lodSettings.h"
 #include "render/lod/manager/lodManagerGPU.h"
 
@@ -23,31 +25,31 @@
 
 void RenderQueueBuilderGPU::initKernels(RenderQueueGPUData &data, LODSettings &settings)
 {
-  this->partitionObjectsKernel.setArg(0, data.fullInstances.get());
-  this->partitionObjectsKernel.setArg(1, data.impostorInstances.get());
-  this->partitionObjectsKernel.setArg(2, data.pointInstances.get());
-  this->partitionObjectsKernel.setArg(3, data.isFullBuffer.get());
-  this->partitionObjectsKernel.setArg(4, data.isNonFullBuffer.get());
-  this->partitionObjectsKernel.setArg(5, data.isImpostorBuffer.get());
-  this->partitionObjectsKernel.setArg(6, data.isPointBuffer.get());
-  this->partitionObjectsKernel.setArg(7, data.fullOffsetBuffer.get());
-  this->partitionObjectsKernel.setArg(8, data.nonFullOffsetBuffer.get());
-  this->partitionObjectsKernel.setArg(9, data.impostorOffsetBuffer.get());
-  this->partitionObjectsKernel.setArg(10, data.pointOffsetBuffer.get());
-  this->partitionObjectsKernel.setArg(11, data.positions.get());
-  this->partitionObjectsKernel.setArg(12, data.orientations.get());
-  this->partitionObjectsKernel.setArg(13, data.meanRadii.get());
-  this->partitionObjectsKernel.setArg(14, data.polarRadii.get());
-  this->partitionObjectsKernel.setArg(15, data.equatorianRadii.get());
-  this->partitionObjectsKernel.setArg(16, data.modelColors.get());
-  this->partitionObjectsKernel.setArg(17, data.modelTextureLayers.get());
-  this->partitionObjectsKernel.setArg(18, data.modelImportances.get());
-  this->partitionObjectsKernel.setArg(19, data.modelRangeStart.get());
-  this->partitionObjectsKernel.setArg(20, data.modelRangeEnd.get());
+  this->partitionObjectsKernel.setArg(0, data.data.fullInstances.get());
+  this->partitionObjectsKernel.setArg(1, data.data.impostorInstances.get());
+  this->partitionObjectsKernel.setArg(2, data.data.pointInstances.get());
+  this->partitionObjectsKernel.setArg(3, data.lodData.isFullBuffer.get());
+  this->partitionObjectsKernel.setArg(4, data.lodData.isNonFullBuffer.get());
+  this->partitionObjectsKernel.setArg(5, data.lodData.isImpostorBuffer.get());
+  this->partitionObjectsKernel.setArg(6, data.lodData.isPointBuffer.get());
+  this->partitionObjectsKernel.setArg(7, data.lodData.fullOffsetBuffer.get());
+  this->partitionObjectsKernel.setArg(8, data.lodData.nonFullOffsetBuffer.get());
+  this->partitionObjectsKernel.setArg(9, data.lodData.impostorOffsetBuffer.get());
+  this->partitionObjectsKernel.setArg(10, data.lodData.pointOffsetBuffer.get());
+  this->partitionObjectsKernel.setArg(11, data.data.positions.get());
+  this->partitionObjectsKernel.setArg(12, data.data.orientations.get());
+  this->partitionObjectsKernel.setArg(13, data.data.meanRadii.get());
+  this->partitionObjectsKernel.setArg(14, data.data.polarRadii.get());
+  this->partitionObjectsKernel.setArg(15, data.data.equatorianRadii.get());
+  this->partitionObjectsKernel.setArg(16, data.data.modelColors.get());
+  this->partitionObjectsKernel.setArg(17, data.data.modelTextureLayers.get());
+  this->partitionObjectsKernel.setArg(18, data.data.modelImportances.get());
+  this->partitionObjectsKernel.setArg(19, data.data.modelRangeStart.get());
+  this->partitionObjectsKernel.setArg(20, data.data.modelRangeEnd.get());
   this->partitionObjectsKernel.setArg(21, this->modelFullCountBuffer.get());
   this->partitionObjectsKernel.setArg(22, this->impostorCountBuffer.get());
   this->partitionObjectsKernel.setArg(23, this->pointCountBuffer.get());
-  this->partitionObjectsKernel.setArg(24, sizeof(data.rangeCount), &data.rangeCount);
+  this->partitionObjectsKernel.setArg(24, sizeof(data.data.rangeCount), &data.data.rangeCount);
   this->partitionObjectsKernel.setArg(27, sizeof(settings.baseMinPixelSize), &settings.baseMinPixelSize);
 }
 

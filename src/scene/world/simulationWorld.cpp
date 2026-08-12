@@ -208,8 +208,8 @@ void SimulationWorld::initGPU(ResourceManager &resourceManager)
     WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
     this->physics.initGPUBackend(resourceManager, ctx, this->queue, integratorData, this->total);
 
-    this->render.initGPU(ctx, data.render);
-    this->render.initRenderQueueGPU(ctx, resourceManager, this->gpu);
+    this->render.initGPUBuffers(ctx, data.render);
+    this->render.initGPUBackend(ctx, this->queue, this->total, resourceManager, this->gpu);
   }
   else
   {
@@ -222,18 +222,19 @@ void SimulationWorld::initGPU(ResourceManager &resourceManager)
     WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
     this->physics.initGPUBackend(resourceManager, ctx, this->queue, integratorData, this->total);
 
-    this->render.initGPU(ctx, data.render);
-    this->render.initRenderQueueGPU(ctx, resourceManager, this->gpu);
+    this->render.initGPUBuffers(ctx, data.render);
+    this->render.initGPUBackend(ctx, this->queue, this->total, resourceManager, this->gpu);
   }
 }
 
 void SimulationWorld::initCPU()
 {
   this->physics.initCPUBackend();
+  this->render.initCPUBackend();
 }
 
 // Constructor
-SimulationWorld::SimulationWorld() : render(this->queue, this->total), physics()
+SimulationWorld::SimulationWorld()
 {
   this->importance.base = 1.f;
   this->importance.asteroid = 2.5f;
@@ -248,9 +249,9 @@ void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadP
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
-  this->render.init();
+  this->render.init(this->total);
 
-  if (bool GPU = true)
+  if (bool GPU = false)
     this->initGPU(resourceManager);
   else
     this->initCPU();

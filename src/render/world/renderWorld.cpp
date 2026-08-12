@@ -1,59 +1,29 @@
 #include "render/world/renderWorld.h"
 
+#include "scene/world/data/sharedGPUData.h"
+
+#include "render/world/backend/backendGPUData.h"
+
+#include "render/world/backend/renderWorldBackendCPU.h"
+#include "render/world/backend/renderWorldBackendGPU.h"
+
+#include "render/updatable.h"
+
 #include "render/world/data/renderDataGPU.h"
 
-#include "render/queue/builder/renderQueueBuilder.h"
-#include "render/modelSource.h"
-#include "render/updatable.h"
-#include "render/renderSystem.h"
+#include "compute/context.h"
 
-#include "scene/scene.h"
-
-#include "graphics/model.h"
-
-// Private functions
-void RenderWorld::buildQueue(const Camera &camera, RenderQueue &queue, FrameContext &ctx)
-{
-  // change
-  bool GPU = true;
-  if (GPU)
-    this->renderQueueBuilderGPU->build(this->queue, queue, *this->lodManagerGPU, this->instanceManager, camera, ctx, this->models, this->total.total);
-  else
-  {
-    std::vector<Model *> models;
-    size_t index = 0;
-    for (ModelSource *source : this->modelSources)
-      source->forEachModel([&models, &index](Model &model)
-                           { models.push_back(&model); });
-
-    RenderQueueBuilder builder(models);
-    builder.build(queue, camera, this->modelSources, this->renderSystems, this->lodManager, this->instanceManager, ctx);
-  }
-}
-
-void RenderWorld::reserveModelInstances()
-{
-  // change later
-  bool GPU = true;
-  if (!GPU)
-  {
-    for (ModelSource *source : this->modelSources)
-      source->reserveInstances(this->instanceManager);
-
-    for (RenderSystem *system : this->renderSystems)
-      system->reserveInstances(this->instanceManager);
-  }
-}
+#include "physics/world/total.h"
+#include "physics/trail.h"
 
 // Public functions
-void RenderWorld::init()
+void RenderWorld::init(Total &total)
 {
-  this->reserveModelInstances();
-  this->lodManager.init(this->modelSources, this->renderSystems);
-  this->instanceManager.init(this->total.total);
+  this->lodResourceManager.init(this->modelSources, this->renderSystems);
+  this->instanceManager.init(total.total);
 }
 
-void RenderWorld::initGPU(Context &ctx, RenderDataGPU &gpu)
+void RenderWorld::initGPUBuffers(Context &ctx, RenderDataGPU &gpu)
 {
   cl_context context = ctx.get();
 
@@ -66,12 +36,16 @@ void RenderWorld::initGPU(Context &ctx, RenderDataGPU &gpu)
   this->modelFullCountBuffer.init(context, CL_MEM_READ_WRITE, gpu.modelRangeEnd.size() * sizeof(uint32_t), nullptr);
   this->rangeCount = gpu.modelRangeStart.size();
   this->models = std::move(gpu.models);
-
-  this->instanceManager.initGPU(context);
 }
 
-void RenderWorld::initRenderQueueGPU(Context &ctx, ResourceManager &resourceManager, SharedGPUData &data)
+void RenderWorld::initCPUBackend()
 {
+  this->backend = std::make_unique<RenderWorldBackendCPU>(this->instanceManager, this->modelSources, this->renderSystems);
+}
+void RenderWorld::initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUData &data)
+{
+  this->instanceManager.initGPU(ctx.get());
+
   LODGPUData lodData{data.positionsBuffer,
                      data.meanRadiiBuffer,
                      this->modelImportancesBuffer,
@@ -80,10 +54,7 @@ void RenderWorld::initRenderQueueGPU(Context &ctx, ResourceManager &resourceMana
                      this->isNonFullableBuffer,
                      this->rangeCount};
 
-  this->lodManagerGPU = std::make_unique<LODManagerGPU>(resourceManager);
-  this->lodManagerGPU->init(ctx, this->queue, lodData, this->lodSettings, this->total.total);
-
-  RenderQueueGPUData queueData{
+  BackendGPUData backendData{
       data.positionsBuffer,
       data.orientationsBuffer,
       data.meanRadiiBuffer,
@@ -97,18 +68,9 @@ void RenderWorld::initRenderQueueGPU(Context &ctx, ResourceManager &resourceMana
       this->instanceManager.getPointInstancesBuffer(),
       this->modelRangeStartBuffer,
       this->modelRangeEndBuffer,
-      this->lodManagerGPU->getIsFullBuffer(),
-      this->lodManagerGPU->getIsNonFullBuffer(),
-      this->lodManagerGPU->getIsImpostorBuffer(),
-      this->lodManagerGPU->getIsPointBuffer(),
-      this->lodManagerGPU->getFullOffsetBuffer(),
-      this->lodManagerGPU->getNonFullOffsetBuffer(),
-      this->lodManagerGPU->getImpostorOffsetBuffer(),
-      this->lodManagerGPU->getPointOffsetBuffer(),
       this->rangeCount};
 
-  this->renderQueueBuilderGPU = std::make_unique<RenderQueueBuilderGPU>(resourceManager);
-  this->renderQueueBuilderGPU->init(ctx, this->queue, queueData, lodSettings, this->models.size());
+  this->backend = std::make_unique<RenderWorldBackendGPU>(resourceManager, queue, ctx, lodData, backendData, total, this->models);
 }
 
 void RenderWorld::update(const Camera &camera, RenderQueue &queue, FrameContext &ctx)
@@ -119,17 +81,17 @@ void RenderWorld::update(const Camera &camera, RenderQueue &queue, FrameContext 
   for (std::unique_ptr<Trail> &trail : this->trails)
     trail->update(camera);
 
-  this->buildQueue(camera, queue, ctx);
+  this->backend->update(camera, queue, this->instanceManager, ctx);
 }
 
 void RenderWorld::renderImpostorMeshInstanced()
 {
-  this->lodManager.getImpostorMesh().renderInstanced(&this->instanceManager.getImpostorInstancesVBO(), sizeof(InstancePositionRadiusTexture), this->instanceManager.getImpostorCount());
+  this->lodResourceManager.getImpostorMesh().renderInstanced(&this->instanceManager.getImpostorInstancesVBO(), sizeof(InstancePositionRadiusTexture), this->instanceManager.getImpostorCount());
 }
 
 void RenderWorld::renderPointMeshInstanced()
 {
-  this->lodManager.getPointMesh().renderInstanced(&this->instanceManager.getPointInstancesVBO(), sizeof(InstancePositionRadiusColor), this->instanceManager.getPointCount());
+  this->lodResourceManager.getPointMesh().renderInstanced(&this->instanceManager.getPointInstancesVBO(), sizeof(InstancePositionRadiusColor), this->instanceManager.getPointCount());
 }
 
 void RenderWorld::addRenderSystem(RenderSystem *system)
