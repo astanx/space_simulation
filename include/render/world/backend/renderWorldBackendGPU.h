@@ -22,6 +22,8 @@ private:
   CommandQueue &queue;
   Total &total;
 
+  bool isDouble;
+
 public:
   RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUData &lodData, BackendGPUData &data, Total &total, std::vector<Model *> &models);
   ~RenderWorldBackendGPU() = default;

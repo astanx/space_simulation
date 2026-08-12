@@ -45,6 +45,8 @@ private:
 
   void initBuffers(Context &ctx, CommandQueue &queue, size_t totalObjects);
   void initKernels(LODGPUData &data, LODSettings &settings, size_t totalObjects);
+  
+  template <typename Real>
   void updateKernels(const Camera &camera, FrameContext &ctx);
 
 public:
@@ -52,6 +54,8 @@ public:
   ~LODManagerGPU() = default;
 
   void init(Context &ctx, CommandQueue &queue, LODGPUData &data, LODSettings &settings, size_t totalObjects);
+
+  template <typename Real>
   void update(CommandQueue &queue, const Camera &camera, FrameContext &ctx, size_t totalObjects);
 
   CLBuffer &getIsFullBuffer() { return this->fullScan.getIsBuffer(); };
@@ -64,3 +68,5 @@ public:
   CLBuffer &getImpostorOffsetBuffer() { return this->impostorScan.getOffsetBuffer(); };
   CLBuffer &getPointOffsetBuffer() { return this->pointScan.getOffsetBuffer(); };
 };
+
+#include "render/lod/manager/lodManagerGPU.hpp"

@@ -33,6 +33,7 @@ private:
   void initKernels(RenderQueueGPUData &data, LODSettings &settings);
   void initBuffers(Context &ctx, CommandQueue &queue, size_t modelCount);
 
+  template <typename Real>
   void updateKernels(const Camera &camera, FrameContext &ctx);
 
 public:
@@ -41,5 +42,8 @@ public:
 
   void init(Context &ctx, CommandQueue &queue, RenderQueueGPUData &data, LODSettings &settings, size_t modelCount);
 
+  template <typename Real>
   void build(CommandQueue &commandQueue, RenderQueue &renderQueue, LODManagerGPU& lod, InstanceManager &instanceManager, const Camera &camera, FrameContext &ctx, std::vector<Model *> &models, size_t totalObjects);
 };
+
+#include "render/queue/builder/renderQueueBuilderGPU.hpp"

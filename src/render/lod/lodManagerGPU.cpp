@@ -51,19 +51,6 @@ void LODManagerGPU::initKernels(LODGPUData &data, LODSettings &settings, size_t 
   this->pointScan.initKernels(totalObjects, this->localScanSize, this->groupCount);
 }
 
-void LODManagerGPU::updateKernels(const Camera &camera, FrameContext &ctx)
-{
-  Frustum frustum = camera.getFrustum(ctx.aspect);
-  float fov = camera.getFOV();
-  // size fix here
-  Vec3<float> camPos = static_cast<Vec3<float>>(camera.getPosition());
-
-  this->lodPassKernel.setArg(11, sizeof(fov), &fov);
-  this->lodPassKernel.setArg(12, sizeof(ctx.height), &ctx.height);
-  this->lodPassKernel.setArg(17, sizeof(frustum.faces), &frustum.faces);
-  this->lodPassKernel.setArg(18, sizeof(camPos), &camPos);
-}
-
 // Constructor
 LODManagerGPU::LODManagerGPU(ResourceManager &resourceManager)
     : fullScan(resourceManager, Res::LOD_FULL_LOCAL_SCAN_KERNEL, Res::LOD_FULL_GROUP_SCAN_KERNEL, Res::LOD_FULL_GROUP_OFFSET_SCAN_KERNEL),
@@ -81,20 +68,4 @@ void LODManagerGPU::init(Context &ctx, CommandQueue &queue, LODGPUData &data, LO
   this->initKernels(data, settings, totalObjects);
 };
 
-void LODManagerGPU::update(CommandQueue &queue, const Camera &camera, FrameContext &ctx, size_t totalObjects)
-{
-  this->updateKernels(camera, ctx);
 
-  // Pass
-  queue.enqueueNDKernelBuffer(this->lodPassKernel.get(), 1, NULL, &totalObjects);
-  queue.finish();
-
-  size_t globalObjects = ((totalObjects + localScanSize - 1) / localScanSize) * localScanSize;
-  size_t groupsGlobal = ((this->groupCount + this->localScanSize - 1) / this->localScanSize) * this->localScanSize;
-
-  // Scan for each
-  this->fullScan.enqueueKernels(queue, globalObjects, groupsGlobal, this->localScanSize);
-  this->nonFullScan.enqueueKernels(queue, globalObjects, groupsGlobal, this->localScanSize);
-  this->impostorScan.enqueueKernels(queue, globalObjects, groupsGlobal, this->localScanSize);
-  this->pointScan.enqueueKernels(queue, globalObjects, groupsGlobal, this->localScanSize);
-}

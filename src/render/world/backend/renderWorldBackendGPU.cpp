@@ -5,6 +5,8 @@
 #include "render/world/backend/backendGPUData.h"
 #include "render/queue/data/renderQueueGPUData.h"
 
+#include "compute/context.h"
+
 #include "physics/world/total.h"
 
 // Constructor
@@ -15,6 +17,8 @@ RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQu
 
   if (models.size() == 0)
     Logger::logWarning("Render World Backend GPU", "Backend is initialized with model size 0");
+
+  this->isDouble = ctx.getSupportsDouble();
 
   this->lodManagerGPU.init(ctx, queue, lodData, this->lodSettings, this->total.total);
 
@@ -35,5 +39,8 @@ RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQu
 // Public functions
 void RenderWorldBackendGPU::update(const Camera &camera, RenderQueue &queue, InstanceManager &instanceManager, FrameContext &ctx)
 {
-  this->renderQueueBuilderGPU.build(this->queue, queue, this->lodManagerGPU, instanceManager, camera, ctx, this->models, this->total.total);
+  if (this->isDouble)
+    this->renderQueueBuilderGPU.build<double>(this->queue, queue, this->lodManagerGPU, instanceManager, camera, ctx, this->models, this->total.total);
+  else
+    this->renderQueueBuilderGPU.build<float>(this->queue, queue, this->lodManagerGPU, instanceManager, camera, ctx, this->models, this->total.total);
 }
