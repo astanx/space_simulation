@@ -39,6 +39,9 @@ RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQu
 // Public functions
 void RenderWorldBackendGPU::update(const Camera &camera, RenderQueue &queue, InstanceManager &instanceManager, FrameContext &ctx)
 {
+  if (!this->subQueuesInitialized)
+    this->initSubQueues(queue, instanceManager, this->models);
+
   if (this->isDouble)
     this->renderQueueBuilderGPU.build<double>(this->queue, queue, this->lodManagerGPU, instanceManager, camera, ctx, this->models, this->total.total);
   else

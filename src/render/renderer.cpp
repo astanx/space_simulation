@@ -335,6 +335,7 @@ void Renderer::blitDepthToDefault(const Framebuffer &framebuffer)
 
 void Renderer::renderMoonsRadiance(Scene &scene)
 {
+  // fix
   Shader &moonsRadianceShader = this->resourceManager.GetShader(Res::REFLECTION_SHADER);
 
   ScopedShader moon(moonsRadianceShader);

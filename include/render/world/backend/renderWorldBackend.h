@@ -2,15 +2,22 @@
 
 #include "render/lod/lodSettings.h"
 
+#include <vector>
+
 class Camera;
 class RenderQueue;
 class FrameContext;
 class InstanceManager;
+class Model;
 
 class RenderWorldBackend
 {
 protected:
   LODSettings lodSettings;
+
+  bool subQueuesInitialized = false;
+
+  void initSubQueues(RenderQueue &queue, InstanceManager &manager, std::vector<Model *> &models);
 
 public:
   RenderWorldBackend() = default;

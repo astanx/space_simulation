@@ -15,6 +15,7 @@ class RenderWorldBackendCPU : public RenderWorldBackend
 private:
   std::vector<ModelSource *> &modelSources;
   std::vector<RenderSystem *> &renderSystems;
+  std::vector<Model *> models;
 
   LODManager lodManager;
 

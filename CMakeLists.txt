@@ -163,6 +163,7 @@ add_executable(Space
         # World
         src/render/world/renderWorld.cpp
             # Backend
+            src/render/world/backend/renderWorldBackend.cpp
             src/render/world/backend/renderWorldBackendCPU.cpp
             src/render/world/backend/renderWorldBackendGPU.cpp
 
