@@ -6,7 +6,7 @@
 
 #include "render/renderState.h"
 #include "render/frustum.h"
-#include "render/renderBatch.h"
+#include "render/queue/renderBatch.h"
 
 #include "graphics/instanceLayouts.h"
 

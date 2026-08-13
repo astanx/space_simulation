@@ -148,12 +148,6 @@ void RenderQueueBuilder::finish(InstanceManager &instances, RenderQueue &queue)
       queue.addTangentBatch({group.model, fullLODRange});
     else
       queue.addCoreBatch({group.model, fullLODRange});
-
-    if (group.model->hasFlag(ModelFlags::CastsShadow))
-      queue.addShadowBatch({group.model, fullRange});
-
-    if (group.model->hasFlag(ModelFlags::ReflectsLight))
-      queue.addReflectorBatch({group.model, fullRange});
   }
 
   instances.add(std::move(this->impostors));

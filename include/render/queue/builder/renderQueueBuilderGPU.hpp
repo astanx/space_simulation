@@ -69,16 +69,10 @@ void RenderQueueBuilderGPU::build(CommandQueue &commandQueue, RenderQueue &rende
 
   for (size_t i = 0; i < models.size(); i++)
   {
-    Range allocation = instanceManager.getAllocation(models[i]);
-    if (models[i]->hasFlag(ModelFlags::CastsShadow))
-      renderQueue.addShadowBatch({models[i], allocation});
-
-    if (models[i]->hasFlag(ModelFlags::ReflectsLight))
-      renderQueue.addReflectorBatch({models[i], allocation});
-
     if (fullCounts[i] == 0)
       continue;
 
+    Range allocation = instanceManager.getAllocation(models[i]);
     Range range;
     range.begin = allocation.begin;
     range.end = allocation.begin + fullCounts[i];

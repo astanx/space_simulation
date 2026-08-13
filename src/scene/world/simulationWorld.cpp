@@ -165,7 +165,6 @@ void SimulationWorld::addAtmosphereToPlanet(ResourceManager &resourceManager, Th
 
 void SimulationWorld::initObjects(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000)
 {
-  // orientation is fixed for earth
   Star *sunPtr = createStar(resourceManager.GetModel(Res::SUN_MODEL), sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
   createPlanet(resourceManager.GetModel(Res::MERCURY_MODEL), mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
   Planet *venusPtr = createPlanet(resourceManager.GetModel(Res::VENUS_MODEL), venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);

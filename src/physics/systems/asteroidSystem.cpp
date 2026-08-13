@@ -33,7 +33,7 @@
 #include "render/lod/lodResult.h"
 #include "render/queue/renderQueue.h"
 #include "render/queue/builder/renderQueueBuilder.h"
-#include "render/renderBatch.h"
+#include "render/queue/renderBatch.h"
 
 #include "scene/frameContext.h"
 

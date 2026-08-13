@@ -2,7 +2,7 @@
 
 #include "debug/logger.h"
 
-#include "render/renderBatch.h"
+#include "render/queue/renderBatch.h"
 
 #include "graphics/model.h"
 
@@ -11,8 +11,6 @@ void RenderQueue::clear()
 {
   this->coreBatches.clear();
   this->tangentBatches.clear();
-  this->shadowBatches.clear();
-  this->reflectorBatches.clear();
 }
 
 void RenderQueue::addCoreBatch(RenderBatch batch)
