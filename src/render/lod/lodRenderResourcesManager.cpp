@@ -15,6 +15,8 @@
 #define STB_IMAGE_RESIZE2_IMPLEMENTATION
 #include "external/stb_image_resize2.h"
 
+#include <iostream>
+
 // Private functions
 void LODRenderResourcesManager::initImpostor(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems)
 {

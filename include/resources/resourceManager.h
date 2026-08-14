@@ -14,6 +14,8 @@
 
 #include "resources/modelRegistry.h"
 
+#include "physics/structs/hapkeParameters.h"
+
 #include <unordered_map>
 #include <string>
 #include <GL/glew.h>
@@ -58,6 +60,7 @@ public:
   Material &LoadPhongMaterial(const std::string &name, PhongMaterialProperties material, Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture);
 
   Material &LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, Texture *nightMap, float emissiveStrength, float ao, float metallic, float roughness);
+  Material &LoadHapkePBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, Texture *nightMap, float emissiveStrength, float ao, float metallic, float roughness, HapkeParameters params);
 
   template <typename T>
   Mesh &LoadMesh(const std::string &name, std::vector<T> *vertexArray, std::vector<GLuint> *indexArray, VertexLayout layout, GLenum drawMode = GL_TRIANGLES);
@@ -67,6 +70,10 @@ public:
   AsteroidType &LoadAsteroid(const std::string &name, const std::string &model_name, const std::string &mesh_name, std::unique_ptr<AsteroidShape> shape, Material &material, VertexLayout layout);
   Model &LoadModel(const std::string &name, Material &mat, Mesh &mesh, ModelFlags flags = ModelFlags::None);
   Model &LoadModel(const std::string &name, const std::string &material_name, const std::string &mesh_name, ModelFlags flags = ModelFlags::None);
+  Model &LoadReflectanceAcceptorModel(const std::string &name, Material &mat, Mesh &mesh, ModelFlags flags = ModelFlags::None);
+  Model &LoadReflectanceAcceptorModel(const std::string &name, const std::string &material_name, const std::string &mesh_name, ModelFlags flags = ModelFlags::None);
+  Model &LoadReflectorModel(const std::string &name, Material &mat, Mesh &mesh, const std::string& acceptor_name, ModelFlags flags = ModelFlags::None);
+  Model &LoadReflectorModel(const std::string &name, const std::string &material_name, const std::string &mesh_name,const std::string& acceptor_name, ModelFlags flags = ModelFlags::None);
   // Getters
   Kernel &GetKernel(const std::string &name);
   Program &GetProgram(const std::string &name);

@@ -100,6 +100,188 @@ void Application::updateFrameContext()
   this->renderCtx.frameCtx.aspect = aspect;
 }
 
+void Application::processInput()
+{
+  if (this->input.isActionPressed(Action::Exit))
+    this->setWindowShouldClose();
+
+  if (this->input.isActionHold(Action::MoveForward))
+    this->scene.processKeyboard(FORWARD, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveBackward))
+    this->scene.processKeyboard(BACKWARD, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveLeft))
+    this->scene.processKeyboard(LEFT, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveRight))
+    this->scene.processKeyboard(RIGHT, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveUp))
+    this->scene.processKeyboard(UP, this->deltaTime);
+
+  if (this->input.isActionHold(Action::MoveDown))
+    this->scene.processKeyboard(DOWN, this->deltaTime);
+
+  if (this->input.isActionPressed(Action::ToggleBloom))
+    this->renderCtx.settings.useBloom = !this->renderCtx.settings.useBloom;
+
+  if (this->input.isActionPressed(Action::ToggleHDR))
+    this->renderCtx.settings.useHDR = !this->renderCtx.settings.useHDR;
+
+  if (this->input.isActionPressed(Action::HideText))
+    this->isTextShown = !this->isTextShown;
+
+  if (this->input.isActionPressed(Action::LogPosition))
+  {
+    const glm::vec3 position = this->scene.getActiveCameraPosition();
+    Logger::logInfo("Application", "Camera position: " +
+                                       std::to_string(position.x) + ", " +
+                                       std::to_string(position.y) + ", " +
+                                       std::to_string(position.z));
+  }
+
+  if (this->input.isActionPressed(Action::Pause))
+    this->renderCtx.settings.paused = !this->renderCtx.settings.paused;
+
+  if (this->input.isActionPressed(Action::DecreaseCameraSpeed))
+    this->scene.decreaseCameraSpeed();
+
+  if (this->input.isActionPressed(Action::IncreaseCameraSpeed))
+    this->scene.increaseCameraSpeed();
+
+  if (this->input.isActionPressed(Action::DoubleTimestep))
+  {
+    if (this->timeScale > 0)
+      this->timeScale *= 2;
+    else
+      this->timeScale *= .5;
+  }
+
+  if (this->input.isActionPressed(Action::HalfTimestep))
+  {
+    if (this->timeScale > 0)
+      this->timeScale *= .5;
+    else
+      this->timeScale *= 2;
+  }
+
+  if (this->input.isActionHold(Action::DecreaseTimestep))
+    this->timeScale -= 2;
+
+  if (this->input.isActionHold(Action::IncreaseTimestep))
+    this->timeScale += 2;
+}
+
+LoadedTextures Application::loadTextures(const std::string &model_name, const std::string &diffuse_name, const std::string &normal_name, const std::string &night_name, const std::string &roughness_name)
+{
+  const std::string format = ".png";
+
+  const std::string diffusePath = BASE_TEXTURE_PATH + "diffuse/" + model_name + format;
+
+  if (!std::filesystem::exists(diffusePath))
+    Logger::logFatal("Application", "Diffuse texture is not found, skipping the object - " + model_name);
+
+  LoadedTextures textures;
+  textures.diffuse = &this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
+
+  const std::string roughnessPath = BASE_TEXTURE_PATH + "roughness/" + model_name + format;
+  if (std::filesystem::exists(roughnessPath) && roughness_name != "")
+  {
+    Logger::logInfo("Application", "Found roughness texture for object - " + model_name);
+    textures.roughness = &this->resourceManager.LoadTexture(roughness_name, roughnessPath, GL_TEXTURE_2D);
+  }
+
+  const std::string normalPath = BASE_TEXTURE_PATH + "normal/" + model_name + format;
+  if (std::filesystem::exists(normalPath) && normal_name != "")
+  {
+    Logger::logInfo("Application", "Found normal texture for object - " + model_name);
+    textures.normal = &this->resourceManager.LoadTexture(normal_name, normalPath, GL_TEXTURE_2D);
+  }
+
+  const std::string nightPath = BASE_TEXTURE_PATH + "night/" + model_name + format;
+  if (std::filesystem::exists(nightPath) && night_name != "")
+  {
+    Logger::logInfo("Application", "Found night texture for object - " + model_name);
+    textures.night = &this->resourceManager.LoadTexture(night_name, nightPath, GL_TEXTURE_2D);
+  }
+
+  return textures;
+}
+
+void Application::loadHapkePBRMaterial(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+                                       float ao, float metallic, float roughness, HapkeParameters params, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
+                                       const std::string &roughness_name)
+{
+  LoadedTextures textures = this->loadTextures(model_name, diffuse_name, normal_name, night_name, roughness_name);
+  this->resourceManager.LoadPBRMaterial(material_name, textures.diffuse, textures.normal, nullptr, nullptr, textures.roughness, textures.night, emissiveStrength, ao, metallic, roughness);
+}
+
+void Application::loadPBRMaterial(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+                                  float ao, float metallic, float roughness, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
+                                  const std::string &roughness_name)
+{
+  LoadedTextures textures = this->loadTextures(model_name, diffuse_name, normal_name, night_name, roughness_name);
+  this->resourceManager.LoadPBRMaterial(material_name, textures.diffuse, textures.normal, nullptr, nullptr, textures.roughness, textures.night, emissiveStrength, ao, metallic, roughness);
+}
+
+void Application::loadEllipsoid(const std::string &mesh_name, Radii radii, bool isTangent, int segments)
+{
+  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii, isTangent);
+  if (isTangent)
+    this->resourceManager.LoadMesh<VertexPositionTexcoordNormalTangent>(mesh_name, std::move(obj),
+                                                                        VertexLayout::PositionNormalTangent);
+  else
+    this->resourceManager.LoadMesh<VertexPositionTexcoordNormal>(mesh_name, std::move(obj),
+                                                                 VertexLayout::NoColor);
+}
+void Application::loadEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+                                      Radii radii, float ao, float metallic, float roughness, ModelFlags flags, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
+                                      const std::string &roughness_name, int segments)
+{
+  this->loadPBRMaterial(model_name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
+
+  bool isTangent = normal_name != "";
+
+  this->loadEllipsoid(mesh_name, radii, isTangent, segments);
+
+  this->resourceManager.LoadModel(model_name, material_name, mesh_name, flags);
+}
+void Application::loadReflectanceAcceptorEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+                                                         Radii radii, float ao, float metallic, float roughness, ModelFlags flags, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
+                                                         const std::string &roughness_name, int segments)
+{
+  this->loadPBRMaterial(model_name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
+
+  bool isTangent = normal_name != "";
+
+  this->loadEllipsoid(mesh_name, radii, isTangent, segments);
+
+  this->resourceManager.LoadReflectanceAcceptorModel(model_name, material_name, mesh_name, flags);
+}
+void Application::loadHapkeEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+                                           Radii radii, float ao, float metallic, float roughness, HapkeParameters hapke, const std::string &acceptor_model_name, ModelFlags flags, float emissiveStrength,
+                                           const std::string &normal_name, const std::string &night_name, const std::string &roughness_name, int segments)
+{
+  this->loadHapkePBRMaterial(model_name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, hapke, emissiveStrength, normal_name, night_name, roughness_name);
+
+  bool isTangent = normal_name != "";
+
+  this->loadEllipsoid(mesh_name, radii, isTangent, segments);
+
+  this->resourceManager.LoadReflectorModel(model_name, material_name, mesh_name, acceptor_model_name, flags);
+}
+
+void Application::loadAsteroidShape(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &material_name,
+                                    Texture &albedo, float ao, float metallic, float roughness,
+                                    double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3)
+{
+  std::unique_ptr<AsteroidShape> shape = std::make_unique<AsteroidShape>(thetaSteps, phiSteps, m, a, b, n1, n2, n3);
+
+  Material &mat = this->resourceManager.LoadPBRMaterial(material_name, &albedo, nullptr, nullptr, nullptr, nullptr, nullptr, 0.f, ao, metallic, roughness);
+  this->resourceManager.LoadAsteroid<VertexPositionTexcoordNormal>(name, model_name, mesh_name, std::move(shape), mat, VertexLayout::NoColor);
+}
+
 // Constructor / Destructor
 Application::Application(
     const char *title, const int windowWidth, const int windowHeight, const int GLmajor, const int GLminor, GLboolean resizable) : windowWidth(windowWidth),
@@ -187,9 +369,9 @@ Application::Application(
   this->loadEllipsoidObject(Res::MERCURY_MODEL, Res::MERCURY_MESH, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f, ModelFlags::CastsShadow);
   this->loadEllipsoidObject(Res::VENUS_MODEL, Res::VENUS_MESH, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f, ModelFlags::CastsShadow);
   this->loadEllipsoidObject(Res::VENUS_ATMOSPHERE_MODEL, Res::VENUS_ATMOSPHERE_MESH, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
-  this->loadEllipsoidObject(Res::EARTH_MODEL, Res::EARTH_MESH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, ModelFlags::CastsShadow, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
+  this->loadReflectanceAcceptorEllipsoidObject(Res::EARTH_MODEL, Res::EARTH_MESH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, ModelFlags::CastsShadow, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
   this->loadEllipsoidObject(Res::EARTH_ATMOSPHERE_MODEL, Res::EARTH_ATMOSPHERE_MESH, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
-  this->loadEllipsoidObject(Res::MOON_MODEL, Res::MOON_MESH, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f, ModelFlags::CastsShadow | ModelFlags::ReflectsLight);
+  this->loadHapkeEllipsoidObject(Res::MOON_MODEL, Res::MOON_MESH, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f, moonHapkeParameters, Res::EARTH_MODEL, ModelFlags::CastsShadow | ModelFlags::ReflectsLight);
   this->loadEllipsoidObject(Res::MARS_MODEL, Res::MARS_MESH, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f, ModelFlags::CastsShadow);
   this->loadEllipsoidObject(Res::JUPITER_MODEL, Res::JUPITER_MESH, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f, ModelFlags::CastsShadow);
 
@@ -287,148 +469,6 @@ void Application::render()
 
   // Swap buffers
   glfwSwapBuffers(this->window);
-}
-
-void Application::processInput()
-{
-  if (this->input.isActionPressed(Action::Exit))
-    this->setWindowShouldClose();
-
-  if (this->input.isActionHold(Action::MoveForward))
-    this->scene.processKeyboard(FORWARD, this->deltaTime);
-
-  if (this->input.isActionHold(Action::MoveBackward))
-    this->scene.processKeyboard(BACKWARD, this->deltaTime);
-
-  if (this->input.isActionHold(Action::MoveLeft))
-    this->scene.processKeyboard(LEFT, this->deltaTime);
-
-  if (this->input.isActionHold(Action::MoveRight))
-    this->scene.processKeyboard(RIGHT, this->deltaTime);
-
-  if (this->input.isActionHold(Action::MoveUp))
-    this->scene.processKeyboard(UP, this->deltaTime);
-
-  if (this->input.isActionHold(Action::MoveDown))
-    this->scene.processKeyboard(DOWN, this->deltaTime);
-
-  if (this->input.isActionPressed(Action::ToggleBloom))
-    this->renderCtx.settings.useBloom = !this->renderCtx.settings.useBloom;
-
-  if (this->input.isActionPressed(Action::ToggleHDR))
-    this->renderCtx.settings.useHDR = !this->renderCtx.settings.useHDR;
-
-  if (this->input.isActionPressed(Action::HideText))
-    this->isTextShown = !this->isTextShown;
-
-  if (this->input.isActionPressed(Action::LogPosition))
-  {
-    const glm::vec3 position = this->scene.getActiveCameraPosition();
-    Logger::logInfo("Application", "Camera position: " +
-                                       std::to_string(position.x) + ", " +
-                                       std::to_string(position.y) + ", " +
-                                       std::to_string(position.z));
-  }
-
-  if (this->input.isActionPressed(Action::Pause))
-    this->renderCtx.settings.paused = !this->renderCtx.settings.paused;
-
-  if (this->input.isActionPressed(Action::DecreaseCameraSpeed))
-    this->scene.decreaseCameraSpeed();
-
-  if (this->input.isActionPressed(Action::IncreaseCameraSpeed))
-    this->scene.increaseCameraSpeed();
-
-  if (this->input.isActionPressed(Action::DoubleTimestep))
-  {
-    if (this->timeScale > 0)
-      this->timeScale *= 2;
-    else
-      this->timeScale *= .5;
-  }
-
-  if (this->input.isActionPressed(Action::HalfTimestep))
-  {
-    if (this->timeScale > 0)
-      this->timeScale *= .5;
-    else
-      this->timeScale *= 2;
-  }
-
-  if (this->input.isActionHold(Action::DecreaseTimestep))
-    this->timeScale -= 2;
-
-  if (this->input.isActionHold(Action::IncreaseTimestep))
-    this->timeScale += 2;
-}
-void Application::loadPBRMaterial(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
-                                  float ao, float metallic, float roughness, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
-                                  const std::string &roughness_name)
-{
-  const std::string format = ".png";
-
-  const std::string diffusePath = BASE_TEXTURE_PATH + "diffuse/" + model_name + format;
-
-  if (!std::filesystem::exists(diffusePath))
-  {
-    Logger::logFatal("Application", "Diffuse texture is not found, skipping the object - " + model_name);
-    return;
-  }
-  Texture &diff = this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
-
-  Texture *rough = nullptr;
-  const std::string roughnessPath = BASE_TEXTURE_PATH + "roughness/" + model_name + format;
-  if (std::filesystem::exists(roughnessPath) && roughness_name != "")
-  {
-    Logger::logInfo("Application", "Found roughness texture for object - " + model_name);
-    rough = &this->resourceManager.LoadTexture(roughness_name, roughnessPath, GL_TEXTURE_2D);
-  }
-
-  Texture *normal = nullptr;
-  const std::string normalPath = BASE_TEXTURE_PATH + "normal/" + model_name + format;
-  if (std::filesystem::exists(normalPath) && normal_name != "")
-  {
-    Logger::logInfo("Application", "Found normal texture for object - " + model_name);
-    normal = &this->resourceManager.LoadTexture(normal_name, normalPath, GL_TEXTURE_2D);
-  }
-
-  Texture *night = nullptr;
-  const std::string nightPath = BASE_TEXTURE_PATH + "night/" + model_name + format;
-  if (std::filesystem::exists(nightPath) && night_name != "")
-  {
-    Logger::logInfo("Application", "Found night texture for object - " + model_name);
-    night = &this->resourceManager.LoadTexture(night_name, nightPath, GL_TEXTURE_2D);
-  }
-
-  this->resourceManager.LoadPBRMaterial(material_name, &diff, normal, nullptr, nullptr, rough, night, emissiveStrength, ao, metallic, roughness);
-}
-void Application::loadEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
-                                      Radii radii, float ao, float metallic, float roughness, ModelFlags flags, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
-                                      const std::string &roughness_name, int segments)
-{
-  this->loadPBRMaterial(model_name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
-
-  bool isTangent = normal_name != "";
-
-  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii, isTangent);
-  if (isTangent)
-    this->resourceManager.LoadMesh<VertexPositionTexcoordNormalTangent>(mesh_name, std::move(obj),
-                                                                        VertexLayout::PositionNormalTangent);
-  else
-    this->resourceManager.LoadMesh<VertexPositionTexcoordNormal>(mesh_name, std::move(obj),
-                                                                 VertexLayout::NoColor);
-
-  this->resourceManager.LoadModel(model_name, material_name, mesh_name, flags);
-}
-
-void Application::loadAsteroidShape(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &material_name,
-                                    Texture &albedo, float ao, float metallic, float roughness,
-                                    double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3)
-{
-  std::unique_ptr<AsteroidShape> shape = std::make_unique<AsteroidShape>(thetaSteps, phiSteps, m, a, b, n1, n2, n3);
-
-  Material &mat = this->resourceManager.LoadPBRMaterial(material_name, &albedo, nullptr, nullptr, nullptr, nullptr, nullptr, 0.f, ao, metallic, roughness);
-  this->resourceManager.LoadAsteroid<VertexPositionTexcoordNormal>(name, model_name, mesh_name, std::move(shape), mat, VertexLayout::NoColor);
 }
 
 // Static functions

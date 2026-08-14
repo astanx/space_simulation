@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/queue/renderBatch.h"
+#include "render/queue/reflectorBatch.h"
 
 #include <vector>
 
@@ -18,7 +19,7 @@ private:
   std::vector<RenderBatch> coreBatches;
   std::vector<RenderBatch> tangentBatches;
   std::vector<RenderBatch> shadowBatches;
-  std::vector<RenderBatch> reflectorBatches;
+  std::vector<ReflectorBatch> reflectorBatches;
 
 public:
   RenderQueue() = default;
@@ -29,10 +30,10 @@ public:
   void addCoreBatch(RenderBatch batch);
   void addTangentBatch(RenderBatch batch);
   void addShadowBatch(RenderBatch batch);
-  void addReflectorBatch(RenderBatch batch);
+  void addReflectorBatch(ReflectorBatch batch);
 
   std::vector<RenderBatch> &getCoreBatches() { return this->coreBatches; };
   std::vector<RenderBatch> &getTangentBatches() { return this->tangentBatches; };
   std::vector<RenderBatch> &getShadowBatches() { return this->shadowBatches; };
-  std::vector<RenderBatch> &getReflectorBatches() { return this->reflectorBatches; };
+  std::vector<ReflectorBatch> &getReflectorBatches() { return this->reflectorBatches; };
 };

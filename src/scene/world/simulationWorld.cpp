@@ -86,8 +86,7 @@ Star *SimulationWorld::createStar(Model &model, double mu,
   return ptr;
 }
 
-Moon *SimulationWorld::createMoon(Model &model, double mu,
-                                  Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, const HapkeParameters &hapkeParameters, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
+Moon *SimulationWorld::createMoon(Model &model, double mu, Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
 {
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -96,7 +95,7 @@ Moon *SimulationWorld::createMoon(Model &model, double mu,
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
 
-  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radii, e, hapkeParameters, tidalParameters, gravityField);
+  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radii, e, tidalParameters, gravityField);
 
   moon->setAngularVelocity(r.calculateAngularVelocity());
   moon->setOrientation(r.calculateOrientation());
@@ -172,7 +171,7 @@ void SimulationWorld::initObjects(ResourceManager &resourceManager, ThreadPool &
   Planet *earthPtr = createPlanet(resourceManager.GetModel(Res::EARTH_MODEL), earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
   addAtmosphereToPlanet(resourceManager, threadPool, Res::EARTH_MODEL, earthPtr);
   addLayerToModelSource(resourceManager.GetModel(Res::EARTH_ATMOSPHERE_MODEL), earthPtr);
-  createMoon(resourceManager.GetModel(Res::MOON_MODEL), moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, moonHapkeParameters, timeAfterJD2000, moonGravityField, moonTidalParameters);
+  createMoon(resourceManager.GetModel(Res::MOON_MODEL), moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, timeAfterJD2000, moonGravityField, moonTidalParameters);
   createPlanet(resourceManager.GetModel(Res::MARS_MODEL), marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
   createAsteroidSystem(resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
   Planet *jupiter = createPlanet(resourceManager.GetModel(Res::JUPITER_MODEL), jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
@@ -250,7 +249,7 @@ void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadP
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
   this->render.init(this->total);
 
-  if (bool GPU = false)
+  if (bool GPU = true)
     this->initGPU(resourceManager);
   else
     this->initCPU();

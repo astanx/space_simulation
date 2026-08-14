@@ -20,17 +20,7 @@ protected:
 
   double g; // Acceleration of free fall of the Planet
 
-  uint radianceSize = 32;
-
-  std::unique_ptr<Texture> moonRadianceTexture;
-  std::unique_ptr<Framebuffer> moonRadianceFBO;
-
-  std::unique_ptr<RenderBuffer> moonRBO;
-
   std::unique_ptr<Atmosphere> atmosphere;
-
-  void initMoonRadianceTexture();
-  void initMoonRadianceFBO();
 
 public:
   Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), double g = 0.0);
@@ -40,9 +30,4 @@ public:
   void addAtmosphere(std::unique_ptr<Atmosphere> atmosphere);
 
   double getFreeFallAcc() const;
-
-  void render(Shader &shader) override;
-
-  void renderAtmosphere(Shader &shader) const;
-  void renderMoonsRadiance(Shader &shader, const Camera &camera) const;
 };

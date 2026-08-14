@@ -5,12 +5,12 @@
 
 #include <vector>
 
-class Model;
+class ReflectanceAcceptor;
 
 struct ReflectorBatch
 {
-  Model *acceptor;
-  Range range;
+  ReflectanceAcceptor *acceptor;
+  Range acceptorRange;
 
-  std::vector<RenderBatch> reflectors;
+  RenderBatch reflector;
 };

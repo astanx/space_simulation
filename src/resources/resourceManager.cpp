@@ -4,11 +4,15 @@
 
 #include "debug/logger.h"
 
+#include "render/reflectanceAcceptor.h"
+#include "render/reflector.h"
+
 #include "graphics/primitives/primitives.h"
 #include "graphics/primitives/asteroidShape.h"
 #include "graphics/materials/asteroidMaterial.h"
 #include "graphics/materials/phongMaterial.h"
 #include "graphics/materials/pbrMaterial.h"
+#include "graphics/materials/hapkePBRMaterial.h"
 
 #include "physics/structs/materialProperties.h"
 
@@ -64,6 +68,44 @@ Model &ResourceManager::LoadModel(const std::string &name, const std::string &ma
   registry.registerModel(this->models[name].get());
   return *this->models[name];
 }
+Model &ResourceManager::LoadReflectanceAcceptorModel(const std::string &name, Material &mat, Mesh &mesh, ModelFlags flags)
+{
+  this->models[name] = std::make_unique<ReflectanceAcceptor>(mat, mesh, flags);
+  registry.registerModel(this->models[name].get());
+  return *this->models[name];
+}
+Model &ResourceManager::LoadReflectanceAcceptorModel(const std::string &name, const std::string &material_name, const std::string &mesh_name, ModelFlags flags)
+{
+  this->models[name] = std::make_unique<ReflectanceAcceptor>(this->GetMaterial(material_name), this->GetMesh(mesh_name), flags);
+  registry.registerModel(this->models[name].get());
+  return *this->models[name];
+}
+Model &ResourceManager::LoadReflectorModel(const std::string &name, Material &mat, Mesh &mesh, const std::string &acceptor_name, ModelFlags flags)
+{
+  std::unique_ptr<Reflector> reflector = std::make_unique<Reflector>(mat, mesh, flags);
+
+  ReflectanceAcceptor *acceptor = dynamic_cast<ReflectanceAcceptor *>(&this->GetModel(acceptor_name));
+  if (!acceptor)
+    Logger::logFatal("Resource Manager", "Model name passed as reflectance acceptor does not accept reflectance");
+
+  reflector->setAcceptor(acceptor);
+  this->models[name] = std::move(reflector);
+  registry.registerModel(this->models[name].get());
+  return *this->models[name];
+}
+Model &ResourceManager::LoadReflectorModel(const std::string &name, const std::string &material_name, const std::string &mesh_name, const std::string &acceptor_name, ModelFlags flags)
+{
+  std::unique_ptr<Reflector> reflector = std::make_unique<Reflector>(this->GetMaterial(material_name), this->GetMesh(mesh_name), flags);
+
+  ReflectanceAcceptor *acceptor = dynamic_cast<ReflectanceAcceptor *>(&this->GetModel(acceptor_name));
+  if (!acceptor)
+    Logger::logFatal("Resource Manager", "Model name passed as reflectance acceptor does not accept reflectance");
+
+  reflector->setAcceptor(acceptor);
+  this->models[name] = std::move(reflector);
+  registry.registerModel(this->models[name].get());
+  return *this->models[name];
+}
 
 Material &ResourceManager::LoadPhongMaterial(const std::string &name, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular,
                                              Texture *diffuseTexture, Texture *specularTexture, Texture *normalTexture, float shininess)
@@ -81,6 +123,12 @@ Material &ResourceManager::LoadPhongMaterial(const std::string &name, PhongMater
 Material &ResourceManager::LoadPBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, Texture *nightMap, float emissiveStrength, float ao, float metallic, float roughness)
 {
   this->materials[name] = std::make_unique<PBRMaterial>(albedoMap, normalMap, aoMap, metallicMap, roughnessMap, nightMap, emissiveStrength, ao, metallic, roughness);
+  return *this->materials[name];
+}
+
+Material &ResourceManager::LoadHapkePBRMaterial(const std::string &name, Texture *albedoMap, Texture *normalMap, Texture *aoMap, Texture *metallicMap, Texture *roughnessMap, Texture *nightMap, float emissiveStrength, float ao, float metallic, float roughness, HapkeParameters params)
+{
+  this->materials[name] = std::make_unique<HapkePBRMaterial>(params, albedoMap, normalMap, aoMap, metallicMap, roughnessMap, nightMap, emissiveStrength, ao, metallic, roughness);
   return *this->materials[name];
 }
 

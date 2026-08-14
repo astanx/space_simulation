@@ -44,18 +44,15 @@ protected:
 
 public:
 	Model(Material &material, Mesh &mesh, ModelFlags flags = ModelFlags::None, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
-
 	Model(Mesh &mesh, ModelFlags flags = ModelFlags::None);
-
 	Model(const Model &model);
-
 	// OBJ consturctor
 	Model(Material &material, const std::string &OBJfile, ModelFlags flags = ModelFlags::None, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
 
 	~Model();
 
-	void render(Shader &shader) override;
-	void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;
+	virtual void render(Shader &shader) override;
+	virtual void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;
 
 	void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
 	void setImportance(float importance) { this->importance = importance; };

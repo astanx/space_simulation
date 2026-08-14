@@ -96,6 +96,7 @@ add_executable(Space
         src/graphics/materials/pbrMaterial.cpp
         src/graphics/materials/phongMaterial.cpp
         src/graphics/materials/textMaterial.cpp
+        src/graphics/materials/hapkePBRMaterial.cpp
         # Primitives
         src/graphics/primitives/triangle.cpp
         src/graphics/primitives/primitives.cpp
@@ -150,7 +151,9 @@ add_executable(Space
     src/render/postProcess.cpp
     src/render/gaussianBlur.cpp
     src/render/modelSource.cpp
+    src/render/reflectanceAcceptor.cpp
     src/render/instanceManager.cpp
+    src/render/reflectanceAcceptor.cpp
         # LOD
         src/render/lod/scan.cpp
         src/render/lod/lodManager.cpp

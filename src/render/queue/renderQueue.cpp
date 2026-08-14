@@ -33,9 +33,10 @@ void RenderQueue::addShadowBatch(RenderBatch batch)
   this->shadowBatches.push_back(batch);
 }
 
-void RenderQueue::addReflectorBatch(RenderBatch batch)
+void RenderQueue::addReflectorBatch(ReflectorBatch batch)
 {
-  if (!batch.model->hasFlag(ModelFlags::ReflectsLight))
-    Logger::logWarning("Render queue", "Model without reflection is added to reflector batch");
+  if (!batch.reflector.model->hasFlag(ModelFlags::ReflectsLight))
+    Logger::logWarning("Render queue", "Model without reflection is added as reflector to reflector batch");
+
   this->reflectorBatches.push_back(batch);
 }

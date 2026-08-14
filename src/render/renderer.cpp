@@ -5,6 +5,7 @@
 #include "scene/scene.h"
 
 #include "render/renderState.h"
+#include "render/reflectanceAcceptor.h"
 #include "render/frustum.h"
 #include "render/queue/renderBatch.h"
 
@@ -182,17 +183,17 @@ void Renderer::renderObjects(Scene &scene)
   this->renderObjectsQueue(this->queue.getTangentBatches(), scene, coreTangentShader, &scene.getSimulationWorld().getRenderWorld().getFullInstancesVBO());
 }
 
-void Renderer::renderAtmospheres(Scene &scene)
-{
-  Shader &atmosphereShader = this->resourceManager.GetShader(Res::ATMOSPHERE_SHADER);
+// void Renderer::renderAtmospheres(Scene &scene)
+// {
+//   Shader &atmosphereShader = this->resourceManager.GetShader(Res::ATMOSPHERE_SHADER);
 
-  GLuint &atmosphereID = atmosphereShader.getId();
+//   GLuint &atmosphereID = atmosphereShader.getId();
 
-  ScopedShader atmosphereSh(atmosphereID);
+//   ScopedShader atmosphereSh(atmosphereID);
 
-  for (const Planet *planet : scene.getSimulationWorld().getPhysicsWorld().getPlanetarObjects())
-    planet->renderAtmosphere(atmosphereShader);
-}
+//   for (const Planet *planet : scene.getSimulationWorld().getPhysicsWorld().getPlanetarObjects())
+//     planet->renderAtmosphere(atmosphereShader);
+// }
 void Renderer::renderTrails(Scene &scene)
 {
   Shader &trailShader = this->resourceManager.GetShader(Res::TRAIL_SHADER);
@@ -333,17 +334,14 @@ void Renderer::blitDepthToDefault(const Framebuffer &framebuffer)
   glBlitFramebuffer(0, 0, viewport[2], viewport[3], 0, 0, viewport[2], viewport[3], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
-void Renderer::renderMoonsRadiance(Scene &scene)
+void Renderer::renderReflectanceRadiance(Scene &scene)
 {
-  // fix
-  Shader &moonsRadianceShader = this->resourceManager.GetShader(Res::REFLECTION_SHADER);
+  Shader &reflectanceShader = this->resourceManager.GetShader(Res::REFLECTION_SHADER);
 
-  ScopedShader moon(moonsRadianceShader);
-
-  moonsRadianceShader.set1f(scene.getSimulationWorld().getPhysicsWorld().getSun().getLuminosity(), "lightLuminocity");
-  // need to pass vbo data
-  for (const Planet *planet : scene.getSimulationWorld().getPhysicsWorld().getPlanetarObjects())
-    planet->renderMoonsRadiance(moonsRadianceShader, scene.getActiveCamera());
+  ScopedShader reflectance(reflectanceShader);
+  reflectanceShader.set1f(scene.getSimulationWorld().getPhysicsWorld().getSun().getLuminosity(), "lightLuminocity");
+  for (ReflectorBatch batch : this->queue.getReflectorBatches())
+    batch.acceptor->renderRadianceInstanced(reflectanceShader, scene.getActiveCamera(), batch.reflector, &scene.getSimulationWorld().getRenderWorld().getFullInstancesVBO());
 }
 
 void Renderer::beginFrame(RenderContext &ctx)
@@ -399,8 +397,7 @@ void Renderer::render(Scene &scene, RenderContext &ctx)
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
 
-  // disabled unit planet manager
-  // this->renderMoonsRadiance(scene);
+  this->renderReflectanceRadiance(scene);
 
   const Framebuffer &hdrFramebuffer = this->postProcess.getHDRFramebuffer();
 

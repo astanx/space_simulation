@@ -62,7 +62,7 @@ private:
   void renderDirectionalShadow(Scene &scene);
   void renderShadowMap(Scene& scene, Shader &shader);
   void renderPointShadow(Scene &scene);
-  void renderMoonsRadiance(Scene &scene);
+  void renderReflectanceRadiance(Scene &scene);
   void renderSkybox(Scene &scene, RenderContext &ctx);
   void renderObjects(Scene &scene);
   void renderObjectsQueue(std::vector<RenderBatch> &batches, Scene &scene, Shader &shader, Buffer *instanceVBO);
