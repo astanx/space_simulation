@@ -15,6 +15,7 @@
 #include "graphics/framebuffers/framebuffer.h"
 
 #include "graphics/buffers/renderBuffer.h"
+#include "graphics/buffers/buffer.h"
 
 #include "scene/light/lightManager.h"
 
@@ -48,7 +49,7 @@ private:
   GaussianBlur blur;
   RenderQueue queue;
 
-  unsigned int cameraUBO;
+  std::unique_ptr<Buffer> cameraUBO;
 
   std::unique_ptr<LightManager> lightManager;
 
@@ -57,10 +58,10 @@ private:
 
   void updateUBO(Scene &scene, RenderContext &ctx);
 
-  void initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType);
+  void initShaderBuffer(Buffer &ubo, unsigned long size, GLenum bufferType);
 
   void renderDirectionalShadow(Scene &scene);
-  void renderShadowMap(Scene& scene, Shader &shader);
+  void renderShadowMap(Scene &scene, Shader &shader);
   void renderPointShadow(Scene &scene);
   void renderReflectanceRadiance(Scene &scene);
   void renderSkybox(Scene &scene, RenderContext &ctx);
@@ -69,7 +70,7 @@ private:
   void renderAtmospheres(Scene &scene);
   void renderTrails(Scene &scene);
   void renderImpostor(Scene &scene);
-  void renderPoint(Scene& scene);
+  void renderPoint(Scene &scene);
 
   void initShaderUBOBindings();
   void bindUBOs();

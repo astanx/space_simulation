@@ -47,7 +47,7 @@ void Renderer::updateUBO(Scene &scene, RenderContext &ctx)
 {
   const Camera &activeCamera = scene.getActiveCamera();
 
-  if (!glIsBuffer(this->cameraUBO))
+  if (!this->cameraUBO)
     Logger::logWarning("Renderer", "No camera UBO to update");
   else
   {
@@ -58,9 +58,8 @@ void Renderer::updateUBO(Scene &scene, RenderContext &ctx)
     // camUBO.camPosition = glm::vec4(glm::vec3(0.f), 1.0);
     camUBO.camPosition = glm::vec4(0.0);
 
-    glBindBuffer(GL_UNIFORM_BUFFER, this->cameraUBO);
+    ScopedBuffer ubo(*this->cameraUBO, GL_UNIFORM_BUFFER);
     GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 
   const DirectionalLight *directionalLight = scene.getDirLight();
@@ -113,7 +112,7 @@ void Renderer::initShaderUBOBindings()
 
 void Renderer::bindUBOs()
 {
-  glBindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::Camera, this->cameraUBO);
+  this->cameraUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::Camera);
 
   this->lightManager->bindDirLightUBO();
   this->lightManager->bindPointLightUBO();
@@ -130,10 +129,9 @@ void Renderer::bindDummyReflector(Shader &shader)
   shader.set1i(0, "useReflectorRadiance");
 }
 
-void Renderer::initShaderBuffer(GLuint *ubo, unsigned long size, GLenum bufferType)
+void Renderer::initShaderBuffer(Buffer &ubo, unsigned long size, GLenum bufferType)
 {
-  glGenBuffers(1, ubo);
-  glBindBuffer(bufferType, *ubo);
+  ScopedBuffer buff(ubo, GL_UNIFORM_BUFFER);
   GL_CALL(glBufferData(bufferType, size, nullptr, GL_DYNAMIC_DRAW));
 }
 
@@ -363,7 +361,8 @@ void Renderer::init(Scene &scene, RenderContext &ctx)
   this->lightManager = std::make_unique<LightManager>(scene);
   this->shadowManager = std::make_unique<ShadowManager>(scene);
 
-  this->initShaderBuffer(&this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
+  this->cameraUBO = std::make_unique<Buffer>();
+  this->initShaderBuffer(*this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
   this->blur.init(37, 6.2f, ctx.frameCtx, true, this->shadowRes);
 
   const DirectionalLight *directionalLight = scene.getDirLight();
