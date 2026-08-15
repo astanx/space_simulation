@@ -28,5 +28,6 @@ public:
   RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUData &lodData, BackendGPUData &data, Total &total, std::vector<Model *> &models);
   ~RenderWorldBackendGPU() = default;
 
+  void sync(PhysicsWorld &physics, PointLight* light) override;
   void update(const Camera &camera, RenderQueue &queue, InstanceManager &instanceManager, FrameContext &ctx) override;
 };

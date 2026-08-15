@@ -47,3 +47,8 @@ void RenderWorldBackendGPU::update(const Camera &camera, RenderQueue &queue, Ins
   else
     this->renderQueueBuilderGPU.build<float>(this->queue, queue, this->lodManagerGPU, instanceManager, camera, ctx, this->models, this->total.total);
 }
+
+void RenderWorldBackendGPU::sync(PhysicsWorld &physics, PointLight *light)
+{ 
+  // skip 
+}

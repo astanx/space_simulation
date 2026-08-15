@@ -1,18 +1,10 @@
 #pragma once
 
+#include "camera/cameraMovement.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <GL/glew.h>
-
-enum CameraMovement
-{
-  FORWARD,
-  BACKWARD,
-  LEFT,
-  RIGHT,
-  UP,
-  DOWN
-};
 
 struct Frustum;
 

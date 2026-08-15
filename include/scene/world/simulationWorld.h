@@ -70,7 +70,7 @@ public:
   SimulationWorld();
   ~SimulationWorld() = default;
 
-  void init(ResourceManager &resourceManager, ThreadPool &threadPool, double startTime);
+  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime);
 
   void update(const Camera &camera, RenderQueue &queue, RenderContext &renderCtx);
 

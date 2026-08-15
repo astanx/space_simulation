@@ -1,26 +1,41 @@
 #include "render/world/renderWorld.h"
 
+#include "scene/light/pointLight.h"
+#include "scene/light/directionalLight.h"
 #include "scene/world/data/sharedGPUData.h"
 
 #include "render/world/backend/backendGPUData.h"
-
 #include "render/world/backend/renderWorldBackendCPU.h"
 #include "render/world/backend/renderWorldBackendGPU.h"
 
 #include "render/updatable.h"
-
+#include "render/renderContext.h"
 #include "render/world/data/renderDataGPU.h"
+
+#include "graphics/skybox.h"
 
 #include "compute/context.h"
 
+#include "physics/world/physicsWorld.h"
 #include "physics/world/total.h"
 #include "physics/trail.h"
+#include "physics/star.h"
+
+// Constructor / Destructor
+RenderWorld::RenderWorld() = default;
+RenderWorld::~RenderWorld() = default;
 
 // Public functions
-void RenderWorld::init(Total &total)
+void RenderWorld::init(ResourceManager &manager, PhysicsWorld &physics, RenderContext &ctx, Total &total)
 {
   this->lodResourceManager.init(this->modelSources, this->renderSystems);
   this->instanceManager.init(total.total);
+
+  const Star &sun = physics.getSun();
+
+  this->addPointLight(std::make_unique<PointLight>(sun.getRenderPosition(), glm::vec3(1.0f), sun.getLuminosity(), sun.getRadius()));
+  this->addCamera(std::make_unique<Camera>(sun.getRenderPosition(), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), ctx.frameCtx.width, ctx.frameCtx.height));
+  this->addSkybox(std::make_unique<Skybox>("assets/skybox/starmap.exr", manager));
 }
 
 void RenderWorld::initGPUBuffers(Context &ctx, RenderDataGPU &gpu)
@@ -84,6 +99,11 @@ void RenderWorld::update(const Camera &camera, RenderQueue &queue, FrameContext 
   this->backend->update(camera, queue, this->instanceManager, ctx);
 }
 
+void RenderWorld::sync(PhysicsWorld &physics)
+{
+  this->backend->sync(physics, this->pointLight.get());
+}
+
 void RenderWorld::renderImpostorMeshInstanced()
 {
   this->lodResourceManager.getImpostorMesh().renderInstanced(&this->instanceManager.getImpostorInstancesVBO(), sizeof(InstancePositionRadiusTexture), this->instanceManager.getImpostorCount());
@@ -92,6 +112,47 @@ void RenderWorld::renderImpostorMeshInstanced()
 void RenderWorld::renderPointMeshInstanced()
 {
   this->lodResourceManager.getPointMesh().renderInstanced(&this->instanceManager.getPointInstancesVBO(), sizeof(InstancePositionRadiusColor), this->instanceManager.getPointCount());
+}
+
+// Setters
+void RenderWorld::addCamera(std::unique_ptr<Camera> camera)
+{
+  if (!this->activeCamera)
+    this->activeCamera = camera.get();
+  this->cameras.push_back(std::move(camera));
+}
+
+void RenderWorld::addPointLight(std::unique_ptr<PointLight> pointLight)
+{
+  this->pointLight = std::move(pointLight);
+}
+
+void RenderWorld::addDirLight(std::unique_ptr<DirectionalLight> directionalLight)
+{
+  this->directionalLight = std::move(directionalLight);
+}
+void RenderWorld::addSkybox(std::unique_ptr<Skybox> skybox)
+{
+  if (!this->skybox)
+    this->skybox = skybox.get();
+  this->skyboxesViews.push_back(skybox.get());
+  this->skyboxes.push_back(std::move(skybox));
+}
+
+void RenderWorld::increaseCameraSpeed(double percentage)
+{
+  if (this->activeCamera)
+    this->activeCamera->increaseMovementSpeed(percentage);
+  else
+    Logger::logWarning("Render World", "No active camera to increase speed");
+}
+
+void RenderWorld::decreaseCameraSpeed(double percentage)
+{
+  if (this->activeCamera)
+    this->activeCamera->decreaseMovementSpeed(percentage);
+  else
+    Logger::logWarning("Render World", "No active camera to decrease speed");
 }
 
 void RenderWorld::addRenderSystem(RenderSystem *system)
@@ -115,10 +176,48 @@ void RenderWorld::addTrail(std::unique_ptr<Trail> trail)
   this->trails.push_back(std::move(trail));
 }
 
+// Getters
+Camera &RenderWorld::getActiveCamera()
+{
+  if (!this->activeCamera)
+    Logger::logFatal("Render World", "No active camera");
+
+  return *this->activeCamera;
+};
+const Skybox &RenderWorld::getActiveSkybox() const
+{
+  if (!this->skybox)
+    Logger::logFatal("Render World", "No active skybox");
+
+  return *this->skybox;
+};
+const glm::vec3 RenderWorld::getActiveCameraPosition() const
+{
+  if (!this->activeCamera)
+    Logger::logFatal("Render World", "No active camera, can not get position");
+
+  return this->activeCamera->getPosition();
+};
+
+const PointLight *RenderWorld::getPointLight() const
+{
+  if (this->pointLight)
+    Logger::logWarning("Render World", "No point light");
+
+  return this->pointLight.get();
+};
+const DirectionalLight *RenderWorld::getDirLight() const
+{
+  if (!this->directionalLight)
+    Logger::logWarning("Render World", "No directional light");
+
+  return this->directionalLight.get();
+};
+
 std::vector<Trail *> &RenderWorld::getTrails()
 {
   if (this->trails.empty())
-    Logger::logWarning("RenderWorld", "Trails are empty");
+    Logger::logWarning("Render World", "Trails are empty");
 
   return this->trailViews;
 };

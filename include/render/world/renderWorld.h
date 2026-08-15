@@ -20,7 +20,12 @@ class Camera;
 class Context;
 class ResourceManager;
 class CommandQueue;
+class Skybox;
+class PointLight;
+class DirectionalLight;
+class PhysicsWorld;
 struct FrameContext;
+struct RenderContext;
 struct RenderDataGPU;
 struct SharedGPUData;
 struct Total;
@@ -32,6 +37,18 @@ private:
   InstanceManager instanceManager;
 
   std::unique_ptr<RenderWorldBackend> backend;
+
+  Camera *activeCamera;
+  Skybox *skybox;
+
+  std::vector<std::unique_ptr<Camera>> cameras;
+  std::vector<Camera *> cameraViews;
+
+  std::vector<std::unique_ptr<Skybox>> skyboxes;
+  std::vector<Skybox *> skyboxesViews;
+
+  std::unique_ptr<PointLight> pointLight;
+  std::unique_ptr<DirectionalLight> directionalLight;
 
   std::vector<Updatable *> updatable;
   std::vector<RenderSystem *> renderSystems;
@@ -55,23 +72,41 @@ private:
   void reserveModelInstances();
 
 public:
-  RenderWorld() = default;
-  ~RenderWorld() = default;
+  RenderWorld();
+  ~RenderWorld();
 
-  void init(Total &total);
+  void init(ResourceManager& manager, PhysicsWorld& physics, RenderContext& ctx, Total &total);
   void initCPUBackend();
   void initGPUBuffers(Context &ctx, RenderDataGPU &gpu);
-  void initGPUBackend(Context &ctx, CommandQueue &queue, Total& total, ResourceManager &resourceManager, SharedGPUData &data);
+  void initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUData &data);
 
   void update(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
+  void sync(PhysicsWorld &physics);
 
   void renderImpostorMeshInstanced();
   void renderPointMeshInstanced();
+
+  // Setters
+  void addPointLight(std::unique_ptr<PointLight> pointLight);
+  void addDirLight(std::unique_ptr<DirectionalLight> directionalLight);
+  void addCamera(std::unique_ptr<Camera> camera);
+  void addSkybox(std::unique_ptr<Skybox> skybox);
+
+  void increaseCameraSpeed(double percentage = 10.0);
+  void decreaseCameraSpeed(double percentage = 10.0);
 
   void addRenderSystem(RenderSystem *system);
   void addModelSource(ModelSource *object);
   void addUpdatable(Updatable *object);
   void addTrail(std::unique_ptr<Trail> trail);
+
+  // Getters
+  Camera &getActiveCamera();
+  const Skybox &getActiveSkybox() const;
+
+  const glm::vec3 getActiveCameraPosition() const;
+  const PointLight *getPointLight() const;
+  const DirectionalLight *getDirLight() const;
 
   InstanceManager &getInstanceManager() { return this->instanceManager; };
   Texture &getImpostorTexture() { return this->lodResourceManager.getImpostorTexture(); };

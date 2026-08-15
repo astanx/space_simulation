@@ -5,6 +5,11 @@
 #include "render/modelSource.h"
 #include "render/renderSystem.h"
 
+#include "scene/light/pointLight.h"
+
+#include "physics/world/physicsWorld.h"
+#include "physics/star.h"
+
 // Constructor
 RenderWorldBackendCPU::RenderWorldBackendCPU(InstanceManager &instanceManager, std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems) : modelSources(modelSources), renderSystems(renderSystems), lodManager(this->lodSettings)
 {
@@ -38,4 +43,12 @@ void RenderWorldBackendCPU::update(const Camera &camera, RenderQueue &queue, Ins
 
   RenderQueueBuilder builder(models);
   builder.build(queue, camera, this->modelSources, this->renderSystems, this->lodManager, instanceManager, ctx);
+}
+
+void RenderWorldBackendCPU::sync(PhysicsWorld &physics, PointLight *light)
+{
+  if (light)
+    light->move(physics.getSun().getRenderPosition()); // move sun light
+  else
+    Logger::logFatal("Scene", " No sun light to sync position");
 }

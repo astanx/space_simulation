@@ -242,12 +242,12 @@ SimulationWorld::SimulationWorld()
 }
 
 // Public fucntions
-void SimulationWorld::init(ResourceManager &resourceManager, ThreadPool &threadPool, double startTime)
+void SimulationWorld::init(RenderContext &ctx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime)
 {
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
-  this->render.init(this->total);
+  this->render.init(resourceManager, this->physics, ctx, this->total);
 
   if (bool GPU = true)
     this->initGPU(resourceManager);
@@ -259,6 +259,8 @@ void SimulationWorld::update(const Camera &camera, RenderQueue &queue, RenderCon
 {
   if (!renderCtx.settings.paused)
     this->physics.step(renderCtx.deltaTime);
+
+  this->render.sync(this->physics);
 
   this->render.update(camera, queue, renderCtx.frameCtx);
 }

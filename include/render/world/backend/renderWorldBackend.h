@@ -9,6 +9,8 @@ class RenderQueue;
 class FrameContext;
 class InstanceManager;
 class Model;
+class PhysicsWorld;
+class PointLight;
 
 class RenderWorldBackend
 {
@@ -23,5 +25,6 @@ public:
   RenderWorldBackend() = default;
   virtual ~RenderWorldBackend() = default;
 
+  virtual void sync(PhysicsWorld &physics, PointLight* light) = 0;
   virtual void update(const Camera &camera, RenderQueue &queue, InstanceManager &instanceManager, FrameContext &ctx) = 0;
 };

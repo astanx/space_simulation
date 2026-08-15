@@ -1,142 +1,70 @@
 #include "scene/scene.h"
 
-#include "debug/logger.h"
-
-#include "physics/star.h"
+#include "camera/camera.h"
 
 // Process functions
 void Scene::init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime)
 {
-  this->world.init(resourceManager, threadPool, startTime);
-
-  const Star &sun = this->world.getPhysicsWorld().getSun();
-  std::unique_ptr<PointLight> pointLight = std::make_unique<PointLight>(
-      sun.getRenderPosition(),
-      glm::vec3(1.0f),
-      sun.getLuminosity(),
-      sun.getRadius());
-  this->addPointLight(std::move(pointLight));
-
-  std::unique_ptr<Camera> cam = std::make_unique<Camera>(sun.getRenderPosition(),
-                                                         glm::vec3(0.0f, 0.0f, -1.0f),
-                                                         glm::vec3(0.0f, 1.0f, 0.0f),
-                                                         renderCtx.frameCtx.width, renderCtx.frameCtx.height);
-  this->addCamera(std::move(cam));
-  activeCamera = this->cameras.back().get();
-
-  std::unique_ptr<Skybox> sb = std::make_unique<Skybox>("assets/skybox/starmap.exr", resourceManager);
-  this->addSkybox(std::move(sb));
-  this->skybox = this->skyboxes.back().get();
+  this->world.init(renderCtx, resourceManager, threadPool, startTime);
 }
 
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)
 {
-  assert(this->activeCamera && "[Scene] ASSERT: No active camera to process keyboard");
-
-  this->activeCamera->processKeyboard(direction, deltaTime);
+  Camera &camera = this->world.getRenderWorld().getActiveCamera();
+  camera.processKeyboard(direction, deltaTime);
 }
 
 void Scene::processMouseMovement(const float &xpos, const float &ypos)
 {
-  assert(this->activeCamera && "[Scene] ASSERT: No active camera to process mouse movement");
-
-  this->activeCamera->processMouseMovement(xpos, ypos);
+  Camera &camera = this->world.getRenderWorld().getActiveCamera();
+  camera.processMouseMovement(xpos, ypos);
 }
 
 void Scene::processMouseScroll(float yoffset)
 {
-  assert(this->activeCamera && "[Scene] ASSERT: No active camera to process mouse scroll");
-
-  this->activeCamera->processMouseScroll(yoffset);
+  Camera &camera = this->world.getRenderWorld().getActiveCamera();
+  camera.processMouseScroll(yoffset);
 }
 
 void Scene::update(RenderQueue &queue, RenderContext &renderCtx)
 {
   this->world.update(this->getActiveCamera(), queue, renderCtx);
-
-  // fix
-  if (this->pointLight)
-    this->pointLight->move(this->world.getPhysicsWorld().getSun().getRenderPosition()); // move sun light
-  else
-    Logger::logFatal("Scene", " No sun to update position");
 }
 
 // Setters
-void Scene::addCamera(std::unique_ptr<Camera> camera)
-{
-  if (!this->activeCamera)
-    this->activeCamera = camera.get();
-
-  this->cameras.push_back(std::move(camera));
-}
-
-void Scene::addPointLight(std::unique_ptr<PointLight> pointLight)
-{
-  this->pointLight = std::move(pointLight);
-}
-
-void Scene::addDirLight(std::unique_ptr<DirectionalLight> directionalLight)
-{
-  this->directionalLight = std::move(directionalLight);
-}
-void Scene::addSkybox(std::unique_ptr<Skybox> skybox)
-{
-  this->skyboxesViews.push_back(skybox.get());
-  this->skyboxes.push_back(std::move(skybox));
-}
-
 void Scene::increaseCameraSpeed(double percentage)
 {
-  if (this->activeCamera)
-    this->activeCamera->increaseMovementSpeed(percentage);
-  else
-    Logger::logWarning("Scene", "No active camera to increase speed");
+  Camera &camera = this->world.getRenderWorld().getActiveCamera();
+  camera.increaseMovementSpeed(percentage);
 }
 
 void Scene::decreaseCameraSpeed(double percentage)
 {
-  if (this->activeCamera)
-    this->activeCamera->decreaseMovementSpeed(percentage);
-  else
-    Logger::logWarning("Scene", "No active camera to decrease speed");
+  Camera &camera = this->world.getRenderWorld().getActiveCamera();
+  camera.decreaseMovementSpeed(percentage);
 }
 
 // Getters
-const Camera &Scene::getActiveCamera() const
+const Camera &Scene::getActiveCamera()
 {
-  if (!this->activeCamera)
-    Logger::logFatal("Scene", "No active camera");
-
-  return *this->activeCamera;
+  return this->world.getRenderWorld().getActiveCamera();
 };
-const Skybox &Scene::getActiveSkybox() const
+const Skybox &Scene::getActiveSkybox()
 {
-  if (!this->skybox)
-    Logger::logFatal("Scene", "No active skybox");
-
-  return *this->skybox;
+  return this->world.getRenderWorld().getActiveSkybox();
 };
-const glm::vec3 Scene::getActiveCameraPosition() const
+const glm::vec3 Scene::getActiveCameraPosition()
 {
-  if (!this->activeCamera)
-    Logger::logFatal("Scene", "No active camera, can not get position");
-
-  return this->activeCamera->getPosition();
+  return this->world.getRenderWorld().getActiveCamera().getPosition();
 };
 
-const PointLight *Scene::getPointLight() const
+const PointLight *Scene::getPointLight()
 {
-  if (this->pointLight)
-    Logger::logWarning("Scene", "No point light");
-
-  return this->pointLight.get();
+  return this->world.getRenderWorld().getPointLight();
 };
-const DirectionalLight *Scene::getDirLight() const
+const DirectionalLight *Scene::getDirLight()
 {
-  if (!this->directionalLight)
-    Logger::logWarning("Scene", "No directional light");
-
-  return this->directionalLight.get();
+  return this->world.getRenderWorld().getDirLight();
 };
 SimulationWorld &Scene::getSimulationWorld()
 {

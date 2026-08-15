@@ -3,6 +3,7 @@
 #include "debug/logger.h"
 
 #include "scene/scene.h"
+#include "scene/light/pointLight.h"
 
 #include "render/renderState.h"
 #include "render/reflectanceAcceptor.h"
@@ -10,6 +11,7 @@
 #include "render/queue/renderBatch.h"
 
 #include "graphics/instanceLayouts.h"
+#include "graphics/skybox.h"
 
 #include "graphics/bindings/ubo.h"
 #include "graphics/bindings/texture.h"
