@@ -42,7 +42,7 @@ ShadowManager::ShadowManager(Scene &scene)
 {
   if (scene.getDirLight())
     this->initDirUBO();
-  if (!scene.getPointLights().empty())
+  if (scene.getPointLight())
     this->initPointUBO();
 }
 

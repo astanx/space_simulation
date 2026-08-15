@@ -50,12 +50,13 @@ void Scene::processMouseScroll(float yoffset)
   this->activeCamera->processMouseScroll(yoffset);
 }
 
-void Scene::update(RenderQueue& queue, RenderContext &renderCtx)
+void Scene::update(RenderQueue &queue, RenderContext &renderCtx)
 {
   this->world.update(this->getActiveCamera(), queue, renderCtx);
 
-  if (this->pointLights[0])
-    this->pointLights[0]->move(this->world.getPhysicsWorld().getSun().getRenderPosition()); // move sun light
+  // fix
+  if (this->pointLight)
+    this->pointLight->move(this->world.getPhysicsWorld().getSun().getRenderPosition()); // move sun light
   else
     Logger::logFatal("Scene", " No sun to update position");
 }
@@ -71,8 +72,7 @@ void Scene::addCamera(std::unique_ptr<Camera> camera)
 
 void Scene::addPointLight(std::unique_ptr<PointLight> pointLight)
 {
-  this->pointLightViews.push_back(pointLight.get());
-  this->pointLights.push_back(std::move(pointLight));
+  this->pointLight = std::move(pointLight);
 }
 
 void Scene::addDirLight(std::unique_ptr<DirectionalLight> directionalLight)
@@ -124,12 +124,12 @@ const glm::vec3 Scene::getActiveCameraPosition() const
   return this->activeCamera->getPosition();
 };
 
-const std::vector<PointLight *> &Scene::getPointLights() const
+const PointLight *Scene::getPointLight() const
 {
-  if (this->pointLightViews.empty())
-    Logger::logWarning("Scene", "Point light views are empty");
+  if (this->pointLight)
+    Logger::logWarning("Scene", "No point light");
 
-  return this->pointLightViews;
+  return this->pointLight.get();
 };
 const DirectionalLight *Scene::getDirLight() const
 {

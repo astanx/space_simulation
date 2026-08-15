@@ -102,6 +102,7 @@ ReflectanceAcceptor::~ReflectanceAcceptor() = default;
 void ReflectanceAcceptor::render(Shader &shader)
 {
   ScopedTexture radianceTextureScope(*this->radianceTexture, TextureBindingPoints::EnvironmentMap);
+  //fix
   // glm::vec3 reflectorPosition = reflectorPosition;
   glm::vec3 reflectorPosition(0.0);
   shader.set1i(1, "useReflectorRadiance");
@@ -162,6 +163,7 @@ void ReflectanceAcceptor::renderRadiance(Shader &shader, const Camera &camera, M
 
 void ReflectanceAcceptor::renderRadianceInstanced(Shader &shader, const Camera &camera, RenderBatch reflector, Buffer *instanceVBO) const
 {
+  //fix
   // glm::vec3 pos = acceptorPosition;
   glm::vec3 pos(0.0);
 

@@ -32,9 +32,7 @@ private:
   std::vector<std::unique_ptr<Skybox>> skyboxes;
   std::vector<Skybox *> skyboxesViews;
 
-  std::vector<std::unique_ptr<PointLight>> pointLights;
-  std::vector<PointLight *> pointLightViews;
-
+  std::unique_ptr<PointLight> pointLight;
   std::unique_ptr<DirectionalLight> directionalLight;
 
 public:
@@ -47,7 +45,7 @@ public:
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);
 
-  void update(RenderQueue& queue, RenderContext &renderCtx);
+  void update(RenderQueue &queue, RenderContext &renderCtx);
 
   // Setters
   void addPointLight(std::unique_ptr<PointLight> pointLight);
@@ -63,7 +61,7 @@ public:
   const Skybox &getActiveSkybox() const;
 
   const glm::vec3 getActiveCameraPosition() const;
-  const std::vector<PointLight *> &getPointLights() const;
+  const PointLight *getPointLight() const;
   const DirectionalLight *getDirLight() const;
 
   SimulationWorld &getSimulationWorld();

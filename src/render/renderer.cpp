@@ -69,12 +69,13 @@ void Renderer::updateUBO(Scene &scene, RenderContext &ctx)
 
   this->shadowManager->updateDirUBO();
 
-  const std::vector<PointLight *> &pointLights = scene.getPointLights();
-  if (!pointLights.empty())
+  const PointLight *pointLight = scene.getPointLight();
+  // fix update here
+  // ubo manager
+  if (pointLight)
   {
     this->shadowManager->updatePointShadowLightPosition(scene.getSimulationWorld().getPhysicsWorld().getSun().getRenderPosition());
-    for (size_t i = 0; i < pointLights.size(); i++)
-      this->lightManager->updatePointUBO(pointLights[i]);
+    this->lightManager->updatePointUBO(pointLight);
   }
   else
     this->lightManager->maskPointUBO();
@@ -254,12 +255,12 @@ void Renderer::renderDirectionalShadow(Scene &scene)
 
 void Renderer::renderPointShadow(Scene &scene)
 {
-  const std::vector<PointLight *> &pointLights = scene.getPointLights();
+  const PointLight *pointLight = scene.getPointLight();
 
   ScopedViewport viewport(0, 0, shadowRes, shadowRes);
   ScopedFramebuffer pointShadowBuff(this->shadowManager->getPointShadow()->getShadowFramebuffer(), GL_FRAMEBUFFER);
 
-  if (pointLights.empty())
+  if (!pointLight)
     return;
 
   Shader &pointShadowShader = this->resourceManager.GetShader(Res::POINT_SHADOW_SHADER);
@@ -364,22 +365,21 @@ void Renderer::init(Scene &scene, RenderContext &ctx)
   this->blur.init(37, 6.2f, ctx.frameCtx, true, this->shadowRes);
 
   const DirectionalLight *directionalLight = scene.getDirLight();
-  const std::vector<PointLight *> &pointLights = scene.getPointLights();
+  const PointLight *pointLight = scene.getPointLight();
 
   if (directionalLight)
     this->shadowManager->addDirShadow(std::make_unique<DirectionalShadow>(this->shadowRes, this->shadowRes));
 
   // Multiple-lights(not supported on opengl < 4.2)
   // this->initShaderBuffer(&this->lightManager->getPointSSBO(), sizeof(PointLightGPU) * this->pointLights.size(), GL_SHADER_STORAGE_BUFFER);
-  if (!pointLights.empty())
+  if (pointLight)
   {
     const Camera &activeCamera = scene.getActiveCamera();
 
-    for (PointLight *light : pointLights)
-      this->shadowManager->addPointShadow(std::make_unique<PointShadow>(this->shadowRes, this->shadowRes,
-                                                                        light->getPosition(),
-                                                                        activeCamera.getNearPlane(),
-                                                                        activeCamera.getFarPlane()));
+    this->shadowManager->addPointShadow(std::make_unique<PointShadow>(this->shadowRes, this->shadowRes,
+                                                                      pointLight->getPosition(),
+                                                                      activeCamera.getNearPlane(),
+                                                                      activeCamera.getFarPlane()));
   }
 
   this->textRenderer.init();
