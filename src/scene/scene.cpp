@@ -2,7 +2,17 @@
 
 #include "camera/camera.h"
 
+#include "physics/star.h"
+
 // Process functions
+void Scene::initGPUWorld(ResourceManager &resourceManager)
+{
+  this->world.initGPU(resourceManager);
+}
+void Scene::initCPUWorld()
+{
+  this->world.initCPU();
+}
 void Scene::init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime)
 {
   this->world.init(renderCtx, resourceManager, threadPool, startTime);
@@ -57,6 +67,10 @@ const glm::vec3 Scene::getActiveCameraPosition()
 {
   return this->world.getRenderWorld().getActiveCamera().getPosition();
 };
+const glm::vec3 Scene::getSunPosition()
+{
+  return this->world.getPhysicsWorld().getSun().getRenderPosition();
+}
 
 const PointLight *Scene::getPointLight()
 {

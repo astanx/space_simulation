@@ -49,6 +49,7 @@ void RenderWorldBackendGPU::update(const Camera &camera, RenderQueue &queue, Ins
 }
 
 void RenderWorldBackendGPU::sync(PhysicsWorld &physics, PointLight *light)
-{ 
-  // skip 
+{
+  // skip
+  // fix todo
 }

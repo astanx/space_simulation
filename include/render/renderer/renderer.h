@@ -29,6 +29,7 @@ class ResourceManager;
 class Shader;
 class Renderable;
 class ModelSource;
+class RendererBackend;
 struct Frustum;
 struct InstancePositionRadiusTexture;
 struct InstancePositionRadiusColor;
@@ -43,22 +44,15 @@ struct CameraGPU
 class Renderer
 {
 private:
+  std::unique_ptr<RendererBackend> backend;
   ResourceManager &resourceManager;
   TextRenderer textRenderer;
   PostProcess postProcess;
   GaussianBlur blur;
   RenderQueue queue;
 
-  std::unique_ptr<Buffer> cameraUBO;
-
-  std::unique_ptr<LightManager> lightManager;
-
   const GLuint shadowRes = 1024;
-  std::unique_ptr<ShadowManager> shadowManager;
-
-  void updateUBO(Scene &scene, RenderContext &ctx);
-
-  void initShaderBuffer(Buffer &ubo, unsigned long size, GLenum bufferType);
+  const GLuint cubemapRes = 1024;
 
   void renderDirectionalShadow(Scene &scene);
   void renderShadowMap(Scene &scene, Shader &shader);
@@ -72,9 +66,6 @@ private:
   void renderImpostor(Scene &scene);
   void renderPoint(Scene &scene);
 
-  void initShaderUBOBindings();
-  void bindUBOs();
-
   void bindDummyReflector(Shader &shader);
 
   void renderToFramebuffer(Scene &scene, const Framebuffer &framebuffer, RenderContext &ctx);
@@ -84,14 +75,17 @@ private:
 
 public:
   Renderer(ResourceManager &resourceManager);
-  ~Renderer() = default;
+  ~Renderer();
 
   void render(Scene &scene, RenderContext &ctx);
 
   void renderText(const std::string &text, float x, float y, float scale, glm::vec3 color);
 
   void update(Scene &scene, RenderContext &ctx);
-  void init(Scene &scene, RenderContext &ctx);
+
+  void initCPUBackend(Scene& scene);
+  void initGPUBackend(Scene& scene);
+  void init(RenderContext &ctx);
 
   void resize(FrameContext &ctx);
 };

@@ -146,7 +146,6 @@ add_executable(Space
         src/scene/world/simulationWorld.cpp
     
     # Render
-    src/render/renderer.cpp
     src/render/textRenderer.cpp
     src/render/postProcess.cpp
     src/render/gaussianBlur.cpp
@@ -154,6 +153,12 @@ add_executable(Space
     src/render/reflectanceAcceptor.cpp
     src/render/instanceManager.cpp
     src/render/reflectanceAcceptor.cpp
+        # Renderer
+        src/render/renderer/renderer.cpp
+            # Backend
+            src/render/renderer/backend/rendererBackend.cpp
+            src/render/renderer/backend/rendererBackendCPU.cpp
+            src/render/renderer/backend/rendererBackendGPU.cpp
         # LOD
         src/render/lod/scan.cpp
         src/render/lod/lodManager.cpp

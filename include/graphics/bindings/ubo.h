@@ -7,5 +7,4 @@ namespace UBOBindingPoints
   constexpr unsigned int PointLight = 2;
   constexpr unsigned int DirectionalLight = 3;
   constexpr unsigned int Camera = 4;
-  constexpr unsigned int Scale = 5;
 }

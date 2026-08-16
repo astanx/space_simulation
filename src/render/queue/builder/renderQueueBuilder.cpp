@@ -15,6 +15,8 @@
 
 #include "camera/camera.h"
 
+#include <iostream>
+
 // Private functions
 void RenderQueueBuilder::buildModelSource(ModelSource *source, LODManager &lod, Frustum *frustum, FrameContext ctx, float fov)
 {

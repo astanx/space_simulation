@@ -189,8 +189,22 @@ void SimulationWorld::initGPUBuffers(Context &ctx, SharedDataGPU<Real> &data)
   this->gpu.equatorianRadiiBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.equatorianRadii.size() * sizeof(Real), data.equatorianRadii.data());
 }
 
+// Constructor
+SimulationWorld::SimulationWorld()
+{
+  this->importance.base = 1.f;
+  this->importance.asteroid = 2.5f;
+  this->importance.planet = 5.f;
+  this->importance.moon = 3.f;
+  this->importance.star = 12.f;
+}
+
+// Public fucntions
 void SimulationWorld::initGPU(ResourceManager &resourceManager)
 {
+  if (!this->wasInit)
+    Logger::logFatal("Simulation World", "Backend should be initialized after world");
+
   Context &ctx = resourceManager.GetContext(Res::MAIN_CONTEXT);
 
   this->queue.init(ctx.get(), ctx.getDevice());
@@ -227,32 +241,24 @@ void SimulationWorld::initGPU(ResourceManager &resourceManager)
 
 void SimulationWorld::initCPU()
 {
+  if (!this->wasInit)
+    Logger::logFatal("Simulation World", "Backend should be initialized after world");
+
   this->physics.initCPUBackend();
   this->render.initCPUBackend();
 }
 
-// Constructor
-SimulationWorld::SimulationWorld()
-{
-  this->importance.base = 1.f;
-  this->importance.asteroid = 2.5f;
-  this->importance.planet = 5.f;
-  this->importance.moon = 3.f;
-  this->importance.star = 12.f;
-}
-
-// Public fucntions
 void SimulationWorld::init(RenderContext &ctx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime)
 {
+  if (this->wasInit)
+    Logger::logWarning("SimulationWorld", "World initialized twice");
+
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
   this->initObjects(resourceManager, threadPool, timeAfterJD2000);
   this->render.init(resourceManager, this->physics, ctx, this->total);
 
-  if (bool GPU = true)
-    this->initGPU(resourceManager);
-  else
-    this->initCPU();
+  this->wasInit = true;
 }
 
 void SimulationWorld::update(const Camera &camera, RenderQueue &queue, RenderContext &renderCtx)

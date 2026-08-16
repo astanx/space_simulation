@@ -387,7 +387,18 @@ Application::Application(
   this->updateFrameContext();
 
   this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, this->startTime);
-  this->renderer.init(this->scene, this->renderCtx);
+  this->renderer.init(this->renderCtx);
+
+  if (bool GPU = true)
+  {
+    this->scene.initGPUWorld(this->resourceManager);
+    this->renderer.initGPUBackend(this->scene);
+  }
+  else
+  {
+    this->scene.initCPUWorld();
+    this->renderer.initCPUBackend(this->scene);
+  }
 }
 
 Application::~Application()

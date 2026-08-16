@@ -50,7 +50,6 @@ struct PointLightGPU
 
 class DirectionalLight;
 class PointLight;
-class Scene;
 
 class LightManager
 {
@@ -59,12 +58,12 @@ private:
   std::unique_ptr<Buffer> pointUBO;
   // GLuint pointSSBO = 0;
 
-  void initDirUBO();
-  void initPointUBO();
-
 public:
-  LightManager(Scene &scene);
+  LightManager() = default;
   ~LightManager() = default;
+
+  void initPointUBO();
+  void initDirUBO();
 
   void updateDirUBO(const DirectionalLight *dirLight, int enabled = 1);
   void updatePointUBO(const PointLight *pointLight, int isAreaLight = 1);

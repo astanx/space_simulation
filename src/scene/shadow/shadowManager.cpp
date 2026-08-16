@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-// Private functions
+// Public functions
 void ShadowManager::initDirUBO()
 {
   if (!this->dirUBO)
@@ -37,16 +37,6 @@ void ShadowManager::initPointUBO()
   }
 }
 
-// Constructor/Destructor
-ShadowManager::ShadowManager(Scene &scene)
-{
-  if (scene.getDirLight())
-    this->initDirUBO();
-  if (scene.getPointLight())
-    this->initPointUBO();
-}
-
-// Public functions
 void ShadowManager::updateDirUBO(int enabled)
 {
   if (this->directionalShadow && this->dirUBO && enabled)

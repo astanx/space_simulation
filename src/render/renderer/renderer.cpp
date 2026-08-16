@@ -1,9 +1,12 @@
-#include "render/renderer.h"
+#include "render/renderer/renderer.h"
+
+#include "render/renderer/backend/rendererBackend.h"
+#include "render/renderer/backend/rendererBackendGPU.h"
+#include "render/renderer/backend/rendererBackendCPU.h"
 
 #include "debug/logger.h"
 
 #include "scene/scene.h"
-#include "scene/light/pointLight.h"
 
 #include "render/renderState.h"
 #include "render/reflectanceAcceptor.h"
@@ -13,7 +16,6 @@
 #include "graphics/instanceLayouts.h"
 #include "graphics/skybox.h"
 
-#include "graphics/bindings/ubo.h"
 #include "graphics/bindings/texture.h"
 #include "graphics/bindings/impostor.h"
 
@@ -30,125 +32,27 @@
 
 #include "graphics/buffers/renderBuffer.h"
 
-#include "graphics/primitives/quad.h"
-#include "graphics/primitives/point.h"
-
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
 
 #include "physics/star.h"
-#include "physics/planet.h"
-#include "physics/systems/asteroidSystem.h"
 
 #include <iostream>
 
 // Private functions
-void Renderer::updateUBO(Scene &scene, RenderContext &ctx)
-{
-  const Camera &activeCamera = scene.getActiveCamera();
-
-  if (!this->cameraUBO)
-    Logger::logWarning("Renderer", "No camera UBO to update");
-  else
-  {
-    CameraGPU camUBO{};
-    camUBO.ProjectionMatrix = activeCamera.getProjectionMatrix(ctx.frameCtx.aspect);
-    camUBO.ViewMatrix = activeCamera.getViewMatrix();
-    // camUBO.camPosition = glm::vec4(activeCamera.getPosition(), 1.0);
-    // camUBO.camPosition = glm::vec4(glm::vec3(0.f), 1.0);
-    camUBO.camPosition = glm::vec4(0.0);
-
-    ScopedBuffer ubo(*this->cameraUBO, GL_UNIFORM_BUFFER);
-    GL_CALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraGPU), &camUBO));
-  }
-
-  const DirectionalLight *directionalLight = scene.getDirLight();
-  if (directionalLight)
-    this->lightManager->updateDirUBO(directionalLight);
-  else
-    this->lightManager->maskDirUBO();
-
-  this->shadowManager->updateDirUBO();
-
-  const PointLight *pointLight = scene.getPointLight();
-  // fix update here
-  // ubo manager
-  if (pointLight)
-  {
-    this->shadowManager->updatePointShadowLightPosition(scene.getSimulationWorld().getPhysicsWorld().getSun().getRenderPosition());
-    this->lightManager->updatePointUBO(pointLight);
-  }
-  else
-    this->lightManager->maskPointUBO();
-
-  this->shadowManager->updatePointUBO();
-}
-void Renderer::initShaderUBOBindings()
-{
-  std::vector<Shader *> shaders = this->resourceManager.GetAllShaders();
-
-  for (Shader *shader : shaders)
-  {
-    if (!shader)
-      continue;
-
-    GLuint programID = shader->getId();
-
-    GLuint cameraBlockIndex = glGetUniformBlockIndex(programID, "Camera");
-    if (cameraBlockIndex != GL_INVALID_INDEX)
-      glUniformBlockBinding(programID, cameraBlockIndex, UBOBindingPoints::Camera);
-
-    GLuint scaleBlockIndex = glGetUniformBlockIndex(programID, "Scale");
-    if (scaleBlockIndex != GL_INVALID_INDEX)
-      glUniformBlockBinding(programID, scaleBlockIndex, UBOBindingPoints::Scale);
-
-    this->lightManager->initDirLightUBOBinding(programID);
-    this->lightManager->initPointLightUBOBinding(programID);
-
-    this->shadowManager->initDirShadowUBOBinding(programID);
-    this->shadowManager->initPointShadowUBOBinding(programID);
-  }
-}
-
-void Renderer::bindUBOs()
-{
-  this->cameraUBO->bindBufferBase(GL_UNIFORM_BUFFER, UBOBindingPoints::Camera);
-
-  this->lightManager->bindDirLightUBO();
-  this->lightManager->bindPointLightUBO();
-
-  this->shadowManager->bindDirShadowUBO();
-  this->shadowManager->bindPointShadowUBO();
-}
-
-void Renderer::bindDummyReflector(Shader &shader)
-{
-  glActiveTexture(GL_TEXTURE0 + TextureBindingPoints::EnvironmentMap);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, TextureBindingPoints::EnvironmentMap);
-  shader.set1i(TextureBindingPoints::EnvironmentMap, "reflectorRadianceCubemap");
-  shader.set1i(0, "useReflectorRadiance");
-}
-
-void Renderer::initShaderBuffer(Buffer &ubo, unsigned long size, GLenum bufferType)
-{
-  ScopedBuffer buff(ubo, GL_UNIFORM_BUFFER);
-  GL_CALL(glBufferData(bufferType, size, nullptr, GL_DYNAMIC_DRAW));
-}
-
 void Renderer::renderObjectsQueue(std::vector<RenderBatch> &batches, Scene &scene, Shader &shader, Buffer *instanceVBO)
 {
-
   GLuint &ID = shader.getId();
   const Skybox &skybox = scene.getActiveSkybox();
 
   ScopedShader sh(ID);
 
-  this->shadowManager->bindPointShadow(shader);
-  this->shadowManager->bindPointShadowDepth(shader);
+  this->backend->bindPointShadow(shader);
+  this->backend->bindPointShadowDepth(shader);
 
   skybox.bindIrradianceMap(shader);
 
-  this->bindDummyReflector(shader);
+  this->backend->bindDummyReflector(shader);
 
   size_t size = sizeof(InstanceModelMatrixParts);
 
@@ -241,8 +145,8 @@ void Renderer::renderDirectionalShadow(Scene &scene)
   if (!scene.getDirLight())
     return;
 
-  ScopedViewport viewport(0, 0, shadowRes, shadowRes);
-  ScopedFramebuffer dirShadowBuff(this->shadowManager->getDirShadow()->getShadowFramebuffer(), GL_FRAMEBUFFER);
+  ScopedViewport viewport(0, 0, this->shadowRes, this->shadowRes);
+  ScopedFramebuffer dirShadowBuff(this->backend->getDirShadowFramebuffer(), GL_FRAMEBUFFER);
 
   RenderState::clearDepth();
 
@@ -258,7 +162,7 @@ void Renderer::renderPointShadow(Scene &scene)
   const PointLight *pointLight = scene.getPointLight();
 
   ScopedViewport viewport(0, 0, shadowRes, shadowRes);
-  ScopedFramebuffer pointShadowBuff(this->shadowManager->getPointShadow()->getShadowFramebuffer(), GL_FRAMEBUFFER);
+  ScopedFramebuffer pointShadowBuff(this->backend->getPointShadowFramebuffer(), GL_FRAMEBUFFER);
 
   if (!pointLight)
     return;
@@ -275,7 +179,7 @@ void Renderer::renderPointShadow(Scene &scene)
 
   this->renderShadowMap(scene, pointShadowShader);
 
-  this->blur.blur(this->shadowManager->getPointShadow()->getShadowMapTexture(), 16, true);
+  this->blur.blur(this->backend->getPointShadowMapTexture(), 16, true);
 }
 
 void Renderer::renderImpostor(Scene &scene)
@@ -352,48 +256,34 @@ void Renderer::beginFrame(RenderContext &ctx)
   glClear(GL_STENCIL_BUFFER_BIT);
 }
 
-// Constructor
+// Constructor / Destructor
 Renderer::Renderer(ResourceManager &resourceManager) : resourceManager(resourceManager), postProcess(resourceManager), blur(resourceManager) {}
+Renderer::~Renderer() = default;
 
 // Public functions
-void Renderer::init(Scene &scene, RenderContext &ctx)
+void Renderer::initCPUBackend(Scene &scene)
 {
-  this->lightManager = std::make_unique<LightManager>(scene);
-  this->shadowManager = std::make_unique<ShadowManager>(scene);
-
-  this->cameraUBO = std::make_unique<Buffer>();
-  this->initShaderBuffer(*this->cameraUBO, sizeof(CameraGPU), GL_UNIFORM_BUFFER);
-  this->blur.init(37, 6.2f, ctx.frameCtx, true, this->shadowRes);
-
-  const DirectionalLight *directionalLight = scene.getDirLight();
-  const PointLight *pointLight = scene.getPointLight();
-
-  if (directionalLight)
-    this->shadowManager->addDirShadow(std::make_unique<DirectionalShadow>(this->shadowRes, this->shadowRes));
-
-  // Multiple-lights(not supported on opengl < 4.2)
-  // this->initShaderBuffer(&this->lightManager->getPointSSBO(), sizeof(PointLightGPU) * this->pointLights.size(), GL_SHADER_STORAGE_BUFFER);
-  if (pointLight)
-  {
-    const Camera &activeCamera = scene.getActiveCamera();
-
-    this->shadowManager->addPointShadow(std::make_unique<PointShadow>(this->shadowRes, this->shadowRes,
-                                                                      pointLight->getPosition(),
-                                                                      activeCamera.getNearPlane(),
-                                                                      activeCamera.getFarPlane()));
-  }
+  this->backend = std::make_unique<RendererBackendCPU>();
+  this->backend->init(scene, this->resourceManager, this->shadowRes);
+}
+void Renderer::initGPUBackend(Scene &scene)
+{
+  this->backend = std::make_unique<RendererBackendGPU>();
+  this->backend->init(scene, this->resourceManager, this->shadowRes);
+}
+void Renderer::init(RenderContext &ctx)
+{
+  this->blur.init(37, 6.2f, ctx.frameCtx, true, this->cubemapRes);
 
   this->textRenderer.init();
   this->postProcess.init(ctx.frameCtx);
-
-  this->initShaderUBOBindings();
 }
 
 void Renderer::render(Scene &scene, RenderContext &ctx)
 {
   this->beginFrame(ctx);
 
-  this->bindUBOs();
+  this->backend->bindUBOs();
 
   this->renderPointShadow(scene);
   this->renderDirectionalShadow(scene);
@@ -417,8 +307,7 @@ void Renderer::render(Scene &scene, RenderContext &ctx)
 void Renderer::update(Scene &scene, RenderContext &ctx)
 {
   scene.update(this->queue, ctx);
-
-  this->updateUBO(scene, ctx);
+  this->backend->update(scene, ctx);
 }
 
 void Renderer::renderText(const std::string &text, float x, float y, float scale, glm::vec3 color)

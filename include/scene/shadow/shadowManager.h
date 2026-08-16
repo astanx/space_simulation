@@ -43,7 +43,6 @@ struct PointShadowGPU
 };
 
 class Shader;
-class Scene;
 
 class ShadowManager
 {
@@ -54,13 +53,12 @@ private:
   std::unique_ptr<DirectionalShadow> directionalShadow;
   std::unique_ptr<PointShadow> pointShadow;
 
-  void initDirUBO();
-  void initPointUBO();
-
 public:
-  ShadowManager(Scene &scene);
   ShadowManager() = default;
   ~ShadowManager() = default;
+
+  void initDirUBO();
+  void initPointUBO();
 
   void updateDirUBO(int enabled = 1);
   void updatePointUBO(int enabled = 1);

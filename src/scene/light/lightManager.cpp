@@ -11,7 +11,7 @@
 #include "scene/light/directionalLight.h"
 #include "scene/light/pointLight.h"
 
-// Private functions
+// Public functions
 void LightManager::initDirUBO()
 {
   if (!this->dirUBO)
@@ -33,16 +33,6 @@ void LightManager::initPointUBO()
   }
 }
 
-// Constructor
-LightManager::LightManager(Scene &scene)
-{
-  if (scene.getDirLight())
-    this->initDirUBO();
-
-  if (scene.getPointLight())
-    this->initPointUBO();
-}
-// Public functions
 void LightManager::updateDirUBO(const DirectionalLight *dirLight, int enabled)
 {
   if (dirLight && this->dirUBO && enabled)

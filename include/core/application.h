@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scene/scene.h"
-#include "render/renderer.h"
+#include "render/renderer/renderer.h"
 #include "core/inputManager.h"
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"

@@ -20,6 +20,8 @@ public:
   ~Scene() = default;
 
   // Process functions
+  void initGPUWorld(ResourceManager &manager);
+  void initCPUWorld();
   void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime);
   void processKeyboard(CameraMovement direction, float deltaTime);
   void processMouseMovement(const float &xpos, const float &ypos);
@@ -36,6 +38,7 @@ public:
   const Skybox &getActiveSkybox();
 
   const glm::vec3 getActiveCameraPosition();
+  const glm::vec3 getSunPosition();
   const PointLight *getPointLight();
   const DirectionalLight *getDirLight();
 
