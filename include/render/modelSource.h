@@ -2,6 +2,7 @@
 
 #include "render/renderable.h"
 #include "render/updatable.h"
+#include "render/renderPositionSource.h"
 #include "render/renderFlags.h"
 
 #include "graphics/materials/material.h"
@@ -14,13 +15,12 @@
 
 class InstanceManager;
 
-class ModelSource : public Renderable, public Updatable
+class ModelSource : public Renderable, public Updatable, public RenderPositionSource
 {
 protected:
   Model *mainLayer;
   std::vector<Model *> layers;
   glm::mat4 modelMatrix;
-  glm::vec3 renderPosition;
   glm::vec3 renderScale;
   glm::quat renderOrientation;
   const TransformSource &src;
@@ -47,7 +47,6 @@ public:
 
   void reserveInstances(InstanceManager &instanceManager);
 
-  const glm::vec3 getRenderPosition() const { return this->renderPosition; };
   const glm::quat getRenderOrientation() const { return this->renderOrientation; };
   const double getRenderRadius() const { return this->renderRadius; };
   const Radii getSrcRadii() const { return this->src.getRadii(); };

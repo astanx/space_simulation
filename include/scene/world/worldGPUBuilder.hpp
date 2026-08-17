@@ -88,7 +88,7 @@ void WorldGPUBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, L
 
       lookup.table[model] = modelIndex;
       lookup.models.push_back(model);
-      data.render.isNonFullable.push_back(model->hasFlag(ModelFlags::None) ? 0 : 1);
+      data.render.isNonFullable.push_back(model->hasAnyFlag() ? 1 : 0);
       data.render.modelImportances.push_back(model->getImportance());
       data.render.modelColors.push_back(model->getAverageColor());
       data.render.modelTextureLayers.push_back(model->getImpostorLayer());

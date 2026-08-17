@@ -51,6 +51,7 @@ __kernel void partitionObjects(
     instance.position = (float3)(pos);
     instance.orientation = orientation;
     instance.scale = (float3)(equatorian, polar, equatorian);
+
     if (isFull[id])
     {
       uint localOffset = fullOffset[id] - fullOffset[modelRangeStart[modelID]];
@@ -59,7 +60,7 @@ __kernel void partitionObjects(
     else if (isNonFull[id])
     {
       uint localOffset = nonFullOffset[id] - nonFullOffset[modelRangeStart[modelID]];
-      fullInstances[modelRangeStart[modelID] + modelFullCount[modelID]] = instance;
+      fullInstances[modelRangeStart[modelID] + localOffset] = instance;
     }
   }
 

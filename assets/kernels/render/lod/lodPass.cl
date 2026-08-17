@@ -29,6 +29,9 @@ __kernel void lodPass(
 
   float scaledMeanRadius = scaleRadius(pos, meanRadius, fov, viewportHeight, importance, baseMinPixelSize);
 
+  if (isNonFullable[modelID])
+    isNotFull[id] = 1;
+
   if (!shouldBeProcessed(&frustum, pos, scaledMeanRadius)) return;
 
   uint level = getLODLevel(pos, meanRadius, fov, viewportHeight, importance, baseMinPixelSize, fullThreshold, impostorThreshold);
@@ -38,20 +41,18 @@ __kernel void lodPass(
   case LOD_FULL:
   {
     isFull[id] = 1;
+    isNotFull[id] = 0;
     break;
   }
   case LOD_IMPOSTOR:
   {
     isImpostor[id] = 1;
-    if (isNonFullable[modelID])
-      isNotFull[id] = 1;
+
     break;
   }
   case LOD_POINT:
   {
     isPoint[id] = 1;
-    if (isNonFullable[modelID])
-      isNotFull[id] = 1;
     break;
   }
   default:

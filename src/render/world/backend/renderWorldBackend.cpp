@@ -7,6 +7,33 @@
 #include "graphics/model.h"
 
 // Protected function
+void RenderWorldBackend::initShadowQueue(RenderQueue &queue, InstanceManager &manager, Model *model)
+{
+  if (model->hasFlag(ModelFlags::CastsShadow))
+  {
+    Range allocation = manager.getAllocation(model);
+    queue.addShadowBatch({model, allocation});
+  }
+}
+void RenderWorldBackend::initReflectorQueue(RenderQueue &queue, InstanceManager &manager, Model *model)
+{
+  ReflectanceAcceptor *acceptor = dynamic_cast<ReflectanceAcceptor *>(model);
+  if (acceptor)
+  {
+    Range allocation = manager.getAllocation(model);
+    Model *reflector = acceptor->getReflector();
+    if (!reflector->hasFlag(ModelFlags::ReflectsLight))
+      Logger::logFatal("Render World Backend", "Reflector does not reflect light");
+
+    queue.addReflectorBatch({acceptor, allocation, {reflector, manager.getAllocation(reflector)}});
+  }
+}
+void RenderWorldBackend::initModelQueue(RenderQueue &queue, InstanceManager &manager, Model *model)
+{
+  this->initShadowQueue(queue, manager, model);
+  this->initReflectorQueue(queue, manager, model);
+}
+
 void RenderWorldBackend::initSubQueues(RenderQueue &queue, InstanceManager &manager, std::vector<Model *> &models)
 {
   if (this->subQueuesInitialized)
@@ -15,19 +42,5 @@ void RenderWorldBackend::initSubQueues(RenderQueue &queue, InstanceManager &mana
   this->subQueuesInitialized = true;
 
   for (Model *model : models)
-  {
-    Range allocation = manager.getAllocation(model);
-    if (model->hasFlag(ModelFlags::CastsShadow))
-      queue.addShadowBatch({model, allocation});
-
-    ReflectanceAcceptor *acceptor = dynamic_cast<ReflectanceAcceptor *>(model);
-    if (acceptor)
-    {
-      Model *reflector = acceptor->getReflector();
-      if (!reflector->hasFlag(ModelFlags::ReflectsLight))
-        Logger::logFatal("Render World Backend", "Reflector does not reflect light");
-
-      queue.addReflectorBatch({acceptor, allocation, {reflector, manager.getAllocation(reflector)}});
-    }
-  }
+    this->initModelQueue(queue, manager, model);
 }

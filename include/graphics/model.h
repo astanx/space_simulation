@@ -14,7 +14,8 @@ enum class ModelFlags : uint32_t
 {
 	None = 0,
 	CastsShadow = 1 << 0,
-	ReflectsLight = 1 << 1
+	ReflectsLight = 1 << 1,
+	Special = 1 << 2,
 };
 
 inline ModelFlags operator|(ModelFlags a, ModelFlags b)
@@ -66,4 +67,5 @@ public:
 	const glm::vec3 &getAverageColor() const;
 
 	bool hasFlag(ModelFlags flag) { return (this->flags & flag) == flag; };
+	bool hasAnyFlag() { return this->flags != ModelFlags::None; };
 };

@@ -2,6 +2,8 @@
 
 #include "graphics/model.h"
 
+#include "render/renderPositionSource.h"
+
 #include "render/queue/renderBatch.h"
 
 class Texture;
@@ -9,7 +11,7 @@ class Framebuffer;
 class RenderBuffer;
 class Camera;
 
-class ReflectanceAcceptor : public Model
+class ReflectanceAcceptor : public Model, public RenderPositionSource
 {
 private:
   Model *reflector;
