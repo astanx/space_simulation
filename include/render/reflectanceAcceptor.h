@@ -12,6 +12,8 @@ class Camera;
 class ReflectanceAcceptor : public Model
 {
 private:
+  Model *reflector;
+
   uint radianceSize = 32;
 
   std::unique_ptr<Texture> radianceTexture;
@@ -29,6 +31,9 @@ public:
   // OBJ consturctor
   ReflectanceAcceptor(Material &material, const std::string &OBJfile, ModelFlags flags = ModelFlags::None, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
   ~ReflectanceAcceptor();
+
+  void setReflector(Model *reflector) { this->reflector = reflector; };
+  Model *getReflector() { return this->reflector; };
 
   void render(Shader &shader) override;
   void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;

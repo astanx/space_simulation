@@ -5,7 +5,6 @@
 #include "debug/logger.h"
 
 #include "render/reflectanceAcceptor.h"
-#include "render/reflector.h"
 
 #include "graphics/primitives/primitives.h"
 #include "graphics/primitives/asteroidShape.h"
@@ -82,26 +81,26 @@ Model &ResourceManager::LoadReflectanceAcceptorModel(const std::string &name, co
 }
 Model &ResourceManager::LoadReflectorModel(const std::string &name, Material &mat, Mesh &mesh, const std::string &acceptor_name, ModelFlags flags)
 {
-  std::unique_ptr<Reflector> reflector = std::make_unique<Reflector>(mat, mesh, flags);
+  std::unique_ptr<Model> reflector = std::make_unique<Model>(mat, mesh, flags);
 
   ReflectanceAcceptor *acceptor = dynamic_cast<ReflectanceAcceptor *>(&this->GetModel(acceptor_name));
   if (!acceptor)
     Logger::logFatal("Resource Manager", "Model name passed as reflectance acceptor does not accept reflectance");
 
-  reflector->setAcceptor(acceptor);
+  acceptor->setReflector(reflector.get());
   this->models[name] = std::move(reflector);
   registry.registerModel(this->models[name].get());
   return *this->models[name];
 }
 Model &ResourceManager::LoadReflectorModel(const std::string &name, const std::string &material_name, const std::string &mesh_name, const std::string &acceptor_name, ModelFlags flags)
 {
-  std::unique_ptr<Reflector> reflector = std::make_unique<Reflector>(this->GetMaterial(material_name), this->GetMesh(mesh_name), flags);
+  std::unique_ptr<Model> reflector = std::make_unique<Model>(this->GetMaterial(material_name), this->GetMesh(mesh_name), flags);
 
   ReflectanceAcceptor *acceptor = dynamic_cast<ReflectanceAcceptor *>(&this->GetModel(acceptor_name));
   if (!acceptor)
     Logger::logFatal("Resource Manager", "Model name passed as reflectance acceptor does not accept reflectance");
 
-  reflector->setAcceptor(acceptor);
+  acceptor->setReflector(reflector.get());
   this->models[name] = std::move(reflector);
   registry.registerModel(this->models[name].get());
   return *this->models[name];

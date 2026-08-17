@@ -1,7 +1,6 @@
 #include "render/world/backend/renderWorldBackend.h"
 
 #include "render/instanceManager.h"
-#include "render/reflector.h"
 #include "render/reflectanceAcceptor.h"
 #include "render/queue/renderQueue.h"
 
@@ -21,11 +20,14 @@ void RenderWorldBackend::initSubQueues(RenderQueue &queue, InstanceManager &mana
     if (model->hasFlag(ModelFlags::CastsShadow))
       queue.addShadowBatch({model, allocation});
 
-    Reflector *reflector = dynamic_cast<Reflector *>(model);
-    if (reflector && reflector->hasFlag(ModelFlags::ReflectsLight))
+    ReflectanceAcceptor *acceptor = dynamic_cast<ReflectanceAcceptor *>(model);
+    if (acceptor)
     {
-      ReflectanceAcceptor *acceptor = reflector->getAcceptor();
-      queue.addReflectorBatch({acceptor, manager.getAllocation(acceptor), {reflector, allocation}});
+      Model *reflector = acceptor->getReflector();
+      if (!reflector->hasFlag(ModelFlags::ReflectsLight))
+        Logger::logFatal("Render World Backend", "Reflector does not reflect light");
+
+      queue.addReflectorBatch({acceptor, allocation, {reflector, manager.getAllocation(reflector)}});
     }
   }
 }
