@@ -30,7 +30,7 @@ void PhysicsWorld::initCPUBackend()
   this->backend = std::make_unique<PhysicsBackendCPU>(this->cpu);
 }
 
-void PhysicsWorld::initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUData &gpu, Total &total)
+void PhysicsWorld::initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUBuffers &gpu, Total &total)
 {
   this->backend = std::make_unique<PhysicsBackendGPU>(resourceManager, ctx, gpu, queue, total);
 }

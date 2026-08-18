@@ -1,6 +1,6 @@
 #pragma once
 
-#include "render/world/backend/backendGPUData.h"
+#include "render/world/backend/backendGPUBuffers.h"
 
 #include <cstdint>
 
@@ -18,8 +18,8 @@ struct LODBuffersData
   CLBuffer &pointOffsetBuffer;
 };
 
-struct RenderQueueGPUData
+struct RenderQueueGPUBuffers
 {
-  BackendGPUData data;
+  BackendGPUBuffers data;
   LODBuffersData lodData;
 };

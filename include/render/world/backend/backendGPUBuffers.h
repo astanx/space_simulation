@@ -4,7 +4,7 @@
 
 class CLBuffer;
 
-struct BackendGPUData
+struct BackendGPUBuffers
 {
   CLBuffer &positions;
   CLBuffer &orientations;

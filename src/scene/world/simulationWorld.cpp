@@ -1,6 +1,6 @@
 #include "scene/world/simulationWorld.h"
 
-#include "scene/world/worldGPUBuilder.h"
+#include "scene/world/worldDatabaseBuilder.h"
 
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
@@ -17,7 +17,7 @@
 #include "physics/structs/keplerElements.h"
 #include "physics/structs/rotationalElements.h"
 
-#include "physics/integrators/wisdomHolmanGPUData.h"
+#include "physics/integrators/wisdomHolmanGPUBuffers.h"
 
 #include "graphics/primitives/ellipsoid.h"
 
@@ -180,7 +180,7 @@ void SimulationWorld::initObjects(ResourceManager &resourceManager, ThreadPool &
 }
 
 template <typename Real>
-void SimulationWorld::initGPUBuffers(Context &ctx, SharedDataGPU<Real> &data)
+void SimulationWorld::initGPUBuffers(Context &ctx, SharedDatabase<Real> &data)
 {
   this->gpu.positionsBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.positions.size() * sizeof(Vec3<Real>), data.positions.data());
   this->gpu.orientationsBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.orientations.size() * sizeof(Quat<Real>), data.orientations.data());
@@ -211,28 +211,28 @@ void SimulationWorld::initGPU(ResourceManager &resourceManager)
 
   if (ctx.getSupportsDouble())
   {
-    WorldGPUBuilder<double> builder;
-    WorldDataGPU<double> data = builder.build(this->worldObjects, this->worldSystems, this->render.getInstanceManager());
+    WorldDatabaseBuilder<double> builder;
+    WorldDatabase<double> data = builder.build(this->worldObjects, this->worldSystems, this->render.getInstanceManager());
     this->physics.initGPUBuffers<double>(ctx, data.physics);
 
     this->initGPUBuffers<double>(ctx, data.shared);
 
-    WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
-    this->physics.initGPUBackend(resourceManager, ctx, this->queue, integratorData, this->total);
+    WisdomHolmanGPUBuffers integratorBuffers{this->physics.getGPUBuffers(), this->gpu};
+    this->physics.initGPUBackend(resourceManager, ctx, this->queue, integratorBuffers, this->total);
 
     this->render.initGPUBuffers(ctx, data.render);
     this->render.initGPUBackend(ctx, this->queue, this->total, resourceManager, this->gpu);
   }
   else
   {
-    WorldGPUBuilder<float> builder;
-    WorldDataGPU<float> data = builder.build(this->worldObjects, this->worldSystems, this->render.getInstanceManager());
+    WorldDatabaseBuilder<float> builder;
+    WorldDatabase<float> data = builder.build(this->worldObjects, this->worldSystems, this->render.getInstanceManager());
     this->physics.initGPUBuffers<float>(ctx, data.physics);
 
     this->initGPUBuffers<float>(ctx, data.shared);
 
-    WisdomHolmanGPUData integratorData{this->physics.getGPUData(), this->gpu};
-    this->physics.initGPUBackend(resourceManager, ctx, this->queue, integratorData, this->total);
+    WisdomHolmanGPUBuffers integratorBuffers{this->physics.getGPUBuffers(), this->gpu};
+    this->physics.initGPUBackend(resourceManager, ctx, this->queue, integratorBuffers, this->total);
 
     this->render.initGPUBuffers(ctx, data.render);
     this->render.initGPUBackend(ctx, this->queue, this->total, resourceManager, this->gpu);

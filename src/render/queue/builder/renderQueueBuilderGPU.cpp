@@ -2,7 +2,7 @@
 
 #include "render/queue/renderQueue.h"
 
-#include "render/queue/data/renderQueueGPUData.h"
+#include "render/queue/data/renderQueueGPUBuffers.h"
 
 #include "render/lod/lodSettings.h"
 #include "render/lod/manager/lodManagerGPU.h"
@@ -23,7 +23,7 @@
 #include "resources/resources.h"
 #include "resources/gpuTypes.h"
 
-void RenderQueueBuilderGPU::initKernels(RenderQueueGPUData &data, LODSettings &settings)
+void RenderQueueBuilderGPU::initKernels(RenderQueueGPUBuffers &data, LODSettings &settings)
 {
   this->partitionObjectsKernel.setArg(0, data.data.fullInstances.get());
   this->partitionObjectsKernel.setArg(1, data.data.impostorInstances.get());
@@ -72,7 +72,7 @@ RenderQueueBuilderGPU::RenderQueueBuilderGPU(ResourceManager &resourceManager) :
 {
 }
 
-void RenderQueueBuilderGPU::init(Context &ctx, CommandQueue &queue, RenderQueueGPUData &data, LODSettings &settings, size_t modelCount)
+void RenderQueueBuilderGPU::init(Context &ctx, CommandQueue &queue, RenderQueueGPUBuffers &data, LODSettings &settings, size_t modelCount)
 {
   this->initBuffers(ctx, queue, modelCount);
   this->initKernels(data, settings);

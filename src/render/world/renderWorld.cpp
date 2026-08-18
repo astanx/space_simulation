@@ -2,15 +2,15 @@
 
 #include "scene/light/pointLight.h"
 #include "scene/light/directionalLight.h"
-#include "scene/world/data/sharedGPUData.h"
+#include "scene/world/data/sharedGPUBuffers.h"
 
-#include "render/world/backend/backendGPUData.h"
+#include "render/world/backend/backendGPUBuffers.h"
 #include "render/world/backend/renderWorldBackendCPU.h"
 #include "render/world/backend/renderWorldBackendGPU.h"
 
 #include "render/updatable.h"
 #include "render/renderContext.h"
-#include "render/world/data/renderDataGPU.h"
+#include "render/world/data/renderDatabase.h"
 
 #include "graphics/skybox.h"
 
@@ -38,7 +38,7 @@ void RenderWorld::init(ResourceManager &manager, PhysicsWorld &physics, RenderCo
   this->addSkybox(std::make_unique<Skybox>("assets/skybox/starmap.exr", manager));
 }
 
-void RenderWorld::initGPUBuffers(Context &ctx, RenderDataGPU &gpu)
+void RenderWorld::initGPUBuffers(Context &ctx, RenderDatabase &gpu)
 {
   cl_context context = ctx.get();
 
@@ -57,19 +57,19 @@ void RenderWorld::initCPUBackend()
 {
   this->backend = std::make_unique<RenderWorldBackendCPU>(this->instanceManager, this->modelSources, this->renderSystems);
 }
-void RenderWorld::initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUData &data)
+void RenderWorld::initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUBuffers &data)
 {
   this->instanceManager.initGPU(ctx.get());
 
-  LODGPUData lodData{data.positionsBuffer,
-                     data.meanRadiiBuffer,
-                     this->modelImportancesBuffer,
-                     this->modelRangeStartBuffer,
-                     this->modelRangeEndBuffer,
-                     this->isNonFullableBuffer,
-                     this->rangeCount};
+  LODGPUBuffers lodBuffers{data.positionsBuffer,
+                           data.meanRadiiBuffer,
+                           this->modelImportancesBuffer,
+                           this->modelRangeStartBuffer,
+                           this->modelRangeEndBuffer,
+                           this->isNonFullableBuffer,
+                           this->rangeCount};
 
-  BackendGPUData backendData{
+  BackendGPUBuffers backendBuffers{
       data.positionsBuffer,
       data.orientationsBuffer,
       data.meanRadiiBuffer,
@@ -85,7 +85,7 @@ void RenderWorld::initGPUBackend(Context &ctx, CommandQueue &queue, Total &total
       this->modelRangeEndBuffer,
       this->rangeCount};
 
-  this->backend = std::make_unique<RenderWorldBackendGPU>(resourceManager, queue, ctx, lodData, backendData, total, this->models);
+  this->backend = std::make_unique<RenderWorldBackendGPU>(resourceManager, queue, ctx, lodBuffers, backendBuffers, total, this->models);
 }
 
 void RenderWorld::update(const Camera &camera, RenderQueue &queue, FrameContext &ctx)

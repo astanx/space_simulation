@@ -1,7 +1,5 @@
 #pragma once
 
-#include "scene/world/worldGPUBuilder.h"
-
 #include "scene/world/worldObject.h"
 
 #include "physics/structs/radii.h"
@@ -15,7 +13,7 @@
 
 // Private functions
 template <typename Real>
-void WorldGPUBuilder<Real>::processObject(Object *obj, WorldDataGPU<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
+void WorldDatabaseBuilder<Real>::processObject(Object *obj, WorldDatabase<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
 {
   data.shared.positions[i] = static_cast<Vec3<Real>>(obj->getPosition());
   data.shared.orientations[i] = static_cast<Quat<Real>>(obj->getOrientation());
@@ -56,7 +54,7 @@ void WorldGPUBuilder<Real>::processObject(Object *obj, WorldDataGPU<Real> &data,
 };
 
 template <typename Real>
-void WorldGPUBuilder<Real>::processOrbital(OrbitalObject *obj, WorldDataGPU<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
+void WorldDatabaseBuilder<Real>::processOrbital(OrbitalObject *obj, WorldDatabase<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
 {
   this->processObject(obj, data, i, loveNumbers, tidalFactors, loveMutex, tidalMutex);
 
@@ -72,7 +70,7 @@ void WorldGPUBuilder<Real>::processOrbital(OrbitalObject *obj, WorldDataGPU<Real
 };
 
 template <typename Real>
-void WorldGPUBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, LookupTable &lookup, Model *model, WorldDataGPU<Real> &data, size_t i, std::mutex &modelMutex)
+void WorldDatabaseBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, LookupTable &lookup, Model *model, WorldDatabase<Real> &data, size_t i, std::mutex &modelMutex)
 {
   if (!model)
     Logger::logFatal("World GPU Builder", "Model is null");
@@ -102,7 +100,7 @@ void WorldGPUBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, L
 }
 
 template <typename Real>
-void WorldGPUBuilder<Real>::processModelSource(std::vector<size_t> &modelCapacities, LookupTable &lookup, ModelSource *modelSource, WorldDataGPU<Real> &data, size_t i, std::mutex &modelMutex)
+void WorldDatabaseBuilder<Real>::processModelSource(std::vector<size_t> &modelCapacities, LookupTable &lookup, ModelSource *modelSource, WorldDatabase<Real> &data, size_t i, std::mutex &modelMutex)
 {
   if (!modelSource)
     Logger::logFatal("World GPU Builder", "ModelSource is null");
@@ -112,7 +110,7 @@ void WorldGPUBuilder<Real>::processModelSource(std::vector<size_t> &modelCapacit
 
 // Public functions
 template <typename Real>
-WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldObjects, std::vector<WorldSystem> &worldSystems, InstanceManager &instanceManager)
+WorldDatabase<Real> WorldDatabaseBuilder<Real>::build(std::vector<WorldObject> &worldObjects, std::vector<WorldSystem> &worldSystems, InstanceManager &instanceManager)
 {
   std::vector<WorldOrbitalObject> orbitalObjects;
   std::vector<WorldObject> objects;
@@ -146,8 +144,8 @@ WorldDataGPU<Real> WorldGPUBuilder<Real>::build(std::vector<WorldObject> &worldO
   for (WorldSystem sys : worldSystems)
     total.total += sys.physics->getTotalObjects();
 
-  WorldDataGPU<Real> objectGPU;
-  WorldDataGPU<Real> orbitalGPU;
+  WorldDatabase<Real> objectGPU;
+  WorldDatabase<Real> orbitalGPU;
   LookupTable objectLookup;
   LookupTable orbitalLookup;
   std::vector<size_t> objectModelCapacities;

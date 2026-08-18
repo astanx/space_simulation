@@ -27,7 +27,7 @@ void LODManagerGPU::initBuffers(Context &ctx, CommandQueue &queue, size_t totalO
   queue.finish();
 }
 
-void LODManagerGPU::initKernels(LODGPUData &data, LODSettings &settings, size_t totalObjects)
+void LODManagerGPU::initKernels(LODGPUBuffers &data, LODSettings &settings, size_t totalObjects)
 {
   this->lodPassKernel.setArg(0, this->getIsFullBuffer().get());
   this->lodPassKernel.setArg(1, this->getIsNonFullBuffer().get());
@@ -60,7 +60,7 @@ LODManagerGPU::LODManagerGPU(ResourceManager &resourceManager)
       lodPassKernel(resourceManager.GetKernel(Res::LOD_PASS_KERNEL)) {};
 
 // Public functions
-void LODManagerGPU::init(Context &ctx, CommandQueue &queue, LODGPUData &data, LODSettings &settings, size_t totalObjects)
+void LODManagerGPU::init(Context &ctx, CommandQueue &queue, LODGPUBuffers &data, LODSettings &settings, size_t totalObjects)
 {
   this->groupCount = (totalObjects + this->localScanSize - 1) / this->localScanSize;
 

@@ -5,7 +5,7 @@
 #include <vector>
 
 template <typename Real>
-struct PhysicsDataGPU
+struct PhysicsDatabase
 {
   std::vector<Vec3<Real>> velocities;
   std::vector<Real> mus;
@@ -47,7 +47,7 @@ struct PhysicsDataGPU
     this->tidalFactorIndices.resize(n);
   }
 
-  void combine(PhysicsDataGPU &data)
+  void combine(PhysicsDatabase &data)
   {
     this->velocities.insert(this->velocities.end(), std::make_move_iterator(data.velocities.begin()), std::make_move_iterator(data.velocities.end()));
     this->mus.insert(this->mus.end(), std::make_move_iterator(data.mus.begin()), std::make_move_iterator(data.mus.end()));

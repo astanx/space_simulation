@@ -2,7 +2,7 @@
 
 #include "compute/clBuffer.h"
 
-struct SharedGPUData
+struct SharedGPUBuffers
 {
   CLBuffer positionsBuffer;
   CLBuffer orientationsBuffer;

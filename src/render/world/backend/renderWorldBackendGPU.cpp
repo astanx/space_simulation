@@ -2,8 +2,8 @@
 
 #include "debug/logger.h"
 
-#include "render/world/backend/backendGPUData.h"
-#include "render/queue/data/renderQueueGPUData.h"
+#include "render/world/backend/backendGPUBuffers.h"
+#include "render/queue/data/renderQueueGPUBuffers.h"
 
 #include "compute/context.h"
 
@@ -74,7 +74,7 @@ size_t RenderWorldBackendGPU::getSpecialIndex(Model *model)
 }
 
 // Constructor
-RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUData &lodData, BackendGPUData &data, Total &total, std::vector<Model *> &models) : models(models), lodManagerGPU(manager), renderQueueBuilderGPU(manager), total(total), queue(queue)
+RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUBuffers &lodData, BackendGPUBuffers &data, Total &total, std::vector<Model *> &models) : models(models), lodManagerGPU(manager), renderQueueBuilderGPU(manager), total(total), queue(queue)
 {
   if (total.total == 0)
     Logger::logWarning("Render World Backend GPU", "Backend is initialized with total 0");
@@ -86,7 +86,7 @@ RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQu
 
   this->lodManagerGPU.init(ctx, queue, lodData, this->lodSettings, this->total.total);
 
-  RenderQueueGPUData renderData{
+  RenderQueueGPUBuffers renderBuffers{
       data,
       LODBuffersData{
           this->lodManagerGPU.getIsFullBuffer(),
@@ -97,7 +97,7 @@ RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQu
           this->lodManagerGPU.getNonFullOffsetBuffer(),
           this->lodManagerGPU.getImpostorOffsetBuffer(),
           this->lodManagerGPU.getPointOffsetBuffer()}};
-  this->renderQueueBuilderGPU.init(ctx, queue, renderData, this->lodSettings, this->models.size());
+  this->renderQueueBuilderGPU.init(ctx, queue, renderBuffers, this->lodSettings, this->models.size());
 }
 
 // Public functions

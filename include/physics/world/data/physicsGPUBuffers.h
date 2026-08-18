@@ -2,7 +2,7 @@
 
 #include "compute/clBuffer.h"
 
-struct PhysicsGPUData
+struct PhysicsGPUBuffers
 {
   CLBuffer musBuffer;
   CLBuffer velocitiesBuffer;

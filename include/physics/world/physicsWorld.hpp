@@ -2,13 +2,13 @@
 
 #include "compute/context.h"
 
-#include "physics/world/data/physicsDataGPU.h"
+#include "physics/world/data/physicsDatabase.h"
 
 #include "resources/resourceManager.h"
 
 // Public functions
 template <typename Real>
-void PhysicsWorld::initGPUBuffers(Context &context, PhysicsDataGPU<Real> data)
+void PhysicsWorld::initGPUBuffers(Context &context, PhysicsDatabase<Real> data)
 {
   cl_context ctx = context.get();
 

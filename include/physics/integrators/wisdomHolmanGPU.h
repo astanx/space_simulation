@@ -8,7 +8,7 @@
 #include "compute/commandQueue.h"
 #include "compute/kernel.h"
 
-struct WisdomHolmanGPUData;
+struct WisdomHolmanGPUBuffers;
 class Object;
 class OrbitalObject;
 class Integratable;
@@ -25,7 +25,7 @@ protected:
   Kernel &halfKickAngularKernel;
   Kernel &halfKickKernel;
 
-  void initKernels(WisdomHolmanGPUData &gpu, Total total);
+  void initKernels(WisdomHolmanGPUBuffers &gpu, Total total);
 
   void updateDt(Real dt);
 
@@ -33,7 +33,7 @@ public:
   WisdomHolmanIntegratorGPU(ResourceManager &resourceManager);
   ~WisdomHolmanIntegratorGPU() = default;
 
-  void init(IntegratorGPUData &gpu, Total &total, Context &ctx) override;
+  void init(IntegratorGPUBuffers &gpu, Total &total, Context &ctx) override;
 
   void stepReal(CommandQueue &queue, Total &total, Real dt) override;
 };

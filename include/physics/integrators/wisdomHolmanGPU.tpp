@@ -3,7 +3,7 @@
 #include "debug/logger.h"
 
 #include "physics/integrators/integratable.h"
-#include "physics/integrators/wisdomHolmanGPUData.h"
+#include "physics/integrators/wisdomHolmanGPUBuffers.h"
 
 #include "physics/world/total.h"
 
@@ -28,7 +28,7 @@
 
 // Private functions
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::initKernels(WisdomHolmanGPUData &gpu, Total total)
+void WisdomHolmanIntegratorGPU<Real>::initKernels(WisdomHolmanGPUBuffers &gpu, Total total)
 {
   int kernelTotal = static_cast<int>(total.object + total.orbital);
 
@@ -108,9 +108,9 @@ WisdomHolmanIntegratorGPU<Real>::WisdomHolmanIntegratorGPU(ResourceManager &reso
 
 // Public functions
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::init(IntegratorGPUData &gpu, Total &total, Context &ctx)
+void WisdomHolmanIntegratorGPU<Real>::init(IntegratorGPUBuffers &gpu, Total &total, Context &ctx)
 {
-  WisdomHolmanGPUData *whGpu = dynamic_cast<WisdomHolmanGPUData *>(&gpu);
+  WisdomHolmanGPUBuffers *whGpu = dynamic_cast<WisdomHolmanGPUBuffers *>(&gpu);
   if (!whGpu)
     Logger::logFatal("Wisdom Holman Integrator", "Wrong GPU data passed");
   this->initKernels(*whGpu, total);

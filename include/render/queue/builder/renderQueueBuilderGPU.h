@@ -18,7 +18,7 @@ class LODManagerGPU;
 struct Total;
 struct LODSettings;
 struct FrameContext;
-struct RenderQueueGPUData;
+struct RenderQueueGPUBuffers;
 
 class RenderQueueBuilderGPU
 {
@@ -30,7 +30,7 @@ private:
   CLBuffer impostorCountBuffer;
   CLBuffer pointCountBuffer;
 
-  void initKernels(RenderQueueGPUData &data, LODSettings &settings);
+  void initKernels(RenderQueueGPUBuffers &data, LODSettings &settings);
   void initBuffers(Context &ctx, CommandQueue &queue, size_t modelCount);
 
   template <typename Real>
@@ -40,7 +40,7 @@ public:
   RenderQueueBuilderGPU(ResourceManager &resourceManager);
   ~RenderQueueBuilderGPU() = default;
 
-  void init(Context &ctx, CommandQueue &queue, RenderQueueGPUData &data, LODSettings &settings, size_t modelCount);
+  void init(Context &ctx, CommandQueue &queue, RenderQueueGPUBuffers &data, LODSettings &settings, size_t modelCount);
 
   template <typename Real>
   void build(CommandQueue &commandQueue, RenderQueue &renderQueue, LODManagerGPU& lod, InstanceManager &instanceManager, const Camera &camera, FrameContext &ctx, std::vector<Model *> &models, size_t totalObjects);

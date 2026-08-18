@@ -1,8 +1,8 @@
 #pragma once
 
 #include "physics/world/data/physicsCPUData.h"
-#include "physics/world/data/physicsGPUData.h"
-#include "physics/world/data/physicsDataGPU.h"
+#include "physics/world/data/physicsGPUBuffers.h"
+#include "physics/world/data/physicsDatabase.h"
 
 #include "physics/world/backend/physicsBackend.h"
 
@@ -22,14 +22,14 @@ class Trail;
 class Atmosphere;
 class System;
 class CommandQueue;
-struct IntegratorGPUData;
+struct IntegratorGPUBuffers;
 struct Total;
 
 class PhysicsWorld
 {
 private:
   PhysicsCPUData cpu;
-  PhysicsGPUData gpu;
+  PhysicsGPUBuffers gpu;
 
   std::unique_ptr<PhysicsBackend> backend;
 
@@ -40,10 +40,10 @@ public:
   ~PhysicsWorld();
 
   template <typename Real>
-  void initGPUBuffers(Context &ctx, PhysicsDataGPU<Real> data);
+  void initGPUBuffers(Context &ctx, PhysicsDatabase<Real> data);
 
   void initCPUBackend();
-  void initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUData &gpu, Total &total);
+  void initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUBuffers &gpu, Total &total);
 
   void step(double dt);
 
@@ -56,7 +56,7 @@ public:
   void addSun(Star *sun);
   void addIntegratable(Integratable *object);
 
-  PhysicsGPUData &getGPUData() { return this->gpu; };
+  PhysicsGPUBuffers &getGPUBuffers() { return this->gpu; };
 
   const Star &getSun() const;
 

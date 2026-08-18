@@ -2,11 +2,11 @@
 
 #include "compute/clBuffer.h"
 
-#include "physics/integrators/integratorGPUData.h"
-#include "physics/world/data/physicsGPUData.h"
-#include "scene/world/data/sharedGPUData.h"
+#include "physics/integrators/integratorGPUBuffers.h"
+#include "physics/world/data/physicsGPUBuffers.h"
+#include "scene/world/data/sharedGPUBuffers.h"
 
-struct WisdomHolmanGPUData : IntegratorGPUData
+struct WisdomHolmanGPUBuffers : IntegratorGPUBuffers
 {
   CLBuffer &positionsBuffer;
   CLBuffer &orientationsBuffer;
@@ -36,7 +36,7 @@ struct WisdomHolmanGPUData : IntegratorGPUData
   CLBuffer &meanMotionBuffer;
   CLBuffer &centralBodyIndicesBuffer;
 
-  WisdomHolmanGPUData(PhysicsGPUData &physics, SharedGPUData &shared)
+  WisdomHolmanGPUBuffers(PhysicsGPUBuffers &physics, SharedGPUBuffers &shared)
       : positionsBuffer(shared.positionsBuffer),
         orientationsBuffer(shared.orientationsBuffer),
 

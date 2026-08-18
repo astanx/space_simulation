@@ -8,7 +8,7 @@
 
 class Model;
 
-struct RenderDataGPU
+struct RenderDatabase
 {
   std::vector<Vec3<float>> modelColors;
   std::vector<uint32_t> modelTextureLayers;
@@ -22,7 +22,7 @@ struct RenderDataGPU
   {
   }
 
-  void combine(RenderDataGPU &data)
+  void combine(RenderDatabase &data)
   {
     this->modelColors.insert(this->modelColors.end(), std::make_move_iterator(data.modelColors.begin()), std::make_move_iterator(data.modelColors.end()));
     this->modelTextureLayers.insert(this->modelTextureLayers.end(), std::make_move_iterator(data.modelTextureLayers.begin()), std::make_move_iterator(data.modelTextureLayers.end()));

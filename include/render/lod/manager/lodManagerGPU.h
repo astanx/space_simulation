@@ -2,8 +2,6 @@
 
 #include "render/lod/manager/scan.h"
 
-#include "render/world/data/renderDataGPU.h"
-
 #include "compute/commandQueue.h"
 #include "compute/clBuffer.h"
 
@@ -17,7 +15,7 @@ struct LODSettings;
 struct FrameContext;
 struct Total;
 
-struct LODGPUData
+struct LODGPUBuffers
 {
   CLBuffer &positions;
   CLBuffer &meanRadii;
@@ -44,8 +42,8 @@ private:
   std::queue<cl_event> events;
 
   void initBuffers(Context &ctx, CommandQueue &queue, size_t totalObjects);
-  void initKernels(LODGPUData &data, LODSettings &settings, size_t totalObjects);
-  
+  void initKernels(LODGPUBuffers &data, LODSettings &settings, size_t totalObjects);
+
   template <typename Real>
   void updateKernels(const Camera &camera, FrameContext &ctx);
 
@@ -53,7 +51,7 @@ public:
   LODManagerGPU(ResourceManager &resourceManager);
   ~LODManagerGPU() = default;
 
-  void init(Context &ctx, CommandQueue &queue, LODGPUData &data, LODSettings &settings, size_t totalObjects);
+  void init(Context &ctx, CommandQueue &queue, LODGPUBuffers &data, LODSettings &settings, size_t totalObjects);
 
   template <typename Real>
   void update(CommandQueue &queue, const Camera &camera, FrameContext &ctx, size_t totalObjects);

@@ -5,7 +5,7 @@
 #include "compute/context.h"
 
 // Constructor
-PhysicsBackendGPU::PhysicsBackendGPU(ResourceManager &manager, Context &ctx, IntegratorGPUData &gpu, CommandQueue &queue, Total &total) : queue(queue), total(total)
+PhysicsBackendGPU::PhysicsBackendGPU(ResourceManager &manager, Context &ctx, IntegratorGPUBuffers &gpu, CommandQueue &queue, Total &total) : queue(queue), total(total)
 {
   if (ctx.getSupportsDouble())
     this->integrator = std::make_unique<WisdomHolmanIntegratorGPU<double>>(manager);

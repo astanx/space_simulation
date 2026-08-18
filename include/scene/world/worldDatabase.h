@@ -1,17 +1,17 @@
 #pragma once
 
-#include "scene/world/data/sharedDataGPU.h"
-#include "physics/world/data/physicsDataGPU.h"
-#include "render/world/data/renderDataGPU.h"
+#include "scene/world/data/sharedDatabase.h"
+#include "physics/world/data/physicsDatabase.h"
+#include "render/world/data/renderDatabase.h"
 
 #include "physics/world/total.h"
 
 template <typename Real>
-struct WorldDataGPU
+struct WorldDatabase
 {
-  SharedDataGPU<Real> shared;
-  PhysicsDataGPU<Real> physics;
-  RenderDataGPU render;
+  SharedDatabase<Real> shared;
+  PhysicsDatabase<Real> physics;
+  RenderDatabase render;
 
   void resize(size_t n)
   {
@@ -20,7 +20,7 @@ struct WorldDataGPU
     this->render.resize(n);
   }
 
-  void combine(WorldDataGPU &data)
+  void combine(WorldDatabase &data)
   {
     this->shared.combine(data.shared);
     this->physics.combine(data.physics);

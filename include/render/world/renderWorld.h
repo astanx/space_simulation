@@ -26,8 +26,8 @@ class DirectionalLight;
 class PhysicsWorld;
 struct FrameContext;
 struct RenderContext;
-struct RenderDataGPU;
-struct SharedGPUData;
+struct RenderDatabase;
+struct SharedGPUBuffers;
 struct Total;
 
 class RenderWorld
@@ -77,8 +77,8 @@ public:
 
   void init(ResourceManager& manager, PhysicsWorld& physics, RenderContext& ctx, Total &total);
   void initCPUBackend();
-  void initGPUBuffers(Context &ctx, RenderDataGPU &gpu);
-  void initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUData &data);
+  void initGPUBuffers(Context &ctx, RenderDatabase &gpu);
+  void initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUBuffers &data);
 
   void update(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
   void sync(PhysicsWorld &physics);

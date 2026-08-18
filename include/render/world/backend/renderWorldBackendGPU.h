@@ -9,7 +9,7 @@
 
 class Model;
 class ResourceManager;
-struct BackendGPUData;
+struct BackendGPUBuffers;
 
 class RenderWorldBackendGPU : public RenderWorldBackend
 {
@@ -33,10 +33,10 @@ private:
 
   void updateSpecialPositions(CommandQueue &queue, InstanceManager &manager);
 
-  size_t getSpecialIndex(Model* model);
+  size_t getSpecialIndex(Model *model);
 
 public:
-  RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUData &lodData, BackendGPUData &data, Total &total, std::vector<Model *> &models);
+  RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUBuffers &lodData, BackendGPUBuffers &data, Total &total, std::vector<Model *> &models);
   ~RenderWorldBackendGPU() = default;
 
   void sync(PhysicsWorld &physics, PointLight *light) override;

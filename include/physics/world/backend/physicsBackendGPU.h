@@ -8,7 +8,7 @@ class ResourceManager;
 class CommandQueue;
 class Context;
 struct Total;
-struct IntegratorGPUData;
+struct IntegratorGPUBuffers;
 
 class PhysicsBackendGPU : public PhysicsBackend
 {
@@ -19,7 +19,7 @@ private:
   std::unique_ptr<IntegratorGPU> integrator;
 
 public:
-  PhysicsBackendGPU(ResourceManager &manager, Context &ctx, IntegratorGPUData &data, CommandQueue &queue, Total &total);
+  PhysicsBackendGPU(ResourceManager &manager, Context &ctx, IntegratorGPUBuffers &data, CommandQueue &queue, Total &total);
   ~PhysicsBackendGPU() = default;
 
   void step(double dt) override;

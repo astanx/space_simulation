@@ -4,7 +4,7 @@
 
 #include <vector>
 
-struct IntegratorGPUData;
+struct IntegratorGPUBuffers;
 struct Total;
 class CommandQueue;
 class Context;
@@ -16,7 +16,7 @@ public:
   IntegratorGPU() = default;
   ~IntegratorGPU() = default;
 
-  virtual void init(IntegratorGPUData &gpu, Total &total, Context &ctx) = 0;
+  virtual void init(IntegratorGPUBuffers &gpu, Total &total, Context &ctx) = 0;
   virtual void step(CommandQueue& queue, Total &total, double dt) = 0;
 };
 

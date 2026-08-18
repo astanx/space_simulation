@@ -5,7 +5,7 @@
 #include <vector>
 
 template <typename Real>
-struct SharedDataGPU
+struct SharedDatabase
 {
   std::vector<Vec3<Real>> positions;
   std::vector<Quat<Real>> orientations;
@@ -23,7 +23,7 @@ struct SharedDataGPU
     this->equatorianRadii.resize(n);
   }
 
-  void combine(SharedDataGPU &data)
+  void combine(SharedDatabase &data)
   {
     this->positions.insert(this->positions.end(), std::make_move_iterator(data.positions.begin()), std::make_move_iterator(data.positions.end()));
     this->orientations.insert(this->orientations.end(), std::make_move_iterator(data.orientations.begin()), std::make_move_iterator(data.orientations.end()));
