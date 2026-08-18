@@ -20,6 +20,7 @@ void RenderWorldBackendGPU::initSpecialModel(RenderQueue &queue, InstanceManager
 {
   if (!model->hasFlag(ModelFlags::Special))
     return;
+
   Range allocation = manager.getAllocation(model);
 
   size_t index = this->specialAllocations.size() + 1;
@@ -115,14 +116,5 @@ void RenderWorldBackendGPU::update(const Camera &camera, RenderQueue &queue, Ins
 
 void RenderWorldBackendGPU::sync(PhysicsWorld &physics, PointLight *light)
 {
-  if (!this->subQueuesInitialized)
-  {
-    Logger::logWarning("Render World Backend GPU", "Sub queues are not initialized yet, skipping sync");
-    return;
-  }
-
-  if (light)
-    light->move(this->specialPositions[this->getSpecialIndex(physics.getSun().getMainLayer())]); // move sun light
-  else
-    Logger::logFatal("Scene", " No sun light to sync position");
+  this->moveSunLight(this->specialPositions[this->getSpecialIndex(physics.getSun().getMainLayer())], light);
 }

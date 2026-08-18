@@ -266,7 +266,7 @@ void SimulationWorld::update(const Camera &camera, RenderQueue &queue, RenderCon
   if (!renderCtx.settings.paused)
     this->physics.step(renderCtx.deltaTime);
 
-  this->render.sync(this->physics);
-
   this->render.update(camera, queue, renderCtx.frameCtx);
+
+  this->render.sync(this->physics);
 }

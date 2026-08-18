@@ -2,6 +2,8 @@
 
 #include "scene/scene.h"
 
+#include "scene/light/pointLight.h"
+
 // Constructor / Destructor
 RendererBackendGPU::RendererBackendGPU() = default;
 RendererBackendGPU::~RendererBackendGPU() = default;
@@ -14,8 +16,7 @@ void RendererBackendGPU::update(Scene &scene, RenderContext &ctx)
   this->lightManager.updateDirUBO(scene.getDirLight());
   this->shadowManager.updateDirUBO();
 
-  // fix todo
   this->lightManager.updatePointUBO(scene.getPointLight());
-  this->shadowManager.updatePointShadowLightPosition(scene.getSunPosition());
+  this->shadowManager.updatePointShadowLightPosition(scene.getPointLight()->getPosition());
   this->shadowManager.updatePointUBO();
 }

@@ -5,8 +5,6 @@
 #include "render/modelSource.h"
 #include "render/renderSystem.h"
 
-#include "scene/light/pointLight.h"
-
 #include "physics/world/physicsWorld.h"
 #include "physics/star.h"
 
@@ -47,8 +45,5 @@ void RenderWorldBackendCPU::update(const Camera &camera, RenderQueue &queue, Ins
 
 void RenderWorldBackendCPU::sync(PhysicsWorld &physics, PointLight *light)
 {
-  if (light)
-    light->move(physics.getSun().getRenderPosition()); // move sun light
-  else
-    Logger::logFatal("Scene", " No sun light to sync position");
+  this->moveSunLight(physics.getSun().getRenderPosition(), light);
 }

@@ -3,6 +3,7 @@
 #include "render/lod/lodSettings.h"
 
 #include <vector>
+#include <glm/glm.hpp>
 
 class Camera;
 class RenderQueue;
@@ -24,6 +25,8 @@ protected:
   void initReflectorQueue(RenderQueue &queue, InstanceManager &manager, Model *model);
   virtual void initModelQueue(RenderQueue &queue, InstanceManager &manager, Model *model);
   void initSubQueues(RenderQueue &queue, InstanceManager &manager, std::vector<Model *> &models);
+
+  void moveSunLight(glm::vec3 position, PointLight *light);
 
 public:
   RenderWorldBackend() = default;

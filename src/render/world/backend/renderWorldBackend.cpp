@@ -6,6 +6,11 @@
 
 #include "graphics/model.h"
 
+#include "scene/light/pointLight.h"
+
+#include "physics/world/physicsWorld.h"
+#include "physics/star.h"
+
 // Protected function
 void RenderWorldBackend::initShadowQueue(RenderQueue &queue, InstanceManager &manager, Model *model)
 {
@@ -43,4 +48,12 @@ void RenderWorldBackend::initSubQueues(RenderQueue &queue, InstanceManager &mana
 
   for (Model *model : models)
     this->initModelQueue(queue, manager, model);
+}
+
+void RenderWorldBackend::moveSunLight(glm::vec3 position, PointLight *light)
+{
+  if (light)
+    light->move(position); // move sun light
+  else
+    Logger::logFatal("Scene", " No sun light to sync position");
 }
