@@ -1,23 +1,31 @@
 #pragma once
 
 #include "scene/frameContext.h"
+#include "scene/world/IsimulationWorld.h"
 #include "scene/world/simulationWorld.h"
 
 #include "camera/cameraMovement.h"
 
+#include <memory>
+#include <glm/glm.hpp>
+
 class ResourceManager;
 class RenderQueue;
 class ThreadPool;
+class PointLight;
+class DirectionalLight;
+class Skybox;
 struct RenderContext;
 
 class Scene
 {
 private:
-  SimulationWorld world;
+  std::variant<SimulationWorld<float>,SimulationWorld<double>> world;
+  // SimulationWorld<float> world;
 
 public:
-  Scene() = default;
-  ~Scene() = default;
+  Scene();
+  ~Scene();
 
   // Process functions
   void initGPUWorld(ResourceManager &manager);
@@ -42,5 +50,6 @@ public:
   const PointLight *getPointLight();
   const DirectionalLight *getDirLight();
 
-  SimulationWorld &getSimulationWorld();
+  // SimulationWorld<float> &getSimulationWorld();
+  ISimulationWorld &getSimulationWorld();
 };

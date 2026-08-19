@@ -1,5 +1,7 @@
 #include "render/renderer/renderer.h"
 
+#include "render/world/renderWorld.h"
+
 #include "render/renderer/backend/rendererBackend.h"
 #include "render/renderer/backend/rendererBackendGPU.h"
 #include "render/renderer/backend/rendererBackendCPU.h"
@@ -36,6 +38,7 @@
 #include "resources/resources.h"
 
 #include "physics/star.h"
+#include "physics/world/IphysicsWorld.h"
 
 #include <iostream>
 

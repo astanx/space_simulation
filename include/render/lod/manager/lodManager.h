@@ -9,7 +9,6 @@
 #include <glm/glm.hpp>
 
 class Camera;
-class Scene;
 class Model;
 class ModelSource;
 class Renderable;

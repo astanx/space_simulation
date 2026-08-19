@@ -5,7 +5,6 @@
 
 #include <vector>
 
-class Scene;
 class LODManager;
 class ModelSource;
 class RenderQueueBuilder;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "scene/world/IsimulationWorld.h"
+
 #include "scene/world/data/sharedGPUBuffers.h"
 #include "scene/world/data/sharedDatabase.h"
 #include "scene/world/worldObject.h"
@@ -17,11 +19,11 @@
 
 struct Importance
 {
-  float base;
-  float asteroid;
-  float planet;
-  float moon;
-  float star;
+  float base = 0;
+  float asteroid = 0;
+  float planet = 0;
+  float moon = 0;
+  float star = 0;
 };
 
 class Planet;
@@ -38,15 +40,18 @@ struct KeplerElements;
 struct RotationalElements;
 struct RenderContext;
 
-class SimulationWorld
+template <typename Real>
+class SimulationWorld : public ISimulationWorld
 {
 private:
   Total total;
   Importance importance;
 
-  PhysicsWorld physics;
+  PhysicsWorld<Real> physics;
   RenderWorld render;
   SharedGPUBuffers gpu;
+
+  SharedDatabase<Real> database;
 
   CommandQueue queue;
 
@@ -63,22 +68,23 @@ private:
   AsteroidSystem *createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000);
 
   void initObjects(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000);
-  template <typename Real>
   void initGPUBuffers(Context &ctx, SharedDatabase<Real> &data);
 
 public:
   SimulationWorld();
   ~SimulationWorld() = default;
 
-  void initCPU();
-  void initGPU(ResourceManager &resourceManager);
-  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime);
+  void initCPU() override;
+  void initGPU(ResourceManager &resourceManager) override;
+  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime) override;
 
-  void update(const Camera &camera, RenderQueue &queue, RenderContext &renderCtx);
+  void update(RenderQueue &queue, RenderContext &renderCtx) override;
 
   void addWorldObject(WorldObject object) { this->worldObjects.push_back(object); };
   void addWorldSystem(WorldSystem system) { this->worldSystems.push_back(system); };
 
-  const PhysicsWorld &getPhysicsWorld() const { return this->physics; };
-  RenderWorld &getRenderWorld() { return this->render; };
+  const IPhysicsWorld &getPhysicsWorld() const override { return this->physics; };
+  RenderWorld &getRenderWorld() override { return this->render; };
 };
+
+#include "scene/world/simulationWorld.hpp"

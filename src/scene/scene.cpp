@@ -1,86 +1,123 @@
 #include "scene/scene.h"
 
+#include "scene/world/simulationWorld.h"
+
 #include "camera/camera.h"
 
 #include "physics/star.h"
+#include "physics/world/IphysicsWorld.h"
+
+#include "render/world/renderWorld.h"
+
+#include "graphics/skybox.h"
+
+// Constructor / Destructor
+Scene::Scene() = default;
+Scene::~Scene() = default;
 
 // Process functions
 void Scene::initGPUWorld(ResourceManager &resourceManager)
 {
-  this->world.initGPU(resourceManager);
+  std::visit([&resourceManager](auto &w)
+             { w.initGPU(resourceManager); }, this->world);
 }
 void Scene::initCPUWorld()
 {
-  this->world.initCPU();
+  std::visit([](auto &w)
+             { w.initCPU(); }, this->world);
 }
 void Scene::init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime)
 {
-  this->world.init(renderCtx, resourceManager, threadPool, startTime);
+  // fix make choose datatype
+  this->world.emplace<SimulationWorld<float>>();
+  std::visit([&renderCtx, &resourceManager, &threadPool, startTime](auto &w)
+             { w.init(renderCtx, resourceManager, threadPool, startTime); }, this->world);
 }
 
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)
 {
-  Camera &camera = this->world.getRenderWorld().getActiveCamera();
-  camera.processKeyboard(direction, deltaTime);
+  std::visit([direction, deltaTime](auto &w)
+             { 
+        Camera &camera = w.getRenderWorld().getActiveCamera();
+  camera.processKeyboard(direction, deltaTime); }, this->world);
 }
 
 void Scene::processMouseMovement(const float &xpos, const float &ypos)
 {
-  Camera &camera = this->world.getRenderWorld().getActiveCamera();
-  camera.processMouseMovement(xpos, ypos);
+  std::visit([xpos, ypos](auto &w)
+             {
+               Camera &camera = w.getRenderWorld().getActiveCamera();
+               camera.processMouseMovement(xpos, ypos); },
+             this->world);
 }
 
 void Scene::processMouseScroll(float yoffset)
 {
-  Camera &camera = this->world.getRenderWorld().getActiveCamera();
-  camera.processMouseScroll(yoffset);
+  std::visit([yoffset](auto &w)
+             { 
+        Camera &camera = w.getRenderWorld().getActiveCamera();
+  camera.processMouseScroll(yoffset); }, this->world);
 }
 
 void Scene::update(RenderQueue &queue, RenderContext &renderCtx)
 {
-  this->world.update(this->getActiveCamera(), queue, renderCtx);
+  std::visit([&queue, &renderCtx](auto &w)
+             { w.update(queue, renderCtx); }, this->world);
 }
 
 // Setters
 void Scene::increaseCameraSpeed(double percentage)
 {
-  Camera &camera = this->world.getRenderWorld().getActiveCamera();
-  camera.increaseMovementSpeed(percentage);
+  std::visit([percentage](auto &w)
+             {
+               Camera &camera = w.getRenderWorld().getActiveCamera();
+               camera.increaseMovementSpeed(percentage); },
+             this->world);
 }
 
 void Scene::decreaseCameraSpeed(double percentage)
 {
-  Camera &camera = this->world.getRenderWorld().getActiveCamera();
-  camera.decreaseMovementSpeed(percentage);
+  std::visit([percentage](auto &w)
+             {
+               Camera &camera = w.getRenderWorld().getActiveCamera();
+               camera.decreaseMovementSpeed(percentage); },
+             this->world);
 }
 
 // Getters
 const Camera &Scene::getActiveCamera()
 {
-  return this->world.getRenderWorld().getActiveCamera();
+  return std::visit([](auto &w) -> const Camera &
+                    { return w.getRenderWorld().getActiveCamera(); }, this->world);
 };
 const Skybox &Scene::getActiveSkybox()
 {
-  return this->world.getRenderWorld().getActiveSkybox();
+  return std::visit([](auto &w) -> const Skybox &
+                    { return w.getRenderWorld().getActiveSkybox(); }, this->world);
 };
 const glm::vec3 Scene::getActiveCameraPosition()
 {
-  return this->world.getRenderWorld().getActiveCamera().getPosition();
+  return std::visit([](auto &w)
+                    { return w.getRenderWorld().getActiveCamera().getPosition(); }, this->world);
 };
 const glm::vec3 Scene::getSunPosition()
 {
-  return this->world.getPhysicsWorld().getSun().getRenderPosition();
+  return std::visit([](auto &w)
+                    { return w.getPhysicsWorld().getSun().getRenderPosition(); }, this->world);
 }
 
 const PointLight *Scene::getPointLight()
 {
-  return this->world.getRenderWorld().getPointLight();
+  return std::visit([](auto &w)
+                    { return w.getRenderWorld().getPointLight(); }, this->world);
 };
 const DirectionalLight *Scene::getDirLight()
 {
-  return this->world.getRenderWorld().getDirLight();
+  return std::visit([](auto &w)
+                    { return w.getRenderWorld().getDirLight(); }, this->world);
 };
-SimulationWorld &Scene::getSimulationWorld()
+ISimulationWorld &Scene::getSimulationWorld()
 {
-  return this->world;
+  return std::visit([](auto &w) -> ISimulationWorld &
+                    { return w; }, this->world);
 }

@@ -4,8 +4,8 @@
 
 struct Total
 {
-  size_t total;
+  size_t total = 0;
   
-  size_t orbital;
-  size_t object;
+  size_t orbital = 0;
+  size_t object = 0;
 };

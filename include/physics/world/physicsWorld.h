@@ -1,5 +1,7 @@
 #pragma once
 
+#include "physics/world/IphysicsWorld.h"
+
 #include "physics/world/data/physicsCPUData.h"
 #include "physics/world/data/physicsGPUBuffers.h"
 #include "physics/world/data/physicsDatabase.h"
@@ -25,7 +27,8 @@ class CommandQueue;
 struct IntegratorGPUBuffers;
 struct Total;
 
-class PhysicsWorld
+template <typename Real>
+class PhysicsWorld : public IPhysicsWorld
 {
 private:
   PhysicsCPUData cpu;
@@ -39,7 +42,6 @@ public:
   PhysicsWorld();
   ~PhysicsWorld();
 
-  template <typename Real>
   void initGPUBuffers(Context &ctx, PhysicsDatabase<Real> data);
 
   void initCPUBackend();
@@ -58,7 +60,7 @@ public:
 
   PhysicsGPUBuffers &getGPUBuffers() { return this->gpu; };
 
-  const Star &getSun() const;
+  const Star &getSun() const override;
 
   const std::vector<AsteroidSystem *> &getAsteroidSystems() const;
   const std::vector<Planet *> &getPlanetarObjects() const;

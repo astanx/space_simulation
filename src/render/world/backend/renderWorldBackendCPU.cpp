@@ -43,7 +43,7 @@ void RenderWorldBackendCPU::update(const Camera &camera, RenderQueue &queue, Ins
   builder.build(queue, camera, this->modelSources, this->renderSystems, this->lodManager, instanceManager, ctx);
 }
 
-void RenderWorldBackendCPU::sync(PhysicsWorld &physics, PointLight *light)
+void RenderWorldBackendCPU::sync(IPhysicsWorld &physics, PointLight *light)
 {
   this->moveSunLight(physics.getSun().getRenderPosition(), light);
 }

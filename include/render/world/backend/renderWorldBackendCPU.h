@@ -23,6 +23,6 @@ public:
   RenderWorldBackendCPU(InstanceManager &manager, std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems);
   ~RenderWorldBackendCPU() = default;
 
-  void sync(PhysicsWorld &physics, PointLight* light) override;
+  void sync(IPhysicsWorld &physics, PointLight* light) override;
   void update(const Camera &camera, RenderQueue &queue, InstanceManager &instanceManager, FrameContext &ctx) override;
 };

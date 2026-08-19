@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scene/world/worldDatabase.h"
+#include "scene/world/database/worldDatabase.h"
 
 class Object;
 class OrbitalObject;
@@ -35,4 +35,4 @@ public:
   WorldDatabase<Real> build(std::vector<WorldObject> &worldObjects, std::vector<WorldSystem> &worldSystems, InstanceManager &instanceManager);
 };
 
-#include "scene/world/worldDatabaseBuilder.hpp"
+#include "scene/world/database/worldDatabaseBuilder.hpp"

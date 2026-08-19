@@ -10,7 +10,7 @@ class RenderQueue;
 class FrameContext;
 class InstanceManager;
 class Model;
-class PhysicsWorld;
+class IPhysicsWorld;
 class PointLight;
 struct Range;
 
@@ -32,6 +32,6 @@ public:
   RenderWorldBackend() = default;
   virtual ~RenderWorldBackend() = default;
 
-  virtual void sync(PhysicsWorld &physics, PointLight *light) = 0;
+  virtual void sync(IPhysicsWorld &physics, PointLight *light) = 0;
   virtual void update(const Camera &camera, RenderQueue &queue, InstanceManager &instanceManager, FrameContext &ctx) = 0;
 };

@@ -26,7 +26,7 @@ RenderWorld::RenderWorld() = default;
 RenderWorld::~RenderWorld() = default;
 
 // Public functions
-void RenderWorld::init(ResourceManager &manager, PhysicsWorld &physics, RenderContext &ctx, Total &total)
+void RenderWorld::init(ResourceManager &manager, IPhysicsWorld &physics, RenderContext &ctx, Total &total)
 {
   this->lodResourceManager.init(this->modelSources, this->renderSystems);
   this->instanceManager.init(total.total);
@@ -88,18 +88,18 @@ void RenderWorld::initGPUBackend(Context &ctx, CommandQueue &queue, Total &total
   this->backend = std::make_unique<RenderWorldBackendGPU>(resourceManager, queue, ctx, lodBuffers, backendBuffers, total, this->models);
 }
 
-void RenderWorld::update(const Camera &camera, RenderQueue &queue, FrameContext &ctx)
+void RenderWorld::update(RenderQueue &queue, FrameContext &ctx)
 {
   for (Updatable *&object : this->updatable)
-    object->update(camera);
+    object->update(*this->activeCamera);
 
   for (std::unique_ptr<Trail> &trail : this->trails)
-    trail->update(camera);
+    trail->update(*this->activeCamera);
 
-  this->backend->update(camera, queue, this->instanceManager, ctx);
+  this->backend->update(*this->activeCamera, queue, this->instanceManager, ctx);
 }
 
-void RenderWorld::sync(PhysicsWorld &physics)
+void RenderWorld::sync(IPhysicsWorld &physics)
 {
   this->backend->sync(physics, this->pointLight.get());
 }

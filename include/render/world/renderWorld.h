@@ -23,7 +23,7 @@ class CommandQueue;
 class Skybox;
 class PointLight;
 class DirectionalLight;
-class PhysicsWorld;
+class IPhysicsWorld;
 struct FrameContext;
 struct RenderContext;
 struct RenderDatabase;
@@ -38,7 +38,7 @@ private:
 
   std::unique_ptr<RenderWorldBackend> backend;
 
-  Camera *activeCamera;
+  Camera *activeCamera ;
   Skybox *skybox;
 
   std::vector<std::unique_ptr<Camera>> cameras;
@@ -75,13 +75,13 @@ public:
   RenderWorld();
   ~RenderWorld();
 
-  void init(ResourceManager& manager, PhysicsWorld& physics, RenderContext& ctx, Total &total);
+  void init(ResourceManager &manager, IPhysicsWorld &physics, RenderContext &ctx, Total &total);
   void initCPUBackend();
   void initGPUBuffers(Context &ctx, RenderDatabase &gpu);
   void initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUBuffers &data);
 
-  void update(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
-  void sync(PhysicsWorld &physics);
+  void update(RenderQueue &queue, FrameContext &ctx);
+  void sync(IPhysicsWorld &physics);
 
   void renderImpostorMeshInstanced();
   void renderPointMeshInstanced();

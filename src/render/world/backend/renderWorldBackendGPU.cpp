@@ -114,7 +114,7 @@ void RenderWorldBackendGPU::update(const Camera &camera, RenderQueue &queue, Ins
   this->updateSpecialPositions(this->queue, instanceManager);
 }
 
-void RenderWorldBackendGPU::sync(PhysicsWorld &physics, PointLight *light)
+void RenderWorldBackendGPU::sync(IPhysicsWorld &physics, PointLight *light)
 {
   this->moveSunLight(this->specialPositions[this->getSpecialIndex(physics.getSun().getMainLayer())], light);
 }
