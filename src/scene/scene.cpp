@@ -26,13 +26,6 @@ void Scene::initCPUWorld()
   std::visit([](auto &w)
              { w.initCPU(); }, this->world);
 }
-void Scene::init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime)
-{
-  // fix make choose datatype
-  this->world.emplace<SimulationWorld<float>>();
-  std::visit([&renderCtx, &resourceManager, &threadPool, startTime](auto &w)
-             { w.init(renderCtx, resourceManager, threadPool, startTime); }, this->world);
-}
 
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)
 {

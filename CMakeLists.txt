@@ -143,7 +143,6 @@ add_executable(Space
         src/scene/shadow/pointShadow.cpp
         src/scene/shadow/shadowManager.cpp
         # World
-        #src/scene/world/simulationWorld.cpp
         src/scene/world/IsimulationWorld.cpp
     
     # Render
@@ -195,7 +194,6 @@ add_executable(Space
     src/physics/asteroid.cpp
     src/physics/atmosphere.cpp
         # World
-       # src/physics/world/physicsWorld.cpp
         src/physics/world/IphysicsWorld.cpp
             # Backend
             src/physics/world/backend/physicsBackendCPU.cpp

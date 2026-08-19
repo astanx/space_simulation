@@ -21,7 +21,6 @@ class Scene
 {
 private:
   std::variant<SimulationWorld<float>,SimulationWorld<double>> world;
-  // SimulationWorld<float> world;
 
 public:
   Scene();
@@ -30,6 +29,8 @@ public:
   // Process functions
   void initGPUWorld(ResourceManager &manager);
   void initCPUWorld();
+  
+  template <std::floating_point Real>
   void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime);
   void processKeyboard(CameraMovement direction, float deltaTime);
   void processMouseMovement(const float &xpos, const float &ypos);
@@ -50,6 +51,7 @@ public:
   const PointLight *getPointLight();
   const DirectionalLight *getDirLight();
 
-  // SimulationWorld<float> &getSimulationWorld();
   ISimulationWorld &getSimulationWorld();
 };
+
+#include "scene/scene.hpp"

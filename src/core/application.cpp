@@ -386,7 +386,7 @@ Application::Application(
 
   this->updateFrameContext();
 
-  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, this->startTime);
+  this->scene.init<float>(this->renderCtx, this->resourceManager, this->threadPool, this->startTime);
   this->renderer.init(this->renderCtx);
 
   if (bool GPU = true)
