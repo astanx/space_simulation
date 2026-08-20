@@ -32,7 +32,9 @@ class PhysicsWorld : public IPhysicsWorld
 {
 private:
   PhysicsCPUData cpu;
+
   PhysicsGPUBuffers gpu;
+  PhysicsDatabase<Real> database;
 
   std::unique_ptr<PhysicsBackend> backend;
 

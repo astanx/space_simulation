@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/world/backend/renderWorldBackend.h"
+#include "render/world/data/renderDatabase.h"
 
 #include "render/lod/lodRenderResourcesManager.h"
 #include "render/instanceManager.h"
@@ -36,9 +37,11 @@ private:
   LODRenderResourcesManager lodResourceManager;
   InstanceManager instanceManager;
 
+  RenderDatabase database;
+
   std::unique_ptr<RenderWorldBackend> backend;
 
-  Camera *activeCamera ;
+  Camera *activeCamera;
   Skybox *skybox;
 
   std::vector<std::unique_ptr<Camera>> cameras;

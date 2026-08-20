@@ -160,8 +160,7 @@ void SimulationWorld<Real>::addAtmosphereToPlanet(ResourceManager &resourceManag
   Atmosphere *ptr = atmosphere.get();
 
   std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(32, atmosphere->getRadii());
-  resourceManager.LoadMesh<VertexPositionTexcoordNormal>(path, std::move(obj), VertexLayout::NoColor);
-  Mesh &mesh = resourceManager.GetMesh(path);
+  Mesh &mesh  = resourceManager.LoadMesh<VertexPositionTexcoordNormal>(path, std::move(obj), VertexLayout::NoColor);
   std::unique_ptr<Model> model = std::make_unique<Model>(mesh);
 
   this->physics.addAtmosphere(ptr);
@@ -220,7 +219,7 @@ void SimulationWorld<Real>::initGPU(ResourceManager &resourceManager)
   this->queue.init(ctx.get(), ctx.getDevice());
 
   WorldDatabaseBuilder<Real> builder;
-  WorldDatabase<Real> data = builder.build(this->worldObjects, this->worldSystems, this->render.getInstanceManager());
+  WorldDatabase<Real> data = builder.build(this->render.getInstanceManager());
   this->physics.initGPUBuffers(ctx, data.physics);
 
   this->initGPUBuffers(ctx, data.shared);

@@ -49,8 +49,8 @@ private:
 
   PhysicsWorld<Real> physics;
   RenderWorld render;
+  
   SharedGPUBuffers gpu;
-
   SharedDatabase<Real> database;
 
   CommandQueue queue;

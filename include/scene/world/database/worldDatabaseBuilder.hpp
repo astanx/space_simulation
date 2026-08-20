@@ -13,7 +13,7 @@
 
 // Private functions
 template <typename Real>
-void WorldDatabaseBuilder<Real>::processObject(Object *obj, WorldDatabase<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
+void WorldDatabaseBuilder<Real>::processObject(Object *obj, WorldDatabase<Real> &data, size_t i)
 {
   data.shared.positions[i] = static_cast<Vec3<Real>>(obj->getPosition());
   data.shared.orientations[i] = static_cast<Quat<Real>>(obj->getOrientation());
@@ -39,24 +39,24 @@ void WorldDatabaseBuilder<Real>::processObject(Object *obj, WorldDatabase<Real> 
   const TidalParameters &p = obj->getTidalParameters();
   if (p.k2 != -1)
   {
-    std::lock_guard<std::mutex> lock(loveMutex);
+    std::lock_guard<std::mutex> lock(this->loveMutex);
 
-    loveNumbers.push_back(static_cast<Real>(p.k2));
+    this->loveNumbers.push_back(static_cast<Real>(p.k2));
     data.physics.loveIndices[i] = loveNumbers.size() - 1;
   }
   if (p.Q != -1)
   {
-    std::lock_guard<std::mutex> lock(tidalMutex);
+    std::lock_guard<std::mutex> lock(this->tidalMutex);
 
-    tidalFactors.push_back(static_cast<Real>(p.Q));
+    this->tidalFactors.push_back(static_cast<Real>(p.Q));
     data.physics.tidalFactorIndices[i] = tidalFactors.size() - 1;
   }
 };
 
 template <typename Real>
-void WorldDatabaseBuilder<Real>::processOrbital(OrbitalObject *obj, WorldDatabase<Real> &data, size_t i, std::vector<Real> &loveNumbers, std::vector<Real> &tidalFactors, std::mutex &loveMutex, std::mutex &tidalMutex)
+void WorldDatabaseBuilder<Real>::processOrbital(OrbitalObject *obj, WorldDatabase<Real> &data, size_t i)
 {
-  this->processObject(obj, data, i, loveNumbers, tidalFactors, loveMutex, tidalMutex);
+  this->processObject(obj, data, i);
 
   const KeplerElements k = obj->getOrbit()->getKeplerElements();
 
@@ -70,183 +70,250 @@ void WorldDatabaseBuilder<Real>::processOrbital(OrbitalObject *obj, WorldDatabas
 };
 
 template <typename Real>
-void WorldDatabaseBuilder<Real>::processModel(std::vector<size_t> &modelCapacities, LookupTable &lookup, Model *model, WorldDatabase<Real> &data, size_t i, std::mutex &modelMutex)
+void WorldDatabaseBuilder<Real>::processModel(TemporaryStorage<Real> &storage, Model *model, size_t i)
 {
   if (!model)
     Logger::logFatal("World GPU Builder", "Model is null");
 
   {
-    std::lock_guard<std::mutex> lock(modelMutex);
+    std::lock_guard<std::mutex> lock(this->modelMutex);
     size_t modelIndex;
 
-    auto it = lookup.table.find(model);
-    if (it == lookup.table.end())
+    auto it = storage.lookup.table.find(model);
+    if (it == storage.lookup.table.end())
     {
-      modelIndex = lookup.freeIndex++;
+      modelIndex = storage.lookup.freeIndex++;
 
-      lookup.table[model] = modelIndex;
-      lookup.models.push_back(model);
-      data.render.isNonFullable.push_back(model->hasAnyFlag() ? 1 : 0);
-      data.render.modelImportances.push_back(model->getImportance());
-      data.render.modelColors.push_back(model->getAverageColor());
-      data.render.modelTextureLayers.push_back(model->getImpostorLayer());
-      modelCapacities.push_back(0);
+      storage.lookup.table[model] = modelIndex;
+      storage.lookup.models.push_back(model);
+      storage.database.render.isNonFullable.push_back(model->hasAnyFlag() ? 1 : 0);
+      storage.database.render.modelImportances.push_back(model->getImportance());
+      storage.database.render.modelColors.push_back(model->getAverageColor());
+      storage.database.render.modelTextureLayers.push_back(model->getImpostorLayer());
+      storage.modelCapacities.push_back(0);
     }
     else
       modelIndex = it->second;
 
-    modelCapacities[modelIndex]++;
+    storage.modelCapacities[modelIndex]++;
   }
 }
 
 template <typename Real>
-void WorldDatabaseBuilder<Real>::processModelSource(std::vector<size_t> &modelCapacities, LookupTable &lookup, ModelSource *modelSource, WorldDatabase<Real> &data, size_t i, std::mutex &modelMutex)
+void WorldDatabaseBuilder<Real>::processModelSource(TemporaryStorage<Real> &storage, ModelSource *modelSource, size_t i)
 {
   if (!modelSource)
     Logger::logFatal("World GPU Builder", "ModelSource is null");
 
-  this->processModel(modelCapacities, lookup, modelSource->getMainLayer(), data, i, modelMutex);
+  this->processModel(storage, modelSource->getMainLayer(), i);
+}
+
+template <typename Real>
+void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporaryStorage<Real> &objectStorage, TemporaryStorage<Real> &orbitalStorage, std::atomic_size_t &objectIndex, std::atomic_size_t &orbitalIndex)
+{
+  system.physics->forEachObject([this, &system, &objectStorage, &orbitalStorage, &orbitalIndex, &objectIndex](Object &obj, size_t i)
+                                {
+      OrbitalObject* orb = dynamic_cast<OrbitalObject*>(&obj);
+      if (orb)
+      {
+        size_t idx = orbitalIndex.fetch_add(1);
+        this->processOrbital(orb, orbitalStorage.database, idx);
+        this->processModel(orbitalStorage, system.render->getModelFromObjectIndex(i), idx);
+
+        Object* central = orb->getOrbit()->getCentralBody();
+        orbitalStorage.database.physics.centralBodyIndices[idx] = this->findCentralBodyIndex(central);
+      }
+      else
+      { 
+        size_t idx = objectIndex.fetch_add(1);
+        this->processObject(&obj, objectStorage.database, idx); 
+        this->processModel(objectStorage, system.render->getModelFromObjectIndex(i), idx);
+      } });
+}
+
+template <typename Real>
+size_t WorldDatabaseBuilder<Real>::findCentralBodyIndex(Object *central)
+{
+  for (size_t j = 0; j < this->worldObjects.size(); j++)
+    if (this->worldObjects[j].physics == central)
+      return j + this->total.orbital;
+
+  for (size_t j = 0; j < this->worldOrbitalObjects.size(); j++)
+    if (this->worldOrbitalObjects[j].physics == central)
+      return j;
+
+  Logger::logFatal("World Database Builder", "Central body was not found");
+  return 0;
 }
 
 // Public functions
 template <typename Real>
-WorldDatabase<Real> WorldDatabaseBuilder<Real>::build(std::vector<WorldObject> &worldObjects, std::vector<WorldSystem> &worldSystems, InstanceManager &instanceManager)
+Planet *WorldDatabaseBuilder<Real>::createPlanet(Model &model, double mu, Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, double g)
 {
-  std::vector<WorldOrbitalObject> orbitalObjects;
-  std::vector<WorldObject> objects;
-  Total total;
+  KeplerElements e = keplerElements;
+  e.calculateMeanMotion(centralBody->getMu());
+  e.advanceMeanAnomaly(timeAfterJD2000);
 
-  for (WorldObject object : worldObjects)
-  {
-    OrbitalObject *orb = dynamic_cast<OrbitalObject *>(object.physics);
-    if (orb)
-      orbitalObjects.push_back({orb, object.render});
-    else
-      objects.push_back(object);
-  }
+  RotationalElements r = rotationalElements;
+  r.advanceFromJD2000(timeAfterJD2000);
 
-  total.orbital = orbitalObjects.size();
+  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radii, e, tidalParameters, gravityField, g);
 
-  for (WorldSystem sys : worldSystems)
-  {
-    std::atomic_size_t sysOrbital = 0;
+  planet->setAngularVelocity(r.calculateAngularVelocity());
+  planet->setOrientation(r.calculateOrientation());
 
-    sys.physics->forEachObject([&sysOrbital](Object &obj, size_t i)
-                               { 
-                        if (dynamic_cast<OrbitalObject *>(&obj) != nullptr) 
-                          sysOrbital.fetch_add(1); });
+  model.setImportance(this->importance.planet);
+  planet->addMainLayer(&model);
 
-    total.orbital += sysOrbital;
-  }
+  Planet *ptr = planet.get();
 
-  total.total = objects.size() + orbitalObjects.size();
+  // if (planet->getUseTrail())
+  //   this->render.addTrail(planet->generateTrail());
 
-  for (WorldSystem sys : worldSystems)
-    total.total += sys.physics->getTotalObjects();
+  this->total.orbital++;
+  this->total.total++;
 
-  WorldDatabase<Real> objectGPU;
-  WorldDatabase<Real> orbitalGPU;
-  LookupTable objectLookup;
-  LookupTable orbitalLookup;
-  std::vector<size_t> objectModelCapacities;
-  std::vector<size_t> orbitalModelCapacities;
+  this->worldOrbitalObjects.push_back({ptr, ptr});
+  this->objects.push_back(std::move(planet));
 
-  total.object = total.total - total.orbital;
-  objectGPU.resize(total.object);
-  orbitalGPU.resize(total.orbital);
+  return ptr;
+}
+
+template <typename Real>
+Star *WorldDatabaseBuilder<Real>::createStar(Model &model, double mu,
+                                             Radii radii, double luminosity, const RotationalElements rotationalElements, double timeAfterJD2000, glm::dvec3 position, glm::dvec3 velocity)
+{
+  RotationalElements r = rotationalElements;
+  r.advanceFromJD2000(timeAfterJD2000);
+
+  std::unique_ptr<Star> star = std::make_unique<Star>(mu, radii, luminosity, position, velocity);
+
+  star->setAngularVelocity(r.calculateAngularVelocity());
+  star->setOrientation(r.calculateOrientation());
+
+  model.setImportance(this->importance.star);
+  star->addMainLayer(&model);
+
+  Star *ptr = star.get();
+
+  this->total.object++;
+  this->total.total++;
+
+  this->worldObjects.push_back({ptr, ptr});
+  this->objects.push_back(std::move(star));
+
+  return ptr;
+}
+
+template <typename Real>
+Moon *WorldDatabaseBuilder<Real>::createMoon(Model &model, double mu, Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
+{
+  KeplerElements e = keplerElements;
+  e.calculateMeanMotion(centralBody->getMu());
+  e.advanceMeanAnomaly(timeAfterJD2000);
+
+  RotationalElements r = rotationalElements;
+  r.advanceFromJD2000(timeAfterJD2000);
+
+  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radii, e, tidalParameters, gravityField);
+
+  moon->setAngularVelocity(r.calculateAngularVelocity());
+  moon->setOrientation(r.calculateOrientation());
+
+  model.setImportance(this->importance.moon);
+
+  moon->addMainLayer(&model);
+  if (moon->getUseTrail())
+    this->render.addTrail(moon->generateTrail());
+
+  Moon *ptr = moon.get();
+
+  assert(centralBody && "[SimulationWorld] ASSERT: No central body for moon");
+
+  this->total.orbital++;
+  this->total.total++;
+
+  this->worldOrbitalObjects.push_back({ptr, ptr});
+  this->objects.push_back(std::move(moon));
+
+  return ptr;
+}
+
+template <typename Real>
+AsteroidSystem *WorldDatabaseBuilder<Real>::createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000)
+{
+  std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(resourceManager, centralBody, amount,
+                                                                            innerEdge, outerEdge,
+                                                                            timeAfterJD2000, this->importance.asteroid, threadPool);
+  AsteroidSystem *ptr = system.get();
+
+  this->total.orbital += system->getTotalObjects();
+  this->total.total += system->getTotalObjects();
+
+  this->worldSystems.push_back({ptr, ptr});
+  this->systems.push_back(std::move(system));
+
+  return ptr;
+}
+
+template <typename Real>
+WorldDatabase<Real> WorldDatabaseBuilder<Real>::build(InstanceManager &instanceManager)
+{
+  TemporaryStorage<Real> objectStorage;
+  TemporaryStorage<Real> orbitalStorage;
+
+  objectStorage.database.resize(this->total.object);
+  orbitalStorage.database.resize(this->total.orbital);
 
   size_t orbitalOffset = 0;
   size_t objectOffset = 0;
 
-  std::mutex loveMutex;
-  std::mutex tidalMutex;
-  std::mutex modelMutex;
-  std::vector<Real> loveNumbers;
-  std::vector<Real> tidalFactors;
-
-  for (WorldOrbitalObject &obj : orbitalObjects)
+  for (WorldOrbitalObject &obj : this->worldOrbitalObjects)
   {
-    this->processOrbital(obj.physics, orbitalGPU, orbitalOffset, loveNumbers, tidalFactors, loveMutex, tidalMutex);
-    this->processModelSource(orbitalModelCapacities, orbitalLookup, obj.render, orbitalGPU, orbitalOffset, modelMutex);
+    this->processOrbital(obj.physics, orbitalStorage.database, orbitalOffset);
+    this->processModelSource(orbitalStorage, obj.render, orbitalOffset);
     orbitalOffset++;
   }
 
-  for (WorldObject &obj : objects)
+  for (WorldObject &obj : this->worldObjects)
   {
-    this->processObject(obj.physics, objectGPU, objectOffset, loveNumbers, tidalFactors, loveMutex, tidalMutex);
-    this->processModelSource(objectModelCapacities, objectLookup, obj.render, objectGPU, objectOffset, modelMutex);
+    this->processObject(obj.physics, objectStorage.database, objectOffset);
+    this->processModelSource(objectStorage, obj.render, objectOffset);
     objectOffset++;
   }
 
-  for (size_t i = 0; i < orbitalObjects.size(); i++)
+  for (size_t i = 0; i < this->worldOrbitalObjects.size(); i++)
   {
-    Object *central = orbitalObjects[i].physics->getOrbit()->getCentralBody();
-    for (size_t j = 0; j < objects.size(); j++)
-    {
-      if (objects[j].physics == central)
-        orbitalGPU.physics.centralBodyIndices[i] = j + total.orbital;
-    }
-
-    for (size_t j = 0; j < orbitalObjects.size(); j++)
-    {
-      if (orbitalObjects[j].physics == central)
-        orbitalGPU.physics.centralBodyIndices[i] = j;
-    }
+    Object *central = this->worldOrbitalObjects[i].physics->getOrbit()->getCentralBody();
+    orbitalStorage.database.physics.centralBodyIndices[i] = this->findCentralBodyIndex(central);
   }
 
   std::atomic_size_t orbitalIndex{orbitalOffset};
   std::atomic_size_t objectIndex{objectOffset};
   for (WorldSystem &sys : worldSystems)
-    sys.physics->forEachObject([this, &sys, &orbitalGPU, &objectGPU, &orbitalLookup, &objectLookup, &orbitalModelCapacities, &objectModelCapacities, &orbitalIndex, &objectIndex, &loveNumbers, &tidalFactors, &loveMutex, &tidalMutex, &modelMutex, &objects, &orbitalObjects, &total](Object &obj, size_t i)
-                               {
-      OrbitalObject* orb = dynamic_cast<OrbitalObject*>(&obj);
-      if (orb)
-      {
-        size_t idx = orbitalIndex.fetch_add(1);
-        this->processOrbital(orb, orbitalGPU, idx, loveNumbers, tidalFactors, loveMutex, tidalMutex);
-        this->processModel(orbitalModelCapacities, orbitalLookup, sys.render->getModelFromObjectIndex(i), orbitalGPU, idx, modelMutex);
+    this->processSystem(sys, objectStorage, orbitalStorage, objectIndex, orbitalIndex);
 
-        Object* central = orb->getOrbit()->getCentralBody();
-        for (size_t j = 0; j < objects.size(); j++)
-        {
-          if (objects[j].physics == central)
-            orbitalGPU.physics.centralBodyIndices[idx] = j + total.orbital;
-        }
-
-        for (size_t j = 0; j < orbitalObjects.size(); j++)
-        {
-          if (orbitalObjects[j].physics == central)
-            orbitalGPU.physics.centralBodyIndices[idx] = j;
-        }
-      }
-      else
-      { 
-        size_t idx = objectIndex.fetch_add(1);
-        this->processObject(&obj, objectGPU, idx, loveNumbers, tidalFactors, loveMutex, tidalMutex); 
-        this->processModel(objectModelCapacities, objectLookup, sys.render->getModelFromObjectIndex(i), objectGPU, idx, modelMutex);
-      } });
-
-  for (size_t i = 0; i < orbitalLookup.models.size(); i++)
+  for (size_t i = 0; i < orbitalStorage.lookup.models.size(); i++)
   {
-    Range range = instanceManager.reserve(orbitalLookup.models[i], orbitalModelCapacities[i]);
-    orbitalGPU.render.modelRangeStart.push_back(range.begin);
-    orbitalGPU.render.modelRangeEnd.push_back(range.end);
+    Range range = instanceManager.reserve(orbitalStorage.lookup.models[i], orbitalStorage.modelCapacities[i]);
+    orbitalStorage.database.render.modelRangeStart.push_back(range.begin);
+    orbitalStorage.database.render.modelRangeEnd.push_back(range.end);
   }
-  orbitalGPU.render.models = std::move(orbitalLookup.models);
+  orbitalStorage.database.render.models = std::move(orbitalStorage.lookup.models);
 
-  for (size_t i = 0; i < objectLookup.models.size(); i++)
+  for (size_t i = 0; i < objectStorage.lookup.models.size(); i++)
   {
-    Range range = instanceManager.reserve(objectLookup.models[i], objectModelCapacities[i]);
-    objectGPU.render.modelRangeStart.push_back(range.begin);
-    objectGPU.render.modelRangeEnd.push_back(range.end);
+    Range range = instanceManager.reserve(objectStorage.lookup.models[i], objectStorage.modelCapacities[i]);
+    objectStorage.database.render.modelRangeStart.push_back(range.begin);
+    objectStorage.database.render.modelRangeEnd.push_back(range.end);
   }
-  objectGPU.render.models = std::move(objectLookup.models);
+  objectStorage.database.render.models = std::move(objectStorage.lookup.models);
 
   // orbital MUST be first
-  orbitalGPU.combine(objectGPU);
+  orbitalStorage.database.combine(objectStorage.database);
 
-  orbitalGPU.physics.loveNumbers = loveNumbers;
-  orbitalGPU.physics.tidalFactors = tidalFactors;
+  orbitalStorage.database.physics.loveNumbers = loveNumbers;
+  orbitalStorage.database.physics.tidalFactors = tidalFactors;
 
-  return orbitalGPU;
+  return orbitalStorage.database;
 }
