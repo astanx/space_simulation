@@ -7,6 +7,8 @@
 #include "physics/object.h"
 #include "physics/orbitalObject.h"
 
+#include "graphics/primitives/ellipsoid.h"
+
 #include "render/modelSource.h"
 #include "render/renderSystem.h"
 #include "render/instanceManager.h"
@@ -117,8 +119,13 @@ void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporarySto
       if (orb)
       {
         size_t idx = orbitalIndex.fetch_add(1);
+        Model* model = system.render->getModelFromObjectIndex(i);
         this->processOrbital(orb, orbitalStorage.database, idx);
-        this->processModel(orbitalStorage, system.render->getModelFromObjectIndex(i), idx);
+        this->processModel(orbitalStorage, model, idx);
+
+        this->entityManager.registerOrbitalEntity(*this->objectToEntity.at(orb), idx);
+        this->entityManager.registerObjectEntity(*this->objectToEntity.at(orb), idx);
+        this->entityManager.registerModelEntity(*this->objectToEntity.at(orb), orbitalStorage.lookup.table[model]);
 
         Object* central = orb->getOrbit()->getCentralBody();
         orbitalStorage.database.physics.centralBodyIndices[idx] = this->findCentralBodyIndex(central);
@@ -126,8 +133,12 @@ void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporarySto
       else
       { 
         size_t idx = objectIndex.fetch_add(1);
+        Model* model = system.render->getModelFromObjectIndex(i);
         this->processObject(&obj, objectStorage.database, idx); 
-        this->processModel(objectStorage, system.render->getModelFromObjectIndex(i), idx);
+        this->processModel(objectStorage, model, idx);
+
+        this->entityManager.registerObjectEntity(*this->objectToEntity.at(orb), this->total.orbital + idx);
+        this->entityManager.registerModelEntity(*this->objectToEntity.at(orb), this->modelTotal.orbital + objectStorage.lookup.table[model]);
       } });
 }
 
@@ -148,7 +159,36 @@ size_t WorldDatabaseBuilder<Real>::findCentralBodyIndex(Object *central)
 
 // Public functions
 template <typename Real>
-Planet *WorldDatabaseBuilder<Real>::createPlanet(Model &model, double mu, Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, double g)
+const Entity& WorldDatabaseBuilder<Real>::convertObjectToEntity(Object *object)
+{
+  if (!object)
+    Logger::logFatal("World Database Builder", "Invalid object");
+
+  auto it = this->objectToEntity.find(object);
+  if (it == this->objectToEntity.end())
+    Logger::logFatal("World Database Builder", "Object does not have related entity");
+  return *it->second;
+}
+
+template <typename Real>
+void WorldDatabaseBuilder<Real>::addAtmosphereToPlanet(ResourceManager &resourceManager, ThreadPool &threadPool, std::string planetName, Planet *planet)
+{
+  // fix
+  // std::string path = "assets/data/" + planetName + "/atmosphere/32_resolution";
+  // std::unique_ptr atmosphere = std::make_unique<Atmosphere>(planet, path, threadPool);
+  // Atmosphere *ptr = atmosphere.get();
+
+  // std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(32, atmosphere->getRadii());
+  // Mesh &mesh  = resourceManager.LoadMesh<VertexPositionTexcoordNormal>(path, std::move(obj), VertexLayout::NoColor);
+  // std::unique_ptr<Model> model = std::make_unique<Model>(mesh);
+
+  // // this->physics.addAtmosphere(ptr);
+  // // planet->addLayer(std::move(model));
+  // planet->addAtmosphere(std::move(atmosphere));
+}
+
+template <typename Real>
+Planet *WorldDatabaseBuilder<Real>::createPlanet(Model &model, Real mu, Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, Real g)
 {
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -163,50 +203,57 @@ Planet *WorldDatabaseBuilder<Real>::createPlanet(Model &model, double mu, Radii 
   planet->setOrientation(r.calculateOrientation());
 
   model.setImportance(this->importance.planet);
-  planet->addMainLayer(&model);
 
   Planet *ptr = planet.get();
 
+  // fix later
   // if (planet->getUseTrail())
   //   this->render.addTrail(planet->generateTrail());
 
   this->total.orbital++;
   this->total.total++;
+  this->modelTotal.orbital++;
+  this->modelTotal.total++;
 
-  this->worldOrbitalObjects.push_back({ptr, ptr});
+  this->objectToEntity[ptr] = &this->entityManager.create();
+
+  this->worldOrbitalObjects.push_back({ptr, &model});
   this->objects.push_back(std::move(planet));
 
   return ptr;
 }
 
 template <typename Real>
-Star *WorldDatabaseBuilder<Real>::createStar(Model &model, double mu,
-                                             Radii radii, double luminosity, const RotationalElements rotationalElements, double timeAfterJD2000, glm::dvec3 position, glm::dvec3 velocity)
+Object *WorldDatabaseBuilder<Real>::createStar(Model &model, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos)
 {
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
 
-  std::unique_ptr<Star> star = std::make_unique<Star>(mu, radii, luminosity, position, velocity);
+  std::unique_ptr<Object> star = std::make_unique<Object>(mu, radii, TidalParameters(), GravityField(), pos);
 
   star->setAngularVelocity(r.calculateAngularVelocity());
   star->setOrientation(r.calculateOrientation());
+  star->setLuminosity(luminosity);
 
   model.setImportance(this->importance.star);
-  star->addMainLayer(&model);
 
-  Star *ptr = star.get();
+  Object *ptr = star.get();
 
   this->total.object++;
   this->total.total++;
+  this->modelTotal.object++;
+  this->modelTotal.total++;
 
-  this->worldObjects.push_back({ptr, ptr});
+  this->objectToEntity[ptr] = &this->entityManager.create();
+
+  this->worldObjects.push_back({ptr, &model});
   this->objects.push_back(std::move(star));
 
   return ptr;
 }
 
 template <typename Real>
-Moon *WorldDatabaseBuilder<Real>::createMoon(Model &model, double mu, Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
+Moon *WorldDatabaseBuilder<Real>::createMoon(Model &model, Real mu, Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
 {
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -222,25 +269,27 @@ Moon *WorldDatabaseBuilder<Real>::createMoon(Model &model, double mu, Radii radi
 
   model.setImportance(this->importance.moon);
 
-  moon->addMainLayer(&model);
-  if (moon->getUseTrail())
-    this->render.addTrail(moon->generateTrail());
+  // fix trail
+  // if (moon->getUseTrail())
+  //   this->render.addTrail(moon->generateTrail());
 
   Moon *ptr = moon.get();
 
-  assert(centralBody && "[SimulationWorld] ASSERT: No central body for moon");
-
   this->total.orbital++;
   this->total.total++;
+  this->modelTotal.orbital++;
+  this->modelTotal.total++;
 
-  this->worldOrbitalObjects.push_back({ptr, ptr});
+  this->objectToEntity[ptr] = &this->entityManager.create();
+
+  this->worldOrbitalObjects.push_back({ptr, &model});
   this->objects.push_back(std::move(moon));
 
   return ptr;
 }
 
 template <typename Real>
-AsteroidSystem *WorldDatabaseBuilder<Real>::createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000)
+AsteroidSystem *WorldDatabaseBuilder<Real>::createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, Real innerEdge, Real outerEdge, Real timeAfterJD2000)
 {
   std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(resourceManager, centralBody, amount,
                                                                             innerEdge, outerEdge,
@@ -249,6 +298,11 @@ AsteroidSystem *WorldDatabaseBuilder<Real>::createAsteroidSystem(ResourceManager
 
   this->total.orbital += system->getTotalObjects();
   this->total.total += system->getTotalObjects();
+  this->modelTotal.orbital += system->getModels().size();
+  this->modelTotal.total += system->getModels().size();
+
+  system->forEachObject([this](Object &obj)
+                        { this->objectToEntity[&obj] = &this->entityManager.create(); });
 
   this->worldSystems.push_back({ptr, ptr});
   this->systems.push_back(std::move(system));
@@ -271,14 +325,25 @@ WorldDatabase<Real> WorldDatabaseBuilder<Real>::build(InstanceManager &instanceM
   for (WorldOrbitalObject &obj : this->worldOrbitalObjects)
   {
     this->processOrbital(obj.physics, orbitalStorage.database, orbitalOffset);
-    this->processModelSource(orbitalStorage, obj.render, orbitalOffset);
+    this->processModel(orbitalStorage, obj.render, orbitalOffset);
+
+    // orbital entity -> owns kepler/etc
+    // object entity -> owns positions/basics
+    this->entityManager.registerOrbitalEntity(*this->objectToEntity.at(obj.physics), orbitalOffset);
+    this->entityManager.registerObjectEntity(*this->objectToEntity.at(obj.physics), orbitalOffset);
+    this->entityManager.registerModelEntity(*this->objectToEntity.at(obj.physics), orbitalOffset);
+
     orbitalOffset++;
   }
 
   for (WorldObject &obj : this->worldObjects)
   {
     this->processObject(obj.physics, objectStorage.database, objectOffset);
-    this->processModelSource(objectStorage, obj.render, objectOffset);
+    this->processModel(objectStorage, obj.render, objectOffset);
+
+    this->entityManager.registerObjectEntity(*this->objectToEntity.at(obj.physics), this->total.orbital + objectOffset);
+    this->entityManager.registerModelEntity(*this->objectToEntity.at(obj.physics), this->modelTotal.orbital + objectOffset);
+
     objectOffset++;
   }
 

@@ -2,11 +2,10 @@
 
 #include "render/world/backend/renderWorldBackend.h"
 #include "render/world/data/renderDatabase.h"
+#include "render/world/data/renderGPUBuffers.h"
 
 #include "render/lod/lodRenderResourcesManager.h"
 #include "render/instanceManager.h"
-
-#include "compute/clBuffer.h"
 
 #include "physics/trail.h"
 
@@ -25,11 +24,13 @@ class Skybox;
 class PointLight;
 class DirectionalLight;
 class IPhysicsWorld;
+class EntityManager;
 struct FrameContext;
 struct RenderContext;
 struct RenderDatabase;
 struct SharedGPUBuffers;
 struct Total;
+struct SharedDatabaseView;
 
 class RenderWorld
 {
@@ -38,8 +39,12 @@ private:
   InstanceManager instanceManager;
 
   RenderDatabase database;
+  RenderGPUBuffers gpuBuffers;
+  uint32_t rangeCount;
 
   std::unique_ptr<RenderWorldBackend> backend;
+
+  std::vector<Model *> models;
 
   Camera *activeCamera;
   Skybox *skybox;
@@ -53,23 +58,9 @@ private:
   std::unique_ptr<PointLight> pointLight;
   std::unique_ptr<DirectionalLight> directionalLight;
 
-  std::vector<Updatable *> updatable;
-  std::vector<RenderSystem *> renderSystems;
-  std::vector<ModelSource *> modelSources;
-
+  // fix trails
   std::vector<std::unique_ptr<Trail>> trails;
   std::vector<Trail *> trailViews;
-
-  CLBuffer modelColorsBuffer;
-  CLBuffer modelTextureLayersBuffer;
-  CLBuffer modelImportancesBuffer;
-  CLBuffer modelRangeStartBuffer;
-  CLBuffer modelRangeEndBuffer;
-  CLBuffer modelFullCountBuffer;
-  CLBuffer isNonFullableBuffer;
-  uint32_t rangeCount;
-
-  std::vector<Model *> models;
 
   void buildQueue(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
   void reserveModelInstances();
@@ -78,13 +69,13 @@ public:
   RenderWorld();
   ~RenderWorld();
 
-  void init(ResourceManager &manager, IPhysicsWorld &physics, RenderContext &ctx, Total &total);
+  void init(Total &total);
   void initCPUBackend();
   void initGPUBuffers(Context &ctx, RenderDatabase &gpu);
   void initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUBuffers &data);
 
-  void update(RenderQueue &queue, FrameContext &ctx);
-  void sync(IPhysicsWorld &physics);
+  void update(RenderQueue &queue, FrameContext &ctx, const SharedDatabaseView &shared, const EntityManager &entityManager);
+  void sync(IPhysicsWorld &physics, const SharedDatabaseView &shared, const EntityManager &entityManager);
 
   void renderImpostorMeshInstanced();
   void renderPointMeshInstanced();
@@ -98,10 +89,9 @@ public:
   void increaseCameraSpeed(double percentage = 10.0);
   void decreaseCameraSpeed(double percentage = 10.0);
 
-  void addRenderSystem(RenderSystem *system);
-  void addModelSource(ModelSource *object);
-  void addUpdatable(Updatable *object);
   void addTrail(std::unique_ptr<Trail> trail);
+
+  void setDatabase(RenderDatabase database) { this->database = database; };
 
   // Getters
   Camera &getActiveCamera();

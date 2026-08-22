@@ -18,7 +18,7 @@
 #include <iostream>
 
 // Private functions
-void LODRenderResourcesManager::initImpostor(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems)
+void LODRenderResourcesManager::initImpostor(std::vector<Model *> &models)
 {
   this->impostorMesh = std::make_unique<Mesh>(TypeTag<VertexPositionTexcoord>{}, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
   this->impostorMesh->setInstanceLayout(InstanceLayout::PositionRadiusTexture);
@@ -26,13 +26,8 @@ void LODRenderResourcesManager::initImpostor(std::vector<ModelSource *> &modelSo
   this->impostorTexture = std::make_unique<Texture>(GL_TEXTURE_2D_ARRAY);
 
   unsigned int layer = ImpostorTextureBindingPoints::Size;
-  for (ModelSource *source : modelSources)
-    source->forEachModel([this, &layer](Model &model)
-                         { this->bindLayerToImpostorTexture(model, layer++); });
-
-  for (RenderSystem *system : renderSystems)
-    for (Model *model : system->getModels())
-      this->bindLayerToImpostorTexture(model, layer++);
+  for (Model *model : models)
+    this->bindLayerToImpostorTexture(model, layer++);
 }
 
 void LODRenderResourcesManager::initPoint()
@@ -106,8 +101,8 @@ void LODRenderResourcesManager::bindLayerToImpostorTexture(Model *model, unsigne
 }
 
 // Public functions
-void LODRenderResourcesManager::init(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems)
+void LODRenderResourcesManager::init(std::vector<Model *> &models)
 {
-  this->initImpostor(modelSources, renderSystems);
+  this->initImpostor(models);
   this->initPoint();
 }

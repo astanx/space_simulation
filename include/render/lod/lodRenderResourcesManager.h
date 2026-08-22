@@ -16,7 +16,7 @@ private:
   std::unique_ptr<Mesh> impostorMesh;
   std::unique_ptr<Mesh> pointMesh;
 
-  void initImpostor(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems);
+  void initImpostor(std::vector<Model *> &models);
   void initPoint();
   void bindLayerToImpostorTexture(Model &model, unsigned int layer);
   void bindLayerToImpostorTexture(Model *model, unsigned int layer);
@@ -25,7 +25,7 @@ public:
   LODRenderResourcesManager() = default;
   ~LODRenderResourcesManager() = default;
 
-  void init(std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> &renderSystems);
+  void init(std::vector<Model *> &models);
 
   Mesh &getImpostorMesh() { return *this->impostorMesh.get(); };
   Texture &getImpostorTexture() { return *this->impostorTexture.get(); };

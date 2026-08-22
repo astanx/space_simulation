@@ -37,10 +37,10 @@ public:
   void setRenderRadius(double radius) { this->renderRadius = radius; };
 
   virtual void update(const Camera &camera) override;
-  virtual void render(Shader &shader) override;
+  virtual void render(Shader &shader) const override;
   virtual void renderLayers(Shader &shader) const;
   virtual void renderLayersInstanced(Shader &shader) const;
-  virtual void renderInstanced(Shader &shade, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;
+  virtual void renderInstanced(Shader &shade, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) const override;
 
   template <typename F>
   void forEachModel(F &&func);

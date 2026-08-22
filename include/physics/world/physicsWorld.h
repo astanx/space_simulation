@@ -8,12 +8,13 @@
 
 #include "physics/world/backend/physicsBackend.h"
 
+#include "resources/entity/entity.h"
+
 #include <vector>
 
 class Object;
 class OrbitalObject;
 class Planet;
-class Star;
 class AsteroidSystem;
 class IntegratorCPU;
 class IntegratorGPU;
@@ -31,14 +32,13 @@ template <typename Real>
 class PhysicsWorld : public IPhysicsWorld
 {
 private:
-  PhysicsCPUData cpu;
-
-  PhysicsGPUBuffers gpu;
+  PhysicsGPUBuffers gpuBuffers;
   PhysicsDatabase<Real> database;
+  bool wasDatabaseInit = false;
 
   std::unique_ptr<PhysicsBackend> backend;
 
-  Star *sun;
+  const Entity *sun;
 
 public:
   PhysicsWorld();
@@ -51,23 +51,13 @@ public:
 
   void step(double dt);
 
-  void addObject(Object *object);
-  void addAtmosphere(Atmosphere *atmosphere);
-  void addPlanetarObject(std::unique_ptr<Planet> planetarObject);
-  void addAsteroidSystem(std::unique_ptr<AsteroidSystem> asteroidSystem);
-  void addSystem(System *system);
-  void addStar(std::unique_ptr<Star> star);
-  void addSun(Star *sun);
-  void addIntegratable(Integratable *object);
+  void addSun(const Entity &sun);
+  void setDatabase(PhysicsDatabase<Real> database);
 
-  PhysicsGPUBuffers &getGPUBuffers() { return this->gpu; };
+  const PhysicsGPUBuffers &getGPUBuffers() { return this->gpuBuffers; };
+  const PhysicsDatabase<Real> &getDatabase() { return this->database; };
 
-  const Star &getSun() const override;
-
-  const std::vector<AsteroidSystem *> &getAsteroidSystems() const;
-  const std::vector<Planet *> &getPlanetarObjects() const;
-  const std::vector<Object *> &getObjects() const;
-  const std::vector<System *> &getSystems() const;
+  const Entity &getSun() const override;
 };
 
 #include "physics/world/physicsWorld.hpp"

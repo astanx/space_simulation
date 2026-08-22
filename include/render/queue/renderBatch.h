@@ -7,7 +7,7 @@ class Model;
 
 struct RenderBatch
 {
-  Model *model;
+  const Model *model;
   Range range;
   RenderFlags flag;
 };

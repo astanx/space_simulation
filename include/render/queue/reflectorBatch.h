@@ -9,7 +9,7 @@ class ReflectanceAcceptor;
 
 struct ReflectorBatch
 {
-  ReflectanceAcceptor *acceptor;
+  const ReflectanceAcceptor *acceptor;
   Range acceptorRange;
 
   RenderBatch reflector;

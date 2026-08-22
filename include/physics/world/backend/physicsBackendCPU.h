@@ -9,11 +9,10 @@ struct PhysicsCPUData;
 class PhysicsBackendCPU : public PhysicsBackend
 {
 private:
-  PhysicsCPUData &data;
   std::unique_ptr<IntegratorCPU> integrator;
 
 public:
-  PhysicsBackendCPU(PhysicsCPUData &data);
+  PhysicsBackendCPU();
   ~PhysicsBackendCPU() = default;
 
   void step(double dt) override;

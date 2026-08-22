@@ -8,35 +8,35 @@
 
 struct WisdomHolmanGPUBuffers : IntegratorGPUBuffers
 {
-  CLBuffer &positionsBuffer;
-  CLBuffer &orientationsBuffer;
+  const CLBuffer &positionsBuffer;
+  const CLBuffer &orientationsBuffer;
 
-  CLBuffer &meanRadiiBuffer;
-  CLBuffer &polarRadiiBuffer;
-  CLBuffer &equatorianRadiiBuffer;
+  const CLBuffer &meanRadiiBuffer;
+  const CLBuffer &polarRadiiBuffer;
+  const CLBuffer &equatorianRadiiBuffer;
 
-  CLBuffer &musBuffer;
-  CLBuffer &velocitiesBuffer;
+  const CLBuffer &musBuffer;
+  const CLBuffer &velocitiesBuffer;
 
-  CLBuffer &angularVelocitiesBuffer;
+  const CLBuffer &angularVelocitiesBuffer;
 
-  CLBuffer &quadrupoleTensorsBuffer;
-  CLBuffer &inertiaTensorsBuffer;
-  CLBuffer &loveIndicesBuffer;
-  CLBuffer &tidalFactorIndicesBuffer;
-  CLBuffer &loveNumbersBuffer;
-  CLBuffer &tidalFactorsBuffer;
+  const CLBuffer &quadrupoleTensorsBuffer;
+  const CLBuffer &inertiaTensorsBuffer;
+  const CLBuffer &loveIndicesBuffer;
+  const CLBuffer &tidalFactorIndicesBuffer;
+  const CLBuffer &loveNumbersBuffer;
+  const CLBuffer &tidalFactorsBuffer;
 
-  CLBuffer &semiAxisesBuffer;
-  CLBuffer &eccentricitiesBuffer;
-  CLBuffer &inclinationsBuffer;
-  CLBuffer &longitudeBuffer;
-  CLBuffer &periapsisBuffer;
-  CLBuffer &meanAnomalyBuffer;
-  CLBuffer &meanMotionBuffer;
-  CLBuffer &centralBodyIndicesBuffer;
+  const CLBuffer &semiAxisesBuffer;
+  const CLBuffer &eccentricitiesBuffer;
+  const CLBuffer &inclinationsBuffer;
+  const CLBuffer &longitudeBuffer;
+  const CLBuffer &periapsisBuffer;
+  const CLBuffer &meanAnomalyBuffer;
+  const CLBuffer &meanMotionBuffer;
+  const CLBuffer &centralBodyIndicesBuffer;
 
-  WisdomHolmanGPUBuffers(PhysicsGPUBuffers &physics, SharedGPUBuffers &shared)
+  WisdomHolmanGPUBuffers(const PhysicsGPUBuffers &physics, const SharedGPUBuffers &shared)
       : positionsBuffer(shared.positionsBuffer),
         orientationsBuffer(shared.orientationsBuffer),
 

@@ -3,20 +3,20 @@
 #include "debug/logger.h"
 
 #include "render/world/backend/backendGPUBuffers.h"
+#include "render/world/data/renderDatabaseView.h"
 #include "render/queue/data/renderQueueGPUBuffers.h"
 
 #include "compute/context.h"
 
 #include "physics/world/physicsWorld.h"
 #include "physics/world/total.h"
-#include "physics/star.h"
 
 #include "scene/light/pointLight.h"
 
 #include <iostream>
 
 // Private functions
-void RenderWorldBackendGPU::initSpecialModel(RenderQueue &queue, InstanceManager &manager, Model *model)
+void RenderWorldBackendGPU::initSpecialModel(RenderQueue &queue, InstanceManager &manager, const Model *model)
 {
   if (!model->hasFlag(ModelFlags::Special))
     return;
@@ -34,7 +34,7 @@ void RenderWorldBackendGPU::initSpecialModel(RenderQueue &queue, InstanceManager
   this->specialIndices[id] = index;
 }
 
-void RenderWorldBackendGPU::initModelQueue(RenderQueue &queue, InstanceManager &manager, Model *model)
+void RenderWorldBackendGPU::initModelQueue(RenderQueue &queue, InstanceManager &manager, const Model *model)
 {
   RenderWorldBackend::initModelQueue(queue, manager, model);
   this->initSpecialModel(queue, manager, model);
@@ -57,7 +57,7 @@ void RenderWorldBackendGPU::updateSpecialPositions(CommandQueue &queue, Instance
   queue.enqueueReleaseGLBuffer(fullBufferID);
 }
 
-size_t RenderWorldBackendGPU::getSpecialIndex(Model *model)
+size_t RenderWorldBackendGPU::getSpecialIndex(const Model *model)
 {
   if (!model->hasFlag(ModelFlags::Special))
     Logger::logFatal("Render World Backend GPU", "Getting special index of non special model");
@@ -101,20 +101,23 @@ RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQu
 }
 
 // Public functions
-void RenderWorldBackendGPU::update(const Camera &camera, RenderQueue &queue, InstanceManager &instanceManager, FrameContext &ctx)
+void RenderWorldBackendGPU::update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, FrameContext &ctx)
 {
-  if (!this->subQueuesInitialized)
-    this->initSubQueues(queue, instanceManager, this->models);
+  if (this->lastModelsSize != database.getModelsCount())
+    Logger::logFatal("Render World Backend GPU", "GPU is not prepared for dynamic models");
 
   if (this->isDouble)
-    this->renderQueueBuilderGPU.build<double>(this->queue, queue, this->lodManagerGPU, instanceManager, camera, ctx, this->models, this->total.total);
+    this->renderQueueBuilderGPU.build<double>(this->queue, queue, this->lodManagerGPU, instanceManager, database.getCamera(), ctx, this->models, this->total.total);
   else
-    this->renderQueueBuilderGPU.build<float>(this->queue, queue, this->lodManagerGPU, instanceManager, camera, ctx, this->models, this->total.total);
+    this->renderQueueBuilderGPU.build<float>(this->queue, queue, this->lodManagerGPU, instanceManager, database.getCamera(), ctx, this->models, this->total.total);
 
   this->updateSpecialPositions(this->queue, instanceManager);
 }
 
-void RenderWorldBackendGPU::sync(IPhysicsWorld &physics, PointLight *light)
+void RenderWorldBackendGPU::sync(IPhysicsWorld &physics, const RenderDatabaseView &database, PointLight *light)
 {
-  this->moveSunLight(this->specialPositions[this->getSpecialIndex(physics.getSun().getMainLayer())], light);
+  if (light)
+    light->move(this->specialPositions[this->getSpecialIndex(database.getModel(physics.getSun()))]);
+  else
+    Logger::logFatal("Scene", " No sun light to sync position");
 }

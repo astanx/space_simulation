@@ -50,6 +50,15 @@ struct Vec3
         pad(0)
   {
   }
+
+  template <typename T>
+  operator glm::vec<3, T>() const
+  {
+    return glm::vec<3, T>(
+        cast<T>(x),
+        cast<T>(y),
+        cast<T>(z));
+  }
 };
 
 template <typename Real>
@@ -67,6 +76,18 @@ struct Mat3
         col2(m[1]),
         col3(m[2])
   {
+  }
+
+  template <typename T>
+  operator glm::mat<3, 3, T>() const
+  {
+    glm::mat<3, 3, T> mat;
+
+    mat[0] = col1;
+    mat[1] = col2;
+    mat[2] = col3;
+
+    return mat;
   }
 };
 
@@ -87,5 +108,15 @@ struct Quat
         z(cast<Real>(q.z)),
         w(cast<Real>(q.w))
   {
+  }
+
+  template <typename T>
+  operator glm::qua<T>() const
+  {
+    return glm::qua<T>(
+        cast<T>(w),
+        cast<T>(x),
+        cast<T>(y),
+        cast<T>(z));
   }
 };

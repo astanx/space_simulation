@@ -6,7 +6,6 @@ class Object;
 class Atmosphere;
 class Integratable;
 class Planet;
-class Star;
 class System;
 class AsteroidSystem;
 
@@ -20,8 +19,6 @@ struct PhysicsCPUData
 
   std::vector<std::unique_ptr<Planet>> planetarObjects;
   std::vector<Planet *> planetarObjectViews;
-
-  std::vector<std::unique_ptr<Star>> stars;
 
   std::vector<System *> systems;
 

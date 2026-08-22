@@ -26,6 +26,13 @@ OrbitalObject::OrbitalObject(Object *centralBody, double mu, Radii radii, const 
   this->velocity += this->orbit.getCentralBody()->getVelocity();
 }
 
+OrbitalObject::OrbitalObject(double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters, GravityField gravityField, bool useTrail) : Object(mu / G, radii, tidalParameters, gravityField), orbit(nullptr, keplerElements)
+{
+  this->mu = mu;
+  this->useTrail = useTrail;
+  this->position = OrbitalMaths::orbitalToInertial(keplerElements);
+}
+
 // Public functions
 Orbit *OrbitalObject::getOrbit()
 {

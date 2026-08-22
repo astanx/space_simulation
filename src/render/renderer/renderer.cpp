@@ -9,6 +9,7 @@
 #include "debug/logger.h"
 
 #include "scene/scene.h"
+#include "scene/light/pointLight.h"
 
 #include "render/renderState.h"
 #include "render/reflectanceAcceptor.h"
@@ -36,9 +37,6 @@
 
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
-
-#include "physics/star.h"
-#include "physics/world/IphysicsWorld.h"
 
 #include <iostream>
 
@@ -247,7 +245,7 @@ void Renderer::renderReflectanceRadiance(Scene &scene)
   Shader &reflectanceShader = this->resourceManager.GetShader(Res::REFLECTION_SHADER);
 
   ScopedShader reflectance(reflectanceShader);
-  reflectanceShader.set1f(scene.getSimulationWorld().getPhysicsWorld().getSun().getLuminosity(), "lightLuminocity");
+  reflectanceShader.set1f(scene.getSimulationWorld().getRenderWorld().getPointLight()->getLuminosity(), "lightLuminocity");
   for (ReflectorBatch batch : this->queue.getReflectorBatches())
     batch.acceptor->renderRadianceInstanced(reflectanceShader, scene.getActiveCamera(), batch.reflector, &scene.getSimulationWorld().getRenderWorld().getFullInstancesVBO());
 }

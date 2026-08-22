@@ -3,19 +3,19 @@
 class Object;
 class OrbitalObject;
 class System;
-class ModelSource;
+class Model;
 class RenderSystem;
 
 struct WorldObject
 {
   Object *physics;
-  ModelSource *render;
+  Model *render;
 };
 
 struct WorldOrbitalObject
 {
   OrbitalObject *physics;
-  ModelSource *render;
+  Model *render;
 };
 
 struct WorldSystem

@@ -28,17 +28,17 @@ private:
 
   bool isDouble;
 
-  void initSpecialModel(RenderQueue &queue, InstanceManager &manager, Model *model);
-  void initModelQueue(RenderQueue &queue, InstanceManager &manager, Model *model) override;
+  void initSpecialModel(RenderQueue &queue, InstanceManager &manager, const Model *model);
+  void initModelQueue(RenderQueue &queue, InstanceManager &manager, const Model *model) override;
 
   void updateSpecialPositions(CommandQueue &queue, InstanceManager &manager);
 
-  size_t getSpecialIndex(Model *model);
+  size_t getSpecialIndex(const Model *model);
 
 public:
   RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUBuffers &lodData, BackendGPUBuffers &data, Total &total, std::vector<Model *> &models);
   ~RenderWorldBackendGPU() = default;
 
-  void sync(IPhysicsWorld &physics, PointLight *light) override;
-  void update(const Camera &camera, RenderQueue &queue, InstanceManager &instanceManager, FrameContext &ctx) override;
+  void sync(IPhysicsWorld &physics, const RenderDatabaseView &database, PointLight *light) override;
+  void update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, FrameContext &ctx) override;
 };

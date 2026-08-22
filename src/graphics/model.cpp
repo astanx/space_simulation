@@ -61,7 +61,7 @@ Model::Model(Mesh &mesh, ModelFlags flags)
 Model::~Model() = default;
 
 // Public functions
-void Model::render(Shader &shader)
+void Model::render(Shader &shader) const
 {
   if (this->material)
     this->material->sendToShader(shader);
@@ -85,7 +85,7 @@ void Model::render(Shader &shader)
   glBindVertexArray(0);
 }
 
-void Model::renderInstanced(Shader &shader, Buffer *instanceVBO, size_t size, size_t count, size_t offset)
+void Model::renderInstanced(Shader &shader, Buffer *instanceVBO, size_t size, size_t count, size_t offset) const
 {
   if (this->material)
     this->material->sendToShader(shader);

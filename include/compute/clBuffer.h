@@ -17,5 +17,5 @@ public:
   void init(cl_context context, cl_mem_flags flag, size_t size, void *data);
   void init(cl_context context, cl_mem_flags flag, GLuint buffer);
 
-  cl_mem get() { return this->buffer; };
+  cl_mem get() const { return this->buffer; };
 };

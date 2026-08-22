@@ -16,6 +16,7 @@ protected:
 
 public:
   OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), bool useTrail = true);
+  OrbitalObject(double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), bool useTrail = false);
   virtual ~OrbitalObject() = default;
 
   Orbit *getOrbit();

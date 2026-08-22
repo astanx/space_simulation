@@ -32,7 +32,7 @@ void ModelSource::update(const Camera &camera)
   this->modelMatrix = glm::scale(this->modelMatrix, this->renderScale);
 }
 
-void ModelSource::render(Shader &shader)
+void ModelSource::render(Shader &shader) const
 {
   shader.setMat4fv(this->modelMatrix, "ModelMatrix");
   ScopedPolygonOffset offset(true, .1f, 4.f);
@@ -56,7 +56,7 @@ void ModelSource::renderLayersInstanced(Shader &shader) const
     layer->renderInstanced(shader);
 }
 
-void ModelSource::renderInstanced(Shader &shader, Buffer *instanceVBO, size_t size, size_t count, size_t offset)
+void ModelSource::renderInstanced(Shader &shader, Buffer *instanceVBO, size_t size, size_t count, size_t offset) const
 {
   ScopedPolygonOffset polygonOffset(true, .1f, 4.f);
   this->mainLayer->renderInstanced(shader, instanceVBO, size, count, offset);

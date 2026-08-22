@@ -12,7 +12,6 @@
 #include "physics/constants.h"
 #include "physics/object.h"
 #include "physics/planet.h"
-#include "physics/star.h"
 #include "physics/systems/asteroidSystem.h"
 
 #include "physics/structs/radii.h"
@@ -22,168 +21,33 @@
 #include "physics/integrators/wisdomHolmanGPUBuffers.h"
 
 #include "graphics/primitives/ellipsoid.h"
+#include "graphics/skybox.h"
 
 #include "render/renderContext.h"
 
 // Private functions
 template <typename Real>
-Planet *SimulationWorld<Real>::createPlanet(Model &model, double mu, Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, double g)
+void SimulationWorld<Real>::initDatabases(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000)
 {
-  KeplerElements e = keplerElements;
-  e.calculateMeanMotion(centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
+  WorldDatabaseBuilder<Real> builder(this->entityManager, this->importance);
 
-  RotationalElements r = rotationalElements;
-  r.advanceFromJD2000(timeAfterJD2000);
+  Object *sunPtr = builder.createStar(resourceManager.GetModel(Res::SUN_MODEL), sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
+  builder.createPlanet(resourceManager.GetModel(Res::MERCURY_MODEL), mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
+  Planet *venusPtr = builder.createPlanet(resourceManager.GetModel(Res::VENUS_MODEL), venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
+  Planet *earthPtr = builder.createPlanet(resourceManager.GetModel(Res::EARTH_MODEL), earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
+  builder.addAtmosphereToPlanet(resourceManager, threadPool, Res::EARTH_MODEL, earthPtr);
+  builder.createMoon(resourceManager.GetModel(Res::MOON_MODEL), moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, timeAfterJD2000, moonGravityField, moonTidalParameters);
+  builder.createPlanet(resourceManager.GetModel(Res::MARS_MODEL), marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
+  builder.createAsteroidSystem(resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
+  builder.createPlanet(resourceManager.GetModel(Res::JUPITER_MODEL), jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
 
-  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radii, e, tidalParameters, gravityField, g);
+  WorldDatabase<Real> data = builder.build(this->render.getInstanceManager());
 
-  planet->setAngularVelocity(r.calculateAngularVelocity());
-  planet->setOrientation(r.calculateOrientation());
+  this->database = data.shared;
+  this->physics.setDatabase(data.physics);
+  this->render.setDatabase(data.render);
 
-  model.setImportance(this->importance.planet);
-  planet->addMainLayer(&model);
-
-  Planet *ptr = planet.get();
-
-  if (planet->getUseTrail())
-    this->render.addTrail(planet->generateTrail());
-
-  this->addWorldObject({ptr, ptr});
-  this->render.addModelSource(ptr);
-  this->render.addUpdatable(ptr);
-  this->physics.addObject(ptr);
-  this->physics.addIntegratable(ptr);
-  this->physics.addPlanetarObject(std::move(planet));
-  this->total.orbital++;
-  this->total.total++;
-
-  return ptr;
-}
-
-template <typename Real>
-Star *SimulationWorld<Real>::createStar(Model &model, double mu,
-                                        Radii radii, double luminosity, const RotationalElements rotationalElements, double timeAfterJD2000, glm::dvec3 position, glm::dvec3 velocity)
-{
-  RotationalElements r = rotationalElements;
-  r.advanceFromJD2000(timeAfterJD2000);
-
-  std::unique_ptr<Star> star = std::make_unique<Star>(mu, radii, luminosity, position, velocity);
-
-  star->setAngularVelocity(r.calculateAngularVelocity());
-  star->setOrientation(r.calculateOrientation());
-
-  model.setImportance(this->importance.star);
-  star->addMainLayer(&model);
-
-  Star *ptr = star.get();
-
-  this->addWorldObject({ptr, ptr});
-  this->render.addModelSource(ptr);
-  this->render.addUpdatable(ptr);
-  this->physics.addObject(ptr);
-  this->physics.addIntegratable(ptr);
-  this->physics.addStar(std::move(star));
-  this->total.object++;
-  this->total.total++;
-
-  return ptr;
-}
-
-template <typename Real>
-Moon *SimulationWorld<Real>::createMoon(Model &model, double mu, Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, double timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
-{
-  KeplerElements e = keplerElements;
-  e.calculateMeanMotion(centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
-
-  RotationalElements r = rotationalElements;
-  r.advanceFromJD2000(timeAfterJD2000);
-
-  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radii, e, tidalParameters, gravityField);
-
-  moon->setAngularVelocity(r.calculateAngularVelocity());
-  moon->setOrientation(r.calculateOrientation());
-
-  model.setImportance(this->importance.moon);
-
-  moon->addMainLayer(&model);
-  if (moon->getUseTrail())
-    this->render.addTrail(moon->generateTrail());
-
-  Moon *ptr = moon.get();
-
-  assert(centralBody && "[SimulationWorld] ASSERT: No central body for moon");
-
-  this->addWorldObject({ptr, ptr});
-  this->render.addUpdatable(ptr);
-  this->render.addModelSource(ptr);
-  this->physics.addObject(ptr);
-  this->physics.addIntegratable(ptr);
-  centralBody->addMoon(std::move(moon));
-  this->total.orbital++;
-  this->total.total++;
-
-  return ptr;
-}
-
-template <typename Real>
-AsteroidSystem *SimulationWorld<Real>::createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000)
-{
-  std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(resourceManager, centralBody, amount,
-                                                                            innerEdge, outerEdge,
-                                                                            timeAfterJD2000, this->importance.asteroid, threadPool);
-  AsteroidSystem *ptr = system.get();
-
-  this->total.orbital += system->getTotalObjects();
-  this->total.total += system->getTotalObjects();
-
-  this->addWorldSystem({ptr, ptr});
-  this->render.addRenderSystem(ptr);
-  this->physics.addSystem(ptr);
-  this->physics.addIntegratable(ptr);
-  this->physics.addAsteroidSystem(std::move(system));
-
-  return ptr;
-}
-
-template <typename Real>
-void SimulationWorld<Real>::addLayerToModelSource(Model &model, ModelSource *object)
-{
-  object->addLayer(&model);
-}
-template <typename Real>
-void SimulationWorld<Real>::addAtmosphereToPlanet(ResourceManager &resourceManager, ThreadPool &threadPool, std::string planetName, Planet *planet)
-{
-  std::string path = "assets/data/" + planetName + "/atmosphere/32_resolution";
-  std::unique_ptr atmosphere = std::make_unique<Atmosphere>(planet, path, threadPool);
-  Atmosphere *ptr = atmosphere.get();
-
-  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(32, atmosphere->getRadii());
-  Mesh &mesh  = resourceManager.LoadMesh<VertexPositionTexcoordNormal>(path, std::move(obj), VertexLayout::NoColor);
-  std::unique_ptr<Model> model = std::make_unique<Model>(mesh);
-
-  this->physics.addAtmosphere(ptr);
-  // planet->addLayer(std::move(model));
-  planet->addAtmosphere(std::move(atmosphere));
-}
-
-template <typename Real>
-void SimulationWorld<Real>::initObjects(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000)
-{
-  Star *sunPtr = createStar(resourceManager.GetModel(Res::SUN_MODEL), sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
-  createPlanet(resourceManager.GetModel(Res::MERCURY_MODEL), mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
-  Planet *venusPtr = createPlanet(resourceManager.GetModel(Res::VENUS_MODEL), venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
-  addLayerToModelSource(resourceManager.GetModel(Res::VENUS_ATMOSPHERE_MODEL), venusPtr);
-  Planet *earthPtr = createPlanet(resourceManager.GetModel(Res::EARTH_MODEL), earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
-  addAtmosphereToPlanet(resourceManager, threadPool, Res::EARTH_MODEL, earthPtr);
-  addLayerToModelSource(resourceManager.GetModel(Res::EARTH_ATMOSPHERE_MODEL), earthPtr);
-  createMoon(resourceManager.GetModel(Res::MOON_MODEL), moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, timeAfterJD2000, moonGravityField, moonTidalParameters);
-  createPlanet(resourceManager.GetModel(Res::MARS_MODEL), marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
-  createAsteroidSystem(resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
-  Planet *jupiter = createPlanet(resourceManager.GetModel(Res::JUPITER_MODEL), jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
-
-  this->physics.addSun(sunPtr);
+  this->physics.addSun(builder.convertObjectToEntity(sunPtr));
 }
 
 template <typename Real>
@@ -194,6 +58,16 @@ void SimulationWorld<Real>::initGPUBuffers(Context &ctx, SharedDatabase<Real> &d
   this->gpu.meanRadiiBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.meanRadii.size() * sizeof(Real), data.meanRadii.data());
   this->gpu.polarRadiiBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.polarRadii.size() * sizeof(Real), data.polarRadii.data());
   this->gpu.equatorianRadiiBuffer.init(ctx.get(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.equatorianRadii.size() * sizeof(Real), data.equatorianRadii.data());
+}
+template <typename Real>
+void SimulationWorld<Real>::initRenderWorld(ResourceManager &manager, const FrameContext &ctx)
+{
+  this->render.init(this->total);
+  const Entity &sun = this->physics.getSun();
+  size_t sunIdx = this->entityManager.getObjectIndex(sun);
+  this->render.addPointLight(std::make_unique<PointLight>(this->database.positions[sunIdx], glm::vec3(1.0f), this->database.luminosities[sunIdx], this->database.meanRadii[sunIdx]));
+  this->render.addCamera(std::make_unique<Camera>(this->database.positions[sunIdx], glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), ctx.width, ctx.height));
+  this->render.addSkybox(std::make_unique<Skybox>("assets/skybox/starmap.exr", manager));
 }
 
 // Constructor
@@ -218,7 +92,7 @@ void SimulationWorld<Real>::initGPU(ResourceManager &resourceManager)
 
   this->queue.init(ctx.get(), ctx.getDevice());
 
-  WorldDatabaseBuilder<Real> builder;
+  WorldDatabaseBuilder<Real> builder(this->entityManager, this->importance);
   WorldDatabase<Real> data = builder.build(this->render.getInstanceManager());
   this->physics.initGPUBuffers(ctx, data.physics);
 
@@ -249,9 +123,9 @@ void SimulationWorld<Real>::init(RenderContext &ctx, ResourceManager &resourceMa
 
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
-  this->initObjects(resourceManager, threadPool, timeAfterJD2000);
+  this->initDatabases(resourceManager, threadPool, timeAfterJD2000);
 
-  this->render.init(resourceManager, this->physics, ctx, this->total);
+  this->initRenderWorld(resourceManager, ctx.frameCtx);
 
   this->wasInit = true;
 }
@@ -262,7 +136,7 @@ void SimulationWorld<Real>::update(RenderQueue &queue, RenderContext &renderCtx)
   if (!renderCtx.settings.paused)
     this->physics.step(renderCtx.deltaTime);
 
-  this->render.update(queue, renderCtx.frameCtx);
+  this->render.update(queue, renderCtx.frameCtx, this->database, this->entityManager);
 
-  this->render.sync(this->physics);
+  this->render.sync(this->physics, this->database, this->entityManager);
 }

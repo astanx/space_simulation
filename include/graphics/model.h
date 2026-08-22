@@ -52,8 +52,8 @@ public:
 
 	~Model();
 
-	virtual void render(Shader &shader) override;
-	virtual void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;
+	virtual void render(Shader &shader) const override;
+	virtual void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) const override;
 
 	void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
 	void setImportance(float importance) { this->importance = importance; };
@@ -66,6 +66,6 @@ public:
 	bool getIsTangent() const;
 	const glm::vec3 &getAverageColor() const;
 
-	bool hasFlag(ModelFlags flag) { return (this->flags & flag) == flag; };
-	bool hasAnyFlag() { return this->flags != ModelFlags::None; };
+	bool hasFlag(ModelFlags flag) const { return (this->flags & flag) == flag; };
+	bool hasAnyFlag() const { return this->flags != ModelFlags::None; };
 };

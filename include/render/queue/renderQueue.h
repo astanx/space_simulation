@@ -25,6 +25,7 @@ public:
   ~RenderQueue() = default;
 
   void clear();
+  void clearSubQueues();
 
   void addCoreBatch(RenderBatch batch);
   void addTangentBatch(RenderBatch batch);

@@ -7,7 +7,7 @@
 #include <iostream>
 
 // Constructor
-PhysicsBackendCPU::PhysicsBackendCPU(PhysicsCPUData &data) : data(data)
+PhysicsBackendCPU::PhysicsBackendCPU()
 {
   this->integrator = std::make_unique<WisdomHolmanIntegratorCPU>();
 };

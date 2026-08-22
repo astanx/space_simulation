@@ -13,6 +13,12 @@ void RenderQueue::clear()
   this->tangentBatches.clear();
 }
 
+void RenderQueue::clearSubQueues()
+{
+  this->shadowBatches.clear();
+  this->reflectorBatches.clear();
+}
+
 void RenderQueue::addCoreBatch(RenderBatch batch)
 {
   if (batch.model->getIsTangent())

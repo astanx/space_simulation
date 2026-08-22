@@ -18,6 +18,11 @@ struct RenderDatabase
   std::vector<uint32_t> isNonFullable;
   std::vector<Model *> models;
 
+  Model *getModel(size_t idx) const
+  {
+    return this->models[idx];
+  }
+
   void resize(size_t n)
   {
   }

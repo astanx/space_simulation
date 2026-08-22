@@ -35,10 +35,10 @@ public:
   ~ReflectanceAcceptor();
 
   void setReflector(Model *reflector) { this->reflector = reflector; };
-  Model *getReflector() { return this->reflector; };
+  const Model *getReflector() const { return this->reflector; };
 
-  void render(Shader &shader) override;
-  void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) override;
+  void render(Shader &shader) const override;
+  void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) const override;
   void renderRadiance(Shader &shader, const Camera &camera, Model *reflector) const;
   void renderRadianceInstanced(Shader &shader, const Camera &camera, RenderBatch reflector, Buffer *instanceVBO = nullptr) const;
 };

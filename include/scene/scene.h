@@ -47,7 +47,6 @@ public:
   const Skybox &getActiveSkybox();
 
   const glm::vec3 getActiveCameraPosition();
-  const glm::vec3 getSunPosition();
   const PointLight *getPointLight();
   const DirectionalLight *getDirLight();
 

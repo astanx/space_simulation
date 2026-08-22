@@ -1,7 +1,7 @@
 #include "real.cl"
-#include "render/lod/lodHelper.cl"
 
 #include "render/frustum.h"
+#include "render/findModelID.h"
 #include "camera/worldToView.h"
 
 __kernel void lodPass(

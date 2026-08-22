@@ -2,6 +2,7 @@
 
 #include "debug/logger.h"
 
+#include "render/world/data/renderDatabaseView.h"
 #include "render/lod/lodResult.h"
 #include "render/instanceManager.h"
 #include "render/queue/renderQueue.h"
@@ -18,19 +19,14 @@
 #include <iostream>
 
 // Private functions
-void RenderQueueBuilder::buildModelSource(ModelSource *source, LODManager &lod, Frustum *frustum, FrameContext ctx, float fov)
+void RenderQueueBuilder::buildEntity(const Entity &entity, const RenderDatabaseView &database, LODManager &lod, Frustum *frustum, FrameContext ctx, float fov)
 {
-  Transform transform;
-  transform.position = source->getRenderPosition();
-  transform.orientation = source->getRenderOrientation();
+  Transform transform = database.getTransform(entity);
+  Radii radii = database.getRadii(entity);
+  const Model *model = database.getModel(entity);
 
-  Radii radii = source->getSrcRadii();
-
-  source->forEachModel([this, &radii, &transform, &lod, &ctx, &frustum, fov](Model &model)
-                       { 
-
-        LODResult res = lod.partitionObject(transform.position, model.getImportance(), radii, frustum, ctx.height, fov);
-        this->submit(&model, res, transform); });
+  LODResult res = lod.partitionObject(transform.position, model->getImportance(), radii, frustum, ctx.height, fov);
+  this->submit(model, res, transform);
 }
 
 // Constructor / Destructor
@@ -47,26 +43,25 @@ RenderQueueBuilder::RenderQueueBuilder(std::vector<Model *> models)
 }
 
 // Public functions
-void RenderQueueBuilder::build(RenderQueue &queue, const Camera &camera, std::vector<ModelSource *> &modelSources, std::vector<RenderSystem *> renderSystems, LODManager &lod, InstanceManager &instance, FrameContext &ctx)
+void RenderQueueBuilder::build(RenderQueue &queue, const RenderDatabaseView &database, LODManager &lod, InstanceManager &instance, FrameContext &ctx)
 {
   queue.clear();
   instance.clear();
 
+  const Camera& camera = database.getCamera();
   float fov = camera.getFOV();
   Frustum frustum = camera.getFrustum(ctx.aspect);
 
-  for (ModelSource *source : modelSources)
-    this->buildModelSource(source, lod, &frustum, ctx, fov);
-
-  for (RenderSystem *system : renderSystems)
-    system->buildRenderQueue(queue, lod, instance, camera, &frustum, ctx.height);
+  // fix here add threadPool
+  for (const Entity &entity : database.getEntities())
+    this->buildEntity(entity, database, lod, &frustum, ctx, fov);
 
   this->finish(instance, queue);
 
   instance.fillVBOs();
 }
 
-void RenderQueueBuilder::submit(Model *model, const LODResult &lod, const Transform &transform)
+void RenderQueueBuilder::submit(const Model *model, const LODResult &lod, const Transform &transform)
 {
   InstanceModelMatrixParts fullInstanceData;
   fullInstanceData.position = transform.position;

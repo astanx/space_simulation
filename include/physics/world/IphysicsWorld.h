@@ -1,10 +1,10 @@
 #pragma once
 
-class Star;
+struct Entity;
 
 class IPhysicsWorld
 {
 public:
   virtual ~IPhysicsWorld() = 0;
-  virtual const Star &getSun() const = 0;
+  virtual const Entity &getSun() const = 0;
 };

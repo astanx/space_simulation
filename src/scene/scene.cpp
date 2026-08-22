@@ -4,7 +4,6 @@
 
 #include "camera/camera.h"
 
-#include "physics/star.h"
 #include "physics/world/IphysicsWorld.h"
 
 #include "render/world/renderWorld.h"
@@ -93,11 +92,6 @@ const glm::vec3 Scene::getActiveCameraPosition()
   return std::visit([](auto &w)
                     { return w.getRenderWorld().getActiveCamera().getPosition(); }, this->world);
 };
-const glm::vec3 Scene::getSunPosition()
-{
-  return std::visit([](auto &w)
-                    { return w.getPhysicsWorld().getSun().getRenderPosition(); }, this->world);
-}
 
 const PointLight *Scene::getPointLight()
 {

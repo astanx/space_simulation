@@ -27,7 +27,7 @@ KeplerElements Orbit::getKeplerElements() const
 void Orbit::updateKeplerElements(KeplerElements newElements)
 {
   this->keplerElements = newElements;
-  //this->keplerElements.calculateMeanMotion(this->centralBody->getMu());
+  // this->keplerElements.calculateMeanMotion(this->centralBody->getMu());
 }
 Object *Orbit::getCentralBody() const
 {
@@ -35,23 +35,16 @@ Object *Orbit::getCentralBody() const
 }
 
 // Static functions
-glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, OrbitalObject *orbitBody)
+glm::dvec3 Orbit::calculateOrbitalVelocity(glm::vec3 bodyPosition, KeplerElements bodyElements, glm::vec3 centralPosition, double centralMu)
 {
-  if (!centralBody || !orbitBody)
-    Logger::logFatal("Orbit", "No body to calculate velocity");
-
   glm::dvec3 normal(0.0);
   glm::dvec3 velocity(0.0);
 
-  const Orbit *orbit = orbitBody->getOrbit();
+  normal.x = sin(bodyElements.i) * sin(bodyElements.Omega);
+  normal.y = -sin(bodyElements.i) * cos(bodyElements.Omega);
+  normal.z = cos(bodyElements.i);
 
-  const KeplerElements& elements = orbit->getKeplerElements();
-
-  normal.x = sin(elements.i) * sin(elements.Omega);
-  normal.y = -sin(elements.i) * cos(elements.Omega);
-  normal.z = cos(elements.i);
-
-  glm::dvec3 dp = centralBody->getPosition() - orbitBody->getPosition();
+  glm::dvec3 dp = centralPosition - bodyPosition;
 
   double r = glm::length(dp);
   if (r < EPS)
@@ -60,10 +53,18 @@ glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, OrbitalObj
     return glm::dvec3(0.0);
   }
 
-  double speed = sqrt(centralBody->getMu() * (2 / r - 1 / elements.a)); // Vis-viva equation
+  double speed = sqrt(centralMu * (2 / r - 1 / bodyElements.a)); // Vis-viva equation
 
   glm::dvec3 v_dir = glm::normalize(glm::cross(normal, dp));
   velocity = speed * v_dir;
   // std::cout << "Orbital speed: " << velocity.x << ' ' << velocity.y << ' ' << velocity.z << std::endl;
   return velocity;
+}
+
+glm::dvec3 Orbit::calculateOrbitalVelocity(const Object *centralBody, OrbitalObject *orbitBody)
+{
+  if (!centralBody || !orbitBody)
+    Logger::logFatal("Orbit", "No body to calculate velocity");
+
+  return Orbit::calculateOrbitalVelocity(orbitBody->getPosition(), orbitBody->getOrbit()->getKeplerElements(), centralBody->getPosition(), centralBody->getMu());
 }

@@ -19,6 +19,7 @@ public:
   ~Orbit() = default;
 
   static glm::dvec3 calculateOrbitalVelocity(const Object *centralBody, OrbitalObject *orbitBody);
+  static glm::dvec3 calculateOrbitalVelocity(glm::vec3 bodyPosition, KeplerElements bodyElements, glm::vec3 centralPosition, double centralMu);
 
   Object *getCentralBody() const;
 
