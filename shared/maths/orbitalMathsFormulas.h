@@ -7,14 +7,16 @@
 #else
 #include <glm/glm.hpp>
 #include <cmath>
-using dmat3 = glm::dmat3;
-using real3 = glm::dvec3;
-using real = double;
 #endif
 
 #include "maths/constants.h"
 
+#ifdef __OPENCL_VERSION__
 inline real calculateEccentricAnomaly(real M, real e)
+#else
+template <typename real>
+inline real calculateEccentricAnomaly(real M, real e)
+#endif
 {
   real E = M; // initial guess
   real delta;
@@ -28,9 +30,18 @@ inline real calculateEccentricAnomaly(real M, real e)
 
   return E;
 }
-
+#ifdef __OPENCL_VERSION__
 inline dmat3 createR3matrix(real angle)
+#else
+template <typename real>
+inline glm::mat<3, 3, real> createR3matrix(real angle)
+#endif
 {
+#ifndef __OPENCL_VERSION__
+  using dmat3 = glm::mat<3, 3, real>;
+  using real3 = glm::vec<3, real>;
+#endif
+
   dmat3 mat;
 #ifdef __OPENCL_VERSION__
   mat.cols[0] = (real3)(cos(angle), -sin(angle), 0);
@@ -45,8 +56,17 @@ inline dmat3 createR3matrix(real angle)
   return mat;
 };
 
+#ifdef __OPENCL_VERSION__
 inline dmat3 createR1matrix(real angle)
+#else
+template <typename real>
+inline glm::mat<3, 3, real> createR1matrix(real angle)
+#endif
 {
+#ifndef __OPENCL_VERSION__
+  using dmat3 = glm::mat<3, 3, real>;
+  using real3 = glm::vec<3, real>;
+#endif
   dmat3 mat;
 #ifdef __OPENCL_VERSION__
   mat.cols[0] = (real3)(1, 0, 0);
@@ -60,8 +80,18 @@ inline dmat3 createR1matrix(real angle)
   return mat;
 }
 
+#ifdef __OPENCL_VERSION__
 inline real3 orbitalToInertial(real m, real e, real a, real Omega, real i, real omega, real nu)
+#else
+template <typename real>
+inline glm::vec<3, real> orbitalToInertial(real m, real e, real a, real Omega, real i, real omega, real nu)
+#endif
 {
+#ifndef __OPENCL_VERSION__
+  using dmat3 = glm::mat<3, 3, real>;
+  using real3 = glm::vec<3, real>;
+#endif
+
   if (nu == -1)
   {
     real E = calculateEccentricAnomaly(m, e);

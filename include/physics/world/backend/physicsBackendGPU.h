@@ -10,7 +10,8 @@ class Context;
 struct Total;
 struct IntegratorGPUBuffers;
 
-class PhysicsBackendGPU : public PhysicsBackend
+template <typename Real>
+class PhysicsBackendGPU : public PhysicsBackend<Real>
 {
 private:
   CommandQueue &queue;
@@ -22,5 +23,7 @@ public:
   PhysicsBackendGPU(ResourceManager &manager, Context &ctx, IntegratorGPUBuffers &data, CommandQueue &queue, Total &total);
   ~PhysicsBackendGPU() = default;
 
-  void step(double dt) override;
+  void step(Real dt) override;
 };
+
+#include "physics/world/backend/physicsBackendGPU.tpp"

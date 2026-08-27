@@ -8,7 +8,7 @@
 #include <iostream>
 
 // Constructor
-Moon::Moon(OrbitalObject *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters, GravityField gravityField)
+Moon::Moon(OrbitalObject *centralBody, double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters, GravityField gravityField)
     : OrbitalObject(centralBody, mu, radii, keplerElements, tidalParameters, gravityField, false), ModelSource(static_cast<const TransformSource &>(*this), radii.mean)
 {
   if (this->useTrail)

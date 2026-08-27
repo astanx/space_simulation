@@ -62,9 +62,9 @@ void AsteroidSystem::forEachObjectImpl(std::function<void(Object &, size_t)> fun
                                });
 }
 
-KeplerElements AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000)
+KeplerElements<double> AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000)
 {
-  KeplerElements e{
+  KeplerElements<double> e{
       generateRandom(this->innerEdge, this->outerEdge),
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.e, MAXIMUM_ASTEROID_ELEMENTS.e),
       generateRandom(MINIMUM_ASTEROID_ELEMENTS.i, MAXIMUM_ASTEROID_ELEMENTS.i),
@@ -212,6 +212,6 @@ void AsteroidSystem::reserveInstances(InstanceManager &instanceManager)
 
 void AsteroidSystem::applyObjectGravitation(Object &object)
 {
-  this->threadPool.parallelFor(0, this->asteroids.size(), [this, &object](size_t i)
-                               { this->asteroids[i].applyGravitation(object); });
+  // this->threadPool.parallelFor(0, this->asteroids.size(), [this, &object](size_t i)
+  //                              { this->asteroids[i].applyGravitation(object); });
 }

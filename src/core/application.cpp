@@ -396,7 +396,7 @@ Application::Application(
   }
   else
   {
-    this->scene.initCPUWorld();
+    this->scene.initCPUWorld(this->threadPool);
     this->renderer.initCPUBackend(this->scene);
   }
 }

@@ -14,17 +14,17 @@
 #include <iostream>
 
 // Constructor / Destructor
-Orbit::Orbit(Object *centralBody, const KeplerElements &keplerElements) : keplerElements(keplerElements)
+Orbit::Orbit(Object *centralBody, const KeplerElements<double> &keplerElements) : keplerElements(keplerElements)
 {
   this->centralBody = centralBody;
 }
 
 // Public functions
-KeplerElements Orbit::getKeplerElements() const
+KeplerElements<double> Orbit::getKeplerElements() const
 {
   return this->keplerElements;
 }
-void Orbit::updateKeplerElements(KeplerElements newElements)
+void Orbit::updateKeplerElements(KeplerElements<double> newElements)
 {
   this->keplerElements = newElements;
   // this->keplerElements.calculateMeanMotion(this->centralBody->getMu());
@@ -35,7 +35,7 @@ Object *Orbit::getCentralBody() const
 }
 
 // Static functions
-glm::dvec3 Orbit::calculateOrbitalVelocity(glm::vec3 bodyPosition, KeplerElements bodyElements, glm::vec3 centralPosition, double centralMu)
+glm::dvec3 Orbit::calculateOrbitalVelocity(glm::vec3 bodyPosition, const KeplerElements<double> &bodyElements, glm::vec3 centralPosition, double centralMu)
 {
   glm::dvec3 normal(0.0);
   glm::dvec3 velocity(0.0);

@@ -8,6 +8,7 @@ __kernel void scanGroup(__global uint* groupSums, __global uint* groupOffsets, _
     scratch[lid] = groupSums[id];
   else
     scratch[lid] = 0;
+
   barrier(CLK_LOCAL_MEM_FENCE);
 
   for (uint offset = 1; offset < groupSize; offset <<= 1)

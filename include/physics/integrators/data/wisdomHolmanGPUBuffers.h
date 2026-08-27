@@ -2,7 +2,7 @@
 
 #include "compute/clBuffer.h"
 
-#include "physics/integrators/integratorGPUBuffers.h"
+#include "physics/integrators/data/integratorGPUBuffers.h"
 #include "physics/world/data/physicsGPUBuffers.h"
 #include "scene/world/data/sharedGPUBuffers.h"
 

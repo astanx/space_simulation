@@ -11,6 +11,6 @@ protected:
   bool useTrail = false;
 
 public:
-  Moon(OrbitalObject *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField());
+  Moon(OrbitalObject *centralBody, double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField());
   ~Moon() = default;
 };

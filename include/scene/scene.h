@@ -20,7 +20,7 @@ struct RenderContext;
 class Scene
 {
 private:
-  std::variant<SimulationWorld<float>,SimulationWorld<double>> world;
+  std::variant<SimulationWorld<float>, SimulationWorld<double>> world;
 
 public:
   Scene();
@@ -28,8 +28,8 @@ public:
 
   // Process functions
   void initGPUWorld(ResourceManager &manager);
-  void initCPUWorld();
-  
+  void initCPUWorld(ThreadPool &threadPool);
+
   template <std::floating_point Real>
   void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime);
   void processKeyboard(CameraMovement direction, float deltaTime);

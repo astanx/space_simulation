@@ -7,6 +7,6 @@ class Asteroid : public OrbitalObject
 {
 protected:
 public:
-  Asteroid(Object *centralBody, double mu, Radii radii, const KeplerElements &elements);
+  Asteroid(Object *centralBody, double mu, Radii radii, const KeplerElements<double> &elements);
   ~Asteroid() = default;
 };

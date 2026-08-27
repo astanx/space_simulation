@@ -37,7 +37,6 @@ class ThreadPool;
 class Camera;
 class Model;
 struct Radii;
-struct KeplerElements;
 struct RotationalElements;
 struct RenderContext;
 
@@ -45,7 +44,6 @@ template <typename Real>
 class SimulationWorld : public ISimulationWorld
 {
 private:
-  Total total;
   Importance importance;
   EntityManager entityManager;
 
@@ -63,7 +61,7 @@ private:
   bool wasInit = false;
 
   void initDatabases(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000);
-  void initGPUBuffers(Context &ctx, SharedDatabase<Real> &data);
+  void initGPUBuffers(Context &ctx);
 
   void initRenderWorld(ResourceManager& manager, const FrameContext &ctx);
 
@@ -71,7 +69,7 @@ public:
   SimulationWorld();
   ~SimulationWorld() = default;
 
-  void initCPU() override;
+  void initCPU(ThreadPool &threadPool) override;
   void initGPU(ResourceManager &resourceManager) override;
   void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime) override;
 

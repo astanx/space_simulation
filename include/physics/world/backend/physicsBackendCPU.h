@@ -2,18 +2,24 @@
 
 #include "physics/world/backend/physicsBackend.h"
 
+#include "physics/integrators/data/integratorDatabase.h"
+
 #include "physics/integrators/integratorCPU.h"
 
 struct PhysicsCPUData;
 
-class PhysicsBackendCPU : public PhysicsBackend
+template <typename Real>
+class PhysicsBackendCPU : public PhysicsBackend<Real>
 {
 private:
-  std::unique_ptr<IntegratorCPU> integrator;
+  std::unique_ptr<IntegratorCPU<Real>> integrator;
+  IntegratorDatabase<Real> database;
 
 public:
-  PhysicsBackendCPU();
+  PhysicsBackendCPU(IntegratorDatabase<Real> &database, ThreadPool &threadPool);
   ~PhysicsBackendCPU() = default;
 
-  void step(double dt) override;
+  void step(Real dt) override;
 };
+
+#include "physics/world/backend/physicsBackendCPU.tpp"

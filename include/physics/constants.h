@@ -24,15 +24,15 @@ extern const double neptuneMu;
 extern const glm::dvec3 sunPos;
 extern const double sunLuminosity;
 
-extern const KeplerElements mercuryElements;
-extern const KeplerElements venusElements;
-extern const KeplerElements earthElements;
-extern const KeplerElements moonElements;
-extern const KeplerElements marsElements;
-extern const KeplerElements jupiterElements;
-extern const KeplerElements saturnElements;
-extern const KeplerElements uranusElements;
-extern const KeplerElements neptuneElements;
+extern const KeplerElements<double> mercuryElements;
+extern const KeplerElements<double> venusElements;
+extern const KeplerElements<double> earthElements;
+extern const KeplerElements<double> moonElements;
+extern const KeplerElements<double> marsElements;
+extern const KeplerElements<double> jupiterElements;
+extern const KeplerElements<double> saturnElements;
+extern const KeplerElements<double> uranusElements;
+extern const KeplerElements<double> neptuneElements;
 
 extern const RotationalElements sunRotationalElements;
 extern const RotationalElements mercuryRotationalElements;
@@ -75,8 +75,8 @@ extern const double MAXIMUM_ASTEROID_RADIUS;
 extern const double MINIMUM_ASTEROID_DENSITY;
 extern const double MAXIMUM_ASTEROID_DENSITY;
 
-extern const KeplerElements MINIMUM_ASTEROID_ELEMENTS;
-extern const KeplerElements MAXIMUM_ASTEROID_ELEMENTS;
+extern const KeplerElements<double> MINIMUM_ASTEROID_ELEMENTS;
+extern const KeplerElements<double> MAXIMUM_ASTEROID_ELEMENTS;
 
 extern const RotationalElements MINIMUM_ASTEROID_ROTATIONAL_ELEMENTS;
 extern const RotationalElements MAXIMUM_ASTEROID_ROTATIONAL_ELEMENTS;

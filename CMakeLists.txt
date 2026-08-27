@@ -180,6 +180,8 @@ add_executable(Space
     src/resources/resourceManager.cpp
     src/resources/threadPool.cpp
     src/resources/modelRegistry.cpp
+        # Entity
+        src/resources/entity/entityManager.cpp
     
     # Physics
     src/physics/object.cpp
@@ -195,11 +197,8 @@ add_executable(Space
         # World
         src/physics/world/IphysicsWorld.cpp
             # Backend
-            src/physics/world/backend/physicsBackendCPU.cpp
-            src/physics/world/backend/physicsBackendGPU.cpp
         # Integrators
         src/physics/integrators/integrator.cpp
-        src/physics/integrators/wisdomHolmanCPU.cpp
         # Systems
         src/physics/systems/asteroidSystem.cpp
     
@@ -207,8 +206,6 @@ add_executable(Space
     src/maths/rk4.cpp
     src/maths/random.cpp
     src/maths/factorial.cpp
-    src/maths/orbitalMaths.cpp
-    src/maths/momentsMaths.cpp
     src/maths/dateToJD.cpp
     
     # Debug

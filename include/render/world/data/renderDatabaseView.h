@@ -22,7 +22,7 @@ public:
   ~RenderDatabaseView() = default;
 
   // Entity
-  const std::vector<Entity> &getEntities() const { return this->entityManager.getEntities(); };
+  const std::vector<std::unique_ptr<Entity>> &getEntities() const { return this->entityManager.getEntities(); };
 
   // Render
   const Camera &getCamera() const { return this->camera; };

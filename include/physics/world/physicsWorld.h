@@ -10,13 +10,14 @@
 
 #include "resources/entity/entity.h"
 
+#include "scene/world/data/sharedDatabase.h"
+
 #include <vector>
 
 class Object;
 class OrbitalObject;
 class Planet;
 class AsteroidSystem;
-class IntegratorCPU;
 class IntegratorGPU;
 class ResourceManager;
 class Context;
@@ -24,6 +25,7 @@ class Integratable;
 class Trail;
 class Atmosphere;
 class System;
+class ThreadPool;
 class CommandQueue;
 struct IntegratorGPUBuffers;
 struct Total;
@@ -36,7 +38,7 @@ private:
   PhysicsDatabase<Real> database;
   bool wasDatabaseInit = false;
 
-  std::unique_ptr<PhysicsBackend> backend;
+  std::unique_ptr<PhysicsBackend<Real>> backend;
 
   const Entity *sun;
 
@@ -44,9 +46,9 @@ public:
   PhysicsWorld();
   ~PhysicsWorld();
 
-  void initGPUBuffers(Context &ctx, PhysicsDatabase<Real> data);
+  void initGPUBuffers(Context &ctx);
 
-  void initCPUBackend();
+  void initCPUBackend(const EntityManager &entityManager, SharedDatabase<Real> &shared, ThreadPool &threadPool);
   void initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUBuffers &gpu, Total &total);
 
   void step(double dt);

@@ -103,8 +103,14 @@ RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQu
 // Public functions
 void RenderWorldBackendGPU::update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, FrameContext &ctx)
 {
-  if (this->lastModelsSize != database.getModelsCount())
+  if (this->lastModelsSize != database.getModelsCount() && this->wasSubInit)
     Logger::logFatal("Render World Backend GPU", "GPU is not prepared for dynamic models");
+
+  if (!this->wasSubInit)
+  {
+    this->initSubQueues(queue, instanceManager, models);
+    this->wasSubInit = true;
+  }
 
   if (this->isDouble)
     this->renderQueueBuilderGPU.build<double>(this->queue, queue, this->lodManagerGPU, instanceManager, database.getCamera(), ctx, this->models, this->total.total);

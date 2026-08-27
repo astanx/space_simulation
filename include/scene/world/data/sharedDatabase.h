@@ -6,6 +6,9 @@
 #include "scene/world/data/sharedDatabaseView.h"
 #include "scene/light/pointLight.h"
 
+#include "physics/world/total.h"
+
+#include <iostream>
 #include <vector>
 
 template <typename Real>
@@ -19,6 +22,8 @@ struct SharedDatabase : public SharedDatabaseView
   std::vector<Real> meanRadii;
   std::vector<Real> polarRadii;
   std::vector<Real> equatorianRadii;
+
+  Total total;
 
   void resize(size_t n)
   {

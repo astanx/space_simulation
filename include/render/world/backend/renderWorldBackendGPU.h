@@ -26,7 +26,8 @@ private:
   CommandQueue &queue;
   Total &total;
 
-  bool isDouble;
+  bool isDouble = false;
+  bool wasSubInit = false;
 
   void initSpecialModel(RenderQueue &queue, InstanceManager &manager, const Model *model);
   void initModelQueue(RenderQueue &queue, InstanceManager &manager, const Model *model) override;

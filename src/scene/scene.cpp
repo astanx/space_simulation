@@ -20,10 +20,10 @@ void Scene::initGPUWorld(ResourceManager &resourceManager)
   std::visit([&resourceManager](auto &w)
              { w.initGPU(resourceManager); }, this->world);
 }
-void Scene::initCPUWorld()
+void Scene::initCPUWorld(ThreadPool& threadPool)
 {
-  std::visit([](auto &w)
-             { w.initCPU(); }, this->world);
+  std::visit([&threadPool](auto &w)
+             { w.initCPU(threadPool); }, this->world);
 }
 
 void Scene::processKeyboard(CameraMovement direction, float deltaTime)

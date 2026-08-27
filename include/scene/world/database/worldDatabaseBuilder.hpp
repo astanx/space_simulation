@@ -19,6 +19,7 @@ void WorldDatabaseBuilder<Real>::processObject(Object *obj, WorldDatabase<Real> 
 {
   data.shared.positions[i] = static_cast<Vec3<Real>>(obj->getPosition());
   data.shared.orientations[i] = static_cast<Quat<Real>>(obj->getOrientation());
+  data.shared.luminosities[i] = static_cast<Real>(obj->getLuminosity());
 
   Radii radii = obj->getRadii();
   data.shared.meanRadii[i] = static_cast<Real>(radii.mean);
@@ -137,8 +138,8 @@ void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporarySto
         this->processObject(&obj, objectStorage.database, idx); 
         this->processModel(objectStorage, model, idx);
 
-        this->entityManager.registerObjectEntity(*this->objectToEntity.at(orb), this->total.orbital + idx);
-        this->entityManager.registerModelEntity(*this->objectToEntity.at(orb), this->modelTotal.orbital + objectStorage.lookup.table[model]);
+        this->entityManager.registerObjectEntity(*this->objectToEntity.at(&obj), this->total.orbital + idx);
+        this->entityManager.registerModelEntity(*this->objectToEntity.at(&obj), this->modelTotal.orbital + objectStorage.lookup.table[model]);
       } });
 }
 
@@ -159,7 +160,7 @@ size_t WorldDatabaseBuilder<Real>::findCentralBodyIndex(Object *central)
 
 // Public functions
 template <typename Real>
-const Entity& WorldDatabaseBuilder<Real>::convertObjectToEntity(Object *object)
+const Entity &WorldDatabaseBuilder<Real>::convertObjectToEntity(Object *object)
 {
   if (!object)
     Logger::logFatal("World Database Builder", "Invalid object");
@@ -188,7 +189,7 @@ void WorldDatabaseBuilder<Real>::addAtmosphereToPlanet(ResourceManager &resource
 }
 
 template <typename Real>
-Planet *WorldDatabaseBuilder<Real>::createPlanet(Model &model, Real mu, Radii radii, Object *centralBody, const KeplerElements keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, Real g)
+Planet *WorldDatabaseBuilder<Real>::createPlanet(Model &model, Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, Real g)
 {
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -229,11 +230,12 @@ Object *WorldDatabaseBuilder<Real>::createStar(Model &model, Real mu, Radii radi
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
 
-  std::unique_ptr<Object> star = std::make_unique<Object>(mu, radii, TidalParameters(), GravityField(), pos);
+  std::unique_ptr<Object> star = std::make_unique<Object>(mu / G, radii, TidalParameters(), GravityField(), pos);
 
   star->setAngularVelocity(r.calculateAngularVelocity());
   star->setOrientation(r.calculateOrientation());
   star->setLuminosity(luminosity);
+  star->setMu(mu);
 
   model.setImportance(this->importance.star);
 
@@ -253,7 +255,7 @@ Object *WorldDatabaseBuilder<Real>::createStar(Model &model, Real mu, Radii radi
 }
 
 template <typename Real>
-Moon *WorldDatabaseBuilder<Real>::createMoon(Model &model, Real mu, Radii radii, Planet *centralBody, const KeplerElements &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
+Moon *WorldDatabaseBuilder<Real>::createMoon(Model &model, Real mu, Radii radii, Planet *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
 {
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -363,22 +365,23 @@ WorldDatabase<Real> WorldDatabaseBuilder<Real>::build(InstanceManager &instanceM
     Range range = instanceManager.reserve(orbitalStorage.lookup.models[i], orbitalStorage.modelCapacities[i]);
     orbitalStorage.database.render.modelRangeStart.push_back(range.begin);
     orbitalStorage.database.render.modelRangeEnd.push_back(range.end);
+    orbitalStorage.database.render.models.push_back(orbitalStorage.lookup.models[i]);
   }
-  orbitalStorage.database.render.models = std::move(orbitalStorage.lookup.models);
 
   for (size_t i = 0; i < objectStorage.lookup.models.size(); i++)
   {
     Range range = instanceManager.reserve(objectStorage.lookup.models[i], objectStorage.modelCapacities[i]);
     objectStorage.database.render.modelRangeStart.push_back(range.begin);
     objectStorage.database.render.modelRangeEnd.push_back(range.end);
+    objectStorage.database.render.models.push_back(objectStorage.lookup.models[i]);
   }
-  objectStorage.database.render.models = std::move(objectStorage.lookup.models);
 
   // orbital MUST be first
   orbitalStorage.database.combine(objectStorage.database);
 
   orbitalStorage.database.physics.loveNumbers = loveNumbers;
   orbitalStorage.database.physics.tidalFactors = tidalFactors;
+  orbitalStorage.database.shared.total = this->total;
 
   return orbitalStorage.database;
 }

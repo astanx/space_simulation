@@ -12,7 +12,7 @@ class ISimulationWorld
 public:
   virtual ~ISimulationWorld() = 0;
 
-  virtual void initCPU() = 0;
+  virtual void initCPU(ThreadPool &threadPool) = 0;
   virtual void initGPU(ResourceManager &resourceManager) = 0;
   virtual void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime) = 0;
 

@@ -8,7 +8,7 @@
 #include <iostream>
 
 // Constructor
-Asteroid::Asteroid(Object *centralBody, double mu, Radii radii, const KeplerElements &elements)
+Asteroid::Asteroid(Object *centralBody, double mu, Radii radii, const KeplerElements<double> &elements)
     : OrbitalObject(centralBody, mu, radii, elements)
 {
 }

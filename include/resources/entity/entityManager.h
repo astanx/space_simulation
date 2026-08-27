@@ -6,14 +6,15 @@
 
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 class EntityManager
 {
 private:
-  std::vector<Entity> entities;
-  std::unordered_map<const Entity *, size_t> entityToOrbitalIdx;
-  std::unordered_map<const Entity *, size_t> entityToObjectIdx;
-  std::unordered_map<const Entity *, size_t> entityToModelIdx;
+  std::vector<std::unique_ptr<Entity>> entities;
+  std::unordered_map<size_t, size_t> entityToOrbitalIdx;
+  std::unordered_map<size_t, size_t> entityToObjectIdx;
+  std::unordered_map<size_t, size_t> entityToModelIdx;
 
 public:
   EntityManager() = default;
@@ -25,8 +26,10 @@ public:
   void registerObjectEntity(const Entity &entity, size_t idx);
   void registerModelEntity(const Entity &entity, size_t idx);
 
-  const std::vector<Entity> &getEntities() const;
+  std::vector<std::unique_ptr<Entity>> &getEntities();
+  const std::vector<std::unique_ptr<Entity>> &getEntities() const;
   size_t getOrbitalIndex(const Entity &entity) const;
   size_t getObjectIndex(const Entity &entity) const;
   size_t getModelIndex(const Entity &entity) const;
+  bool getIsOrbital(const Entity &entity) const;
 };

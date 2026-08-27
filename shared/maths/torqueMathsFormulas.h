@@ -1,53 +1,3 @@
-// #ifndef TORQUE_MATHS_H
-// #define TORQUE_MATHS_H
-
-// #ifdef __OPENCL_VERSION__
-// #include "real.cl"
-// #include "matrix.cl"
-// typedef float3 vec3;
-// #else
-// #include <glm/glm.hpp>
-// using dmat3 = glm::dmat3;
-// using real3 = glm::dvec3;
-// using real = double;
-// #endif
-
-// #include "maths/constants.h"
-
-// inline real3 calculateGravitationalTorque(real3 dp, real d, dmat3 objectTensor, real bodyMu)
-// {
-//   if (d == 0.0)
-//     return real3(0.0);
-
-//   real3 r = dp / d;
-// #ifdef __OPENCL_VERSION__
-//   return 3 * bodyMu / pow(d, 3) * cross(r, dmat3_dot_d3(objectTensor, r));
-// #else
-//   return 3.0 * bodyMu / pow(d, 3) * glm::cross(r, objectTensor * r);
-// #endif
-// }
-
-// inline real3 calculateTidalTorque(real3 dp, real d, real3 objectAngularVelocity,
-//                                   real3 objectVelocity, real objectMeanRadius,
-//                                   real objectLoveNumber, real objectTidalFactor,
-//                                   real3 bodyVelocity, real bodyMu)
-// {
-//   if (d == 0.0)
-//     return real3(0.0);
-
-//   real3 v = objectVelocity - bodyVelocity;
-
-//   real3 nVec = cross(dp, v) / dot(dp, dp);
-//   real n = length(nVec);
-
-//   if (n < EPS)
-//     return real3(0.0);
-
-//   return -3 * objectLoveNumber * 1 / (2 * n * objectTidalFactor) * bodyMu * bodyMu * pow(objectMeanRadius, 5) / G / pow(d, 6) * (objectAngularVelocity - nVec);
-// }
-
-// #endif
-
 #ifndef TORQUE_MATHS_H
 #define TORQUE_MATHS_H
 
@@ -57,17 +7,23 @@
 typedef float3 vec3;
 #else
 #include <glm/glm.hpp>
-using dmat3 = glm::dmat3;
-using real3 = glm::dvec3;
-using real = double;
 using glm::dot;
 using glm::max;
 #endif
 
 #include "maths/constants.h"
 
+#ifdef __OPENCL_VERSION__
 inline real3 calculateGravitationalTorque(real3 dp, real d, dmat3 objectTensor, real bodyMu)
+#else
+template <typename real>
+inline glm::vec<3, real> calculateGravitationalTorque(glm::vec<3, real> dp, real d, glm::mat<3, 3, real> objectTensor, real bodyMu)
+#endif
 {
+#ifndef __OPENCL_VERSION__
+  using real3 = glm::vec<3, real>;
+  using dmat3 = glm::mat<3, 3, real>;
+#endif
   if (!isfinite(d) || d == 0.0 || d < EPS)
 #ifdef __OPENCL_VERSION__
     return (real3)(0.0);
@@ -116,11 +72,22 @@ inline real3 calculateGravitationalTorque(real3 dp, real d, dmat3 objectTensor, 
   return torque;
 }
 
+#ifdef __OPENCL_VERSION__
 inline real3 calculateTidalTorque(real3 dp, real d, real3 objectAngularVelocity,
                                   real3 objectVelocity, real objectMeanRadius,
                                   real objectLoveNumber, real objectTidalFactor,
                                   real3 bodyVelocity, real bodyMu)
+#else
+template <typename real>
+inline glm::vec<3, real> calculateTidalTorque(glm::vec<3, real> dp, real d, glm::vec<3, real> objectAngularVelocity,
+                                              glm::vec<3, real> objectVelocity, real objectMeanRadius,
+                                              real objectLoveNumber, real objectTidalFactor,
+                                              glm::vec<3, real> bodyVelocity, real bodyMu)
+#endif
 {
+#ifndef __OPENCL_VERSION__
+  using real3 = glm::vec<3, real>;
+#endif
   if (dot(dp, dp) < EPS * EPS)
 #ifdef __OPENCL_VERSION__
     return (real3)(0.0);
@@ -164,7 +131,7 @@ inline real3 calculateTidalTorque(real3 dp, real d, real3 objectAngularVelocity,
 
   if (!isfinite(torque.x) || !isfinite(torque.y) || !isfinite(torque.z))
 #ifdef __OPENCL_VERSION__
-  return (real3)(0.0);
+    return (real3)(0.0);
 #else
     return real3(0.0);
 #endif

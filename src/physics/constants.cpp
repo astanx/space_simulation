@@ -19,7 +19,7 @@ const double MAXIMUM_ASTEROID_RADIUS = 500000.0;
 const double MINIMUM_ASTEROID_DENSITY = 1000.0;
 const double MAXIMUM_ASTEROID_DENSITY = 8000.0;
 
-const KeplerElements MINIMUM_ASTEROID_ELEMENTS(
+const KeplerElements<double> MINIMUM_ASTEROID_ELEMENTS(
 		INNER_ASTEROID_BELT_EDGE, // Should not be used
 		0.0,
 		glm::radians(0.0),
@@ -27,7 +27,7 @@ const KeplerElements MINIMUM_ASTEROID_ELEMENTS(
 		glm::radians(0.0),
 		glm::radians(0.0));
 
-const KeplerElements MAXIMUM_ASTEROID_ELEMENTS(
+const KeplerElements<double> MAXIMUM_ASTEROID_ELEMENTS(
 		OUTER_ASTEROID_BELT_EDGE, // Should not be used
 		0.4,
 		glm::radians(30.0),
@@ -76,7 +76,7 @@ const Radii mercuryRadii(
 		2.4397e6,
 		2.4397e6,
 		2.4397e6);
-const KeplerElements mercuryElements(
+const KeplerElements<double> mercuryElements(
 		0.38709927 * AU_TO_METER,
 		0.20563593,
 		glm::radians(7.00497902),
@@ -97,7 +97,7 @@ const Radii venusRadii(
 		6.0518e6,
 		6.0518e6,
 		6.0518e6);
-const KeplerElements venusElements(
+const KeplerElements<double> venusElements(
 		0.72333566 * AU_TO_METER,
 		0.00677672,
 		glm::radians(3.39467605),
@@ -118,7 +118,7 @@ const Radii earthRadii(
 		6.378137e6,
 		6.356752e6,
 		6.371e6);
-const KeplerElements earthElements(
+const KeplerElements<double> earthElements(
 		1.000003 * AU_TO_METER,
 		0.01671,
 		glm::radians(7.155),
@@ -146,7 +146,7 @@ const Radii moonRadii(
 		1.7381e6,
 		1.736e6,
 		1.7374e6);
-const KeplerElements moonElements(
+const KeplerElements<double> moonElements(
 		(1.0 / 389.0) * AU_TO_METER,
 		0.0549,
 		glm::radians(5.145),
@@ -184,7 +184,7 @@ const Radii marsRadii(
 		3.3962e6,
 		3.3762e6,
 		3.3896e6);
-const KeplerElements marsElements(
+const KeplerElements<double> marsElements(
 		1.52368055 * AU_TO_METER,
 		0.0934,
 		glm::radians(1.85),
@@ -209,7 +209,7 @@ const Radii jupiterRadii(
 		7.1492e7,
 		6.684e7,
 		6.9911e7);
-const KeplerElements jupiterElements(
+const KeplerElements<double> jupiterElements(
 		5.2038 * AU_TO_METER,
 		0.0489,
 		glm::radians(1.303),

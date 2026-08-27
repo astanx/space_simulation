@@ -28,23 +28,22 @@ RenderWorld::~RenderWorld() = default;
 // Public functions
 void RenderWorld::init(Total &total)
 {
-  this->lodResourceManager.init(this->models);
+  this->lodResourceManager.init(this->database.models);
   this->instanceManager.init(total.total);
 }
 
-void RenderWorld::initGPUBuffers(Context &ctx, RenderDatabase &gpu)
+void RenderWorld::initGPUBuffers(Context &ctx)
 {
   cl_context context = ctx.get();
 
-  this->gpuBuffers.modelColorsBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelColors.size() * sizeof(Vec3<float>), gpu.modelColors.data());
-  this->gpuBuffers.modelImportancesBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelImportances.size() * sizeof(float), gpu.modelImportances.data());
-  this->gpuBuffers.modelTextureLayersBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelTextureLayers.size() * sizeof(uint32_t), gpu.modelTextureLayers.data());
-  this->gpuBuffers.modelRangeStartBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelRangeStart.size() * sizeof(uint32_t), gpu.modelRangeStart.data());
-  this->gpuBuffers.modelRangeEndBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.modelRangeEnd.size() * sizeof(uint32_t), gpu.modelRangeEnd.data());
-  this->gpuBuffers.isNonFullableBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, gpu.isNonFullable.size() * sizeof(uint32_t), gpu.isNonFullable.data());
-  this->gpuBuffers.modelFullCountBuffer.init(context, CL_MEM_READ_WRITE, gpu.modelRangeEnd.size() * sizeof(uint32_t), nullptr);
-  this->rangeCount = gpu.modelRangeStart.size();
-  this->models = std::move(gpu.models);
+  this->gpuBuffers.modelColorsBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.modelColors.size() * sizeof(Vec3<float>), this->database.modelColors.data());
+  this->gpuBuffers.modelImportancesBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.modelImportances.size() * sizeof(float), this->database.modelImportances.data());
+  this->gpuBuffers.modelTextureLayersBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.modelTextureLayers.size() * sizeof(uint32_t), this->database.modelTextureLayers.data());
+  this->gpuBuffers.modelRangeStartBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.modelRangeStart.size() * sizeof(uint32_t), this->database.modelRangeStart.data());
+  this->gpuBuffers.modelRangeEndBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.modelRangeEnd.size() * sizeof(uint32_t), this->database.modelRangeEnd.data());
+  this->gpuBuffers.isNonFullableBuffer.init(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.isNonFullable.size() * sizeof(uint32_t), this->database.isNonFullable.data());
+  this->gpuBuffers.modelFullCountBuffer.init(context, CL_MEM_READ_WRITE, this->database.modelRangeEnd.size() * sizeof(uint32_t), nullptr);
+  this->rangeCount = this->database.modelRangeStart.size();
 }
 
 void RenderWorld::initCPUBackend()
@@ -79,7 +78,7 @@ void RenderWorld::initGPUBackend(Context &ctx, CommandQueue &queue, Total &total
       this->gpuBuffers.modelRangeEndBuffer,
       this->rangeCount};
 
-  this->backend = std::make_unique<RenderWorldBackendGPU>(resourceManager, queue, ctx, lodBuffers, backendBuffers, total, this->models);
+  this->backend = std::make_unique<RenderWorldBackendGPU>(resourceManager, queue, ctx, lodBuffers, backendBuffers, total, this->database.models);
 }
 
 void RenderWorld::update(RenderQueue &queue, FrameContext &ctx, const SharedDatabaseView &shared, const EntityManager &entityManager)
@@ -182,7 +181,7 @@ const glm::vec3 RenderWorld::getActiveCameraPosition() const
 
 const PointLight *RenderWorld::getPointLight() const
 {
-  if (this->pointLight)
+  if (!this->pointLight)
     Logger::logWarning("Render World", "No point light");
 
   return this->pointLight.get();

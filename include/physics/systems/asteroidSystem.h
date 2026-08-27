@@ -41,7 +41,7 @@ private:
 
   Object *centralBody;
 
-  KeplerElements createRandomKeplerElements(double timeAfterJD2000);
+  KeplerElements<double> createRandomKeplerElements(double timeAfterJD2000);
   void createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, Radii typeRadii, double volume, double timeAfterJD2000);
   void createAsteroids(ResourceManager &resourceManager, unsigned int amount, double timeAfterJD2000);
 

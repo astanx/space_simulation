@@ -1,8 +1,8 @@
 #include "real.cl"
 #include "quaternion.cl"
-#include "render/lod/lodHelper.cl"
 #include "graphics/instanceStructs.h"
 #include "camera/worldToView.h"
+#include "render/findModelID.h"
 
 __kernel void partitionObjects(
   __global InstanceModelMatrixParts* fullInstances,

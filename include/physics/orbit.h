@@ -11,18 +11,18 @@ class OrbitalObject;
 class Orbit
 {
 private:
-  KeplerElements keplerElements;
+  KeplerElements<double> keplerElements;
   Object *centralBody;
 
 public:
-  Orbit(Object *centralBody, const KeplerElements &KeplerElements);
+  Orbit(Object *centralBody, const KeplerElements<double> &KeplerElements);
   ~Orbit() = default;
 
   static glm::dvec3 calculateOrbitalVelocity(const Object *centralBody, OrbitalObject *orbitBody);
-  static glm::dvec3 calculateOrbitalVelocity(glm::vec3 bodyPosition, KeplerElements bodyElements, glm::vec3 centralPosition, double centralMu);
+  static glm::dvec3 calculateOrbitalVelocity(glm::vec3 bodyPosition, const KeplerElements<double> &bodyElements, glm::vec3 centralPosition, double centralMu);
 
   Object *getCentralBody() const;
 
-  KeplerElements getKeplerElements() const;
-  void updateKeplerElements(KeplerElements newElements);
+  KeplerElements<double> getKeplerElements() const;
+  void updateKeplerElements(KeplerElements<double> newElements);
 };

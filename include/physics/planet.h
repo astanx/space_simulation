@@ -11,8 +11,6 @@
 
 class Camera;
 
-struct KeplerElements;
-
 class Planet : public OrbitalObject, public ModelSource
 {
 protected:
@@ -23,7 +21,7 @@ protected:
   std::unique_ptr<Atmosphere> atmosphere;
 
 public:
-  Planet(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), double g = 0.0);
+  Planet(Object *centralBody, double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), double g = 0.0);
   ~Planet();
 
   void addMoon(std::unique_ptr<Moon> moon);

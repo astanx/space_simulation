@@ -30,15 +30,15 @@ void RenderQueueBuilder::buildEntity(const Entity &entity, const RenderDatabaseV
 }
 
 // Constructor / Destructor
-RenderQueueBuilder::RenderQueueBuilder(std::vector<Model *> models)
+RenderQueueBuilder::RenderQueueBuilder(const std::vector<Model *> &models)
 {
   uint32_t maxId = 0;
-  for (Model *model : models)
+  for (const Model *model : models)
     maxId = std::max(maxId, model->getID());
 
   this->groups.resize(maxId + 1);
 
-  for (Model *model : models)
+  for (const Model *model : models)
     this->groups[model->getID()] = RenderGroup{model};
 }
 
@@ -48,13 +48,20 @@ void RenderQueueBuilder::build(RenderQueue &queue, const RenderDatabaseView &dat
   queue.clear();
   instance.clear();
 
-  const Camera& camera = database.getCamera();
+  const Camera &camera = database.getCamera();
   float fov = camera.getFOV();
   Frustum frustum = camera.getFrustum(ctx.aspect);
 
   // fix here add threadPool
-  for (const Entity &entity : database.getEntities())
-    this->buildEntity(entity, database, lod, &frustum, ctx, fov);
+  for (const std::unique_ptr<Entity> &entity : database.getEntities())
+  {
+    if (!entity)
+    {
+      Logger::logError("Render Queue Builder", "Uninitialized entity detected");
+      continue;
+    }
+    this->buildEntity(*entity, database, lod, &frustum, ctx, fov);
+  }
 
   this->finish(instance, queue);
 
@@ -141,10 +148,13 @@ void RenderQueueBuilder::finish(InstanceManager &instances, RenderQueue &queue)
     fullLODRange.begin = fullRange.begin;
     fullLODRange.end = fullRange.begin + lodSize;
 
-    if (group.model->getIsTangent())
-      queue.addTangentBatch({group.model, fullLODRange});
-    else
-      queue.addCoreBatch({group.model, fullLODRange});
+    if (lodSize > 0)
+    {
+      if (group.model->getIsTangent())
+        queue.addTangentBatch({group.model, fullLODRange});
+      else
+        queue.addCoreBatch({group.model, fullLODRange});
+    }
   }
 
   instances.add(std::move(this->impostors));

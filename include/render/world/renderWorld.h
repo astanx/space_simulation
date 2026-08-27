@@ -9,6 +9,7 @@
 
 #include "physics/trail.h"
 
+#include <iostream>
 #include <memory>
 
 class Updatable;
@@ -44,8 +45,6 @@ private:
 
   std::unique_ptr<RenderWorldBackend> backend;
 
-  std::vector<Model *> models;
-
   Camera *activeCamera;
   Skybox *skybox;
 
@@ -71,7 +70,7 @@ public:
 
   void init(Total &total);
   void initCPUBackend();
-  void initGPUBuffers(Context &ctx, RenderDatabase &gpu);
+  void initGPUBuffers(Context &ctx);
   void initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUBuffers &data);
 
   void update(RenderQueue &queue, FrameContext &ctx, const SharedDatabaseView &shared, const EntityManager &entityManager);

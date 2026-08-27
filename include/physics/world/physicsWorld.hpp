@@ -29,41 +29,42 @@ PhysicsWorld<Real>::~PhysicsWorld() = default;
 
 // Public functions
 template <typename Real>
-void PhysicsWorld<Real>::initCPUBackend()
+void PhysicsWorld<Real>::initCPUBackend(const EntityManager &entityManager, SharedDatabase<Real> &shared, ThreadPool &threadPool)
 {
-  this->backend = std::make_unique<PhysicsBackendCPU>();
+  IntegratorDatabase db{entityManager, shared, this->database};
+  this->backend = std::make_unique<PhysicsBackendCPU<Real>>(db, threadPool);
 }
 template <typename Real>
 void PhysicsWorld<Real>::initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUBuffers &gpu, Total &total)
 {
-  this->backend = std::make_unique<PhysicsBackendGPU>(resourceManager, ctx, gpu, queue, total);
+  this->backend = std::make_unique<PhysicsBackendGPU<Real>>(resourceManager, ctx, gpu, queue, total);
 }
 
 template <typename Real>
-void PhysicsWorld<Real>::initGPUBuffers(Context &context, PhysicsDatabase<Real> data)
+void PhysicsWorld<Real>::initGPUBuffers(Context &context)
 {
   cl_context ctx = context.get();
 
-  this->gpuBuffers.musBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.mus.size() * sizeof(Real), data.mus.data());
-  this->gpuBuffers.velocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.velocities.size() * sizeof(Vec3<Real>), data.velocities.data());
+  this->gpuBuffers.musBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.mus.size() * sizeof(Real), this->database.mus.data());
+  this->gpuBuffers.velocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.velocities.size() * sizeof(Vec3<Real>), this->database.velocities.data());
 
-  this->gpuBuffers.angularVelocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.angularVelocities.size() * sizeof(Vec3<Real>), data.angularVelocities.data());
+  this->gpuBuffers.angularVelocitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.angularVelocities.size() * sizeof(Vec3<Real>), this->database.angularVelocities.data());
 
-  this->gpuBuffers.semiAxisesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.semiAxises.size() * sizeof(Real), data.semiAxises.data());
-  this->gpuBuffers.eccentricitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.eccentricities.size() * sizeof(Real), data.eccentricities.data());
-  this->gpuBuffers.inclinationsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.inclinations.size() * sizeof(Real), data.inclinations.data());
-  this->gpuBuffers.longitudeBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.longitude.size() * sizeof(Real), data.longitude.data());
-  this->gpuBuffers.periapsisBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.periapsis.size() * sizeof(Real), data.periapsis.data());
-  this->gpuBuffers.meanAnomalyBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.meanAnomaly.size() * sizeof(Real), data.meanAnomaly.data());
-  this->gpuBuffers.meanMotionBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.meanMotion.size() * sizeof(Real), data.meanMotion.data());
-  this->gpuBuffers.centralBodyIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.centralBodyIndices.size() * sizeof(int), data.centralBodyIndices.data());
+  this->gpuBuffers.semiAxisesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.semiAxises.size() * sizeof(Real), this->database.semiAxises.data());
+  this->gpuBuffers.eccentricitiesBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.eccentricities.size() * sizeof(Real), this->database.eccentricities.data());
+  this->gpuBuffers.inclinationsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.inclinations.size() * sizeof(Real), this->database.inclinations.data());
+  this->gpuBuffers.longitudeBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.longitude.size() * sizeof(Real), this->database.longitude.data());
+  this->gpuBuffers.periapsisBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.periapsis.size() * sizeof(Real), this->database.periapsis.data());
+  this->gpuBuffers.meanAnomalyBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.meanAnomaly.size() * sizeof(Real), this->database.meanAnomaly.data());
+  this->gpuBuffers.meanMotionBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.meanMotion.size() * sizeof(Real), this->database.meanMotion.data());
+  this->gpuBuffers.centralBodyIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.centralBodyIndices.size() * sizeof(int), this->database.centralBodyIndices.data());
 
-  this->gpuBuffers.quadrupoleTensorsBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.quadrupoleTensors.size() * sizeof(Mat3<Real>), data.quadrupoleTensors.data());
-  this->gpuBuffers.inertiaTensorsBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.inertiaTensors.size() * sizeof(Mat3<Real>), data.inertiaTensors.data());
-  this->gpuBuffers.loveIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.loveIndices.size() * sizeof(int), data.loveIndices.data());
-  this->gpuBuffers.tidalFactorIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, data.tidalFactorIndices.size() * sizeof(int), data.tidalFactorIndices.data());
-  this->gpuBuffers.loveNumbersBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.loveNumbers.size() * sizeof(Real), data.loveNumbers.data());
-  this->gpuBuffers.tidalFactorsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, data.tidalFactors.size() * sizeof(Real), data.tidalFactors.data());
+  this->gpuBuffers.quadrupoleTensorsBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.quadrupoleTensors.size() * sizeof(Mat3<Real>), this->database.quadrupoleTensors.data());
+  this->gpuBuffers.inertiaTensorsBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.inertiaTensors.size() * sizeof(Mat3<Real>), this->database.inertiaTensors.data());
+  this->gpuBuffers.loveIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.loveIndices.size() * sizeof(int), this->database.loveIndices.data());
+  this->gpuBuffers.tidalFactorIndicesBuffer.init(ctx, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, this->database.tidalFactorIndices.size() * sizeof(int), this->database.tidalFactorIndices.data());
+  this->gpuBuffers.loveNumbersBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.loveNumbers.size() * sizeof(Real), this->database.loveNumbers.data());
+  this->gpuBuffers.tidalFactorsBuffer.init(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->database.tidalFactors.size() * sizeof(Real), this->database.tidalFactors.data());
 }
 
 template <typename Real>

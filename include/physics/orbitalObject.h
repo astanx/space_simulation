@@ -4,9 +4,9 @@
 #include "physics/orbit.h"
 #include "physics/trail.h"
 
-class Mesh;
+#include "physics/structs/keplerElements.h"
 
-struct KeplerElements;
+class Mesh;
 
 class OrbitalObject : public Object
 {
@@ -15,8 +15,8 @@ protected:
   bool useTrail = true;
 
 public:
-  OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), bool useTrail = true);
-  OrbitalObject(double mu, Radii radii, const KeplerElements &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), bool useTrail = false);
+  OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), bool useTrail = true);
+  OrbitalObject(double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), bool useTrail = false);
   virtual ~OrbitalObject() = default;
 
   Orbit *getOrbit();

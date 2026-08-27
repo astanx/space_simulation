@@ -43,12 +43,11 @@ public:
   double getMu() const;
   double getLuminosity() const;
 
+  void setMu(double mu);
   void setLuminosity(double luminosity);
   void setVelocity(const glm::dvec3 &velocity);
   void setAngularVelocity(const glm::dvec3 &angularVelocity);
   void setAcceleration(const glm::dvec3 &acceleration);
 
   void accelerate(const glm::dvec3 &acc);
-
-  void applyGravitation(const Object &other);
 };

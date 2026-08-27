@@ -20,7 +20,7 @@ struct InertiaProperties
 
   glm::dmat3 getInertiaTensor()
   {
-    glm::dmat3 mat;
+    glm::dmat3 mat(0.0);
     mat[0][0] = A;
     mat[1][1] = B;
     mat[2][2] = C;

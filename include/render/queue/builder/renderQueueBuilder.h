@@ -22,7 +22,7 @@ struct Entity;
 
 struct RenderGroup
 {
-  Model *model;
+  const Model *model;
   std::vector<InstanceModelMatrixParts> fullLODInstances;
   std::vector<InstanceModelMatrixParts> fullNonLODInstances;
 };
@@ -37,7 +37,7 @@ private:
   void buildEntity(const Entity &entity, const RenderDatabaseView &database, LODManager &lod, Frustum *frustum, FrameContext ctx, float fov);
 
 public:
-  RenderQueueBuilder(std::vector<Model *> models);
+  RenderQueueBuilder(const std::vector<Model *> &models);
   ~RenderQueueBuilder() = default;
 
   void build(RenderQueue &queue, const RenderDatabaseView &database, LODManager &lod, InstanceManager &instance, FrameContext &ctx);

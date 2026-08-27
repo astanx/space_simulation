@@ -5,7 +5,7 @@
 #include "maths/constants.h"
 #include "real.cl"
 
-#include "maths/torqueMaths.h"
+#include "maths/torqueMathsFormulas.h"
 
 typedef struct
 {
@@ -37,14 +37,14 @@ real3 calculateTorque(ObjectState object, TidalProperties properties,
     real3 bodyPosition = positions[j];
     real bodyMu = mus[j];
 
-    real3 dp = object.position - bodyPosition;
+    real3 dp = bodyPosition - object.position;
     real d = length(dp);
 
     if (!isfinite(d) || d < EPS) continue;
 
     torque += calculateGravitationalTorque(dp, d, object.tensor, bodyMu);
     if (properties.isTidal)
-      torque += calculateTidalTorque(dp, d, object.angularVelocity, object.velocity, 
+      torque += calculateTidalTorque(-dp, d, object.angularVelocity, object.velocity, 
                                       object.meanRadius, properties.loveNumber, properties.tidalFactor, 
                                       velocities[j], bodyMu);
   }

@@ -3,7 +3,7 @@
 #include "debug/logger.h"
 
 #include "physics/integrators/integratable.h"
-#include "physics/integrators/wisdomHolmanGPUBuffers.h"
+#include "physics/integrators/data/wisdomHolmanGPUBuffers.h"
 
 #include "physics/world/total.h"
 

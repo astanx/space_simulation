@@ -15,7 +15,7 @@ Object::Object(double mass, Radii radii, TidalParameters tidalParameters, Gravit
   this->mass = mass;
   this->position = position;
   this->velocity = velocity;
-  this->quadrupoleTensor = MomentsMaths::calculateQuadrupoleTensor(mass, radii, this->inertiaProperties, gravityField);
+  this->quadrupoleTensor = MomentsMaths::calculateQuadrupoleTensor<double>(mass, radii, this->inertiaProperties.A, this->inertiaProperties.B, this->inertiaProperties.C, gravityField);
   this->inertiaTensor = this->inertiaProperties.getInertiaTensor();
   this->acceleration = glm::dvec3(0.0);
   this->orientation = glm::dmat3(1.0);
@@ -70,6 +70,10 @@ double Object::getMu() const
 
   return this->mu;
 }
+double Object::getLuminosity() const
+{
+  return this->luminosity;
+}
 // Setters
 void Object::setVelocity(const glm::dvec3 &velocity)
 {
@@ -83,14 +87,12 @@ void Object::setAcceleration(const glm::dvec3 &acceleration)
 {
   this->acceleration = acceleration;
 }
-// Public Functions
-void Object::applyGravitation(const Object &other)
+void Object::setLuminosity(double luminosity)
 {
-  glm::dvec3 dp = other.position - this->position;
-  double distSq = glm::dot(dp, dp);
-  if (distSq < EPS)
-    return; // Avoid singularity
-  double dist = sqrt(distSq);
-  glm::dvec3 acc = dp * other.mu / (dist * distSq);
-  accelerate(acc);
+  this->luminosity = luminosity;
+}
+
+void Object::setMu(double mu)
+{
+  this->mu = mu;
 }

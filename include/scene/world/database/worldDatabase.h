@@ -4,8 +4,6 @@
 #include "physics/world/data/physicsDatabase.h"
 #include "render/world/data/renderDatabase.h"
 
-#include "physics/world/total.h"
-
 template <typename Real>
 struct WorldDatabase
 {
