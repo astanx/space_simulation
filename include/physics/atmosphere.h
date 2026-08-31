@@ -8,6 +8,7 @@
 #include "external/json.hpp"
 
 #include <vector>
+#include <memory>
 #include <string>
 
 class Texture;

@@ -6,6 +6,8 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <map>
+#include <array>
+#include <cstddef>
 
 enum class VertexLayout
 {

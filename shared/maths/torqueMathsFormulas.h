@@ -7,8 +7,11 @@
 typedef float3 vec3;
 #else
 #include <glm/glm.hpp>
+#include <cmath>
 using glm::dot;
-using glm::max;
+using std::max;
+using std::fabs;
+using std::isfinite;
 #endif
 
 #include "maths/constants.h"

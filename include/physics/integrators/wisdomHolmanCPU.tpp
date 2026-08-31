@@ -18,6 +18,7 @@
 #include "resources/threadPool.h"
 
 #include <iostream>
+#include <cmath>
 
 // Private functions
 template <typename Real>

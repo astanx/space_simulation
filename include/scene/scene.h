@@ -7,6 +7,7 @@
 #include "camera/cameraMovement.h"
 
 #include <memory>
+#include <variant>
 #include <glm/glm.hpp>
 
 class ResourceManager;

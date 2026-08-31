@@ -9,6 +9,8 @@
 #include "compute/clBuffer.h"
 
 #include <vector>
+#include <memory>
+#include <cstring>
 
 class Model;
 

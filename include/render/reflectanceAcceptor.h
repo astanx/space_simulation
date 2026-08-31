@@ -6,6 +6,8 @@
 
 #include "render/queue/renderBatch.h"
 
+#include <memory>
+
 class Texture;
 class Framebuffer;
 class RenderBuffer;

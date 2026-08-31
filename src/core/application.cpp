@@ -35,8 +35,9 @@ void Application::initWindow(const char *title, GLboolean resizable)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, this->GLminor);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  if (__APPLE__)
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS
+#ifdef __APPLE__
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS
+#endif
 
   glfwWindowHint(GLFW_RESIZABLE, resizable);
 

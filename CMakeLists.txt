@@ -34,6 +34,9 @@ if(NOT glfw3_FOUND)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_X11 ON CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+
     FetchContent_MakeAvailable(glfw)
 endif()
 
@@ -46,7 +49,9 @@ if(NOT GLEW_FOUND)
         GIT_TAG glew-cmake-2.2.0
     )
     set(glew-cmake_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+    set(BUILD_UTILS OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(glew)
+    add_library(GLEW::GLEW ALIAS libglew_static)
 endif()
 
 # FreeType

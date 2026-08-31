@@ -1,4 +1,7 @@
 #include "maths/dateToJD.h"
+
+#include <cmath>
+
 double dateToJD(const Date &date)
 {
   int year = date.year;
@@ -41,8 +44,8 @@ Date JDToDate(double JD)
 
   double seconds = F * 86400.0;
   int hour = seconds / 3600;
-  int minute = fmod(seconds, 3600) / 60;
-  int second = fmod(seconds, 60);
+  int minute = std::fmod(seconds, 3600) / 60;
+  int second = std::fmod(seconds, 60);
 
   return Date(static_cast<int>(day), month, year, hour, minute, second);
 }

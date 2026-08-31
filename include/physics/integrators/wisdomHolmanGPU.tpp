@@ -23,7 +23,11 @@
 
 #include "graphics/state/scopedBuffer.h"
 
-#include <OpenCL/cl.h>
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/cl.h>
+#endif
 #include <iostream>
 
 // Private functions

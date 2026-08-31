@@ -3,6 +3,7 @@
 #include "debug/logger.h"
 
 #include <glm/glm.hpp>
+#include <cmath>
 
 template <typename To, typename From>
 constexpr To cast(From value)

@@ -3,6 +3,7 @@
 #include "render/renderable.h"
 
 #include <vector>
+#include <string>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 

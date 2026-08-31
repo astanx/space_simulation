@@ -18,6 +18,7 @@
 #include "debug/logger.h"
 
 #include <glm/glm.hpp>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 
@@ -422,12 +423,12 @@ void Atmosphere::applyDelta()
             this->cloud_snow_water_content[index] = std::clamp(this->cloud_snow_mass[index] / float(m), 0.0, 1.0);
             this->ozone_mass_mixing_ratio[index] = std::clamp(this->ozone_mass[index] / float(m), 0.0, 1.0);
 
-            if (!isfinite(this->specificHumidity[index])) this->specificHumidity[index] = 0.0;
-            if (!isfinite(this->cloud_ice_water_content[index])) this->cloud_ice_water_content[index] = 0.0;
-            if (!isfinite(this->cloud_liquid_water_content[index])) this->cloud_liquid_water_content[index] = 0.0;
-            if (!isfinite(this->cloud_rain_water_content[index])) this->cloud_rain_water_content[index] = 0.0;
-            if (!isfinite(this->cloud_snow_water_content[index])) this->cloud_snow_water_content[index] = 0.0;
-            if (!isfinite(this->ozone_mass_mixing_ratio[index])) this->ozone_mass_mixing_ratio[index] = 0.0;
+            if (!std::isfinite(this->specificHumidity[index])) this->specificHumidity[index] = 0.0;
+            if (!std::isfinite(this->cloud_ice_water_content[index])) this->cloud_ice_water_content[index] = 0.0;
+            if (!std::isfinite(this->cloud_liquid_water_content[index])) this->cloud_liquid_water_content[index] = 0.0;
+            if (!std::isfinite(this->cloud_rain_water_content[index])) this->cloud_rain_water_content[index] = 0.0;
+            if (!std::isfinite(this->cloud_snow_water_content[index])) this->cloud_snow_water_content[index] = 0.0;
+            if (!std::isfinite(this->ozone_mass_mixing_ratio[index])) this->ozone_mass_mixing_ratio[index] = 0.0;
 
             this->temperature[index] = this->thermal_energy[index] / (m * c_p);
             this->density[index] = m / this->volume[index];
@@ -437,7 +438,7 @@ void Atmosphere::applyDelta()
             float e_s = 611.2 * exp(17.67 * (T - 273.15) / (T - 29.65));
 
             this->relativeHumidity[index] = e / e_s;
-            if (!isfinite(this->relativeHumidity[index])) this->relativeHumidity[index] = 0.0;
+            if (!std::isfinite(this->relativeHumidity[index])) this->relativeHumidity[index] = 0.0;
 
             // float RH_crit = 1.f;
             // float x = std::max(0.f, (this->relativeHumidity[index] - RH_crit) / (1.f - RH_crit));
@@ -450,9 +451,9 @@ void Atmosphere::applyDelta()
             float r_e = 10e-6f; // 10 µm droplets
             float tau = 3.f * lwp / (2.f * 1000.f * r_e);
 
-            this->cloud_cover[index] = std::clamp(1.f - exp(-tau), 0.f, 1.f);
+            this->cloud_cover[index] = std::clamp(1.f - std::exp(-tau), 0.f, 1.f);
 
-            if (!isfinite(this->cloud_cover[index])) this->cloud_cover[index] = 0.0;
+            if (!std::isfinite(this->cloud_cover[index])) this->cloud_cover[index] = 0.0;
           }
         }
       } });

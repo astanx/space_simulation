@@ -1,7 +1,11 @@
 #include "debug/logger.h"
 
 #include "GL/glew.h"
-#include <OpenCL/cl.h>
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/cl.h>
+#endif
 
 #include <iostream>
 #include <unordered_set>

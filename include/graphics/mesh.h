@@ -8,6 +8,8 @@
 
 #include "graphics/arrays/vertexArray.h"
 
+#include <memory>
+#include <vector>
 #include <GL/glew.h>
 
 class Shader;

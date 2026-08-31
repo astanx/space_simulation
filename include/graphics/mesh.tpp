@@ -9,6 +9,9 @@
 #include "graphics/state/scopedBuffer.h"
 #include "graphics/state/scopedVertexArray.h"
 
+#include <optional>
+#include <cstring>
+
 // Private functions
 template <typename T>
 void Mesh::initVAO(std::vector<T> *vertexArray, std::vector<GLuint> *indexArray)

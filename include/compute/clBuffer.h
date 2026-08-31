@@ -1,7 +1,12 @@
 #pragma once
 
-#include <OpenCL/cl.h>
 #include <GL/glew.h>
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/cl.h>
+#include <CL/cl_gl.h>
+#endif
 
 class CLBuffer
 {

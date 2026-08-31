@@ -2,10 +2,17 @@
 
 #include "debug/logger.h"
 
-#include <OpenCL/gcl.h>
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
 #include <OpenGL/CGLCurrent.h>
+#else
+#include <CL/cl.h>
+#include <CL/cl_gl.h>
+#include <GL/glx.h>
+#endif
 
 #include <vector>
+#include <cstring>
 
 // Constructor / Destructor
 Context::Context()

@@ -4,6 +4,9 @@
 #include "graphics/texture.h"
 
 #include <vector>
+#include <memory>
+#include <string>
+#include <glm/glm.hpp>
 #include <GL/glew.h>
 
 class Shader;

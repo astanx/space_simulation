@@ -20,7 +20,11 @@
 #include <string>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <OpenCL/cl.h>
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/cl.h>
+#endif
 
 class Primitive;
 struct AsteroidShape;

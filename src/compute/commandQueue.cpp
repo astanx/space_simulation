@@ -2,7 +2,11 @@
 
 #include "debug/logger.h"
 
+#ifdef __APPLE__
 #include <OpenCL/cl_gl.h>
+#else
+#include <CL/cl_gl.h>
+#endif
 #include <iostream>
 
 // Constructor / Destructor
