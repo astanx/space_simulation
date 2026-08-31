@@ -35,11 +35,14 @@ void EntityManager::registerModelEntity(const Entity &entity, size_t idx)
 
   this->entityToModelIdx[entity.id] = idx;
 }
-
-std::vector<std::unique_ptr<Entity>> &EntityManager::getEntities()
+void EntityManager::registerSpecialEntity(const Entity &entity, size_t idx)
 {
-  return this->entities;
-};
+  auto it = this->entityToSpecialIdx.find(entity.id);
+  if (it != this->entityToSpecialIdx.end())
+    Logger::logFatal("Entity Manager", "Special entity registered twice");
+
+  this->entityToSpecialIdx[entity.id] = idx;
+}
 
 const std::vector<std::unique_ptr<Entity>> &EntityManager::getEntities() const
 {

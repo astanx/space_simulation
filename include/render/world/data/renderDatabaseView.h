@@ -23,10 +23,13 @@ public:
 
   // Entity
   const std::vector<std::unique_ptr<Entity>> &getEntities() const { return this->entityManager.getEntities(); };
+  template <typename F>
+  void forEachSpecialEntity(F &&func) const { this->entityManager.forEachSpecialEntity(func); };
 
   // Render
   const Camera &getCamera() const { return this->camera; };
   size_t getModelsCount() const { return this->render.models.size(); };
+  size_t getEntitiesCount() const { return this->entityManager.getEntities().size(); };
   Model *getModel(const Entity &entity) const { return this->render.getModel(this->entityManager.getModelIndex(entity)); };
   const std::vector<Model *> &getModels() const { return this->render.models; };
 

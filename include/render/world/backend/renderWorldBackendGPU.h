@@ -14,8 +14,6 @@ struct BackendGPUBuffers;
 class RenderWorldBackendGPU : public RenderWorldBackend
 {
 private:
-  std::vector<Model *> &models;
-
   std::vector<size_t> specialIndices;
   std::vector<Range> specialAllocations;
   std::vector<glm::vec3> specialPositions;
@@ -29,15 +27,15 @@ private:
   bool isDouble = false;
   bool wasSubInit = false;
 
-  void initSpecialModel(RenderQueue &queue, InstanceManager &manager, const Model *model);
-  void initModelQueue(RenderQueue &queue, InstanceManager &manager, const Model *model) override;
+  void initSpecialModel(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity);
+  void initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity) override;
 
   void updateSpecialPositions(CommandQueue &queue, InstanceManager &manager);
 
-  size_t getSpecialIndex(const Model *model);
+  size_t getSpecialIndex(const Entity &entity);
 
 public:
-  RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUBuffers &lodData, BackendGPUBuffers &data, Total &total, std::vector<Model *> &models);
+  RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUBuffers &lodData, BackendGPUBuffers &data, Total &total, size_t modelCount);
   ~RenderWorldBackendGPU() = default;
 
   void sync(IPhysicsWorld &physics, const RenderDatabaseView &database, PointLight *light) override;

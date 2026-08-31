@@ -127,6 +127,8 @@ void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporarySto
         this->entityManager.registerOrbitalEntity(*this->objectToEntity.at(orb), idx);
         this->entityManager.registerObjectEntity(*this->objectToEntity.at(orb), idx);
         this->entityManager.registerModelEntity(*this->objectToEntity.at(orb), orbitalStorage.lookup.table[model]);
+        if (model->hasFlag(ModelFlags::Special))
+          this->entityManager.registerSpecialEntity(*this->objectToEntity.at(orb), idx);
 
         Object* central = orb->getOrbit()->getCentralBody();
         orbitalStorage.database.physics.centralBodyIndices[idx] = this->findCentralBodyIndex(central);
@@ -140,6 +142,8 @@ void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporarySto
 
         this->entityManager.registerObjectEntity(*this->objectToEntity.at(&obj), this->total.orbital + idx);
         this->entityManager.registerModelEntity(*this->objectToEntity.at(&obj), this->modelTotal.orbital + objectStorage.lookup.table[model]);
+        if (model->hasFlag(ModelFlags::Special))
+          this->entityManager.registerSpecialEntity(*this->objectToEntity.at(&obj), this->total.orbital + idx);
       } });
 }
 
@@ -334,7 +338,8 @@ WorldDatabase<Real> WorldDatabaseBuilder<Real>::build(InstanceManager &instanceM
     this->entityManager.registerOrbitalEntity(*this->objectToEntity.at(obj.physics), orbitalOffset);
     this->entityManager.registerObjectEntity(*this->objectToEntity.at(obj.physics), orbitalOffset);
     this->entityManager.registerModelEntity(*this->objectToEntity.at(obj.physics), orbitalOffset);
-
+    if (obj.render->hasFlag(ModelFlags::Special))
+      this->entityManager.registerSpecialEntity(*this->objectToEntity.at(obj.physics), orbitalOffset);
     orbitalOffset++;
   }
 
@@ -346,6 +351,8 @@ WorldDatabase<Real> WorldDatabaseBuilder<Real>::build(InstanceManager &instanceM
     this->entityManager.registerObjectEntity(*this->objectToEntity.at(obj.physics), this->total.orbital + objectOffset);
     this->entityManager.registerModelEntity(*this->objectToEntity.at(obj.physics), this->modelTotal.orbital + objectOffset);
 
+    if (obj.render->hasFlag(ModelFlags::Special))
+      this->entityManager.registerSpecialEntity(*this->objectToEntity.at(obj.physics), this->total.orbital + objectOffset);
     objectOffset++;
   }
 

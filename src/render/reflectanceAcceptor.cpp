@@ -19,6 +19,7 @@
 #include "graphics/state/scopedViewport.h"
 #include "graphics/state/scopedDepthTest.h"
 
+#include <iostream>
 // Private functions
 void ReflectanceAcceptor::initRadianceTexture()
 {
@@ -161,9 +162,13 @@ void ReflectanceAcceptor::renderRadiance(Shader &shader, const Camera &camera, M
 
 void ReflectanceAcceptor::renderRadianceInstanced(Shader &shader, const Camera &camera, RenderBatch reflector, Buffer *instanceVBO) const
 {
+  std::cout << "RENDER RADIANCE" << std::endl;
+
   glm::vec3 pos = this->renderPosition;
 
-  shader.setVec3f(pos, "receiverPosition");
+  std::cout << "POS: " << pos.x << " " << pos.y << " " << pos.z << std::endl;
+
+    shader.setVec3f(pos, "receiverPosition");
 
   glm::mat4 projection = camera.getProjectionMatrix(1, 90.0f);
 

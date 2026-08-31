@@ -14,23 +14,24 @@ class IPhysicsWorld;
 class PointLight;
 struct Range;
 struct RenderDatabaseView;
+struct Entity;
 
 class RenderWorldBackend
 {
 protected:
   LODSettings lodSettings;
 
-  size_t lastModelsSize = 0;
+  size_t lastEntityCount = 0;
 
-  void initShadowQueue(RenderQueue &queue, InstanceManager &manager, const Model *model);
-  void initReflectorQueue(RenderQueue &queue, InstanceManager &manager, const Model *model);
-  virtual void initModelQueue(RenderQueue &queue, InstanceManager &manager, const Model *model);
-  void initSubQueues(RenderQueue &queue, InstanceManager &manager, const std::vector<Model *> &models);
+  void initShadowQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity);
+  void initReflectorQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity);
+  virtual void initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity);
+  void initSubQueues(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database);
 
 public:
   RenderWorldBackend() = default;
   virtual ~RenderWorldBackend() = default;
 
-  virtual void sync(IPhysicsWorld &physics, const RenderDatabaseView& database, PointLight *light) = 0;
-  virtual void update(RenderQueue &queue, const RenderDatabaseView& database, InstanceManager &instanceManager, FrameContext &ctx)  = 0;
+  virtual void sync(IPhysicsWorld &physics, const RenderDatabaseView &database, PointLight *light) = 0;
+  virtual void update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, FrameContext &ctx) = 0;
 };

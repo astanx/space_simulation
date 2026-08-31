@@ -29,7 +29,7 @@ void RenderQueueBuilderGPU::updateKernels(const Camera &camera, FrameContext &ct
 
 // Public functions
 template <typename Real>
-void RenderQueueBuilderGPU::build(CommandQueue &commandQueue, RenderQueue &renderQueue, LODManagerGPU &lod, InstanceManager &instanceManager, const Camera &camera, FrameContext &ctx, std::vector<Model *> &models, size_t totalObjects)
+void RenderQueueBuilderGPU::build(CommandQueue &commandQueue, RenderQueue &renderQueue, LODManagerGPU &lod, InstanceManager &instanceManager, const Camera &camera, FrameContext &ctx, const std::vector<Model *> &models, size_t totalObjects)
 {
   renderQueue.clear();
   instanceManager.clear();

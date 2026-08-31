@@ -78,7 +78,7 @@ void RenderWorld::initGPUBackend(Context &ctx, CommandQueue &queue, Total &total
       this->gpuBuffers.modelRangeEndBuffer,
       this->rangeCount};
 
-  this->backend = std::make_unique<RenderWorldBackendGPU>(resourceManager, queue, ctx, lodBuffers, backendBuffers, total, this->database.models);
+  this->backend = std::make_unique<RenderWorldBackendGPU>(resourceManager, queue, ctx, lodBuffers, backendBuffers, total, this->database.models.size());
 }
 
 void RenderWorld::update(RenderQueue &queue, FrameContext &ctx, const SharedDatabaseView &shared, const EntityManager &entityManager)

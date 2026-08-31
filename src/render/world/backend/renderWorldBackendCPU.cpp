@@ -15,11 +15,9 @@ RenderWorldBackendCPU::RenderWorldBackendCPU() : lodManager(this->lodSettings) {
 // Public functions
 void RenderWorldBackendCPU::update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, FrameContext &ctx)
 {
-  const std::vector<Model *> &models = database.getModels();
-  if (this->lastModelsSize != database.getModelsCount())
-    this->initSubQueues(queue, instanceManager, models);
+  this->initSubQueues(queue, instanceManager, database);
 
-  RenderQueueBuilder builder(models);
+  RenderQueueBuilder builder(database.getModels());
   builder.build(queue, database, this->lodManager, instanceManager, ctx);
 }
 
@@ -29,4 +27,6 @@ void RenderWorldBackendCPU::sync(IPhysicsWorld &physics, const RenderDatabaseVie
     database.moveLight(physics.getSun(), *light);
   else
     Logger::logFatal("Scene", " No sun light to sync position");
+
+  // todo update reflector pos
 }
