@@ -53,14 +53,14 @@ void RenderQueueBuilder::build(RenderQueue &queue, const RenderDatabaseView &dat
   Frustum frustum = camera.getFrustum(ctx.aspect);
 
   // fix here add threadPool
-  for (const std::unique_ptr<Entity> &entity : database.getEntities())
+  for (const Entity &entity : database.getEntities())
   {
-    if (!entity)
-    {
-      Logger::logError("Render Queue Builder", "Uninitialized entity detected");
-      continue;
-    }
-    this->buildEntity(*entity, database, lod, &frustum, ctx, fov);
+    // if (!entity)
+    // {
+    //   Logger::logError("Render Queue Builder", "Uninitialized entity detected");
+    //   continue;
+    // }
+    this->buildEntity(entity, database, lod, &frustum, ctx, fov);
   }
 
   this->finish(instance, queue);

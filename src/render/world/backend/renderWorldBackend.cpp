@@ -13,7 +13,7 @@
 #include "physics/world/physicsWorld.h"
 
 // Protected function
-void RenderWorldBackend::initShadowQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity)
+void RenderWorldBackend::initShadowQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity)
 {
   const Model* model = database.getModel(entity);
   if (model->hasFlag(ModelFlags::CastsShadow))
@@ -22,7 +22,7 @@ void RenderWorldBackend::initShadowQueue(RenderQueue &queue, InstanceManager &ma
     queue.addShadowBatch({model, allocation});
   }
 }
-void RenderWorldBackend::initReflectorQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity)
+void RenderWorldBackend::initReflectorQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity)
 {
   const Model* model = database.getModel(entity);
   const ReflectanceAcceptor *acceptor = dynamic_cast<const ReflectanceAcceptor *>(model);
@@ -36,7 +36,7 @@ void RenderWorldBackend::initReflectorQueue(RenderQueue &queue, InstanceManager 
     queue.addReflectorBatch({acceptor, allocation, {reflector, manager.getAllocation(reflector)}});
   }
 }
-void RenderWorldBackend::initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity)
+void RenderWorldBackend::initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity)
 {
   this->initShadowQueue(queue, manager, database, entity);
   this->initReflectorQueue(queue, manager, database, entity);
@@ -44,7 +44,7 @@ void RenderWorldBackend::initEntityQueue(RenderQueue &queue, InstanceManager &ma
 
 void RenderWorldBackend::initSubQueues(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database)
 {
-  const std::vector<std::unique_ptr<Entity>> &entities = database.getEntities();
+  const std::vector<Entity> &entities = database.getEntities();
   if (this->lastEntityCount == entities.size())
     return;
 
@@ -52,11 +52,11 @@ void RenderWorldBackend::initSubQueues(RenderQueue &queue, InstanceManager &mana
 
   this->lastEntityCount = entities.size();
 
-  for (const std::unique_ptr<Entity> &entity : entities)
+  for (const Entity entity : entities)
   {
-    if (!entity)
-      Logger::logError("Render World Backend", "Uninitialized entity passed");
-    else
-      this->initEntityQueue(queue, manager, database, *entity);
+    // if (!entity)
+    //   Logger::logError("Render World Backend", "Uninitialized entity passed");
+    // else
+      this->initEntityQueue(queue, manager, database, entity);
   }
 }

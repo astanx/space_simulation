@@ -27,12 +27,12 @@ private:
   bool isDouble = false;
   bool wasSubInit = false;
 
-  void initSpecialModel(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity);
-  void initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity) override;
+  void initSpecialModel(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity);
+  void initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity) override;
 
   void updateSpecialPositions(CommandQueue &queue, InstanceManager &manager);
 
-  size_t getSpecialIndex(const Entity &entity);
+  size_t getSpecialIndex(const Entity entity);
 
 public:
   RenderWorldBackendGPU(ResourceManager &manager, CommandQueue &queue, Context &ctx, LODGPUBuffers &lodData, BackendGPUBuffers &data, Total &total, size_t modelCount);

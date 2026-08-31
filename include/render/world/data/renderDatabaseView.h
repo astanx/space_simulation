@@ -22,7 +22,7 @@ public:
   ~RenderDatabaseView() = default;
 
   // Entity
-  const std::vector<std::unique_ptr<Entity>> &getEntities() const { return this->entityManager.getEntities(); };
+  const std::vector<Entity> &getEntities() const { return this->entityManager.getEntities(); };
   template <typename F>
   void forEachSpecialEntity(F &&func) const { this->entityManager.forEachSpecialEntity(func); };
 

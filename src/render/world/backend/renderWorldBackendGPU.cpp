@@ -16,7 +16,7 @@
 #include <iostream>
 
 // Private functions
-void RenderWorldBackendGPU::initSpecialModel(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity)
+void RenderWorldBackendGPU::initSpecialModel(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity)
 {
   const Model *model = database.getModel(entity);
   if (!model->hasFlag(ModelFlags::Special))
@@ -37,7 +37,7 @@ void RenderWorldBackendGPU::initSpecialModel(RenderQueue &queue, InstanceManager
   this->specialIndices[id] = index;
 }
 
-void RenderWorldBackendGPU::initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity)
+void RenderWorldBackendGPU::initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity)
 {
   RenderWorldBackend::initEntityQueue(queue, manager, database, entity);
   this->initSpecialModel(queue, manager, database, entity);
@@ -57,7 +57,7 @@ void RenderWorldBackendGPU::updateSpecialPositions(CommandQueue &queue, Instance
   queue.enqueueReleaseGLBuffer(fullBufferID);
 }
 
-size_t RenderWorldBackendGPU::getSpecialIndex(const Entity &entity)
+size_t RenderWorldBackendGPU::getSpecialIndex(const Entity entity)
 {
   if (entity.id >= this->specialIndices.size())
     Logger::logFatal("Render World Backend GPU", "Entity ID is out of range");

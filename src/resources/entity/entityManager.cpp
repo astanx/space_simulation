@@ -5,13 +5,14 @@
 #include <iostream>
 
 // Public functions
-const Entity &EntityManager::create()
+const Entity EntityManager::create()
 {
-  this->entities.push_back(std::make_unique<Entity>(this->entities.size()));
-  return *this->entities.back();
+  Entity e{this->entities.size()};
+  this->entities.push_back(e);
+  return e;
 };
 
-void EntityManager::registerOrbitalEntity(const Entity &entity, size_t idx)
+void EntityManager::registerOrbitalEntity(const Entity entity, size_t idx)
 {
   auto it = this->entityToOrbitalIdx.find(entity.id);
   if (it != this->entityToOrbitalIdx.end())
@@ -19,7 +20,7 @@ void EntityManager::registerOrbitalEntity(const Entity &entity, size_t idx)
 
   this->entityToOrbitalIdx[entity.id] = idx;
 }
-void EntityManager::registerObjectEntity(const Entity &entity, size_t idx)
+void EntityManager::registerObjectEntity(const Entity entity, size_t idx)
 {
   auto it = this->entityToObjectIdx.find(entity.id);
   if (it != this->entityToObjectIdx.end())
@@ -27,7 +28,7 @@ void EntityManager::registerObjectEntity(const Entity &entity, size_t idx)
 
   this->entityToObjectIdx[entity.id] = idx;
 }
-void EntityManager::registerModelEntity(const Entity &entity, size_t idx)
+void EntityManager::registerModelEntity(const Entity entity, size_t idx)
 {
   auto it = this->entityToModelIdx.find(entity.id);
   if (it != this->entityToModelIdx.end())
@@ -35,7 +36,7 @@ void EntityManager::registerModelEntity(const Entity &entity, size_t idx)
 
   this->entityToModelIdx[entity.id] = idx;
 }
-void EntityManager::registerSpecialEntity(const Entity &entity, size_t idx)
+void EntityManager::registerSpecialEntity(const Entity entity, size_t idx)
 {
   auto it = this->entityToSpecialIdx.find(entity.id);
   if (it != this->entityToSpecialIdx.end())
@@ -44,11 +45,11 @@ void EntityManager::registerSpecialEntity(const Entity &entity, size_t idx)
   this->entityToSpecialIdx[entity.id] = idx;
 }
 
-const std::vector<std::unique_ptr<Entity>> &EntityManager::getEntities() const
+const std::vector<Entity> &EntityManager::getEntities() const
 {
   return this->entities;
 };
-size_t EntityManager::getOrbitalIndex(const Entity &entity) const
+size_t EntityManager::getOrbitalIndex(const Entity entity) const
 {
   auto it = this->entityToOrbitalIdx.find(entity.id);
   if (it == this->entityToOrbitalIdx.end())
@@ -56,7 +57,7 @@ size_t EntityManager::getOrbitalIndex(const Entity &entity) const
 
   return this->entityToOrbitalIdx.at(entity.id);
 }
-size_t EntityManager::getObjectIndex(const Entity &entity) const
+size_t EntityManager::getObjectIndex(const Entity entity) const
 {
   auto it = this->entityToObjectIdx.find(entity.id);
   if (it == this->entityToObjectIdx.end())
@@ -64,7 +65,7 @@ size_t EntityManager::getObjectIndex(const Entity &entity) const
 
   return this->entityToObjectIdx.at(entity.id);
 }
-size_t EntityManager::getModelIndex(const Entity &entity) const
+size_t EntityManager::getModelIndex(const Entity entity) const
 {
   auto it = this->entityToModelIdx.find(entity.id);
   if (it == this->entityToModelIdx.end())
@@ -72,7 +73,7 @@ size_t EntityManager::getModelIndex(const Entity &entity) const
 
   return this->entityToModelIdx.at(entity.id);
 }
-bool EntityManager::getIsOrbital(const Entity &entity) const
+bool EntityManager::getIsOrbital(const Entity entity) const
 {
   auto it = this->entityToOrbitalIdx.find(entity.id);
   if (it == this->entityToOrbitalIdx.end())

@@ -23,7 +23,7 @@ public:
   IntegratorDatabase(const EntityManager &manager, SharedDatabase<Real> &shared, PhysicsDatabase<Real> &physics) : entityManager(manager), shared(shared), physics(physics) {};
   virtual ~IntegratorDatabase() = default;
 
-  const std::vector<std::unique_ptr<Entity>> &getEntities() { return entityManager.getEntities(); };
+  const std::vector<Entity> &getEntities() { return entityManager.getEntities(); };
 
   Vec3<Real> getPosition(const Entity &entity) const { return this->shared.positions[this->entityManager.getObjectIndex(entity)]; };
   Vec3<Real> getPosition(size_t idx) const { return this->shared.positions[idx]; };

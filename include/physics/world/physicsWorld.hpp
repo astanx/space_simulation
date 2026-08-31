@@ -73,12 +73,13 @@ void PhysicsWorld<Real>::step(double dt)
   this->backend->step(dt);
 }
 template <typename Real>
-void PhysicsWorld<Real>::addSun(const Entity &sun)
+void PhysicsWorld<Real>::addSun(const Entity sun)
 {
-  if (this->sun)
+  if (this->wasSunInit)
     Logger::logFatal("Physics World", "Sun already exists");
 
-  this->sun = &sun;
+  this->sun = sun;
+  this->wasSunInit = true;
 }
 template <typename Real>
 
@@ -92,10 +93,10 @@ void PhysicsWorld<Real>::setDatabase(PhysicsDatabase<Real> database)
 }
 
 template <typename Real>
-const Entity &PhysicsWorld<Real>::getSun() const
+const Entity PhysicsWorld<Real>::getSun() const
 {
-  if (!this->sun)
+  if (!this->wasSunInit)
     Logger::logFatal("PhysicsWorld", "No sun");
 
-  return *this->sun;
+  return this->sun;
 };

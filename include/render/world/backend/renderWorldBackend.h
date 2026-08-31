@@ -23,9 +23,9 @@ protected:
 
   size_t lastEntityCount = 0;
 
-  void initShadowQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity);
-  void initReflectorQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity);
-  virtual void initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity &entity);
+  void initShadowQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity);
+  void initReflectorQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity);
+  virtual void initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity);
   void initSubQueues(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database);
 
 public:

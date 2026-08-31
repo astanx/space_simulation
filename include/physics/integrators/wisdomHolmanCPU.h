@@ -16,13 +16,13 @@ protected:
 
   bool validEntity(const std::unique_ptr<Entity>& entity);
 
-  void halfKickLinear(const std::vector<std::unique_ptr<Entity>> &entities, IntegratorDatabase<Real> &database, Real dt);
+  void halfKickLinear(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt);
   void driftLinear(const Entity &entity, IntegratorDatabase<Real> &database, Real dt);
 
-  void halfKickAngular(const std::vector<std::unique_ptr<Entity>> &entities, IntegratorDatabase<Real> &database, Real dt);
+  void halfKickAngular(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt);
   void driftAngular(const Entity &entity, IntegratorDatabase<Real> &database, Real dt);
 
-  void halfKick(const std::vector<std::unique_ptr<Entity>> &entities, IntegratorDatabase<Real> &database, Real dt);
+  void halfKick(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt);
   void drift(const Entity &entity, IntegratorDatabase<Real> &database, Real dt);
 
   void keplerDrift(const Entity &entity, IntegratorDatabase<Real> &database, Real dt);

@@ -34,7 +34,7 @@ private:
   Importance &importance;
   EntityManager &entityManager;
 
-  std::unordered_map<Object *, const Entity *> objectToEntity;
+  std::unordered_map<Object *, Entity> objectToEntity;
 
   std::mutex loveMutex;
   std::mutex tidalMutex;
@@ -71,7 +71,7 @@ public:
   void addAtmosphereToPlanet(ResourceManager &resourceManager, ThreadPool &threadPool, std::string planetName, Planet *planet);
   AsteroidSystem *createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, Real innerEdge, Real outerEdge, Real timeAfterJD2000);
 
-  const Entity &convertObjectToEntity(Object *object);
+  const Entity convertObjectToEntity(Object *object);
 
   WorldDatabase<Real> build(InstanceManager &instanceManager);
 };

@@ -40,7 +40,8 @@ private:
 
   std::unique_ptr<PhysicsBackend<Real>> backend;
 
-  const Entity *sun;
+  Entity sun;
+  bool wasSunInit = false;
 
 public:
   PhysicsWorld();
@@ -53,13 +54,13 @@ public:
 
   void step(double dt);
 
-  void addSun(const Entity &sun);
+  void addSun(const Entity sun);
   void setDatabase(PhysicsDatabase<Real> database);
 
   const PhysicsGPUBuffers &getGPUBuffers() { return this->gpuBuffers; };
   const PhysicsDatabase<Real> &getDatabase() { return this->database; };
 
-  const Entity &getSun() const override;
+  const Entity getSun() const override;
 };
 
 #include "physics/world/physicsWorld.hpp"

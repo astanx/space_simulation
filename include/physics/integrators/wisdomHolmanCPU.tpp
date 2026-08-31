@@ -32,7 +32,7 @@ bool WisdomHolmanIntegratorCPU<Real>::validEntity(const std::unique_ptr<Entity> 
 }
 
 template <typename Real>
-void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<std::unique_ptr<Entity>> &entities, IntegratorDatabase<Real> &database, Real dt)
+void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt)
 {
   std::vector<std::vector<vec3>> threadLocalAccelerations;
   threadLocalAccelerations.resize(this->threadPool.getThreadCount());
@@ -44,10 +44,10 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<std::uniq
     std::vector<vec3> &localAccelerations = threadLocalAccelerations[thread];
     for (size_t i = work.begin; i < work.end; i++)
     {
-      if (!this->validEntity(entities[i]))
-        continue;
+      // if (!this->validEntity(entities[i]))
+      //   continue;
 
-      const Entity& entity = *entities[i];
+      const Entity& entity = entities[i];
 
       size_t central = database.getIsOrbital(entity) ? database.getCentralBodyIdx(entity) : i;
       
@@ -59,10 +59,10 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<std::uniq
           continue;
         if (j == central)
           continue;
-        if (!this->validEntity(entities[j]))
-          continue;
+        // if (!this->validEntity(entities[j]))
+        //   continue;
 
-        const Entity& otherEntity = *entities[j];
+        const Entity& otherEntity = entities[j];
         vec3 scale = gravitationalDpOverD3<Real>(database.getPosition(entity), database.getPosition(otherEntity));
 
         localAccelerations[i] += scale * database.getMu(otherEntity);
@@ -74,10 +74,10 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<std::uniq
                                {
   for(size_t i = work.begin; i < work.end; i++)
   {
-    if (!this->validEntity(entities[i]))
-      continue;
+    // if (!this->validEntity(entities[i]))
+    //   continue;
     
-    const Entity& entity = *entities[i];
+    const Entity& entity = entities[i];
 
     vec3 acceleration = vec3(0.0);
     for (auto& localAccelerations : threadLocalAccelerations)
@@ -88,7 +88,7 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<std::uniq
 }
 
 template <typename Real>
-void WisdomHolmanIntegratorCPU<Real>::halfKickAngular(const std::vector<std::unique_ptr<Entity>> &entities, IntegratorDatabase<Real> &database, Real dt)
+void WisdomHolmanIntegratorCPU<Real>::halfKickAngular(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt)
 {
   std::vector<std::vector<vec3>> threadLocalTorques;
   threadLocalTorques.resize(this->threadPool.getThreadCount());
@@ -100,20 +100,20 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickAngular(const std::vector<std::uni
     std::vector<vec3> &localTorque = threadLocalTorques[thread];
     for (size_t i = work.begin; i < work.end; i++)
     {
-      if (!this->validEntity(entities[i]))
-        continue;
+      // if (!this->validEntity(entities[i]))
+      //   continue;
 
-      const Entity& entity = *entities[i];
+      const Entity& entity = entities[i];
 
       for (size_t j = i; j < entities.size(); j++)
       {
         if (i == j)
           continue;
 
-        if (!this->validEntity(entities[j]))
-          continue;
+        // if (!this->validEntity(entities[j]))
+        //   continue;
         
-        const Entity& otherEntity = *entities[j];
+        const Entity& otherEntity = entities[j];
 
         vec3 dp = vec3(database.getPosition(otherEntity)) -  vec3(database.getPosition(entity));
         Real d = glm::length(dp);
@@ -144,10 +144,10 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickAngular(const std::vector<std::uni
                                {
     for (size_t i = work.begin; i < work.end; i++)
     {
-      if (!this->validEntity(entities[i]))
-        continue;
+      // if (!this->validEntity(entities[i]))
+      //   continue;
 
-      const Entity &entity = *entities[i];
+      const Entity &entity = entities[i];
 
       vec3 torque = vec3(0.0);
       for (auto &localTorques : threadLocalTorques)
@@ -224,7 +224,7 @@ void WisdomHolmanIntegratorCPU<Real>::drift(const Entity &entity, IntegratorData
   this->driftAngular(entity, database, dt);
 }
 template <typename Real>
-void WisdomHolmanIntegratorCPU<Real>::halfKick(const std::vector<std::unique_ptr<Entity>> &entities, IntegratorDatabase<Real> &database, Real dt)
+void WisdomHolmanIntegratorCPU<Real>::halfKick(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt)
 {
   this->halfKickLinear(entities, database, dt);
   this->halfKickAngular(entities, database, dt);
@@ -234,17 +234,17 @@ void WisdomHolmanIntegratorCPU<Real>::halfKick(const std::vector<std::unique_ptr
 template <typename Real>
 void WisdomHolmanIntegratorCPU<Real>::step(IntegratorDatabase<Real> &database, Real dt)
 {
-  const std::vector<std::unique_ptr<Entity>> &entities = database.getEntities();
+  const std::vector<Entity> &entities = database.getEntities();
 
   // kick
   this->halfKick(entities, database, dt * 0.5);
 
   // drift
-  for (const std::unique_ptr<Entity> &entity : entities)
+  for (const Entity &entity : entities)
   {
-    if (!this->validEntity(entity))
-      continue;
-    this->drift(*entity, database, dt);
+    // if (!this->validEntity(entity))
+    //   continue;
+    this->drift(entity, database, dt);
   }
 
   // kick
