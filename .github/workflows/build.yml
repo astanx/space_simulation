@@ -20,8 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Install make (Windows)
-        if: runner.os == 'Windows'
-        run: choco install make
-      - name: Make
-        run: make
+      - name: CMake
+        run: cmake -S . -B build
+
+      - name: Build
+        run: cmake --build build
