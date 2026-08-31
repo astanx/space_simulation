@@ -1,0 +1,27 @@
+name: Cross OS builder
+
+run-name: Cross build  ${{github.repository}} by ${{ github.actor }}
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    name: Build on ${{matrix.os}}
+
+    runs-on: ${{matrix.os}}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install make (Windows)
+        if: runner.os == 'Windows'
+        run: choco install make
+      - name: Make
+        run: make

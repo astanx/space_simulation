@@ -152,7 +152,6 @@ add_executable(Space
     src/render/modelSource.cpp
     src/render/reflectanceAcceptor.cpp
     src/render/instanceManager.cpp
-    src/render/reflectanceAcceptor.cpp
         # Renderer
         src/render/renderer/renderer.cpp
             # Backend
