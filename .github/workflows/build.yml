@@ -24,7 +24,7 @@ jobs:
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1
         with:
-          cmake-version: '3.5'
+          cmake-version: '3.16'
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
