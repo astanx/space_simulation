@@ -52,18 +52,21 @@ jobs:
       - name: Install Windows dependencies
         if: runner.os == 'Windows'
         run: |
-          choco install cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System' -y
+          choco install cmake ninja opencl-headers --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
       - name: Setup Visual Studio
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: CMake
         if: runner.os == 'Windows'
         run: |
           mkdir build
           cd build
-          cmake .. -G "Ninja"  -DCMAKE_CXX_COMPILER="cl.exe"
+          cmake .. -G "Ninja Multi-Config"
 
       - name: CMake
         if: runner.os != 'Windows'
