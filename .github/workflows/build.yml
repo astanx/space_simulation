@@ -53,7 +53,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake .. -DOpenGL_GL_PREFERENCE=GLVND
+          cmake ..
 
       - name: Build
         run: |

@@ -8,7 +8,7 @@ include(FetchContent)
 
 # Find OpenGL
 if(APPLE)
-    set(OpenGL_GL_PREFERENCE GLVND)
+    set(OpenGL_GL_PREFERENCE LEGACY)
 endif()
 
 find_package(OpenGL REQUIRED)
