@@ -12,7 +12,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
 
     name: Build on ${{matrix.os}}
 
@@ -24,7 +24,7 @@ jobs:
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1
         with:
-          cmake-version: '3.16'
+          cmake-version: "3.16"
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
@@ -43,11 +43,6 @@ jobs:
             libxi-dev \
             ocl-icd-opencl-dev \
             opencl-headers
-
-      - name: Install macOS dependencies
-        if: runner.os == 'macOS'
-        run: |
-          brew install opencl-headers ocl-icd xquartz
 
       - name: CMake
         run: |
