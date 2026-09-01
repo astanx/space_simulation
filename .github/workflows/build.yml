@@ -20,6 +20,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          cmake-version: '3.5'
+
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
