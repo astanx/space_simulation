@@ -68,6 +68,7 @@ if(NOT Freetype_FOUND)
     set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
     set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(freetype)
+    add_library(Freetype::Freetype ALIAS freetype)
 endif()
 
 add_library(miniz include/external/miniz.c)
