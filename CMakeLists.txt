@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 
 # Find OpenGL
+if(APPLE)
+    set(OpenGL_GL_PREFERENCE GLVND)
+endif()
+
 find_package(OpenGL REQUIRED)
 
 # Find OpenCL
