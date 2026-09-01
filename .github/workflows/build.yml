@@ -47,13 +47,13 @@ jobs:
       - name: Install macOS dependencies
         if: runner.os == 'macOS'
         run: |
-          brew install opencl-headers ocl-icd
+          brew install opencl-headers ocl-icd xquartz
 
       - name: CMake
         run: |
           mkdir -p build
           cd build
-          cmake ..
+          cmake .. -DOpenGL_GL_PREFERENCE=GLVND
 
       - name: Build
         run: |
