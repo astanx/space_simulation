@@ -9,6 +9,7 @@
 
 class Model;
 class ResourceManager;
+class TrailManager;
 struct BackendGPUBuffers;
 
 class RenderWorldBackendGPU : public RenderWorldBackend
@@ -30,7 +31,7 @@ private:
   void initSpecialModel(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity);
   void initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity) override;
 
-  void updateSpecialPositions(CommandQueue &queue, InstanceManager &manager);
+  void updateSpecialPositions(CommandQueue &queue, const RenderDatabaseView &view);
 
   size_t getSpecialIndex(const Entity entity);
 
@@ -39,5 +40,5 @@ public:
   ~RenderWorldBackendGPU() = default;
 
   void sync(IPhysicsWorld &physics, const RenderDatabaseView &database, PointLight *light) override;
-  void update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, FrameContext &ctx) override;
+  void update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, TrailManager &trailManager, RenderContext &ctx) override;
 };

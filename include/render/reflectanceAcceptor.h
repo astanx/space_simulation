@@ -12,11 +12,12 @@ class Texture;
 class Framebuffer;
 class RenderBuffer;
 class Camera;
+class Reflector;
 
 class ReflectanceAcceptor : public Model, public RenderPositionSource
 {
 private:
-  Model *reflector;
+  Reflector *reflector;
 
   uint radianceSize = 32;
 
@@ -36,8 +37,8 @@ public:
   ReflectanceAcceptor(Material &material, const std::string &OBJfile, ModelFlags flags = ModelFlags::None, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);
   ~ReflectanceAcceptor();
 
-  void setReflector(Model *reflector) { this->reflector = reflector; };
-  const Model *getReflector() const { return this->reflector; };
+  void setReflector(Reflector *reflector) { this->reflector = reflector; };
+  const Reflector *getReflector() const { return this->reflector; };
 
   void render(Shader &shader) const override;
   void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) const override;

@@ -1,5 +1,7 @@
 #include "render/reflectanceAcceptor.h"
 
+#include "render/reflector.h"
+
 #include "debug/logger.h"
 
 #include "camera/camera.h"
@@ -103,8 +105,8 @@ ReflectanceAcceptor::~ReflectanceAcceptor() = default;
 void ReflectanceAcceptor::render(Shader &shader) const
 {
   ScopedTexture radianceTextureScope(*this->radianceTexture, TextureBindingPoints::EnvironmentMap);
-  // glm::vec3 reflectorPosition = reflectorPosition;
-  glm::vec3 reflectorPosition(0.0);
+  glm::vec3 reflectorPosition = this->reflector->getRenderPosition();
+
   shader.set1i(1, "useReflectorRadiance");
   shader.setVec3f(reflectorPosition, "reflectorPosition");
   shader.set1i(TextureBindingPoints::EnvironmentMap, "reflectorRadianceCubemap");
@@ -115,7 +117,16 @@ void ReflectanceAcceptor::render(Shader &shader) const
 }
 void ReflectanceAcceptor::renderInstanced(Shader &shader, Buffer *instanceVBO, size_t size, size_t count, size_t offset) const
 {
+  ScopedTexture radianceTextureScope(*this->radianceTexture, TextureBindingPoints::EnvironmentMap);
+  glm::vec3 reflectorPosition = this->reflector->getRenderPosition();
+
+  shader.set1i(1, "useReflectorRadiance");
+  shader.setVec3f(reflectorPosition, "reflectorPosition");
+  shader.set1i(TextureBindingPoints::EnvironmentMap, "reflectorRadianceCubemap");
+
   Model::renderInstanced(shader, instanceVBO, size, count, offset);
+
+  shader.set1i(0, "useReflectorRadiance");
 }
 
 void ReflectanceAcceptor::renderRadiance(Shader &shader, const Camera &camera, Model *reflector) const
@@ -162,13 +173,9 @@ void ReflectanceAcceptor::renderRadiance(Shader &shader, const Camera &camera, M
 
 void ReflectanceAcceptor::renderRadianceInstanced(Shader &shader, const Camera &camera, RenderBatch reflector, Buffer *instanceVBO) const
 {
-  std::cout << "RENDER RADIANCE" << std::endl;
-
   glm::vec3 pos = this->renderPosition;
 
-  std::cout << "POS: " << pos.x << " " << pos.y << " " << pos.z << std::endl;
-
-    shader.setVec3f(pos, "receiverPosition");
+  shader.setVec3f(pos, "receiverPosition");
 
   glm::mat4 projection = camera.getProjectionMatrix(1, 90.0f);
 

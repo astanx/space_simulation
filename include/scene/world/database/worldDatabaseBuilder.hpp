@@ -13,6 +13,8 @@
 #include "render/renderSystem.h"
 #include "render/instanceManager.h"
 
+#include "render/trail/trailManager.h"
+
 // Private functions
 template <typename Real>
 void WorldDatabaseBuilder<Real>::processObject(Object *obj, WorldDatabase<Real> &data, size_t i)
@@ -128,7 +130,10 @@ void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporarySto
         this->entityManager.registerObjectEntity(this->objectToEntity.at(orb), idx);
         this->entityManager.registerModelEntity(this->objectToEntity.at(orb), orbitalStorage.lookup.table[model]);
         if (model->hasFlag(ModelFlags::Special))
+        { 
           this->entityManager.registerSpecialEntity(this->objectToEntity.at(orb), idx);
+          this->trailManager.registerTrail(this->objectToEntity.at(orb));
+        }
 
         Object* central = orb->getOrbit()->getCentralBody();
         orbitalStorage.database.physics.centralBodyIndices[idx] = this->findCentralBodyIndex(central);
@@ -143,7 +148,10 @@ void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporarySto
         this->entityManager.registerObjectEntity(this->objectToEntity.at(&obj), this->total.orbital + idx);
         this->entityManager.registerModelEntity(this->objectToEntity.at(&obj), this->modelTotal.orbital + objectStorage.lookup.table[model]);
         if (model->hasFlag(ModelFlags::Special))
+        {
           this->entityManager.registerSpecialEntity(this->objectToEntity.at(&obj), this->total.orbital + idx);
+          this->trailManager.registerTrail(this->objectToEntity.at(&obj));
+        }
       } });
 }
 
@@ -211,10 +219,6 @@ Planet *WorldDatabaseBuilder<Real>::createPlanet(Model &model, Real mu, Radii ra
 
   Planet *ptr = planet.get();
 
-  // fix later
-  // if (planet->getUseTrail())
-  //   this->render.addTrail(planet->generateTrail());
-
   this->total.orbital++;
   this->total.total++;
   this->modelTotal.orbital++;
@@ -274,10 +278,6 @@ Moon *WorldDatabaseBuilder<Real>::createMoon(Model &model, Real mu, Radii radii,
   moon->setOrientation(r.calculateOrientation());
 
   model.setImportance(this->importance.moon);
-
-  // fix trail
-  // if (moon->getUseTrail())
-  //   this->render.addTrail(moon->generateTrail());
 
   Moon *ptr = moon.get();
 
@@ -339,7 +339,10 @@ WorldDatabase<Real> WorldDatabaseBuilder<Real>::build(InstanceManager &instanceM
     this->entityManager.registerObjectEntity(this->objectToEntity.at(obj.physics), orbitalOffset);
     this->entityManager.registerModelEntity(this->objectToEntity.at(obj.physics), orbitalOffset);
     if (obj.render->hasFlag(ModelFlags::Special))
+    {
       this->entityManager.registerSpecialEntity(this->objectToEntity.at(obj.physics), orbitalOffset);
+      this->trailManager.registerTrail(this->objectToEntity.at(obj.physics));
+    }
     orbitalOffset++;
   }
 
@@ -352,7 +355,10 @@ WorldDatabase<Real> WorldDatabaseBuilder<Real>::build(InstanceManager &instanceM
     this->entityManager.registerModelEntity(this->objectToEntity.at(obj.physics), this->modelTotal.orbital + objectOffset);
 
     if (obj.render->hasFlag(ModelFlags::Special))
+    {
       this->entityManager.registerSpecialEntity(this->objectToEntity.at(obj.physics), this->total.orbital + objectOffset);
+      this->trailManager.registerTrail(this->objectToEntity.at(obj.physics));
+    }
     objectOffset++;
   }
 

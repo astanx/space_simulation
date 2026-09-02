@@ -2,7 +2,9 @@
 
 #include "render/instanceManager.h"
 #include "render/reflectanceAcceptor.h"
+#include "render/reflector.h"
 #include "render/queue/renderQueue.h"
+#include "render/trail/trailManager.h"
 
 #include "render/world/data/renderDatabaseView.h"
 
@@ -13,18 +15,16 @@
 #include "physics/world/physicsWorld.h"
 
 // Protected function
-void RenderWorldBackend::initShadowQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity)
+void RenderWorldBackend::initShadowQueue(RenderQueue &queue, InstanceManager &manager, const Model *model)
 {
-  const Model* model = database.getModel(entity);
   if (model->hasFlag(ModelFlags::CastsShadow))
   {
     Range allocation = manager.getAllocation(model);
     queue.addShadowBatch({model, allocation});
   }
 }
-void RenderWorldBackend::initReflectorQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity)
+void RenderWorldBackend::initReflectorQueue(RenderQueue &queue, InstanceManager &manager, const Model *model)
 {
-  const Model* model = database.getModel(entity);
   const ReflectanceAcceptor *acceptor = dynamic_cast<const ReflectanceAcceptor *>(model);
   if (acceptor)
   {
@@ -38,9 +38,11 @@ void RenderWorldBackend::initReflectorQueue(RenderQueue &queue, InstanceManager 
 }
 void RenderWorldBackend::initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity)
 {
-  this->initShadowQueue(queue, manager, database, entity);
-  this->initReflectorQueue(queue, manager, database, entity);
-} 
+  const Model *model = database.getModel(entity);
+
+  this->initShadowQueue(queue, manager, model);
+  this->initReflectorQueue(queue, manager, model);
+}
 
 void RenderWorldBackend::initSubQueues(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database)
 {
@@ -53,10 +55,12 @@ void RenderWorldBackend::initSubQueues(RenderQueue &queue, InstanceManager &mana
   this->lastEntityCount = entities.size();
 
   for (const Entity entity : entities)
-  {
-    // if (!entity)
-    //   Logger::logError("Render World Backend", "Uninitialized entity passed");
-    // else
-      this->initEntityQueue(queue, manager, database, entity);
-  }
+    this->initEntityQueue(queue, manager, database, entity);
+}
+
+void RenderWorldBackend::updateSpecialModel(Model *model, const glm::vec3 &position)
+{
+  RenderPositionSource *source = dynamic_cast<RenderPositionSource *>(model);
+  if (source)
+    source->setRenderPosition(position);
 }

@@ -33,6 +33,7 @@ class WorldDatabaseBuilder
 private:
   Importance &importance;
   EntityManager &entityManager;
+  TrailManager &trailManager;
 
   std::unordered_map<Object *, Entity> objectToEntity;
 
@@ -62,7 +63,7 @@ private:
   size_t findCentralBodyIndex(Object *central);
 
 public:
-  WorldDatabaseBuilder(EntityManager &entityManager, Importance &importance) : entityManager(entityManager), importance(importance) {};
+  WorldDatabaseBuilder(EntityManager &entityManager, TrailManager &trailManager, Importance &importance) : entityManager(entityManager), trailManager(trailManager), importance(importance) {};
   ~WorldDatabaseBuilder() = default;
 
   Planet *createPlanet(Model &model, Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters(), Real g = 0.0);

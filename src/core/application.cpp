@@ -367,14 +367,14 @@ Application::Application(
 
   this->loadEllipsoidObject(Res::SUN_MODEL, Res::SUN_MESH, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, ModelFlags::Special, sunLuminosity);
   // this->loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);
-  this->loadEllipsoidObject(Res::MERCURY_MODEL, Res::MERCURY_MESH, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f, ModelFlags::CastsShadow);
-  this->loadEllipsoidObject(Res::VENUS_MODEL, Res::VENUS_MESH, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f, ModelFlags::CastsShadow);
+  this->loadEllipsoidObject(Res::MERCURY_MODEL, Res::MERCURY_MESH, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::VENUS_MODEL, Res::VENUS_MESH, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f, ModelFlags::CastsShadow | ModelFlags::Special);
   this->loadEllipsoidObject(Res::VENUS_ATMOSPHERE_MODEL, Res::VENUS_ATMOSPHERE_MESH, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
   this->loadReflectanceAcceptorEllipsoidObject(Res::EARTH_MODEL, Res::EARTH_MESH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, ModelFlags::CastsShadow | ModelFlags::Special, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
   this->loadEllipsoidObject(Res::EARTH_ATMOSPHERE_MODEL, Res::EARTH_ATMOSPHERE_MESH, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
   this->loadHapkeEllipsoidObject(Res::MOON_MODEL, Res::MOON_MESH, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f, moonHapkeParameters, Res::EARTH_MODEL, ModelFlags::CastsShadow | ModelFlags::ReflectsLight | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::MARS_MODEL, Res::MARS_MESH, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f, ModelFlags::CastsShadow);
-  this->loadEllipsoidObject(Res::JUPITER_MODEL, Res::JUPITER_MESH, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f, ModelFlags::CastsShadow);
+  this->loadEllipsoidObject(Res::MARS_MODEL, Res::MARS_MESH, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::JUPITER_MODEL, Res::JUPITER_MESH, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f, ModelFlags::CastsShadow | ModelFlags::Special);
 
   Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, BASE_TEXTURE_PATH + "diffuse/asteroid.png", GL_TEXTURE_2D);
   this->loadAsteroidShape(Res::EROS_ASTEROID, Res::EROS_ASTEROID_MODEL, Res::EROS_ASTEROID_MESH, Res::EROS_ASTEROID_MATERIAL, diff, 0.85f, 0.05f, 0.92f, 48, 32, 4.0, 1.0, 1.0, 2.5, 8.0, 8.0);
@@ -390,7 +390,7 @@ Application::Application(
   this->scene.init<float>(this->renderCtx, this->resourceManager, this->threadPool, this->startTime);
   this->renderer.init(this->renderCtx);
 
-  if (bool GPU = true)
+  if (bool GPU = false)
   {
     this->scene.initGPUWorld(this->resourceManager);
     this->renderer.initGPUBackend(this->scene);

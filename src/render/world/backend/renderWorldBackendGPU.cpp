@@ -6,6 +6,10 @@
 #include "render/world/data/renderDatabaseView.h"
 #include "render/queue/data/renderQueueGPUBuffers.h"
 
+#include "render/renderContext.h"
+
+#include "render/trail/trailManager.h"
+
 #include "compute/context.h"
 
 #include "physics/world/physicsWorld.h"
@@ -43,18 +47,16 @@ void RenderWorldBackendGPU::initEntityQueue(RenderQueue &queue, InstanceManager 
   this->initSpecialModel(queue, manager, database, entity);
 }
 
-void RenderWorldBackendGPU::updateSpecialPositions(CommandQueue &queue, InstanceManager &manager)
+void RenderWorldBackendGPU::updateSpecialPositions(CommandQueue &queue, const RenderDatabaseView &database)
 {
-  cl_mem fullBufferID = manager.getFullInstancesBuffer().get();
-  queue.enqueueAcquireGLBuffer(fullBufferID);
+  cl_mem bufferID = database.getPositionsBuffer().get();
+  size_t size = database.getPositionsSize();
 
   for (size_t i = 0; i < this->specialPositions.size(); i++)
   {
     Range allocation = this->specialAllocations[i];
-    queue.enqueueReadBuffer(fullBufferID, CL_TRUE, allocation.begin * sizeof(InstanceModelMatrixParts) + offsetof(InstanceModelMatrixParts, position), sizeof(InstanceModelMatrixParts{}.position), &this->specialPositions[i]);
+    queue.enqueueReadBuffer(bufferID, CL_TRUE, allocation.begin * size, size, &this->specialPositions[i]);
   }
-
-  queue.enqueueReleaseGLBuffer(fullBufferID);
 }
 
 size_t RenderWorldBackendGPU::getSpecialIndex(const Entity entity)
@@ -97,7 +99,7 @@ RenderWorldBackendGPU::RenderWorldBackendGPU(ResourceManager &manager, CommandQu
 }
 
 // Public functions
-void RenderWorldBackendGPU::update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, FrameContext &ctx)
+void RenderWorldBackendGPU::update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, TrailManager &trailManager, RenderContext &ctx)
 {
   if (this->lastEntityCount != database.getEntitiesCount() && this->wasSubInit)
     Logger::logFatal("Render World Backend GPU", "GPU is not prepared for dynamic models");
@@ -109,30 +111,32 @@ void RenderWorldBackendGPU::update(RenderQueue &queue, const RenderDatabaseView 
   }
 
   if (this->isDouble)
-    this->renderQueueBuilderGPU.build<double>(this->queue, queue, this->lodManagerGPU, instanceManager, database.getCamera(), ctx, database.getModels(), this->total.total);
+    this->renderQueueBuilderGPU.build<double>(this->queue, queue, this->lodManagerGPU, instanceManager, database.getCamera(), ctx.frameCtx, database.getModels(), this->total.total);
   else
-    this->renderQueueBuilderGPU.build<float>(this->queue, queue, this->lodManagerGPU, instanceManager, database.getCamera(), ctx, database.getModels(), this->total.total);
+    this->renderQueueBuilderGPU.build<float>(this->queue, queue, this->lodManagerGPU, instanceManager, database.getCamera(), ctx.frameCtx, database.getModels(), this->total.total);
 
-  this->updateSpecialPositions(this->queue, instanceManager);
+  this->updateSpecialPositions(this->queue, database);
+
+  database.forEachSpecialEntity([this, &database, &trailManager, &ctx](const Entity entity)
+                                {
+                                  if (!ctx.settings.paused)
+                                    trailManager.addTrailPosition(entity, this->specialPositions[this->getSpecialIndex(entity)]);
+                                  trailManager.updateTrail(entity, database.getCamera()); });
 }
 
 void RenderWorldBackendGPU::sync(IPhysicsWorld &physics, const RenderDatabaseView &database, PointLight *light)
 {
-  std::cout << "SUN POS: " << this->specialPositions[this->getSpecialIndex(physics.getSun())].x << " " << this->specialPositions[this->getSpecialIndex(physics.getSun())].y << " " << this->specialPositions[this->getSpecialIndex(physics.getSun())].z << std::endl;
+  const Camera &camera = database.getCamera();
+
   if (light)
-    light->move(this->specialPositions[this->getSpecialIndex(physics.getSun())]);
+    light->move(camera.worldToViewSpace(this->specialPositions[this->getSpecialIndex(physics.getSun())]));
   else
     Logger::logFatal("Scene", " No sun light to sync position");
 
-  // database.forEachSpecialEntity([](const std::unique_ptr<Entity> &entity) {
-
-  // });
-
-  // todo update reflector pos
-  // database.getRender.getRelfectanceAcceptorEntities
-  // update their pos internally
-
-  // database.getTrails
-  // Trail.entity -> getSpecialIdx
-  // trail.setPos
+  database.forEachSpecialEntity([this, &database, &camera](const Entity entity)
+                                {
+      size_t idx = this->getSpecialIndex(entity);
+      glm::vec3 pos = this->specialPositions[idx];
+      
+      this->updateSpecialModel(database.getModel(entity), camera.worldToViewSpace(pos)); });
 }

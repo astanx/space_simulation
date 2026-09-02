@@ -1,9 +1,13 @@
 #pragma once
 
-#include "scene/world/data/sharedDatabaseView.h"
+#include "scene/world/data/IsharedDatabaseView.h"
 #include "render/world/data/renderDatabase.h"
 
+#include "compute/clBuffer.h"
+#include "physics/structs/radii.h"
+
 #include "resources/entity/entityManager.h"
+#include "resources/transform.h"
 
 class PointLight;
 class Camera;
@@ -14,11 +18,11 @@ private:
   const EntityManager &entityManager;
   const Camera &camera;
 
-  const SharedDatabaseView &shared;
+  const ISharedDatabaseView &shared;
   const RenderDatabase &render;
 
 public:
-  RenderDatabaseView(const EntityManager &entityManager, const Camera &camera, const SharedDatabaseView &shared, const RenderDatabase &render) : entityManager(entityManager), camera(camera), shared(shared), render(render) {};
+  RenderDatabaseView(const EntityManager &entityManager, const Camera &camera, const ISharedDatabaseView &shared, const RenderDatabase &render) : entityManager(entityManager), camera(camera), shared(shared), render(render) {};
   ~RenderDatabaseView() = default;
 
   // Entity
@@ -36,5 +40,8 @@ public:
   // Shared
   Transform getTransform(const Entity &entity) const { return this->shared.getTransform(this->entityManager.getObjectIndex(entity), this->camera); };
   Radii getRadii(const Entity &entity) const { return this->shared.getRadii(this->entityManager.getObjectIndex(entity)); };
+  glm::vec3 getPosition(const Entity &entity) const { return this->shared.getPosition(this->entityManager.getObjectIndex(entity)); };
   void moveLight(const Entity &entity, PointLight &light) const { this->shared.moveLight(this->entityManager.getObjectIndex(entity), this->camera, light); };
+  const CLBuffer &getPositionsBuffer() const { return this->shared.getPositionsBuffer(); };
+  size_t getPositionsSize() const { return this->shared.getPositionsSize(); };
 };

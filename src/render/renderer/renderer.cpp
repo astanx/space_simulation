@@ -108,7 +108,7 @@ void Renderer::renderTrails(Scene &scene)
 
   ScopedShader trail(trailID);
 
-  for (const Trail *trail : scene.getSimulationWorld().getRenderWorld().getTrails())
+  for (const std::unique_ptr<Trail> &trail : scene.getSimulationWorld().getRenderWorld().getTrails())
     trail->render();
 }
 

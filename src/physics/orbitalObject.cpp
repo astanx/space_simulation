@@ -46,14 +46,5 @@ const bool OrbitalObject::getUseTrail() const
 
 std::unique_ptr<Trail> OrbitalObject::generateTrail()
 {
-  std::vector<glm::dvec3> trailVec;
-  for (double nu = 0; nu < 2 * M_PI; nu += 0.01)
-  {
-    glm::dvec3 pos = OrbitalMaths::orbitalToInertial(this->orbit.getKeplerElements(), nu);
-    pos += this->orbit.getCentralBody()->getPosition();
-
-    trailVec.push_back(pos);
-  }
-
-  return std::make_unique<Trail>(trailVec);
+  return nullptr;
 }

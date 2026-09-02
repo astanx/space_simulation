@@ -183,6 +183,9 @@ add_executable(Space
             src/render/world/backend/renderWorldBackend.cpp
             src/render/world/backend/renderWorldBackendCPU.cpp
             src/render/world/backend/renderWorldBackendGPU.cpp
+        # Trail
+        src/render/trail/trail.cpp
+        src/render/trail/trailManager.cpp
 
     # Resources
     src/resources/OBJloader.cpp
@@ -199,7 +202,6 @@ add_executable(Space
     src/physics/atmosphereConstants.cpp
     src/physics/orbit.cpp
     src/physics/moon.cpp
-    src/physics/trail.cpp
     src/physics/orbitalObject.cpp
     src/physics/asteroid.cpp
     src/physics/atmosphere.cpp

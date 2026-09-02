@@ -3,6 +3,6 @@
 template <typename F>
 void EntityManager::forEachSpecialEntity(F &&func) const
 {
-  for (const auto &[entity, idx] : this->entityToSpecialIdx)
-    func(entity);
+  for (const auto [entityID, idx] : this->entityToSpecialIdx)
+    func(Entity{entityID});
 }

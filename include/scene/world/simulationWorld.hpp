@@ -25,11 +25,15 @@
 
 #include "render/renderContext.h"
 
+#include "scene/light/pointLight.h"
+
+#include "scene/world/data/sharedDatabaseView.h"
+
 // Private functions
 template <typename Real>
 void SimulationWorld<Real>::initDatabases(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000)
 {
-  WorldDatabaseBuilder<Real> builder(this->entityManager, this->importance);
+  WorldDatabaseBuilder<Real> builder(this->entityManager, this->render.getTrailManager(), this->importance);
 
   Object *sunPtr = builder.createStar(resourceManager.GetModel(Res::SUN_MODEL), sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
   builder.createPlanet(resourceManager.GetModel(Res::MERCURY_MODEL), mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
@@ -136,7 +140,9 @@ void SimulationWorld<Real>::update(RenderQueue &queue, RenderContext &renderCtx)
   if (!renderCtx.settings.paused)
     this->physics.step(renderCtx.deltaTime);
 
-  this->render.update(queue, renderCtx.frameCtx, this->database, this->entityManager);
+  SharedDatabaseView<Real> shared{this->database, this->gpu};
 
-  this->render.sync(this->physics, this->database, this->entityManager);
+  this->render.update(queue, renderCtx, shared, this->entityManager);
+
+  this->render.sync(this->physics, shared, this->entityManager);
 }

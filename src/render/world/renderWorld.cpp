@@ -81,19 +81,13 @@ void RenderWorld::initGPUBackend(Context &ctx, CommandQueue &queue, Total &total
   this->backend = std::make_unique<RenderWorldBackendGPU>(resourceManager, queue, ctx, lodBuffers, backendBuffers, total, this->database.models.size());
 }
 
-void RenderWorld::update(RenderQueue &queue, FrameContext &ctx, const SharedDatabaseView &shared, const EntityManager &entityManager)
+void RenderWorld::update(RenderQueue &queue, RenderContext &ctx, const ISharedDatabaseView &shared, const EntityManager &entityManager)
 {
-  // for (Updatable *&object : this->updatable)
-  //   object->update(*this->activeCamera);
-
-  for (std::unique_ptr<Trail> &trail : this->trails)
-    trail->update(*this->activeCamera);
-
   RenderDatabaseView view{entityManager, *this->activeCamera, shared, this->database};
-  this->backend->update(queue, view, this->instanceManager, ctx);
+  this->backend->update(queue, view, this->instanceManager, this->trailManager, ctx);
 }
 
-void RenderWorld::sync(IPhysicsWorld &physics, const SharedDatabaseView &shared, const EntityManager &entityManager)
+void RenderWorld::sync(IPhysicsWorld &physics, const ISharedDatabaseView &shared, const EntityManager &entityManager)
 {
   RenderDatabaseView view{entityManager, *this->activeCamera, shared, this->database};
   this->backend->sync(physics, view, this->pointLight.get());
@@ -150,12 +144,6 @@ void RenderWorld::decreaseCameraSpeed(double percentage)
     Logger::logWarning("Render World", "No active camera to decrease speed");
 }
 
-void RenderWorld::addTrail(std::unique_ptr<Trail> trail)
-{
-  this->trailViews.push_back(trail.get());
-  this->trails.push_back(std::move(trail));
-}
-
 // Getters
 Camera &RenderWorld::getActiveCamera()
 {
@@ -194,10 +182,7 @@ const DirectionalLight *RenderWorld::getDirLight() const
   return this->directionalLight.get();
 };
 
-std::vector<Trail *> &RenderWorld::getTrails()
+const std::vector<std::unique_ptr<Trail>> &RenderWorld::getTrails() const
 {
-  if (this->trails.empty())
-    Logger::logWarning("Render World", "Trails are empty");
-
-  return this->trailViews;
+  return this->trailManager.getTrails();
 };

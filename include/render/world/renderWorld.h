@@ -7,7 +7,7 @@
 #include "render/lod/lodRenderResourcesManager.h"
 #include "render/instanceManager.h"
 
-#include "physics/trail.h"
+#include "render/trail/trailManager.h"
 
 #include <iostream>
 #include <memory>
@@ -31,13 +31,14 @@ struct RenderContext;
 struct RenderDatabase;
 struct SharedGPUBuffers;
 struct Total;
-struct SharedDatabaseView;
+struct ISharedDatabaseView;
 
 class RenderWorld
 {
 private:
   LODRenderResourcesManager lodResourceManager;
   InstanceManager instanceManager;
+  TrailManager trailManager;
 
   RenderDatabase database;
   RenderGPUBuffers gpuBuffers;
@@ -57,10 +58,6 @@ private:
   std::unique_ptr<PointLight> pointLight;
   std::unique_ptr<DirectionalLight> directionalLight;
 
-  // fix trails
-  std::vector<std::unique_ptr<Trail>> trails;
-  std::vector<Trail *> trailViews;
-
   void buildQueue(const Camera &camera, RenderQueue &queue, FrameContext &ctx);
   void reserveModelInstances();
 
@@ -73,8 +70,8 @@ public:
   void initGPUBuffers(Context &ctx);
   void initGPUBackend(Context &ctx, CommandQueue &queue, Total &total, ResourceManager &resourceManager, SharedGPUBuffers &data);
 
-  void update(RenderQueue &queue, FrameContext &ctx, const SharedDatabaseView &shared, const EntityManager &entityManager);
-  void sync(IPhysicsWorld &physics, const SharedDatabaseView &shared, const EntityManager &entityManager);
+  void update(RenderQueue &queue, RenderContext &ctx, const ISharedDatabaseView &shared, const EntityManager &entityManager);
+  void sync(IPhysicsWorld &physics, const ISharedDatabaseView &shared, const EntityManager &entityManager);
 
   void renderImpostorMeshInstanced();
   void renderPointMeshInstanced();
@@ -100,8 +97,9 @@ public:
   const PointLight *getPointLight() const;
   const DirectionalLight *getDirLight() const;
 
+  TrailManager &getTrailManager() { return this->trailManager; };
   InstanceManager &getInstanceManager() { return this->instanceManager; };
   Texture &getImpostorTexture() { return this->lodResourceManager.getImpostorTexture(); };
   Buffer &getFullInstancesVBO() { return this->instanceManager.getFullInstancesVBO(); };
-  std::vector<Trail *> &getTrails();
+  const std::vector<std::unique_ptr<Trail>> &getTrails() const;
 };

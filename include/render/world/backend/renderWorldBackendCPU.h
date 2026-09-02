@@ -20,5 +20,5 @@ public:
   ~RenderWorldBackendCPU() = default;
 
   void sync(IPhysicsWorld &physics, const RenderDatabaseView &database, PointLight *light) override;
-  void update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, FrameContext &ctx) override;
+  void update(RenderQueue &queue, const RenderDatabaseView &database, InstanceManager &instanceManager, TrailManager &trailManager, RenderContext &ctx) override;
 };
