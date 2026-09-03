@@ -126,13 +126,18 @@ void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporarySto
         this->processOrbital(orb, orbitalStorage.database, idx);
         this->processModel(orbitalStorage, model, idx);
 
-        this->entityManager.registerOrbitalEntity(this->objectToEntity.at(orb), idx);
-        this->entityManager.registerObjectEntity(this->objectToEntity.at(orb), idx);
-        this->entityManager.registerModelEntity(this->objectToEntity.at(orb), orbitalStorage.lookup.table[model]);
-        if (model->hasFlag(ModelFlags::Special))
-        { 
-          this->entityManager.registerSpecialEntity(this->objectToEntity.at(orb), idx);
-          this->trailManager.registerTrail(this->objectToEntity.at(orb));
+        {
+          std::lock_guard<std::mutex> lock(this->entityMutex);
+          this->entityManager.registerOrbitalEntity(this->objectToEntity.at(orb), idx);
+          this->entityManager.registerObjectEntity(this->objectToEntity.at(orb), idx);
+          this->entityManager.registerModelEntity(this->objectToEntity.at(orb), orbitalStorage.lookup.table[model]);
+
+          if (model->hasFlag(ModelFlags::Special))
+          { 
+              std::lock_guard<std::mutex> lock(this->entityMutex);
+              this->entityManager.registerSpecialEntity(this->objectToEntity.at(orb), idx);
+            this->trailManager.registerTrail(this->objectToEntity.at(orb));
+          }
         }
 
         Object* central = orb->getOrbit()->getCentralBody();
@@ -145,12 +150,15 @@ void WorldDatabaseBuilder<Real>::processSystem(WorldSystem &system, TemporarySto
         this->processObject(&obj, objectStorage.database, idx); 
         this->processModel(objectStorage, model, idx);
 
-        this->entityManager.registerObjectEntity(this->objectToEntity.at(&obj), this->total.orbital + idx);
-        this->entityManager.registerModelEntity(this->objectToEntity.at(&obj), this->modelTotal.orbital + objectStorage.lookup.table[model]);
-        if (model->hasFlag(ModelFlags::Special))
         {
-          this->entityManager.registerSpecialEntity(this->objectToEntity.at(&obj), this->total.orbital + idx);
-          this->trailManager.registerTrail(this->objectToEntity.at(&obj));
+          std::lock_guard<std::mutex> lock(this->entityMutex);
+          this->entityManager.registerObjectEntity(this->objectToEntity.at(&obj), this->total.orbital + idx);
+          this->entityManager.registerModelEntity(this->objectToEntity.at(&obj), this->modelTotal.orbital + objectStorage.lookup.table[model]);
+          if (model->hasFlag(ModelFlags::Special))
+          {
+            this->entityManager.registerSpecialEntity(this->objectToEntity.at(&obj), this->total.orbital + idx);
+            this->trailManager.registerTrail(this->objectToEntity.at(&obj));
+          }
         }
       } });
 }
@@ -307,8 +315,11 @@ AsteroidSystem *WorldDatabaseBuilder<Real>::createAsteroidSystem(ResourceManager
   this->modelTotal.orbital += system->getModels().size();
   this->modelTotal.total += system->getModels().size();
 
-  system->forEachObject([this](Object &obj)
-                        { this->objectToEntity[&obj] = this->entityManager.create(); });
+  std::mutex entityMutex;
+  system->forEachObject([this, &entityMutex](Object &obj)
+                        { 
+                          std::lock_guard<std::mutex> lock(entityMutex);
+                          this->objectToEntity[&obj] = this->entityManager.create(); });
 
   this->worldSystems.push_back({ptr, ptr});
   this->systems.push_back(std::move(system));

@@ -163,6 +163,7 @@ AsteroidSystem::AsteroidSystem(ResourceManager &resourceManager, Object *central
 
   for (Model *model : this->models)
     model->setImportance(importance);
+
 }
 
 // Public functions

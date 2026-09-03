@@ -40,6 +40,7 @@ private:
   std::mutex loveMutex;
   std::mutex tidalMutex;
   std::mutex modelMutex;
+  std::mutex entityMutex;
   std::vector<Real> loveNumbers;
   std::vector<Real> tidalFactors;
   Total total;

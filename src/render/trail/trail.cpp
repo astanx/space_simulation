@@ -15,7 +15,6 @@ Trail::~Trail() = default;
 // Public functions
 void Trail::addPosition(const glm::vec3 &position)
 {
-  std::cout << "SIZE: " << this->positions.size() << std::endl;
   if (this->positions.size() >= this->maxPositions)
     this->positions.pop_front();
   this->positions.push_back(position);
