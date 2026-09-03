@@ -46,6 +46,9 @@ void SimulationWorld<Real>::initDatabases(ResourceManager &resourceManager, Thre
   builder.createPlanet(resourceManager.GetModel(Res::MARS_MODEL), marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
   builder.createAsteroidSystem(resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
   builder.createPlanet(resourceManager.GetModel(Res::JUPITER_MODEL), jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
+  builder.createPlanet(resourceManager.GetModel(Res::SATURN_MODEL), saturnMu, saturnRadii, sunPtr, saturnElements, saturnRotationalElements, timeAfterJD2000);
+  builder.createPlanet(resourceManager.GetModel(Res::URANUS_MODEL), uranusMu, uranusRadii, sunPtr, uranusElements, uranusRotationalElements, timeAfterJD2000);
+  builder.createPlanet(resourceManager.GetModel(Res::NEPTUNE_MODEL), neptuneMu, neptuneRadii, sunPtr, neptuneElements, neptuneRotationalElements, timeAfterJD2000);
 
   WorldDatabase<Real> data = builder.build(this->render.getInstanceManager());
 

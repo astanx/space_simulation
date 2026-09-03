@@ -13,7 +13,7 @@ class Trail
 private:
   std::deque<glm::vec3> positions;
   std::unique_ptr<Mesh> trailMesh;
-  size_t maxPositions = 3000;
+  size_t maxPositions = 5000;
 
 public:
   Trail(std::unique_ptr<Mesh> trailMesh);

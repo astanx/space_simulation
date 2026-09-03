@@ -121,7 +121,7 @@ const Radii earthRadii(
 const KeplerElements<double> earthElements(
 		1.000003 * AU_TO_METER,
 		0.01671,
-		glm::radians(7.155),
+		glm::radians(0.00005),
 		glm::radians(-11.26064),
 		glm::radians(114.20783),
 		glm::radians(358.617));
@@ -204,7 +204,7 @@ const GravityField marsGravityField(
 		0.366);
 
 // JUPITER
-const double jupiterMu = 1.266865349e17;
+const double jupiterMu = 1.26686534e17;
 const Radii jupiterRadii(
 		7.1492e7,
 		6.684e7,
@@ -223,3 +223,67 @@ const RotationalElements jupiterRotationalElements{
 		glm::radians(0.002413),
 		glm::radians(284.95),
 		glm::radians(870.536)};
+
+// SATURN
+const double saturnMu = 3.7931206234e16;
+const Radii saturnRadii(
+		6.0268e7,
+		5.4364e7,
+		5.8232e7);
+const KeplerElements<double> saturnElements(
+		9.5826 * AU_TO_METER,
+		0.0565,
+		glm::radians(2.485),
+		glm::radians(113.665),
+		glm::radians(339.392),
+		glm::radians(317.020));
+
+const RotationalElements saturnRotationalElements{
+		glm::radians(40.589),
+		glm::radians(83.537),
+		glm::radians(-0.036),
+		glm::radians(-0.004),
+		glm::radians(38.90),
+		glm::radians(810.7939024)};
+
+// URANUS
+const double uranusMu = 5.7939506103e15;
+const Radii uranusRadii(
+		2.5559e7,
+		2.4973e7,
+		2.5362e7);
+const KeplerElements<double> uranusElements(
+		19.19126 * AU_TO_METER,
+		0.04717,
+		glm::radians(0.773),
+		glm::radians(74.006),
+		glm::radians(96.998857),
+		glm::radians(142.238600));
+const RotationalElements uranusRotationalElements{
+		glm::radians(257.311),
+		glm::radians(-15.175),
+		glm::radians(0.0),
+		glm::radians(0.0),
+		glm::radians(203.81),
+		glm::radians(-501.1600928)};
+
+// NEPTUNE
+const double neptuneMu = 6.83509997e15;
+const Radii neptuneRadii(
+		2.4766e7,
+		2.4342e7,
+		2.4624e7);
+const KeplerElements<double> neptuneElements(
+		30.07 * AU_TO_METER,
+		0.008678,
+		glm::radians(1.770),
+		glm::radians(131.783),
+		glm::radians(273.187),
+		glm::radians(259.883));
+const RotationalElements neptuneRotationalElements{
+		glm::radians(299.33373895877),
+		glm::radians(42.950359021845),
+		glm::radians(0.0),
+		glm::radians(0.0),
+		glm::radians(249.99600757113),
+		glm::radians(536.3128492)};
