@@ -278,3 +278,32 @@ Where
   <li>$$L$$ = Light Luminocity</li>
   <li>$$d$$ = distance between object and light source</li>
 </ul>
+
+<h2>Build</h2>
+<h3>Requirements</h3>
+Cmake 3.16+, OpenGL 4.1+, OpenCL 1.2+, C++20 compiler
+<h3>Building</h3>
+
+Unix:
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
+
+Windows:
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+<h3>Running</h3>
+
+To run program call
+```bash
+./Space
+```
+from /build directory
