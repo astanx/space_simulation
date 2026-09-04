@@ -57,7 +57,7 @@ Drift advances <a href="https://en.wikipedia.org/wiki/Mean_anomaly">Mean anomaly
 Where 
 <p>
   $$
-  \eta = \sqrt{\frac{\mu}{\alpha^3}}
+  \eta = \sqrt{\frac{\mu}{a^3}}
   $$
 </p>
 <a href="https://en.wikipedia.org/wiki/Newton%27s_method">Newton-Raphson</a> iteration
@@ -78,8 +78,8 @@ and then solves equations to predict updated position.
 <p>
   $$
   pos_{orb} = \begin{bmatrix}
-  \alpha(\cos(E) - e)\\
-  \alpha\sqrt(1-(e^2)) * \sin(E)\\
+  a(\cos(E) - e)\\
+  a\sqrt{1-e^2} * \sin(E)\\
   0
   \end{bmatrix}
   $$
@@ -87,7 +87,7 @@ and then solves equations to predict updated position.
 
 <p>
   $$
-  pos = pos_{central} + R_3(\Omega) R_1(i) R3(\omega) pos_{orb}
+  pos = pos_{central} + R_3(\Omega) R_1(i) R_3(\omega) pos_{orb}
   $$
 </p>
 
@@ -144,7 +144,7 @@ $$
 
 <h2>Atmospheric Modelling</h2>
 <h3>Grid</h3>
-At it base it uses spherical pressure coordinate grid:
+At its base it uses spherical pressure coordinate grid:
 <p>
   $$
   (i, j, k)
@@ -159,7 +159,7 @@ Where
 </ul>
 
 <h3>Initialization</h3>
-At the beggining the grid is initialized with input data:
+At the beginning the grid is initialized with input data:
 <ul>
   <li>Temperature T</li>
 <li>Relative humidity RH</li>
@@ -222,6 +222,7 @@ Where:
     <li>$$q$$ = specific humidity</li>
     <li>$$p$$ = pressure</li>
     <li>$$e$$ = water vapor pressure</li>
+    <li>$$r_m$$ = mixing ratio</li>
   </ul>
 </p>
 
