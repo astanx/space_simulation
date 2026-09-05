@@ -1,6 +1,6 @@
-https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
+<h1 align="center">Custom C++ Engine for Celestial Body Simulation</h1>
 
-<h1 align="center">Custom C++ Engine for Celestial Body Simulation, Atmospheric Modelling, and Real-Time Visualization</h1>
+https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
 
 <h2>Project Overview </h2>
 The project implements a custom C++ simulation engine specialized for celestial body dynamics. It combines:
