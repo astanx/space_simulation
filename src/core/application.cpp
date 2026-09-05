@@ -153,25 +153,25 @@ void Application::processInput()
 
   if (this->input.isActionPressed(Action::DoubleTimestep))
   {
-    if (this->timeScale > 0)
-      this->timeScale *= 2;
+    if (this->timestep > 0)
+      this->timestep *= 2;
     else
-      this->timeScale *= .5;
+      this->timestep *= .5;
   }
 
   if (this->input.isActionPressed(Action::HalfTimestep))
   {
-    if (this->timeScale > 0)
-      this->timeScale *= .5;
+    if (this->timestep > 0)
+      this->timestep *= .5;
     else
-      this->timeScale *= 2;
+      this->timestep *= 2;
   }
 
   if (this->input.isActionHold(Action::DecreaseTimestep))
-    this->timeScale -= 2;
+    this->timestep -= 2;
 
   if (this->input.isActionHold(Action::IncreaseTimestep))
-    this->timeScale += 2;
+    this->timestep += 2;
 }
 
 LoadedTextures Application::loadTextures(const std::string &model_name, const std::string &diffuse_name, const std::string &normal_name, const std::string &night_name, const std::string &roughness_name)
@@ -308,11 +308,11 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
   this->renderCtx.settings.exposure = 5e-4;
   this->renderCtx.settings.bloomPower = 0.5;
 
-  this->timeScale = 86400;
+  this->timestep = config.timestep;
   this->deltaTime = 0.f;
   this->lastFrame = static_cast<float>(glfwGetTime());
 
-  this->startTime = dateToJD(Date{1, 1, 1900}); // Day/Month/Year Hour:Minute:Second
+  this->startTime = dateToJD(config.startDate);
 
   this->isTextShown = true;
 
@@ -442,9 +442,9 @@ void Application::update()
   }
 
   // Update context
-  this->renderCtx.deltaTime = this->deltaTime * this->timeScale;
+  this->renderCtx.deltaTime = this->deltaTime * this->timestep;
   if (!this->renderCtx.settings.paused)
-    this->elapsedDays += this->deltaTime * this->timeScale / 86400.0;
+    this->elapsedDays += this->deltaTime * this->timestep / 86400.0;
 
   // Update FPS counter
   this->frames++;
@@ -477,7 +477,7 @@ void Application::render()
   {
     this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
                               25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
-    this->renderer.renderText("Time scale: " + std::to_string(int(this->timeScale)) + " seconds per real second",
+    this->renderer.renderText("Time scale: " + std::to_string(int(this->timestep)) + " seconds per real second",
                               25.f, this->framebufferHeight - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
     this->renderer.renderText("Date: " + JDToDate(this->startTime + this->elapsedDays).toString(),
                               25.f, this->framebufferHeight - 200.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));

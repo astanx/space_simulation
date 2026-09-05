@@ -1,5 +1,7 @@
 #include "maths/dateToJD.h"
 
+#include "resources/date.h"
+
 #include <cmath>
 
 double dateToJD(const Date &date)

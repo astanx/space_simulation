@@ -80,6 +80,9 @@ add_library(miniz include/external/miniz.c)
 add_executable(Space
     # Main
     src/main.cpp
+
+    # Parsers
+    src/parsers.cpp
     
     # Core
     src/core/application.cpp

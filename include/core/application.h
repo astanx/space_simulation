@@ -64,7 +64,7 @@ private:
   Scene scene;
 
   // Timing
-  double timeScale;
+  double timestep;
   double deltaTime;
   float lastFrame;
   unsigned frames = 0;
