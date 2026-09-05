@@ -80,6 +80,11 @@ private:
   void initGLEW();
   void initOpenGLSettings();
 
+  void initShaderResources();
+  void initKernelResources();
+  void initModelResources();
+  void initAsteroidResources();
+
   void updateFrameContext();
 
   LoadedTextures loadTextures(const std::string &model_name, const std::string &diffuse_name, const std::string &normal_name = "", const std::string &night_name = "", const std::string &roughness_name = "");

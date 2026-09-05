@@ -90,6 +90,83 @@ void Application::initOpenGLSettings()
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
+void Application::initShaderResources()
+{
+  // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
+  this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
+  this->resourceManager.LoadShader(Res::CORE_TANGENT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_tangent_core.glsl", "assets/shaders/fragment_tangent_core.glsl");
+  this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->GLmajor, this->GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
+  this->resourceManager.LoadShader(Res::TRAIL_SHADER, this->GLmajor, this->GLminor, "assets/shaders/trail/vertex.glsl", "assets/shaders/trail/fragment.glsl");
+  this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
+  // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
+  this->resourceManager.LoadShader(Res::TEXT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
+  this->resourceManager.LoadShader(Res::HDR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/hdr/vertex.glsl", "assets/shaders/hdr/fragment.glsl");
+  this->resourceManager.LoadShader(Res::BLOOM_SHADER, this->GLmajor, this->GLminor, "assets/shaders/bloom/vertex.glsl", "assets/shaders/bloom/fragment.glsl");
+  this->resourceManager.LoadShader(Res::BLUR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/texture/vertex.glsl", "assets/shaders/blur/texture/fragment.glsl");
+  this->resourceManager.LoadShader(Res::BLUR_CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/cubemap/vertex.glsl", "assets/shaders/blur/cubemap/fragment.glsl", "assets/shaders/blur/cubemap/geometry.glsl");
+  this->resourceManager.LoadShader(Res::CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/cubemap/vertex.glsl", "assets/shaders/cubemap/fragment.glsl");
+  this->resourceManager.LoadShader(Res::CONVOLUTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/convolution/vertex.glsl", "assets/shaders/convolution/fragment.glsl");
+  this->resourceManager.LoadShader(Res::REFLECTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/reflector/vertex.glsl", "assets/shaders/reflector/fragment.glsl");
+  this->resourceManager.LoadShader(Res::DOWNSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/down/vertex.glsl", "assets/shaders/sample/down/fragment.glsl");
+  this->resourceManager.LoadShader(Res::UPSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/up/vertex.glsl", "assets/shaders/sample/up/fragment.glsl");
+  this->resourceManager.LoadShader(Res::ATMOSPHERE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/atmosphere/vertex.glsl", "assets/shaders/atmosphere/fragment.glsl");
+  this->resourceManager.LoadShader(Res::IMPOSTOR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/impostor/vertex.glsl", "assets/shaders/impostor/fragment.glsl");
+  this->resourceManager.LoadShader(Res::POINT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/point/vertex.glsl", "assets/shaders/point/fragment.glsl");
+}
+void Application::initKernelResources()
+{
+  this->resourceManager.LoadProgram(Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM, "assets/kernels/wisdomHolman/wisdomHolman.cl", Res::MAIN_CONTEXT);
+  this->resourceManager.LoadKernel(Res::DRIFT_ANGULAR_KERNEL, Res::DRIFT_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::HALF_KICK_LINEAR_KERNEL, Res::HALF_KICK_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::HALF_KICK_ANGULAR_KERNEL, Res::HALF_KICK_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+  this->resourceManager.LoadKernel(Res::HALF_KICK_KERNEL, Res::HALF_KICK_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
+
+  this->resourceManager.LoadProgram(Res::RENDER_QUEUE_PROGRAM, "assets/kernels/render/render.cl", Res::MAIN_CONTEXT);
+  this->resourceManager.LoadKernel(Res::LOD_FULL_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_POINT_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+  this->resourceManager.LoadKernel(Res::LOD_PASS_KERNEL, Res::LOD_PASS_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+
+  this->resourceManager.LoadKernel(Res::PARTITION_OBJECTS_KERNEL, Res::PARTITION_OBJECTS_KERNEL, Res::RENDER_QUEUE_PROGRAM);
+}
+void Application::initModelResources()
+{
+  this->loadEllipsoidObject(Res::SUN_MODEL, Res::SUN_MESH, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, ModelFlags::Special, sunLuminosity);
+  // this->loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);
+  this->loadEllipsoidObject(Res::MERCURY_MODEL, Res::MERCURY_MESH, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::VENUS_MODEL, Res::VENUS_MESH, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::VENUS_ATMOSPHERE_MODEL, Res::VENUS_ATMOSPHERE_MESH, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
+  this->loadReflectanceAcceptorEllipsoidObject(Res::EARTH_MODEL, Res::EARTH_MESH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, ModelFlags::CastsShadow | ModelFlags::Special, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
+  this->loadEllipsoidObject(Res::EARTH_ATMOSPHERE_MODEL, Res::EARTH_ATMOSPHERE_MESH, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
+  this->loadHapkeEllipsoidObject(Res::MOON_MODEL, Res::MOON_MESH, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f, moonHapkeParameters, Res::EARTH_MODEL, ModelFlags::CastsShadow | ModelFlags::ReflectsLight | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::MARS_MODEL, Res::MARS_MESH, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::JUPITER_MODEL, Res::JUPITER_MESH, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::SATURN_MODEL, Res::SATURN_MESH, Res::SATURN_DIFFUSE, Res::SATURN_MATERIAL, saturnRadii, 0.9f, 0.f, 0.85f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::URANUS_MODEL, Res::URANUS_MESH, Res::URANUS_DIFFUSE, Res::URANUS_MATERIAL, uranusRadii, 0.94f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::NEPTUNE_MODEL, Res::NEPTUNE_MESH, Res::NEPTUNE_DIFFUSE, Res::NEPTUNE_MATERIAL, neptuneRadii, 0.9f, 0.f, 0.8f, ModelFlags::CastsShadow | ModelFlags::Special);
+}
+
+void Application::initAsteroidResources()
+{
+  Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, BASE_TEXTURE_PATH + "diffuse/asteroid.png", GL_TEXTURE_2D);
+  this->loadAsteroidShape(Res::EROS_ASTEROID, Res::EROS_ASTEROID_MODEL, Res::EROS_ASTEROID_MESH, Res::EROS_ASTEROID_MATERIAL, diff, 0.85f, 0.05f, 0.92f, 48, 32, 4.0, 1.0, 1.0, 2.5, 8.0, 8.0);
+  this->loadAsteroidShape(Res::ITOKAWA_ASTEROID, Res::ITOKAWA_ASTEROID_MODEL, Res::ITOKAWA_ASTEROID_MESH, Res::ITOKAWA_ASTEROID_MATERIAL, diff, 0.9f, 0.08f, 0.95f, 64, 48, 7.0, 0.9, 1.1, 3.0, 12.0, 6.0);
+  this->loadAsteroidShape(Res::BENNU_ASTEROID, Res::BENNU_ASTEROID_MODEL, Res::BENNU_ASTEROID_MESH, Res::BENNU_ASTEROID_MATERIAL, diff, 0.78f, 0.03f, 0.88f, 56, 40, 5.0, 1.0, 0.95, 1.8, 4.0, 10.0);
+  this->loadAsteroidShape(Res::RYUGU_ASTEROID, Res::RYUGU_ASTEROID_MODEL, Res::RYUGU_ASTEROID_MESH, Res::RYUGU_ASTEROID_MATERIAL, diff, 0.82f, 0.06f, 0.85f, 52, 36, 3.0, 1.2, 0.8, 2.2, 5.0, 18.0);
+  this->loadAsteroidShape(Res::VESTA_ASTEROID, Res::VESTA_ASTEROID_MODEL, Res::VESTA_ASTEROID_MESH, Res::VESTA_ASTEROID_MATERIAL, diff, 0.88f, 0.04f, 0.9f, 40, 28, 6.0, 1.0, 1.0, 4.0, 3.0, 15.0);
+}
+
 void Application::updateFrameContext()
 {
   float aspect = 1.f;
@@ -316,74 +393,10 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
 
   this->isTextShown = true;
 
-  // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
-  this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
-  this->resourceManager.LoadShader(Res::CORE_TANGENT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_tangent_core.glsl", "assets/shaders/fragment_tangent_core.glsl");
-  this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->GLmajor, this->GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
-  this->resourceManager.LoadShader(Res::TRAIL_SHADER, this->GLmajor, this->GLminor, "assets/shaders/trail/vertex.glsl", "assets/shaders/trail/fragment.glsl");
-  this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
-  // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
-  this->resourceManager.LoadShader(Res::TEXT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
-  this->resourceManager.LoadShader(Res::HDR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/hdr/vertex.glsl", "assets/shaders/hdr/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLOOM_SHADER, this->GLmajor, this->GLminor, "assets/shaders/bloom/vertex.glsl", "assets/shaders/bloom/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLUR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/texture/vertex.glsl", "assets/shaders/blur/texture/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLUR_CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/cubemap/vertex.glsl", "assets/shaders/blur/cubemap/fragment.glsl", "assets/shaders/blur/cubemap/geometry.glsl");
-  this->resourceManager.LoadShader(Res::CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/cubemap/vertex.glsl", "assets/shaders/cubemap/fragment.glsl");
-  this->resourceManager.LoadShader(Res::CONVOLUTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/convolution/vertex.glsl", "assets/shaders/convolution/fragment.glsl");
-  this->resourceManager.LoadShader(Res::REFLECTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/reflector/vertex.glsl", "assets/shaders/reflector/fragment.glsl");
-  this->resourceManager.LoadShader(Res::DOWNSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/down/vertex.glsl", "assets/shaders/sample/down/fragment.glsl");
-  this->resourceManager.LoadShader(Res::UPSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/up/vertex.glsl", "assets/shaders/sample/up/fragment.glsl");
-  this->resourceManager.LoadShader(Res::ATMOSPHERE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/atmosphere/vertex.glsl", "assets/shaders/atmosphere/fragment.glsl");
-  this->resourceManager.LoadShader(Res::IMPOSTOR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/impostor/vertex.glsl", "assets/shaders/impostor/fragment.glsl");
-  this->resourceManager.LoadShader(Res::POINT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/point/vertex.glsl", "assets/shaders/point/fragment.glsl");
+  this->initShaderResources();
 
-  // OpenCL
-  Context &ctx = this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
-  this->resourceManager.LoadProgram(Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM, "assets/kernels/wisdomHolman/wisdomHolman.cl", Res::MAIN_CONTEXT);
-  this->resourceManager.LoadKernel(Res::DRIFT_ANGULAR_KERNEL, Res::DRIFT_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::HALF_KICK_LINEAR_KERNEL, Res::HALF_KICK_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::HALF_KICK_ANGULAR_KERNEL, Res::HALF_KICK_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::HALF_KICK_KERNEL, Res::HALF_KICK_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-
-  this->resourceManager.LoadProgram(Res::RENDER_QUEUE_PROGRAM, "assets/kernels/render/render.cl", Res::MAIN_CONTEXT);
-  this->resourceManager.LoadKernel(Res::LOD_FULL_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_POINT_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_PASS_KERNEL, Res::LOD_PASS_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-
-  this->resourceManager.LoadKernel(Res::PARTITION_OBJECTS_KERNEL, Res::PARTITION_OBJECTS_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-
-  this->loadEllipsoidObject(Res::SUN_MODEL, Res::SUN_MESH, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, ModelFlags::Special, sunLuminosity);
-  // this->loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);
-  this->loadEllipsoidObject(Res::MERCURY_MODEL, Res::MERCURY_MESH, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::VENUS_MODEL, Res::VENUS_MESH, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::VENUS_ATMOSPHERE_MODEL, Res::VENUS_ATMOSPHERE_MESH, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
-  this->loadReflectanceAcceptorEllipsoidObject(Res::EARTH_MODEL, Res::EARTH_MESH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, ModelFlags::CastsShadow | ModelFlags::Special, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
-  this->loadEllipsoidObject(Res::EARTH_ATMOSPHERE_MODEL, Res::EARTH_ATMOSPHERE_MESH, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
-  this->loadHapkeEllipsoidObject(Res::MOON_MODEL, Res::MOON_MESH, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f, moonHapkeParameters, Res::EARTH_MODEL, ModelFlags::CastsShadow | ModelFlags::ReflectsLight | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::MARS_MODEL, Res::MARS_MESH, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::JUPITER_MODEL, Res::JUPITER_MESH, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::SATURN_MODEL, Res::SATURN_MESH, Res::SATURN_DIFFUSE, Res::SATURN_MATERIAL, saturnRadii, 0.9f, 0.f, 0.85f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::URANUS_MODEL, Res::URANUS_MESH, Res::URANUS_DIFFUSE, Res::URANUS_MATERIAL, uranusRadii, 0.94f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::NEPTUNE_MODEL, Res::NEPTUNE_MESH, Res::NEPTUNE_DIFFUSE, Res::NEPTUNE_MATERIAL, neptuneRadii, 0.9f, 0.f, 0.8f, ModelFlags::CastsShadow | ModelFlags::Special);
-
-  Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, BASE_TEXTURE_PATH + "diffuse/asteroid.png", GL_TEXTURE_2D);
-  this->loadAsteroidShape(Res::EROS_ASTEROID, Res::EROS_ASTEROID_MODEL, Res::EROS_ASTEROID_MESH, Res::EROS_ASTEROID_MATERIAL, diff, 0.85f, 0.05f, 0.92f, 48, 32, 4.0, 1.0, 1.0, 2.5, 8.0, 8.0);
-  this->loadAsteroidShape(Res::ITOKAWA_ASTEROID, Res::ITOKAWA_ASTEROID_MODEL, Res::ITOKAWA_ASTEROID_MESH, Res::ITOKAWA_ASTEROID_MATERIAL, diff, 0.9f, 0.08f, 0.95f, 64, 48, 7.0, 0.9, 1.1, 3.0, 12.0, 6.0);
-  this->loadAsteroidShape(Res::BENNU_ASTEROID, Res::BENNU_ASTEROID_MODEL, Res::BENNU_ASTEROID_MESH, Res::BENNU_ASTEROID_MATERIAL, diff, 0.78f, 0.03f, 0.88f, 56, 40, 5.0, 1.0, 0.95, 1.8, 4.0, 10.0);
-  this->loadAsteroidShape(Res::RYUGU_ASTEROID, Res::RYUGU_ASTEROID_MODEL, Res::RYUGU_ASTEROID_MESH, Res::RYUGU_ASTEROID_MATERIAL, diff, 0.82f, 0.06f, 0.85f, 52, 36, 3.0, 1.2, 0.8, 2.2, 5.0, 18.0);
-  this->loadAsteroidShape(Res::VESTA_ASTEROID, Res::VESTA_ASTEROID_MODEL, Res::VESTA_ASTEROID_MESH, Res::VESTA_ASTEROID_MATERIAL, diff, 0.88f, 0.04f, 0.9f, 40, 28, 6.0, 1.0, 1.0, 4.0, 3.0, 15.0);
+  this->initModelResources();
+  this->initAsteroidResources();
 
   this->resourceManager.LoadMesh<VertexPositionTexcoord>(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
 
@@ -394,8 +407,11 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
 
   if (config.backend == Backend::GPU)
   {
+    Context &ctx = this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
     if (config.precision == Precision::DOUBLE && !ctx.getSupportsDouble())
       Logger::logFatal("Application", "Double precision is not supported on this GPU");
+
+    this->initKernelResources();
 
     this->scene.initGPUWorld(this->resourceManager);
     this->renderer.initGPUBackend(this->scene);

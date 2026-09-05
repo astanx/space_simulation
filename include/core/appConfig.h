@@ -21,8 +21,8 @@ struct AppConfig
   int GLminor = 1;
   bool resizable = true;
 
-  double timestep = 86400;
-  Date startDate = Date{1, 1, 2000};
+  double timestep = 86400; // --timestep time
+  Date startDate = Date{1, 1, 2000}; // --date day/month/year hour:minute:second
 
   Backend backend = Backend::CPU;          // --gpu or --cpu
   Precision precision = Precision::DOUBLE; // --float or --double
