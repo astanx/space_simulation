@@ -100,8 +100,8 @@ dquat dmat3_to_dquat(dmat3 m)
   {
     q.w = 0.5 * sqrt(t + 1);
     q.x = (m.cols[1].z - m.cols[2].y) / 4 / q.w;
-    q.y = (m.cols[2].x - m.cols[0].z) / 4 / q.w;;
-    q.z = (m.cols[1].x - m.cols[0].y) / 4 / q.w;;
+    q.y = (m.cols[2].x - m.cols[0].z) / 4 / q.w;
+    q.z = (m.cols[1].x - m.cols[0].y) / 4 / q.w;
   }
 
   else if (m00 > m11 && m00 > m22)

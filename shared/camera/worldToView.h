@@ -53,13 +53,11 @@ dmat3 worldToViewSpace(const dmat3 &orientation)
 #ifdef __OPENCL_VERSION__
 dquat worldToViewSpaceQuat(dquat orientation)
 {
-  dmat3 C;
-  C.cols[0] = (dvec3)(1, 0, 0);
-  C.cols[1] = (dvec3)(0, 0, 1);
-  C.cols[2] = (dvec3)(0, -1, 0);
+  real factor = sqrt(2.0) / 2;
+  dquat C = (dquat)(factor, 0, 0, factor);
+  dquat conjC = (dquat)(-C.x, -C.y, -C.z, C.w);
 
-  dmat3 orientationMat = dquat_to_dmat3(orientation);
-  return dmat3_to_dquat(dmat3_dot_dmat3(dmat3_dot_dmat3(C, orientationMat), dmat3_transpose(C)));
+  return dquat_normalize(dquat_dot_dquat(dquat_dot_dquat(C, orientation), conjC));
 }
 #else
 dquat worldToViewSpace(const dquat &orientation)

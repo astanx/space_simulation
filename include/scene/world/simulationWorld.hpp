@@ -39,12 +39,10 @@ void SimulationWorld<Real>::initDatabases(ResourceManager &resourceManager, Thre
   builder.createPlanet(resourceManager.GetModel(Res::MERCURY_MODEL), mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
   Planet *venusPtr = builder.createPlanet(resourceManager.GetModel(Res::VENUS_MODEL), venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
   Planet *earthPtr = builder.createPlanet(resourceManager.GetModel(Res::EARTH_MODEL), earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
-  glm::dmat3 tensor = earthPtr->getInertiaTensor();
-
   builder.addAtmosphereToPlanet(resourceManager, threadPool, Res::EARTH_MODEL, earthPtr);
   builder.createMoon(resourceManager.GetModel(Res::MOON_MODEL), moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, timeAfterJD2000, moonGravityField, moonTidalParameters);
   builder.createPlanet(resourceManager.GetModel(Res::MARS_MODEL), marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
-  builder.createAsteroidSystem(resourceManager, threadPool, sunPtr, 1000, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
+  builder.createAsteroidSystem(resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
   builder.createPlanet(resourceManager.GetModel(Res::JUPITER_MODEL), jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
   builder.createPlanet(resourceManager.GetModel(Res::SATURN_MODEL), saturnMu, saturnRadii, sunPtr, saturnElements, saturnRotationalElements, timeAfterJD2000);
   builder.createPlanet(resourceManager.GetModel(Res::URANUS_MODEL), uranusMu, uranusRadii, sunPtr, uranusElements, uranusRotationalElements, timeAfterJD2000);

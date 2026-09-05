@@ -45,9 +45,6 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<Entity> &
     std::vector<vec3> &localAccelerations = threadLocalAccelerations[thread];
     for (size_t i = work.begin; i < work.end; i++)
     {
-      // if (!this->validEntity(entities[i]))
-      //   continue;
-
       const Entity& entity = entities[i];
 
       size_t central = database.getIsOrbital(entity) ? database.getCentralBodyIdx(entity) : i;
@@ -60,8 +57,6 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<Entity> &
           continue;
         if (j == central)
           continue;
-        // if (!this->validEntity(entities[j]))
-        //   continue;
 
         const Entity& otherEntity = entities[j];
         vec3 scale = gravitationalDpOverD3<Real>(database.getPosition(entity), database.getPosition(otherEntity));
@@ -75,9 +70,6 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<Entity> &
                                {
   for(size_t i = work.begin; i < work.end; i++)
   {
-    // if (!this->validEntity(entities[i]))
-    //   continue;
-    
     const Entity& entity = entities[i];
 
     vec3 acceleration = vec3(0.0);
@@ -101,9 +93,6 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickAngular(const std::vector<Entity> 
     std::vector<vec3> &localTorque = threadLocalTorques[thread];
     for (size_t i = work.begin; i < work.end; i++)
     {
-      // if (!this->validEntity(entities[i]))
-      //   continue;
-
       const Entity& entity = entities[i];
 
       for (size_t j = i; j < entities.size(); j++)
@@ -111,9 +100,6 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickAngular(const std::vector<Entity> 
         if (i == j)
           continue;
 
-        // if (!this->validEntity(entities[j]))
-        //   continue;
-        
         const Entity& otherEntity = entities[j];
 
         vec3 dp = vec3(database.getPosition(otherEntity)) -  vec3(database.getPosition(entity));
@@ -145,24 +131,28 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickAngular(const std::vector<Entity> 
                                {
     for (size_t i = work.begin; i < work.end; i++)
     {
-      // if (!this->validEntity(entities[i]))
-      //   continue;
-
       const Entity &entity = entities[i];
 
       vec3 torque = vec3(0.0);
       for (auto &localTorques : threadLocalTorques)
         torque += localTorques[i];
 
-      vec3 omega = database.getAngularVelocity(entity);
       mat3 tensor = database.getInertiaTensor(entity);
       Real det = glm::determinant(tensor);
 
       if (std::fabs(det) < EPS || !std::isfinite(det))
-        return;
+        continue;
+
+      quat q = database.getOrientation(entity);
+
+      mat3 R = glm::mat3_cast(q);
+      mat3 transR = glm::transpose(R);     
+      vec3 omega = transR * database.getAngularVelocity(entity);
+      torque = transR * torque;
 
       vec3 acc = glm::inverse(tensor) * (torque - cross(omega, tensor * omega));
-      database.setAngularVelocity(entity,omega + acc * dt);
+
+      database.setAngularVelocity(entity, R * (omega + acc * dt));
     } });
 }
 
@@ -208,13 +198,13 @@ void WisdomHolmanIntegratorCPU<Real>::driftAngular(const Entity &entity, Integra
   vec3 omega = database.getAngularVelocity(entity);
   Real omega_len = glm::length(omega);
   Real theta = omega_len * dt;
-  if (theta > EPS)
+  if (std::fabs(theta) > EPS)
   {
     vec3 axis = omega / omega_len;
 
     Real half = theta * 0.5;
     quat q_rot(cos(half), sin(half) * axis.x, sin(half) * axis.y, sin(half) * axis.z);
-    database.setOrientation(entity, glm::normalize(quat(database.getOrientation(entity)) * q_rot));
+    database.setOrientation(entity, glm::normalize(q_rot * quat(database.getOrientation(entity))));
   }
 }
 
@@ -237,17 +227,16 @@ void WisdomHolmanIntegratorCPU<Real>::step(IntegratorDatabase<Real> &database, R
 {
   const std::vector<Entity> &entities = database.getEntities();
 
+  // std::cout << std::setprecision(17) << "FIRST ENERGY: " << this->calculateEnergy(entities, database) << std::endl;
   // kick
   this->halfKick(entities, database, dt * 0.5);
 
   // drift
   for (const Entity &entity : entities)
-  {
-    // if (!this->validEntity(entity))
-    //   continue;
     this->drift(entity, database, dt);
-  }
 
   // kick
   this->halfKick(entities, database, dt * 0.5);
+
+  // std::cout << std::setprecision(17) << "AFTER ENERGY: " << this->calculateEnergy(entities, database) << std::endl;
 }

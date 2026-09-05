@@ -10,11 +10,11 @@ template <typename Real>
 class WisdomHolmanIntegratorCPU : public IntegratorCPU<Real>
 {
 protected:
-  using vec3 = glm::vec<3, Real>;
-  using mat3 = glm::mat<3, 3, Real>;
-  using quat = glm::qua<Real>;
+  using vec3 = typename IntegratorTypes<Real>::vec3;
+  using mat3 = typename IntegratorTypes<Real>::mat3;
+  using quat = typename IntegratorTypes<Real>::quat;
 
-  bool validEntity(const std::unique_ptr<Entity>& entity);
+  bool validEntity(const std::unique_ptr<Entity> &entity);
 
   void halfKickLinear(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt);
   void driftLinear(const Entity &entity, IntegratorDatabase<Real> &database, Real dt);

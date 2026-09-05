@@ -137,6 +137,6 @@ void RenderWorldBackendGPU::sync(IPhysicsWorld &physics, const RenderDatabaseVie
                                 {
       size_t idx = this->getSpecialIndex(entity);
       glm::vec3 pos = this->specialPositions[idx];
-      
+
       this->updateSpecialModel(database.getModel(entity), camera.worldToViewSpace(pos)); });
 }
