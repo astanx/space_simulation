@@ -6,6 +6,8 @@
 
 #include "camera/cameraMovement.h"
 
+#include "resources/precision.h"
+
 #include <memory>
 #include <variant>
 #include <glm/glm.hpp>
@@ -31,8 +33,7 @@ public:
   void initGPUWorld(ResourceManager &manager);
   void initCPUWorld(ThreadPool &threadPool);
 
-  template <std::floating_point Real>
-  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime);
+  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, const Precision &precision, double startTime);
   void processKeyboard(CameraMovement direction, float deltaTime);
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);
@@ -53,5 +54,3 @@ public:
 
   ISimulationWorld &getSimulationWorld();
 };
-
-#include "scene/scene.hpp"

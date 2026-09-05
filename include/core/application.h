@@ -6,6 +6,8 @@
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
 
+#include "core/appConfig.h"
+
 #include <GLFW/glfw3.h>
 
 class Shader;
@@ -107,8 +109,7 @@ private:
   void processInput();
 
 public:
-  Application(
-      const char *title, const int windowWidth, const int windowHeight, const int GLmajor, const int GLminor, GLboolean resizable);
+  Application(const AppConfig &config);
   virtual ~Application();
 
   void render();

@@ -14,13 +14,27 @@
 Scene::Scene() = default;
 Scene::~Scene() = default;
 
+// Public functions
+void Scene::init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, const Precision &precision, double startTime)
+{
+  if (precision == Precision::DOUBLE)
+    this->world.emplace<SimulationWorld<double>>();
+  else if (precision == Precision::FLOAT)
+    this->world.emplace<SimulationWorld<float>>();
+  else
+    Logger::logFatal("Scene", "Unsupported precision");
+
+  std::visit([&renderCtx, &resourceManager, &threadPool, startTime](auto &w)
+             { w.init(renderCtx, resourceManager, threadPool, startTime); }, this->world);
+}
+
 // Process functions
 void Scene::initGPUWorld(ResourceManager &resourceManager)
 {
   std::visit([&resourceManager](auto &w)
              { w.initGPU(resourceManager); }, this->world);
 }
-void Scene::initCPUWorld(ThreadPool& threadPool)
+void Scene::initCPUWorld(ThreadPool &threadPool)
 {
   std::visit([&threadPool](auto &w)
              { w.initCPU(threadPool); }, this->world);

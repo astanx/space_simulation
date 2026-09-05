@@ -284,20 +284,19 @@ void Application::loadAsteroidShape(const std::string &name, const std::string &
 }
 
 // Constructor / Destructor
-Application::Application(
-    const char *title, const int windowWidth, const int windowHeight, const int GLmajor, const int GLminor, GLboolean resizable) : windowWidth(windowWidth),
-                                                                                                                                   windowHeight(windowHeight),
-                                                                                                                                   GLmajor(GLmajor),
-                                                                                                                                   GLminor(GLminor),
-                                                                                                                                   resourceManager(),
-                                                                                                                                   threadPool(),
-                                                                                                                                   scene(),
-                                                                                                                                   input(),
-                                                                                                                                   renderer(resourceManager)
+Application::Application(const AppConfig &config) : windowWidth(config.width),
+                                                    windowHeight(config.height),
+                                                    GLmajor(config.GLmajor),
+                                                    GLminor(config.GLminor),
+                                                    resourceManager(),
+                                                    threadPool(),
+                                                    scene(),
+                                                    input(),
+                                                    renderer(resourceManager)
 {
   // Initialize application
   this->initGLFW();
-  this->initWindow(title, resizable);
+  this->initWindow(config.title, config.resizable);
   this->initGLEW();
   this->initOpenGLSettings();
 
@@ -339,7 +338,7 @@ Application::Application(
   this->resourceManager.LoadShader(Res::POINT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/point/vertex.glsl", "assets/shaders/point/fragment.glsl");
 
   // OpenCL
-  this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
+  Context &ctx = this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
   this->resourceManager.LoadProgram(Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM, "assets/kernels/wisdomHolman/wisdomHolman.cl", Res::MAIN_CONTEXT);
   this->resourceManager.LoadKernel(Res::DRIFT_ANGULAR_KERNEL, Res::DRIFT_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
   this->resourceManager.LoadKernel(Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
@@ -390,19 +389,24 @@ Application::Application(
 
   this->updateFrameContext();
 
-  this->scene.init<float>(this->renderCtx, this->resourceManager, this->threadPool, this->startTime);
+  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, config.precision, this->startTime);
   this->renderer.init(this->renderCtx);
 
-  if (bool GPU = true)
+  if (config.backend == Backend::GPU)
   {
+    if (config.precision == Precision::DOUBLE && !ctx.getSupportsDouble())
+      Logger::logFatal("Application", "Double precision is not supported on this GPU");
+
     this->scene.initGPUWorld(this->resourceManager);
     this->renderer.initGPUBackend(this->scene);
   }
-  else
+  else if (config.backend == Backend::CPU)
   {
     this->scene.initCPUWorld(this->threadPool);
     this->renderer.initCPUBackend(this->scene);
   }
+  else
+    Logger::logFatal("Application", "Backend type is not specified");
 }
 
 Application::~Application()
