@@ -67,6 +67,16 @@ There are some optional arguments
       <td>on</td>
       <td>Forces double precision for simulation (might not work with some GPUs if <code>--gpu</code> mode enabled)</td>
     </tr>
+    <tr>
+      <td><code>--timestep time</code></td>
+      <td>86400</td>
+      <td>Sets initial timestep for the simulation, both positive and negative values supported</td>
+    </tr>
+    <tr>
+      <td><code>--date day/month/year hour:minute:second</code></td>
+      <td>1/1/2000</td>
+      <td>Sets starting date for the simulation, <code>hour:minute:second</code> are optional</td>
+    </tr>
   </tbody>
 </table>
 
