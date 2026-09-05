@@ -36,6 +36,40 @@ cmake --build .
 ```
 
 <h3>Running</h3>
+<h4>Arguments</h4>
+There are some optional arguments 
+<table>
+  <thead >
+    <tr>
+      <th>Argument</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>--gpu</code></td>
+      <td>off</td>
+      <td>Forces GPU (OpenCL) backend</td>
+    </tr>
+    <tr>
+      <td><code>--cpu</code></td>
+      <td>on</td>
+      <td>Forces CPU backend</td>
+    </tr>
+   <tr>
+      <td><code>--float</code></td>
+      <td>off</td>
+      <td>Forces float precision for simulation</td>
+    </tr>
+    <tr>
+      <td><code>--double</code></td>
+      <td>on</td>
+      <td>Forces double precision for simulation (might not work with some GPUs if <code>--gpu</code> mode enabled)</td>
+    </tr>
+  </tbody>
+</table>
+
 
 To run program call
 ```bash
