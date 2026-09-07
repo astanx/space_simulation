@@ -60,10 +60,10 @@ private:
 
   bool wasInit = false;
 
-  void initDatabases(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000);
+  void initDatabases(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000, bool enableRender);
   void initGPUBuffers(Context &ctx);
 
-  void initRenderWorld(ResourceManager& manager, const FrameContext &ctx);
+  void initRenderWorld(ResourceManager &manager, const FrameContext &ctx);
 
 public:
   SimulationWorld();
@@ -71,9 +71,10 @@ public:
 
   void initCPU(ThreadPool &threadPool) override;
   void initGPU(ResourceManager &resourceManager) override;
-  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime) override;
+  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime, bool enableRender) override;
 
-  void update(RenderQueue &queue, RenderContext &renderCtx) override;
+  void updatePhysics(double dt) override;
+  void updateRender(RenderQueue &queue, RenderContext &renderCtx) override;
 
   void addWorldObject(WorldObject object) { this->worldObjects.push_back(object); };
   void addWorldSystem(WorldSystem system) { this->worldSystems.push_back(system); };

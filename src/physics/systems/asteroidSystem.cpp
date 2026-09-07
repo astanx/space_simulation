@@ -88,6 +88,7 @@ void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAste
   glm::dvec3 pos(0.0);
 
   double density = generateRandom(MINIMUM_ASTEROID_DENSITY, MAXIMUM_ASTEROID_DENSITY);
+  volume *= radius * radius * radius;
   double mu = density * volume * G;
 
   {
@@ -96,61 +97,76 @@ void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAste
   }
 }
 
-void AsteroidSystem::createAsteroids(ResourceManager &resourceManager, unsigned amount, double timeAfterJD2000)
+void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, double timeAfterJD2000)
 {
-  std::vector<AsteroidType *> asteroidShapes;
-  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::EROS_ASTEROID));
-  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::ITOKAWA_ASTEROID));
-  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::BENNU_ASTEROID));
-  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::RYUGU_ASTEROID));
-  asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::VESTA_ASTEROID));
+  double polar = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
+  double equatorian = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
+  double scale = std::max(polar, equatorian);
 
-  const size_t typeCount = asteroidShapes.size();
-  this->models.reserve(typeCount);
+  // normalize
+  polar /= scale;
+  equatorian /= scale;
 
-  for (size_t i = 0; i < asteroidShapes.size(); i++)
-    this->models.push_back(std::move(asteroidShapes[i]->model));
+  Radii radii{
+      equatorian,
+      polar,
+      (2 * equatorian + polar) / 3};
 
-  std::vector<unsigned int> typeCounts(typeCount, 0);
+  double volume = 4 / 3 * (M_PI * equatorian * equatorian * polar);
+
+  this->createAsteroid(type, typeAsteroids, radii, volume, timeAfterJD2000);
+}
+
+void AsteroidSystem::createAsteroids(ResourceManager &resourceManager, unsigned amount, double timeAfterJD2000, bool enableRender)
+{
   this->asteroidTypes.resize(amount);
-
-  for (size_t i = 0; i < amount; i++)
-  {
-    unsigned type = generateRandom(0u, static_cast<unsigned>(this->models.size() - 1));
-
-    asteroidTypes[i] = type;
-    typeCounts[type]++;
-  }
-
-  this->initRanges(typeCounts);
-
+  size_t typeCount = 1;
   std::vector<std::vector<Asteroid>> tempAsteroids(typeCount);
-  this->threadPool.parallelFor(0, this->asteroidTypes.size(), [this, &tempAsteroids, &asteroidShapes, timeAfterJD2000](size_t i)
-                               { this->createAsteroid(this->asteroidTypes[i], tempAsteroids[this->asteroidTypes[i]], asteroidShapes[asteroidTypes[i]]->radii, asteroidShapes[asteroidTypes[i]]->volume, timeAfterJD2000); });
+
+  this->totalObjects = amount;
+
+  if (enableRender)
+  {
+    std::vector<AsteroidType *> asteroidShapes;
+    asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::EROS_ASTEROID));
+    asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::ITOKAWA_ASTEROID));
+    asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::BENNU_ASTEROID));
+    asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::RYUGU_ASTEROID));
+    asteroidShapes.push_back(&resourceManager.GetAsteroid(Res::VESTA_ASTEROID));
+
+    typeCount = asteroidShapes.size();
+    tempAsteroids.resize(typeCount);
+    this->models.reserve(typeCount);
+
+    for (size_t i = 0; i < asteroidShapes.size(); i++)
+      this->models.push_back(asteroidShapes[i]->model);
+
+    std::vector<unsigned int> typeCounts(typeCount, 0);
+
+    for (size_t i = 0; i < amount; i++)
+    {
+      unsigned type = generateRandom(0u, static_cast<unsigned>(this->models.size() - 1));
+
+      asteroidTypes[i] = type;
+      typeCounts[type]++;
+    }
+
+    this->threadPool.parallelFor(0, this->asteroidTypes.size(), [this, &tempAsteroids, &asteroidShapes, timeAfterJD2000](size_t i)
+                                 { this->createAsteroid(this->asteroidTypes[i], tempAsteroids[this->asteroidTypes[i]], asteroidShapes[asteroidTypes[i]]->radii, asteroidShapes[asteroidTypes[i]]->volume, timeAfterJD2000); });
+
+    for (unsigned type = 0; type < typeCount; type++)
+      Logger::logInfo("Asteroid system", "Asteroids of type \"" + std::to_string(type) + "\" created - " + std::to_string(typeCounts[type]));
+  }
+  else
+    this->threadPool.parallelFor(0, this->asteroidTypes.size(), [this, &tempAsteroids, timeAfterJD2000](size_t i)
+                                 { this->createAsteroid(this->asteroidTypes[i], tempAsteroids[this->asteroidTypes[i]], timeAfterJD2000); });
 
   for (size_t type = 0; type < typeCount; type++)
     this->asteroids.insert(this->asteroids.end(), std::make_move_iterator(tempAsteroids[type].begin()), std::make_move_iterator(tempAsteroids[type].end()));
-
-  for (unsigned type = 0; type < typeCount; type++)
-    Logger::logInfo("Asteroid system", "Asteroids of type \"" + std::to_string(type) + "\" created - " + std::to_string(typeCounts[type]));
-}
-
-void AsteroidSystem::initRanges(std::vector<unsigned int> &typeCounts)
-{
-  unsigned threadCount = this->threadPool.getThreadCount();
-
-  size_t start = 0;
-  for (size_t typeIndex = 0; typeIndex < typeCounts.size(); typeIndex++)
-  {
-    this->typeRanges.push_back({start, start + typeCounts[typeIndex]});
-    start += typeCounts[typeIndex];
-  }
-
-  this->totalObjects = start;
 }
 
 // Constructor
-AsteroidSystem::AsteroidSystem(ResourceManager &resourceManager, Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000, float importance, ThreadPool &threadPool) : threadPool(threadPool), Integratable(true)
+AsteroidSystem::AsteroidSystem(ResourceManager &resourceManager, Object *centralBody, unsigned amount, double innerEdge, double outerEdge, double timeAfterJD2000, float importance, ThreadPool &threadPool, bool enableRender) : threadPool(threadPool), Integratable(true)
 {
   this->centralBody = centralBody;
 
@@ -159,60 +175,18 @@ AsteroidSystem::AsteroidSystem(ResourceManager &resourceManager, Object *central
   this->innerEdge = innerEdge;
   this->outerEdge = outerEdge;
 
-  this->createAsteroids(resourceManager, amount, timeAfterJD2000);
+  this->createAsteroids(resourceManager, amount, timeAfterJD2000, enableRender);
 
   for (Model *model : this->models)
     model->setImportance(importance);
-
 }
 
 // Public functions
-void AsteroidSystem::buildRenderQueue(RenderQueue &queue, LODManager &lod, InstanceManager &instances, const Camera &camera, Frustum *frustum, float viewportHeight)
-{
-  std::vector<RenderQueueBuilder> threadLocalBuilders(this->threadPool.getThreadCount(), RenderQueueBuilder(this->models));
-
-  float fov = camera.getFOV();
-
-  this->threadPool.parallelFor(0, this->asteroids.size(), [this, &threadLocalBuilders, &camera, &lod, &frustum, fov, viewportHeight](Range work, size_t thread)
-                               {
-                              auto& localBuilder = threadLocalBuilders[thread];
-                              for (unsigned i = work.begin; i < work.end; i++)
-                              {
-                                const Asteroid& asteroid = this->asteroids[i];
-                                Radii radii = asteroid.getRadii();
-
-                                Transform transform;
-                                transform.position = camera.worldToViewSpace(asteroid.getPosition());
-                                transform.orientation = camera.worldToViewSpace(asteroid.getOrientation());
-                                LODResult res = lod.partitionObject(transform.position, this->models[this->asteroidTypes[i]]->getImportance(), radii, frustum, viewportHeight, fov);
-
-                                localBuilder.submit(this->models[this->asteroidTypes[i]], res, transform);
-                              } });
-
-  RenderQueueBuilder finalBuilder(this->models);
-  for (auto &builder : threadLocalBuilders)
-    finalBuilder.merge(builder);
-
-  finalBuilder.finish(instances, queue);
-}
-
 Model *AsteroidSystem::getModelFromObjectIndex(size_t i)
 {
+  size_t type = this->asteroidTypes[i];
+  if (type >= this->models.size())
+    Logger::logFatal("Asteroid System", "Asteroid type exceeds models size");
+
   return this->models[this->asteroidTypes[i]];
-}
-
-void AsteroidSystem::reserveInstances(InstanceManager &instanceManager)
-{
-  for (size_t type = 0; type < this->typeRanges.size(); type++)
-  {
-    Range range = this->typeRanges[type];
-    size_t size = range.end - range.begin;
-    instanceManager.reserve(this->models[type], size);
-  }
-}
-
-void AsteroidSystem::applyObjectGravitation(Object &object)
-{
-  // this->threadPool.parallelFor(0, this->asteroids.size(), [this, &object](size_t i)
-  //                              { this->asteroids[i].applyGravitation(object); });
 }

@@ -33,12 +33,13 @@ public:
   void initGPUWorld(ResourceManager &manager);
   void initCPUWorld(ThreadPool &threadPool);
 
-  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, const Precision &precision, double startTime);
+  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, const Precision &precision, double startTime, bool enableRender);
   void processKeyboard(CameraMovement direction, float deltaTime);
   void processMouseMovement(const float &xpos, const float &ypos);
   void processMouseScroll(float yoffset);
 
-  void update(RenderQueue &queue, RenderContext &renderCtx);
+  void updatePhysicsWorld(double dt);
+  void updateRenderWorld(RenderQueue &queue, RenderContext &renderCtx);
 
   // Setters
   void increaseCameraSpeed(double percentage = 10.0);

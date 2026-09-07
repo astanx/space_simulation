@@ -227,7 +227,6 @@ void WisdomHolmanIntegratorCPU<Real>::step(IntegratorDatabase<Real> &database, R
 {
   const std::vector<Entity> &entities = database.getEntities();
 
-  // std::cout << std::setprecision(17) << "FIRST ENERGY: " << this->calculateEnergy(entities, database) << std::endl;
   // kick
   this->halfKick(entities, database, dt * 0.5);
 
@@ -237,6 +236,4 @@ void WisdomHolmanIntegratorCPU<Real>::step(IntegratorDatabase<Real> &database, R
 
   // kick
   this->halfKick(entities, database, dt * 0.5);
-
-  // std::cout << std::setprecision(17) << "AFTER ENERGY: " << this->calculateEnergy(entities, database) << std::endl;
 }

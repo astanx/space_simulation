@@ -36,6 +36,8 @@ private:
   TrailManager &trailManager;
 
   std::unordered_map<Object *, Entity> objectToEntity;
+  std::unordered_map<Object *, Model *> objectToModel;
+  std::unordered_map<System *, RenderSystem *> systemToRenderSystem;
 
   std::mutex loveMutex;
   std::mutex tidalMutex;
@@ -46,12 +48,9 @@ private:
   Total total;
   Total modelTotal;
 
-  std::vector<WorldObject> worldObjects;
-  std::vector<WorldOrbitalObject> worldOrbitalObjects;
-  std::vector<WorldSystem> worldSystems;
-
   std::vector<std::unique_ptr<System>> systems;
   std::vector<std::unique_ptr<Object>> objects;
+  std::vector<std::unique_ptr<OrbitalObject>> orbitalObjects;
 
   void processObject(Object *obj, WorldDatabase<Real> &data, size_t i);
   void processOrbital(OrbitalObject *obj, WorldDatabase<Real> &data, size_t i);
@@ -59,7 +58,7 @@ private:
   void processModel(TemporaryStorage<Real> &storage, Model *model, size_t i);
   void processModelSource(TemporaryStorage<Real> &storage, ModelSource *modelSource, size_t i);
 
-  void processSystem(WorldSystem &system, TemporaryStorage<Real> &objectStorage, TemporaryStorage<Real> &orbitalStorage, std::atomic_size_t &objectIndex, std::atomic_size_t &orbitalIndex);
+  void processSystem(System *system, TemporaryStorage<Real> &objectStorage, TemporaryStorage<Real> &orbitalStorage, std::atomic_size_t &objectIndex, std::atomic_size_t &orbitalIndex);
 
   size_t findCentralBodyIndex(Object *central);
 
@@ -67,12 +66,14 @@ public:
   WorldDatabaseBuilder(EntityManager &entityManager, TrailManager &trailManager, Importance &importance) : entityManager(entityManager), trailManager(trailManager), importance(importance) {};
   ~WorldDatabaseBuilder() = default;
 
-  Planet *createPlanet(Model &model, Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters(), Real g = 0.0);
-  Object *createStar(Model &model, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos);
-  Moon *createMoon(Model &model, Real mu, Radii radii, Planet *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
+  Planet *createPlanet(Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters(), Real g = 0.0);
+  void createPlanetModel(Model &model, Planet &planet);
+  Object *createStar(Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos);
+  void createStarModel(Model &model, Object &object);
+  Moon *createMoon(Real mu, Radii radii, Planet *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
+  void createMoonModel(Model &model, Moon &moon);
   void addAtmosphereToPlanet(ResourceManager &resourceManager, ThreadPool &threadPool, std::string planetName, Planet *planet);
-  AsteroidSystem *createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, Real innerEdge, Real outerEdge, Real timeAfterJD2000);
-
+  AsteroidSystem *createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, Real innerEdge, Real outerEdge, Real timeAfterJD2000, bool enableRender);
   const Entity convertObjectToEntity(Object *object);
 
   WorldDatabase<Real> build(InstanceManager &instanceManager);

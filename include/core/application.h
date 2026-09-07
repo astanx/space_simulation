@@ -1,13 +1,21 @@
 #pragma once
 
-#include "scene/scene.h"
-#include "render/renderer/renderer.h"
+#include <GL/glew.h>
+
 #include "core/inputManager.h"
+#include "core/appConfig.h"
+
+#include "scene/scene.h"
+
+#include "render/renderer/renderer.h"
+
 #include "resources/resourceManager.h"
 #include "resources/threadPool.h"
 
-#include "core/appConfig.h"
+#include "debug/validators/validator.h"
 
+#include <chrono>
+#include <memory>
 #include <GLFW/glfw3.h>
 
 class Shader;
@@ -41,6 +49,9 @@ private:
   int framebufferWidth = 0;
   int framebufferHeight = 0;
 
+  // Mode
+  Mode mode;
+
   // OpenGL properties
   const int GLmajor;
   const int GLminor;
@@ -63,15 +74,21 @@ private:
   // Scene
   Scene scene;
 
+  // Validator
+  std::unique_ptr<Validator> validator;
+
   // Timing
+  std::chrono::steady_clock::time_point clock;
   double timestep;
   double deltaTime;
-  float lastFrame;
+  double lastFrame;
   unsigned frames = 0;
-  float lastFpsUpdateTime = 0.0f;
+  double lastFpsUpdateTime = 0.0;
   double elapsedDays = 0.0;
   double startTime = 0.0;
   bool isFirstFrame = true;
+
+  double getTime();
 
   // INITIALIZERS
   // GLFW and window
@@ -84,6 +101,9 @@ private:
   void initKernelResources();
   void initModelResources();
   void initAsteroidResources();
+
+  void initWorld(const AppConfig& config);
+  void initRenderer(const AppConfig& config);
 
   void updateFrameContext();
 

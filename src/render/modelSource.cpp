@@ -72,9 +72,3 @@ void ModelSource::scaleRadii(Radii scaledRadii)
 
   this->renderScale = glm::vec3(equatorian, polar, equatorian);
 }
-
-void ModelSource::reserveInstances(InstanceManager &instanceManager)
-{
-  this->forEachModel([&instanceManager](Model &model)
-                     { instanceManager.reserve(&model, 1); });
-}

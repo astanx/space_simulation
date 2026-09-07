@@ -307,7 +307,7 @@ void Renderer::render(Scene &scene, RenderContext &ctx)
 
 void Renderer::update(Scene &scene, RenderContext &ctx)
 {
-  scene.update(this->queue, ctx);
+  scene.updateRenderWorld(this->queue, ctx);
   this->backend->update(scene, ctx);
 }
 

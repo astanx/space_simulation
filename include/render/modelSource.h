@@ -45,8 +45,6 @@ public:
   template <typename F>
   void forEachModel(F &&func);
 
-  void reserveInstances(InstanceManager &instanceManager);
-
   const glm::quat getRenderOrientation() const { return this->renderOrientation; };
   const double getRenderRadius() const { return this->renderRadius; };
   const Radii getSrcRadii() const { return this->src.getRadii(); };

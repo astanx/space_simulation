@@ -11,6 +11,12 @@ enum class Backend
   GPU
 };
 
+enum class Mode
+{
+  EnergyValidation,
+  Simulation
+};
+
 struct AppConfig
 {
   // Window
@@ -21,7 +27,9 @@ struct AppConfig
   int GLminor = 1;
   bool resizable = true;
 
-  double timestep = 86400; // --timestep time
+  Mode mode = Mode::Simulation;
+
+  double timestep = 86400;           // --timestep time
   Date startDate = Date{1, 1, 2000}; // --date day/month/year hour:minute:second
 
   Backend backend = Backend::CPU;          // --gpu or --cpu

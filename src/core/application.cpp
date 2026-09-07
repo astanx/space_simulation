@@ -16,6 +16,8 @@
 
 #include "maths/dateToJD.h"
 
+#include "debug/validators/energyValidator.h"
+
 #include <iostream>
 #include <filesystem>
 
@@ -165,6 +167,30 @@ void Application::initAsteroidResources()
   this->loadAsteroidShape(Res::BENNU_ASTEROID, Res::BENNU_ASTEROID_MODEL, Res::BENNU_ASTEROID_MESH, Res::BENNU_ASTEROID_MATERIAL, diff, 0.78f, 0.03f, 0.88f, 56, 40, 5.0, 1.0, 0.95, 1.8, 4.0, 10.0);
   this->loadAsteroidShape(Res::RYUGU_ASTEROID, Res::RYUGU_ASTEROID_MODEL, Res::RYUGU_ASTEROID_MESH, Res::RYUGU_ASTEROID_MATERIAL, diff, 0.82f, 0.06f, 0.85f, 52, 36, 3.0, 1.2, 0.8, 2.2, 5.0, 18.0);
   this->loadAsteroidShape(Res::VESTA_ASTEROID, Res::VESTA_ASTEROID_MODEL, Res::VESTA_ASTEROID_MESH, Res::VESTA_ASTEROID_MATERIAL, diff, 0.88f, 0.04f, 0.9f, 40, 28, 6.0, 1.0, 1.0, 4.0, 3.0, 15.0);
+}
+
+void Application::initWorld(const AppConfig &config)
+{
+  bool enableRender = config.mode == Mode::Simulation;
+  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, config.precision, this->startTime, enableRender);
+
+  if (config.backend == Backend::GPU)
+    this->scene.initGPUWorld(this->resourceManager);
+  else if (config.backend == Backend::CPU)
+    this->scene.initCPUWorld(this->threadPool);
+  else
+    Logger::logFatal("Application", "Backend type is not supported");
+}
+void Application::initRenderer(const AppConfig &config)
+{
+  this->renderer.init(this->renderCtx);
+
+  if (config.backend == Backend::GPU)
+    this->renderer.initGPUBackend(this->scene);
+  else if (config.backend == Backend::CPU)
+    this->renderer.initCPUBackend(this->scene);
+  else
+    Logger::logFatal("Application", "Backend type is not supported");
 }
 
 void Application::updateFrameContext()
@@ -360,11 +386,17 @@ void Application::loadAsteroidShape(const std::string &name, const std::string &
   this->resourceManager.LoadAsteroid<VertexPositionTexcoordNormal>(name, model_name, mesh_name, std::move(shape), mat, VertexLayout::NoColor);
 }
 
+double Application::getTime()
+{
+  return std::chrono::duration<double>(std::chrono::steady_clock::now() - this->clock).count();
+}
+
 // Constructor / Destructor
 Application::Application(const AppConfig &config) : windowWidth(config.width),
                                                     windowHeight(config.height),
                                                     GLmajor(config.GLmajor),
                                                     GLminor(config.GLminor),
+                                                    mode(config.mode),
                                                     resourceManager(),
                                                     threadPool(),
                                                     scene(),
@@ -372,13 +404,16 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
                                                     renderer(resourceManager)
 {
   // Initialize application
-  this->initGLFW();
-  this->initWindow(config.title, config.resizable);
-  this->initGLEW();
-  this->initOpenGLSettings();
+  if (this->mode == Mode::Simulation)
+  {
+    this->initGLFW();
+    this->initWindow(config.title, config.resizable);
+    this->initGLEW();
+    this->initOpenGLSettings();
+  }
 
   // Init variables
-  this->renderCtx.deltaTime = 0.f;
+  this->renderCtx.deltaTime = 0.0;
   this->renderCtx.settings.paused = false;
   this->renderCtx.settings.useBloom = true;
   this->renderCtx.settings.useHDR = true;
@@ -386,49 +421,57 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
   this->renderCtx.settings.bloomPower = 0.5;
 
   this->timestep = config.timestep;
-  this->deltaTime = 0.f;
-  this->lastFrame = static_cast<float>(glfwGetTime());
+  this->deltaTime = 0.0;
+  this->clock = std::chrono::steady_clock::now();
+  this->lastFrame = getTime();
 
   this->startTime = dateToJD(config.startDate);
 
   this->isTextShown = true;
 
-  this->initShaderResources();
+  if (this->mode == Mode::Simulation)
+  {
+    this->initShaderResources();
+    this->initModelResources();
+    this->initAsteroidResources();
 
-  this->initModelResources();
-  this->initAsteroidResources();
-
-  this->resourceManager.LoadMesh<VertexPositionTexcoord>(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
+    this->resourceManager.LoadMesh<VertexPositionTexcoord>(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
+  }
 
   this->updateFrameContext();
-
-  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, config.precision, this->startTime);
-  this->renderer.init(this->renderCtx);
 
   if (config.backend == Backend::GPU)
   {
     Context &ctx = this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
     if (config.precision == Precision::DOUBLE && !ctx.getSupportsDouble())
-      Logger::logFatal("Application", "Double precision is not supported on this GPU");
-
+      Logger::logFatal("Application", "Double precision is not supported on this GPU, use --float argument");
     this->initKernelResources();
+  }
 
-    this->scene.initGPUWorld(this->resourceManager);
-    this->renderer.initGPUBackend(this->scene);
-  }
-  else if (config.backend == Backend::CPU)
+  this->initWorld(config);
+
+  if (this->mode == Mode::Simulation)
+    this->initRenderer(config);
+  else if (this->mode == Mode::EnergyValidation)
   {
-    this->scene.initCPUWorld(this->threadPool);
-    this->renderer.initCPUBackend(this->scene);
+    if (config.precision == Precision::DOUBLE)
+      this->validator = std::make_unique<EnergyValidator<double>>();
+    else if (config.precision == Precision::FLOAT)
+      this->validator = std::make_unique<EnergyValidator<float>>();
+    else
+      Logger::logFatal("Application", "This precision is not supported for validator");
+
+    this->validator->init(this->scene, this->elapsedDays * 86400);
   }
-  else
-    Logger::logFatal("Application", "Backend type is not specified");
 }
 
 Application::~Application()
 {
-  glfwDestroyWindow(this->window);
-  glfwTerminate();
+  if (this->window)
+  {
+    glfwDestroyWindow(this->window);
+    glfwTerminate();
+  }
 }
 
 // Accessors
@@ -447,13 +490,13 @@ void Application::setWindowShouldClose()
 void Application::update()
 {
   // Calculate delta time
-  float currentFrame = static_cast<float>(glfwGetTime());
+  double currentFrame = getTime();
   this->deltaTime = currentFrame - this->lastFrame;
   this->lastFrame = currentFrame;
 
   if (this->isFirstFrame)
   {
-    this->deltaTime = 0.f;
+    this->deltaTime = 0.0;
     this->isFirstFrame = false;
   }
 
@@ -464,8 +507,8 @@ void Application::update()
 
   // Update FPS counter
   this->frames++;
-  float elapsed = currentFrame - lastFpsUpdateTime;
-  if (elapsed >= 1.0f)
+  double elapsed = currentFrame - lastFpsUpdateTime;
+  if (elapsed >= 1.0)
   {
     this->fps = frames / elapsed;
 
@@ -475,18 +518,26 @@ void Application::update()
     this->lastFpsUpdateTime = currentFrame;
   }
 
-  this->renderer.update(this->scene, this->renderCtx);
+  if (!this->renderCtx.settings.paused)
+    this->scene.updatePhysicsWorld(this->renderCtx.deltaTime);
+
+  if (this->mode == Mode::Simulation)
+    this->renderer.update(this->scene, this->renderCtx);
 
   // Poll events
   glfwPollEvents();
 
-  this->input.update(this->window);
+  if (this->mode == Mode::Simulation)
+    this->input.update(this->window);
 
   this->processInput();
 }
 
 void Application::render()
 {
+  if (this->mode != Mode::Simulation)
+    return;
+
   this->renderer.render(this->scene, this->renderCtx);
 
   if (this->isTextShown)
@@ -503,7 +554,8 @@ void Application::render()
   }
 
   // Swap buffers
-  glfwSwapBuffers(this->window);
+  if (this->mode == Mode::Simulation)
+    glfwSwapBuffers(this->window);
 }
 
 // Static functions

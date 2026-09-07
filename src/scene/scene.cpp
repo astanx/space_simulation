@@ -15,7 +15,7 @@ Scene::Scene() = default;
 Scene::~Scene() = default;
 
 // Public functions
-void Scene::init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, const Precision &precision, double startTime)
+void Scene::init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, const Precision &precision, double startTime, bool enableRender)
 {
   if (precision == Precision::DOUBLE)
     this->world.emplace<SimulationWorld<double>>();
@@ -24,8 +24,8 @@ void Scene::init(RenderContext &renderCtx, ResourceManager &resourceManager, Thr
   else
     Logger::logFatal("Scene", "Unsupported precision");
 
-  std::visit([&renderCtx, &resourceManager, &threadPool, startTime](auto &w)
-             { w.init(renderCtx, resourceManager, threadPool, startTime); }, this->world);
+  std::visit([&renderCtx, &resourceManager, &threadPool, startTime, enableRender](auto &w)
+             { w.init(renderCtx, resourceManager, threadPool, startTime, enableRender); }, this->world);
 }
 
 // Process functions
@@ -65,10 +65,16 @@ void Scene::processMouseScroll(float yoffset)
   camera.processMouseScroll(yoffset); }, this->world);
 }
 
-void Scene::update(RenderQueue &queue, RenderContext &renderCtx)
+void Scene::updatePhysicsWorld(double dt)
+{
+  std::visit([dt](auto &w)
+             { w.updatePhysics(dt); }, this->world);
+}
+
+void Scene::updateRenderWorld(RenderQueue &queue, RenderContext &renderCtx)
 {
   std::visit([&queue, &renderCtx](auto &w)
-             { w.update(queue, renderCtx); }, this->world);
+             { w.updateRender(queue, renderCtx); }, this->world);
 }
 
 // Setters

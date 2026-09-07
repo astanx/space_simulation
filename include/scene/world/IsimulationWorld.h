@@ -14,9 +14,10 @@ public:
 
   virtual void initCPU(ThreadPool &threadPool) = 0;
   virtual void initGPU(ResourceManager &resourceManager) = 0;
-  virtual void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime) = 0;
+  virtual void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime, bool enableRender) = 0;
 
-  virtual void update(RenderQueue &queue, RenderContext &renderCtx) = 0;
+  virtual void updatePhysics(double dt) = 0;
+  virtual void updateRender(RenderQueue &queue, RenderContext &renderCtx) = 0;
 
   virtual const IPhysicsWorld &getPhysicsWorld() const = 0;
   virtual RenderWorld &getRenderWorld() = 0;

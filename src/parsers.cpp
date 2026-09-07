@@ -251,6 +251,8 @@ AppConfig parseArgs(int argc, char **argv)
       cfg.precision = Precision::DOUBLE;
     else if (arg == "--float")
       cfg.precision = Precision::FLOAT;
+    else if (arg == "--validate-energy")
+      cfg.mode = Mode::EnergyValidation;
     else if (arg == "--timestep")
     {
       if (argc <= i + 1)

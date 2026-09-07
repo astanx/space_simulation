@@ -31,22 +31,36 @@
 
 // Private functions
 template <typename Real>
-void SimulationWorld<Real>::initDatabases(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000)
+void SimulationWorld<Real>::initDatabases(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000, bool enableRender)
 {
   WorldDatabaseBuilder<Real> builder(this->entityManager, this->render.getTrailManager(), this->importance);
 
-  Object *sunPtr = builder.createStar(resourceManager.GetModel(Res::SUN_MODEL), sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
-  builder.createPlanet(resourceManager.GetModel(Res::MERCURY_MODEL), mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
-  Planet *venusPtr = builder.createPlanet(resourceManager.GetModel(Res::VENUS_MODEL), venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
-  Planet *earthPtr = builder.createPlanet(resourceManager.GetModel(Res::EARTH_MODEL), earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
+  Object *sunPtr = builder.createStar(sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
+  Planet *mercuryPtr = builder.createPlanet(mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
+  Planet *venusPtr = builder.createPlanet(venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
+  Planet *earthPtr = builder.createPlanet(earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
   builder.addAtmosphereToPlanet(resourceManager, threadPool, Res::EARTH_MODEL, earthPtr);
-  builder.createMoon(resourceManager.GetModel(Res::MOON_MODEL), moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, timeAfterJD2000, moonGravityField, moonTidalParameters);
-  builder.createPlanet(resourceManager.GetModel(Res::MARS_MODEL), marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
-  builder.createAsteroidSystem(resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000);
-  builder.createPlanet(resourceManager.GetModel(Res::JUPITER_MODEL), jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
-  builder.createPlanet(resourceManager.GetModel(Res::SATURN_MODEL), saturnMu, saturnRadii, sunPtr, saturnElements, saturnRotationalElements, timeAfterJD2000);
-  builder.createPlanet(resourceManager.GetModel(Res::URANUS_MODEL), uranusMu, uranusRadii, sunPtr, uranusElements, uranusRotationalElements, timeAfterJD2000);
-  builder.createPlanet(resourceManager.GetModel(Res::NEPTUNE_MODEL), neptuneMu, neptuneRadii, sunPtr, neptuneElements, neptuneRotationalElements, timeAfterJD2000);
+  Moon *moonPtr = builder.createMoon(moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, timeAfterJD2000, moonGravityField, moonTidalParameters);
+  Planet *marsPtr = builder.createPlanet(marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
+  AsteroidSystem *sys = builder.createAsteroidSystem(resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000, enableRender);
+  Planet *jupiterPtr = builder.createPlanet(jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
+  Planet *saturnPtr = builder.createPlanet(saturnMu, saturnRadii, sunPtr, saturnElements, saturnRotationalElements, timeAfterJD2000);
+  Planet *uranusPtr = builder.createPlanet(uranusMu, uranusRadii, sunPtr, uranusElements, uranusRotationalElements, timeAfterJD2000);
+  Planet *neptunePtr = builder.createPlanet(neptuneMu, neptuneRadii, sunPtr, neptuneElements, neptuneRotationalElements, timeAfterJD2000);
+
+  if (enableRender)
+  {
+    builder.createStarModel(resourceManager.GetModel(Res::SUN_MODEL), *sunPtr);
+    builder.createPlanetModel(resourceManager.GetModel(Res::MERCURY_MODEL), *mercuryPtr);
+    builder.createPlanetModel(resourceManager.GetModel(Res::VENUS_MODEL), *venusPtr);
+    builder.createPlanetModel(resourceManager.GetModel(Res::EARTH_MODEL), *earthPtr);
+    builder.createMoonModel(resourceManager.GetModel(Res::MOON_MODEL), *moonPtr);
+    builder.createPlanetModel(resourceManager.GetModel(Res::MARS_MODEL), *marsPtr);
+    builder.createPlanetModel(resourceManager.GetModel(Res::JUPITER_MODEL), *jupiterPtr);
+    builder.createPlanetModel(resourceManager.GetModel(Res::SATURN_MODEL), *saturnPtr);
+    builder.createPlanetModel(resourceManager.GetModel(Res::URANUS_MODEL), *uranusPtr);
+    builder.createPlanetModel(resourceManager.GetModel(Res::NEPTUNE_MODEL), *neptunePtr);
+  }
 
   WorldDatabase<Real> data = builder.build(this->render.getInstanceManager());
 
@@ -121,26 +135,29 @@ void SimulationWorld<Real>::initCPU(ThreadPool &threadPool)
 }
 
 template <typename Real>
-void SimulationWorld<Real>::init(RenderContext &ctx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime)
+void SimulationWorld<Real>::init(RenderContext &ctx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime, bool enableRender)
 {
   if (this->wasInit)
     Logger::logWarning("SimulationWorld", "World initialized twice");
 
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
-  this->initDatabases(resourceManager, threadPool, timeAfterJD2000);
-
-  this->initRenderWorld(resourceManager, ctx.frameCtx);
+  this->initDatabases(resourceManager, threadPool, timeAfterJD2000, enableRender);
+  if (enableRender)
+    this->initRenderWorld(resourceManager, ctx.frameCtx);
 
   this->wasInit = true;
 }
 
 template <typename Real>
-void SimulationWorld<Real>::update(RenderQueue &queue, RenderContext &renderCtx)
+void SimulationWorld<Real>::updatePhysics(double dt)
 {
-  if (!renderCtx.settings.paused)
-    this->physics.step(renderCtx.deltaTime);
+  this->physics.step(dt);
+}
 
+template <typename Real>
+void SimulationWorld<Real>::updateRender(RenderQueue &queue, RenderContext &renderCtx)
+{
   SharedDatabaseView<Real> shared{this->database, this->gpu};
 
   this->render.update(queue, renderCtx, shared, this->entityManager);
