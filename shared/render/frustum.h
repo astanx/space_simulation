@@ -6,7 +6,7 @@ typedef float3 vec3;
 typedef float4 vec4;
 #else
 #include <glm/glm.hpp>
-#include <resources/gpuTypes.h>
+#include <resources/data/gpuTypes.h>
 using vec3 = Vec3<float>;
 using vec4 = glm::vec4;
 using glm::dot;

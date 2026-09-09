@@ -423,7 +423,7 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
   this->timestep = config.timestep;
   this->deltaTime = 0.0;
   this->clock = std::chrono::steady_clock::now();
-  this->lastFrame = getTime();
+  this->lastFrame = this->getTime();
 
   this->startTime = dateToJD(config.startDate);
 
@@ -455,13 +455,13 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
   else if (this->mode == Mode::EnergyValidation)
   {
     if (config.precision == Precision::DOUBLE)
-      this->validator = std::make_unique<EnergyValidator<double>>();
+      this->validator = std::make_unique<EnergyValidator<double>>(this->threadPool);
     else if (config.precision == Precision::FLOAT)
-      this->validator = std::make_unique<EnergyValidator<float>>();
+      this->validator = std::make_unique<EnergyValidator<float>>(this->threadPool);
     else
       Logger::logFatal("Application", "This precision is not supported for validator");
 
-    this->validator->init(this->scene, this->elapsedDays * 86400);
+    this->validator->init(this->scene, this->elapsedDays * 86400, 1000);
   }
 }
 
@@ -490,7 +490,7 @@ void Application::setWindowShouldClose()
 void Application::update()
 {
   // Calculate delta time
-  double currentFrame = getTime();
+  double currentFrame = this->getTime();
   this->deltaTime = currentFrame - this->lastFrame;
   this->lastFrame = currentFrame;
 
@@ -523,6 +523,8 @@ void Application::update()
 
   if (this->mode == Mode::Simulation)
     this->renderer.update(this->scene, this->renderCtx);
+  else if (this->mode == Mode::EnergyValidation)
+    this->validator->update(this->scene, this->elapsedDays * 86400);
 
   // Poll events
   glfwPollEvents();

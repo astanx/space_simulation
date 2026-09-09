@@ -10,6 +10,7 @@
 
 #include "physics/world/physicsWorld.h"
 #include "physics/world/total.h"
+#include "physics/world/data/physicsDatabaseView.h"
 
 #include "physics/structs/gravityField.h"
 #include "physics/structs/hapkeParameters.h"
@@ -78,6 +79,8 @@ public:
 
   void addWorldObject(WorldObject object) { this->worldObjects.push_back(object); };
   void addWorldSystem(WorldSystem system) { this->worldSystems.push_back(system); };
+
+  const PhysicsDatabaseView<Real> getPhysicsWorldView() const;
 
   const IPhysicsWorld &getPhysicsWorld() const override { return this->physics; };
   RenderWorld &getRenderWorld() override { return this->render; };

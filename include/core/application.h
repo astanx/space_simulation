@@ -102,8 +102,8 @@ private:
   void initModelResources();
   void initAsteroidResources();
 
-  void initWorld(const AppConfig& config);
-  void initRenderer(const AppConfig& config);
+  void initWorld(const AppConfig &config);
+  void initRenderer(const AppConfig &config);
 
   void updateFrameContext();
 

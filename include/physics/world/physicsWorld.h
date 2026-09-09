@@ -57,8 +57,8 @@ public:
   void addSun(const Entity sun);
   void setDatabase(PhysicsDatabase<Real> database);
 
-  const PhysicsGPUBuffers &getGPUBuffers() { return this->gpuBuffers; };
-  const PhysicsDatabase<Real> &getDatabase() { return this->database; };
+  const PhysicsGPUBuffers &getGPUBuffers() const { return this->gpuBuffers; };
+  const PhysicsDatabase<Real> &getDatabase() const { return this->database; };
 
   const Entity getSun() const override;
 };

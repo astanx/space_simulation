@@ -12,7 +12,7 @@
 
 #include "resources/resources.h"
 #include "resources/resourceManager.h"
-#include "resources/gpuTypes.h"
+#include "resources/data/gpuTypes.h"
 
 #include "physics/world/total.h"
 

@@ -1,7 +1,5 @@
 #include "resources/resourceManager.h"
 
-#include "resources/asteroidType.h"
-
 #include "debug/logger.h"
 
 #include "render/reflectanceAcceptor.h"

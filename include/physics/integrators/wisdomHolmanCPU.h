@@ -2,7 +2,7 @@
 
 #include "physics/integrators/integratorCPU.h"
 
-#include "resources/realTypes.h"
+#include "resources/data/realTypes.h"
 
 class Object;
 class OrbitalObject;

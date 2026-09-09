@@ -28,6 +28,17 @@ struct SharedDatabaseView : public ISharedDatabaseView
   SharedDatabaseView(const SharedDatabase<Real> &database, const SharedGPUBuffers &gpu) : database(database), gpu(gpu) {}
   ~SharedDatabaseView() = default;
 
+  Quat<Real> getOrientation(size_t idx) const
+  {
+    return this->database.orientations[idx];
+  }
+
+  Vec3<Real> getRealPosition(size_t idx) const
+  {
+    return this->database.positions[idx];
+  }
+
+  // Override
   glm::vec3 getPosition(size_t idx) const override
   {
     return this->database.positions[idx];

@@ -2,20 +2,36 @@
 
 #include "debug/validators/validator.h"
 
-#include "physics/integrators/data/integratorDatabase.h"
+#include "physics/world/data/physicsDatabaseView.h"
 
-#include "resources/realTypes.h"
+#include "resources/data/realTypes.h"
+
+#include "resources/threadPool.h"
 
 #include <vector>
 
 template <typename Real>
-struct Sample
+struct BodySample
 {
-  Real elapsedTime;
-  Real potentialEnergy;
-  Real kineticEnergy;
-  Real rotationalEnergy;
-  Real totalEnergy;
+  Real elapsedTime = 0;
+
+  Real kineticEnergy = 0;
+  Real rotationalEnergy = 0;
+
+  Real kineticEnergyError = 0;
+  Real rotationalEnergyError = 0;
+};
+
+template <typename Real>
+struct SystemSample
+{
+  Real elapsedTime = 0;
+
+  Real potentialEnergy = 0;
+  Real totalEnergy = 0;
+
+  Real potentialEnergyError = 0;
+  Real totalEnergyError = 0;
 };
 
 struct Entity;
@@ -28,16 +44,22 @@ private:
   using mat3 = typename RealTypes<Real>::mat3;
   using quat = typename RealTypes<Real>::quat;
 
-  size_t historyIdx;
-  std::vector<std::vector<Sample<Real>>> history;
+  ThreadPool &threadPool;
 
-  void calculateEnergy(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, double elapsedTime);
+  size_t historyIdx = 0;
+  size_t steps = 0;
+  std::vector<std::vector<BodySample<Real>>> bodyHistory;
+  std::vector<SystemSample<Real>> systemHistory;
+
+  Real calculateError(Real current, Real prev);
+
+  void calculateEnergy(const PhysicsDatabaseView<Real> &database, double elapsedTime);
 
 public:
-  EnergyValidator();
+  EnergyValidator(ThreadPool &threadPool);
   ~EnergyValidator();
 
-  void init(Scene &scene, double elapsedTime) override;
+  void init(Scene &scene, double elapsedTime, size_t steps) override;
   void update(Scene &scene, double elapsedTime) override;
 };
 

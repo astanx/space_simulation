@@ -54,4 +54,9 @@ public:
   const DirectionalLight *getDirLight();
 
   ISimulationWorld &getSimulationWorld();
+  template <typename Real>
+  SimulationWorld<Real> &getSimulationWorld()
+  {
+    return std::get<SimulationWorld<Real>>(this->world);
+  };
 };

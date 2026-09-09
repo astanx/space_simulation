@@ -10,7 +10,7 @@ typedef uint uint32_t;
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <cstdint>
-#include <resources/gpuTypes.h>
+#include <resources/data/gpuTypes.h>
 using vec3 = Vec3<float>; // has padding, so vec4 alignment
 using quat = Quat<float>;
 using uint = std::uint32_t;

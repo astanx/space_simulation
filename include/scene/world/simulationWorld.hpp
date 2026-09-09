@@ -164,3 +164,13 @@ void SimulationWorld<Real>::updateRender(RenderQueue &queue, RenderContext &rend
 
   this->render.sync(this->physics, shared, this->entityManager);
 }
+
+template <typename Real>
+const PhysicsDatabaseView<Real> SimulationWorld<Real>::getPhysicsWorldView() const
+{
+  if (!this->wasInit)
+    Logger::logFatal("Simulation World", "Database getter called before world was initialized");
+
+  SharedDatabaseView<Real> view{this->database, this->gpu};
+  return PhysicsDatabaseView{this->entityManager, this->physics.getDatabase(), view};
+}

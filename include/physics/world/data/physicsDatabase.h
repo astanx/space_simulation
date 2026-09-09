@@ -1,6 +1,6 @@
 #pragma once
 
-#include "resources/gpuTypes.h"
+#include "resources/data/gpuTypes.h"
 
 #include <vector>
 

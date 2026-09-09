@@ -1,6 +1,6 @@
 #pragma once
 
-#include "resources/asteroidType.h"
+#include "resources/data/asteroidType.h"
 
 #include "graphics/shader.h"
 #include "graphics/texture.h"

@@ -25,7 +25,7 @@
 #include "resources/threadPool.h"
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
-#include "resources/asteroidType.h"
+#include "resources/data/asteroidType.h"
 
 #include "render/frustum.h"
 #include "render/lod/manager/lodManager.h"

@@ -10,7 +10,7 @@
 #include "compute/commandQueue.h"
 #include "compute/kernel.h"
 
-#include "resources/gpuTypes.h"
+#include "resources/data/gpuTypes.h"
 
 #include "scene/frameContext.h"
 

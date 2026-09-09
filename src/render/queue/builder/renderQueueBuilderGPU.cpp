@@ -21,7 +21,7 @@
 
 #include "resources/resourceManager.h"
 #include "resources/resources.h"
-#include "resources/gpuTypes.h"
+#include "resources/data/gpuTypes.h"
 
 void RenderQueueBuilderGPU::initKernels(RenderQueueGPUBuffers &data, LODSettings &settings)
 {
