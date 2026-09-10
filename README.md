@@ -584,3 +584,15 @@ Where
   <li>$$L$$ = Light Luminocity</li>
   <li>$$d$$ = distance between object and light source</li>
 </ul>
+
+<h3>Render pipeline</h3>
+
+```mermaid
+flowchart TD
+    A[Object] -->|Update Physics| B{LOD Manager}
+    B --> |Decide LOD level| C(InstanceManager)
+    C --> |Update instance data| D{Render Queue Builder}
+    D -->|Build Render Queue| E[Render]
+    D -->|Build Shadow Queue| E[Render]
+    D -->|Build Reflector Queue| E[Render]
+  ```
