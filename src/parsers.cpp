@@ -150,6 +150,73 @@ bool parseTime(int time[3], std::string param)
   return true;
 }
 
+bool parseSaveFolder(AppConfig &cfg, std::string param)
+{
+  if (param.starts_with("--"))
+  {
+    Logger::logError("Parsers", "Wrong use of --save argument");
+    return false;
+  }
+
+  std::filesystem::path path = param;
+
+  if (path.empty())
+  {
+    Logger::logError("Parsers", "Empty folder path specified for --save");
+    return false;
+  }
+
+  if (!std::filesystem::exists(path))
+  {
+    Logger::logInfo("Parsers", "Folder does not exist, creating: " + path.string());
+
+    try
+    {
+      std::filesystem::create_directories(path);
+    }
+    catch (const std::exception &e)
+    {
+      Logger::logError("Parsers", "Cannot create folder: " + path.string());
+      return false;
+    }
+  }
+
+  if (!std::filesystem::is_directory(path))
+  {
+    Logger::logError("Parsers", "Path is not a directory: " + path.string());
+    return false;
+  }
+
+  cfg.validatorCfg.pathSpecified = true;
+  cfg.validatorCfg.savePath = path;
+
+  return true;
+}
+
+bool parseSteps(AppConfig &cfg, std::string param)
+{
+  if (param.starts_with("--"))
+  {
+    Logger::logError("Parsers", "Wrong use of --steps argument");
+    return false;
+  }
+
+  size_t steps;
+  try
+  {
+    steps = std::stoi(param);
+  }
+  catch (const std::exception &e)
+  {
+    Logger::logError("Parsers", "Couldnt parse steps for --steps argument");
+    return false;
+  }
+
+  cfg.validatorCfg.steps = steps;
+
+  return true;
+}
+
 bool parseStart(AppConfig &cfg, std::string firstParam, std::string secondParam)
 {
   if (firstParam.starts_with("-"))
@@ -253,6 +320,28 @@ AppConfig parseArgs(int argc, char **argv)
       cfg.precision = Precision::FLOAT;
     else if (arg == "--validate-energy")
       cfg.mode = Mode::EnergyValidation;
+    else if (arg == "--save")
+    {
+      if (argc <= i + 1)
+      {
+        Logger::logError("Parsers", "Wrong use of --save argument");
+        continue;
+      }
+
+      if (parseSaveFolder(cfg, argv[i + 1]))
+        i++;
+    }
+    else if (arg == "--steps")
+    {
+      if (argc <= i + 1)
+      {
+        Logger::logError("Parsers", "Wrong use of --steps argument");
+        continue;
+      }
+
+      if (parseSteps(cfg, argv[i + 1]))
+        i++;
+    }
     else if (arg == "--timestep")
     {
       if (argc <= i + 1)

@@ -44,6 +44,14 @@ void EntityManager::registerSpecialEntity(const Entity entity, size_t idx)
 
   this->entityToSpecialIdx[entity.id] = idx;
 }
+void EntityManager::registerEntityName(const Entity entity, const std::string &name)
+{
+  auto it = this->entityToName.find(entity.id);
+  if (it != this->entityToName.end())
+    Logger::logFatal("Entity Manager", "Entity name twice");
+
+  this->entityToName[entity.id] = name;
+}
 
 const std::vector<Entity> &EntityManager::getEntities() const
 {
@@ -80,4 +88,12 @@ bool EntityManager::getIsOrbital(const Entity entity) const
     return false;
 
   return true;
+}
+const std::string &EntityManager::getEntityName(const Entity entity) const
+{
+  auto it = this->entityToName.find(entity.id);
+  if (it == this->entityToName.end())
+    Logger::logFatal("Entity Manager", "Entity name was not registered");
+
+  return this->entityToName.at(entity.id);
 }

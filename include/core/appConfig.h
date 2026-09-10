@@ -3,7 +3,10 @@
 #include "resources/precision.h"
 #include "resources/data/date.h"
 
+#include "debug/validators/validatorConfig.h"
+
 #include <ctime>
+#include <filesystem>
 
 enum class Backend
 {
@@ -28,6 +31,8 @@ struct AppConfig
   bool resizable = true;
 
   Mode mode = Mode::Simulation;
+
+  ValidatorConfig validatorCfg;
 
   double timestep = 86400;           // --timestep time
   Date startDate = Date{1, 1, 2000}; // --date day/month/year hour:minute:second

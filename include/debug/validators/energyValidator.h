@@ -7,8 +7,10 @@
 #include "resources/data/realTypes.h"
 
 #include "resources/threadPool.h"
+#include "resources/entity/entity.h"
 
 #include <vector>
+#include <unordered_map>
 
 template <typename Real>
 struct BodySample
@@ -50,8 +52,11 @@ private:
   size_t steps = 0;
   std::vector<std::vector<BodySample<Real>>> bodyHistory;
   std::vector<SystemSample<Real>> systemHistory;
+  std::unordered_map<size_t, Entity> indexToEntity;
 
   Real calculateError(Real current, Real prev);
+
+  void initIndices(const std::vector<Entity> &entities);
 
   void calculateEnergy(const PhysicsDatabaseView<Real> &database, double elapsedTime);
 
@@ -61,6 +66,10 @@ public:
 
   void init(Scene &scene, double elapsedTime, size_t steps) override;
   void update(Scene &scene, double elapsedTime) override;
+  void sendTable() override;
+  void saveTable(Scene &scene, const std::filesystem::path &folderPath) override;
+
+  bool isFinished() override { return this->historyIdx >= this->steps; };
 };
 
 #include "debug/validators/energyValidator.hpp"

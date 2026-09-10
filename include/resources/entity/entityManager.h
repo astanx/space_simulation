@@ -7,6 +7,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <string>
 
 class EntityManager
 {
@@ -16,8 +17,7 @@ private:
   std::unordered_map<size_t, size_t> entityToObjectIdx;
   std::unordered_map<size_t, size_t> entityToModelIdx;
   std::unordered_map<size_t, size_t> entityToSpecialIdx;
-
-  // mb make it own a copy of threadPool and call forEach with it sometimes
+  std::unordered_map<size_t, std::string> entityToName;
 
 public:
   EntityManager() = default;
@@ -32,12 +32,14 @@ public:
   void registerObjectEntity(const Entity entity, size_t idx);
   void registerModelEntity(const Entity entity, size_t idx);
   void registerSpecialEntity(const Entity entity, size_t idx);
+  void registerEntityName(const Entity entity, const std::string &name);
 
   const std::vector<Entity> &getEntities() const;
   size_t getOrbitalIndex(const Entity entity) const;
   size_t getObjectIndex(const Entity entity) const;
   size_t getModelIndex(const Entity entity) const;
   bool getIsOrbital(const Entity entity) const;
+  const std::string& getEntityName(const Entity entity) const;
 };
 
 #include "resources/entity/entityManager.hpp"

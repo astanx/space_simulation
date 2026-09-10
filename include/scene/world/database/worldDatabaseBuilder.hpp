@@ -224,7 +224,7 @@ void WorldDatabaseBuilder<Real>::addAtmosphereToPlanet(ResourceManager &resource
 }
 
 template <typename Real>
-Planet *WorldDatabaseBuilder<Real>::createPlanet(Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, Real g)
+Planet *WorldDatabaseBuilder<Real>::createPlanet(const std::string &name, Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, Real g)
 {
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -244,6 +244,7 @@ Planet *WorldDatabaseBuilder<Real>::createPlanet(Real mu, Radii radii, Object *c
   this->total.total++;
 
   this->objectToEntity[ptr] = this->entityManager.create();
+  this->entityManager.registerEntityName(this->objectToEntity[ptr], name);
 
   this->orbitalObjects.push_back(std::move(planet));
 
@@ -262,7 +263,7 @@ void WorldDatabaseBuilder<Real>::createPlanetModel(Model &model, Planet &planet)
 }
 
 template <typename Real>
-Object *WorldDatabaseBuilder<Real>::createStar(Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos)
+Object *WorldDatabaseBuilder<Real>::createStar(const std::string &name, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos)
 {
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
@@ -280,6 +281,7 @@ Object *WorldDatabaseBuilder<Real>::createStar(Real mu, Radii radii, Real lumino
   this->total.total++;
 
   this->objectToEntity[ptr] = this->entityManager.create();
+  this->entityManager.registerEntityName(this->objectToEntity[ptr], name);
 
   this->objects.push_back(std::move(star));
 
@@ -298,7 +300,7 @@ void WorldDatabaseBuilder<Real>::createStarModel(Model &model, Object &star)
 }
 
 template <typename Real>
-Moon *WorldDatabaseBuilder<Real>::createMoon(Real mu, Radii radii, Planet *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
+Moon *WorldDatabaseBuilder<Real>::createMoon(const std::string &name, Real mu, Radii radii, Planet *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
 {
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -318,6 +320,7 @@ Moon *WorldDatabaseBuilder<Real>::createMoon(Real mu, Radii radii, Planet *centr
   this->total.total++;
 
   this->objectToEntity[ptr] = this->entityManager.create();
+  this->entityManager.registerEntityName(this->objectToEntity[ptr], name);
 
   this->orbitalObjects.push_back(std::move(moon));
 
@@ -336,7 +339,7 @@ void WorldDatabaseBuilder<Real>::createMoonModel(Model &model, Moon &moon)
 }
 
 template <typename Real>
-AsteroidSystem *WorldDatabaseBuilder<Real>::createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, Real innerEdge, Real outerEdge, Real timeAfterJD2000, bool enableRender)
+AsteroidSystem *WorldDatabaseBuilder<Real>::createAsteroidSystem(const std::string &name, ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, Real innerEdge, Real outerEdge, Real timeAfterJD2000, bool enableRender)
 {
   std::unique_ptr<AsteroidSystem> system = std::make_unique<AsteroidSystem>(resourceManager, centralBody, amount,
                                                                             innerEdge, outerEdge,
@@ -347,10 +350,11 @@ AsteroidSystem *WorldDatabaseBuilder<Real>::createAsteroidSystem(ResourceManager
   this->total.total += system->getTotalObjects();
 
   std::mutex entityMutex;
-  system->forEachObject([this, &entityMutex](Object &obj)
+  system->forEachObject([this, &entityMutex, &name](Object &obj, size_t i)
                         { 
                           std::lock_guard<std::mutex> lock(entityMutex);
-                          this->objectToEntity[&obj] = this->entityManager.create(); });
+                          this->objectToEntity[&obj] = this->entityManager.create();
+                          this->entityManager.registerEntityName(this->objectToEntity[&obj], name + " " + std::to_string(i)); });
 
   if (enableRender)
   {

@@ -124,26 +124,40 @@ namespace Res
   const std::string RYUGU_ASTEROID_MATERIAL = "ryugu_asteroid_material";
   const std::string VESTA_ASTEROID_MATERIAL = "vesta_asteroid_material";
 
+  // Names
+  const std::string SUN = "sun";
+  const std::string MERCURY = "mercury";
+  const std::string VENUS = "venus";
+  const std::string EARTH = "earth";
+  const std::string MOON = "moon";
+  const std::string MARS = "mars";
+  const std::string JUPITER = "jupiter";
+  const std::string SATURN = "saturn";
+  const std::string URANUS = "uranus";
+  const std::string NEPTUNE = "neptune";
+
+  const std::string ASTEROID_BELT = "asteroid_belt";
+
   // Models
-  const std::string SUN_MODEL = "sun";
-  const std::string MERCURY_MODEL = "mercury";
-  const std::string VENUS_MODEL = "venus";
-  const std::string EARTH_MODEL = "earth";
-  const std::string MOON_MODEL = "moon";
-  const std::string MARS_MODEL = "mars";
-  const std::string JUPITER_MODEL = "jupiter";
-  const std::string SATURN_MODEL = "saturn";
-  const std::string URANUS_MODEL = "uranus";
-  const std::string NEPTUNE_MODEL = "neptune";
+  const std::string SUN_MODEL = "sun_model";
+  const std::string MERCURY_MODEL = "mercury_model";
+  const std::string VENUS_MODEL = "venus_model";
+  const std::string EARTH_MODEL = "earth_model";
+  const std::string MOON_MODEL = "moon_model";
+  const std::string MARS_MODEL = "mars_model";
+  const std::string JUPITER_MODEL = "jupiter_model";
+  const std::string SATURN_MODEL = "saturn_model";
+  const std::string URANUS_MODEL = "uranus_model";
+  const std::string NEPTUNE_MODEL = "neptune_model";
 
-  const std::string EARTH_ATMOSPHERE_MODEL = "earth_atmosphere";
-  const std::string VENUS_ATMOSPHERE_MODEL = "venus_atmosphere";
+  const std::string EARTH_ATMOSPHERE_MODEL = "earth_atmosphere_model";
+  const std::string VENUS_ATMOSPHERE_MODEL = "venus_atmosphere_model";
 
-  const std::string EROS_ASTEROID_MODEL = "eros_asteroid";
-  const std::string ITOKAWA_ASTEROID_MODEL = "itokawa_asteroid";
-  const std::string BENNU_ASTEROID_MODEL = "bennu_asteroid";
-  const std::string RYUGU_ASTEROID_MODEL = "ryugu_asteroid";
-  const std::string VESTA_ASTEROID_MODEL = "vesta_asteroid";
+  const std::string EROS_ASTEROID_MODEL = "eros_asteroid_model";
+  const std::string ITOKAWA_ASTEROID_MODEL = "itokawa_asteroid_model";
+  const std::string BENNU_ASTEROID_MODEL = "bennu_asteroid_model";
+  const std::string RYUGU_ASTEROID_MODEL = "ryugu_asteroid_model";
+  const std::string VESTA_ASTEROID_MODEL = "vesta_asteroid_model";
 
   // Asteroids
   const std::string EROS_ASTEROID = "eros_asteroid";

@@ -81,6 +81,7 @@ public:
   void addWorldSystem(WorldSystem system) { this->worldSystems.push_back(system); };
 
   const PhysicsDatabaseView<Real> getPhysicsWorldView() const;
+  const EntityManager &getEntityManager() const { return this->entityManager; };
 
   const IPhysicsWorld &getPhysicsWorld() const override { return this->physics; };
   RenderWorld &getRenderWorld() override { return this->render; };

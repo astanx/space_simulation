@@ -66,14 +66,14 @@ public:
   WorldDatabaseBuilder(EntityManager &entityManager, TrailManager &trailManager, Importance &importance) : entityManager(entityManager), trailManager(trailManager), importance(importance) {};
   ~WorldDatabaseBuilder() = default;
 
-  Planet *createPlanet(Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters(), Real g = 0.0);
+  Planet *createPlanet(const std::string &name, Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters(), Real g = 0.0);
   void createPlanetModel(Model &model, Planet &planet);
-  Object *createStar(Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos);
+  Object *createStar(const std::string &name, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos);
   void createStarModel(Model &model, Object &object);
-  Moon *createMoon(Real mu, Radii radii, Planet *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
+  Moon *createMoon(const std::string &name, Real mu, Radii radii, Planet *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
   void createMoonModel(Model &model, Moon &moon);
   void addAtmosphereToPlanet(ResourceManager &resourceManager, ThreadPool &threadPool, std::string planetName, Planet *planet);
-  AsteroidSystem *createAsteroidSystem(ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, Real innerEdge, Real outerEdge, Real timeAfterJD2000, bool enableRender);
+  AsteroidSystem *createAsteroidSystem(const std::string &name, ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, Real innerEdge, Real outerEdge, Real timeAfterJD2000, bool enableRender);
   const Entity convertObjectToEntity(Object *object);
 
   WorldDatabase<Real> build(InstanceManager &instanceManager);

@@ -396,7 +396,7 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
                                                     windowHeight(config.height),
                                                     GLmajor(config.GLmajor),
                                                     GLminor(config.GLminor),
-                                                    mode(config.mode),
+                                                    cfg(config),
                                                     resourceManager(),
                                                     threadPool(),
                                                     scene(),
@@ -404,7 +404,7 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
                                                     renderer(resourceManager)
 {
   // Initialize application
-  if (this->mode == Mode::Simulation)
+  if (this->cfg.mode == Mode::Simulation)
   {
     this->initGLFW();
     this->initWindow(config.title, config.resizable);
@@ -429,7 +429,7 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
 
   this->isTextShown = true;
 
-  if (this->mode == Mode::Simulation)
+  if (this->cfg.mode == Mode::Simulation)
   {
     this->initShaderResources();
     this->initModelResources();
@@ -450,9 +450,9 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
 
   this->initWorld(config);
 
-  if (this->mode == Mode::Simulation)
+  if (this->cfg.mode == Mode::Simulation)
     this->initRenderer(config);
-  else if (this->mode == Mode::EnergyValidation)
+  else if (this->cfg.mode == Mode::EnergyValidation)
   {
     if (config.precision == Precision::DOUBLE)
       this->validator = std::make_unique<EnergyValidator<double>>(this->threadPool);
@@ -461,7 +461,7 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
     else
       Logger::logFatal("Application", "This precision is not supported for validator");
 
-    this->validator->init(this->scene, this->elapsedDays * 86400, 1000);
+    this->validator->init(this->scene, this->elapsedDays * 86400, this->cfg.validatorCfg.steps);
   }
 }
 
@@ -475,9 +475,11 @@ Application::~Application()
 }
 
 // Accessors
-int Application::getWindowShouldClose()
+int Application::shouldExit()
 {
-  return glfwWindowShouldClose(this->window);
+  if (this->window)
+    return glfwWindowShouldClose(this->window);
+  return this->isFinished;
 }
 
 // Modifiers
@@ -521,15 +523,25 @@ void Application::update()
   if (!this->renderCtx.settings.paused)
     this->scene.updatePhysicsWorld(this->renderCtx.deltaTime);
 
-  if (this->mode == Mode::Simulation)
+  if (this->cfg.mode == Mode::Simulation)
     this->renderer.update(this->scene, this->renderCtx);
-  else if (this->mode == Mode::EnergyValidation)
+  else if (this->cfg.mode == Mode::EnergyValidation)
+  {
     this->validator->update(this->scene, this->elapsedDays * 86400);
+    if (this->validator->isFinished())
+    {
+      this->validator->sendTable();
+      if (this->cfg.validatorCfg.pathSpecified)
+        this->validator->saveTable(this->scene, this->cfg.validatorCfg.savePath);
+
+      this->isFinished = true;
+    }
+  }
 
   // Poll events
   glfwPollEvents();
 
-  if (this->mode == Mode::Simulation)
+  if (this->cfg.mode == Mode::Simulation)
     this->input.update(this->window);
 
   this->processInput();
@@ -537,7 +549,7 @@ void Application::update()
 
 void Application::render()
 {
-  if (this->mode != Mode::Simulation)
+  if (this->cfg.mode != Mode::Simulation)
     return;
 
   this->renderer.render(this->scene, this->renderCtx);
@@ -556,7 +568,7 @@ void Application::render()
   }
 
   // Swap buffers
-  if (this->mode == Mode::Simulation)
+  if (this->cfg.mode == Mode::Simulation)
     glfwSwapBuffers(this->window);
 }
 

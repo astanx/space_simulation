@@ -49,8 +49,9 @@ private:
   int framebufferWidth = 0;
   int framebufferHeight = 0;
 
-  // Mode
-  Mode mode;
+  // Config
+  AppConfig cfg;
+  bool isFinished = false;
 
   // OpenGL properties
   const int GLmajor;
@@ -139,7 +140,7 @@ public:
 
   void render();
   void update();
-  int getWindowShouldClose();
+  int shouldExit();
   void setWindowShouldClose();
   static void mouseCallback(GLFWwindow *window, double xpos, double ypos);
   static void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);

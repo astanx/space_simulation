@@ -3,11 +3,19 @@
 #include "resources/entity/entity.h"
 
 #include <glm/glm.hpp>
+#include <iostream>
+#include <fstream>
+#include <limits>
+#include <iomanip>
+#include <cmath>
 
 // Private functions
 template <typename Real>
 Real EnergyValidator<Real>::calculateError(Real current, Real prev)
 {
+  if (prev == 0)
+    return 0;
+
   Real error = (current - prev) / prev;
   if (!std::isfinite(error))
     return 0;
@@ -18,15 +26,8 @@ Real EnergyValidator<Real>::calculateError(Real current, Real prev)
 template <typename Real>
 void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &database, double elapsedTime)
 {
-  if (this->historyIdx >= this->steps - 1)
-
-  {
-    std::cout << "TOTAL 0: " << std::setprecision(30) << this->calculateError(this->systemHistory[this->historyIdx - 1].totalEnergy, this->systemHistory[0].totalEnergy) << std::endl;
-    std::cout << "POTENTIAL 0: " << std::setprecision(30) << this->calculateError(this->systemHistory[this->historyIdx - 1].potentialEnergy, this->systemHistory[0].potentialEnergy) << std::endl;
-    std::cout << "ROTATIONAL 0: " << std::setprecision(30) << this->calculateError(this->bodyHistory[this->historyIdx - 1][3].rotationalEnergy, this->bodyHistory[0][3].rotationalEnergy) << std::endl;
-    std::cout << "KINETIC 0: " << std::setprecision(30) << this->calculateError(this->bodyHistory[this->historyIdx - 1][3].kineticEnergy, this->bodyHistory[0][3].kineticEnergy) << std::endl;
+  if (this->isFinished())
     return;
-  }
 
   const std::vector<Entity> &entities = database.getEntities();
 
@@ -42,7 +43,7 @@ void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &dat
     {
       const Entity &entity = entities[i];
 
-      Real kineticEnergy = 0.5 * database.getMu(entity) / G * glm::dot(vec3(database.getVelocity(entity)), vec3(database.getVelocity(entity)));
+      Real kineticEnergy = 0.5 * database.getMu(entity) / static_cast<Real>(G) * glm::dot(vec3(database.getVelocity(entity)), vec3(database.getVelocity(entity)));
 
       quat q = database.getOrientation(entity);
 
@@ -55,7 +56,7 @@ void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &dat
       for (size_t j = i + 1; j < entities.size(); j++)
       {
         const Entity &otherEntity = entities[j];
-        localSystemSample.potentialEnergy -= database.getMu(entity) * database.getMu(otherEntity) / G  / glm::length(vec3(database.getPosition(entity)) - vec3(database.getPosition(otherEntity)));
+        localSystemSample.potentialEnergy -= database.getMu(entity) * database.getMu(otherEntity) / static_cast<Real>(G) / glm::length(vec3(database.getPosition(entity)) - vec3(database.getPosition(otherEntity)));
       }
       localSystemSample.totalEnergy += kineticEnergy + rotationalEnergy;
 
@@ -68,14 +69,6 @@ void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &dat
         prevKinetic = prevBody.kineticEnergy;
         prevRotational = prevBody.rotationalEnergy;
       }
-
-      if (i == 3)
-      {
-  std::cout << std::setprecision(30) << "KINETIC ERROR: " << this->calculateError(kineticEnergy, prevKinetic) << std::endl;
-  std::cout << std::setprecision(30) << "ROTATIONAL ERROR: " <<  this->calculateError(rotationalEnergy, prevRotational) << std::endl;
-  std::cout << std::endl;
-      }
-
 
       this->bodyHistory[this->historyIdx][i] = BodySample<Real>{
         static_cast<Real>(elapsedTime), 
@@ -107,12 +100,14 @@ void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &dat
   this->systemHistory[this->historyIdx].totalEnergyError = this->calculateError(this->systemHistory[this->historyIdx].totalEnergy, prevTotal);
   this->systemHistory[this->historyIdx].potentialEnergyError = this->calculateError(this->systemHistory[this->historyIdx].potentialEnergy, prevPotential);
 
-  std::cout << std::setprecision(30) << "POTENTIAL ERROR: " << this->systemHistory[this->historyIdx].potentialEnergyError << std::endl;
-  std::cout << std::setprecision(30) << "TOTAL ERROR: " << this->systemHistory[this->historyIdx].totalEnergyError << std::endl;
-  std::cout << std::endl;
-
-  if (this->historyIdx + 1 < this->steps)
+  if (this->historyIdx < this->steps)
     this->historyIdx++;
+}
+template <typename Real>
+void EnergyValidator<Real>::initIndices(const std::vector<Entity> &entities)
+{
+  for (size_t i = 0; i < entities.size(); i++)
+    this->indexToEntity[i] = Entity{entities[i]};
 }
 
 // Constructor / Destructor
@@ -129,11 +124,93 @@ void EnergyValidator<Real>::init(Scene &scene, double elapsedTime, size_t steps)
   this->bodyHistory.resize(this->steps);
   this->systemHistory.resize(this->steps);
 
-  this->update(scene, elapsedTime);
+  this->initIndices(scene.getSimulationWorld<Real>().getEntityManager().getEntities());
 }
 template <typename Real>
 void EnergyValidator<Real>::update(Scene &scene, double elapsedTime)
 {
   SimulationWorld<Real> &world = scene.getSimulationWorld<Real>();
   this->calculateEnergy(world.getPhysicsWorldView(), elapsedTime);
+}
+template <typename Real>
+void EnergyValidator<Real>::sendTable()
+{
+  if (this->historyIdx == 0)
+    return;
+
+  std::cout << std::scientific << std::setprecision(20);
+
+  // 16
+  std::cout << std::endl;
+  std::cout << "+----------------+------------------------+------------------------+------------------+---------------------+" << std::endl;
+  std::cout << "|      Time      |      Total Energy      |    Potential Energy    |   Total Error    |    Potential Error  |" << std::endl;
+  std::cout << "+----------------+------------------------+------------------------+------------------+---------------------+" << std::endl;
+
+  for (size_t i = 0; i < this->historyIdx; ++i)
+  {
+    SystemSample<Real> &s = this->systemHistory[i];
+    std::cout << "| " << s.elapsedTime
+              << " | " << s.totalEnergy
+              << " | " << s.potentialEnergy
+              << " | " << s.totalEnergyError
+              << " | " << s.potentialEnergyError
+              << " |" << std::endl;
+  }
+  std::cout << "+----------------+------------------------+------------------------+------------------+---------------------+" << std::endl;
+  ;
+}
+
+template <typename Real>
+void EnergyValidator<Real>::saveTable(Scene &scene, const std::filesystem::path &folderPath)
+{
+  std::filesystem::path systemPath = folderPath / "system_data_history.csv";
+  std::ofstream systemFile(systemPath);
+  if (!systemFile.is_open())
+    Logger::logFatal("Energy Validator", "Couldnt open system history data file");
+
+  systemFile << std::scientific << std::setprecision(std::numeric_limits<Real>::max_digits10);
+  systemFile << "time;total_energy;potential_energy;total_energy_error;potential_energy_error" << std::endl;
+
+  for (size_t i = 0; i < this->historyIdx; ++i)
+  {
+    SystemSample<Real> &s = this->systemHistory[i];
+    systemFile << s.elapsedTime << ';'
+               << s.totalEnergy << ';'
+               << s.potentialEnergy << ';'
+               << s.totalEnergyError << ';'
+               << s.potentialEnergyError << std::endl;
+  }
+
+  systemFile.close();
+
+  const EntityManager &manager = scene.getSimulationWorld<Real>().getEntityManager();
+
+  std::filesystem::path bodyPath = folderPath / "body_data_history.csv";
+  std::ofstream bodyFile(bodyPath);
+  if (!bodyFile.is_open())
+    Logger::logFatal("Energy Validator", "Couldnt open body history data file");
+
+  bodyFile << std::scientific << std::setprecision(std::numeric_limits<Real>::max_digits10);
+  bodyFile << "time;id;name;kinetic_energy;rotational_energy;kinetic_error;rotational_error" << std::endl;
+
+  for (size_t i = 0; i < this->historyIdx; i++)
+  {
+    std::vector<BodySample<Real>> &bodies = this->bodyHistory[i];
+    for (size_t j = 0; j < bodies.size(); j++)
+    {
+      BodySample<Real> &b = bodies[j];
+      bodyFile << b.elapsedTime << ';'
+               << j << ';'
+               << manager.getEntityName(this->indexToEntity.at(j)) << ';'
+               << b.kineticEnergy << ';'
+               << b.rotationalEnergy << ';'
+               << b.kineticEnergyError << ';'
+               << b.rotationalEnergyError << std::endl;
+    }
+  }
+
+  bodyFile.close();
+
+  std::cout << "Body data saved to: " << bodyPath << std::endl;
+  std::cout << "System data saved to: " << systemPath << std::endl;
 }
