@@ -77,6 +77,21 @@ There are some optional arguments
       <td>1/1/2000</td>
       <td>Sets starting date for the simulation, <code>hour:minute:second</code> are optional</td>
     </tr>
+    <tr>
+      <td><code>--energy-validator</code></td>
+      <td>off</td>
+      <td>Enables energy validator mode</td>
+    </tr>
+    <tr>
+      <td><code>--steps step_count</code></td>
+      <td>1</td>
+      <td>Defines number of steps for validator</td>
+    </tr>
+    <tr>
+      <td><code>--save folder</code></td>
+      <td>Not defined</td>
+      <td>Defines save directory for the validator history data, <b>optional</b></td>
+    </tr>
   </tbody>
 </table>
 
