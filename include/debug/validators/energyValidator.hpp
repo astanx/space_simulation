@@ -140,11 +140,9 @@ void EnergyValidator<Real>::sendTable()
 
   std::cout << std::scientific << std::setprecision(20);
 
-  // 16
   std::cout << std::endl;
-  std::cout << "+----------------+------------------------+------------------------+------------------+---------------------+" << std::endl;
   std::cout << "|      Time      |      Total Energy      |    Potential Energy    |   Total Error    |    Potential Error  |" << std::endl;
-  std::cout << "+----------------+------------------------+------------------------+------------------+---------------------+" << std::endl;
+  std::cout << "|----------------|------------------------|------------------------|------------------|---------------------|" << std::endl;
 
   for (size_t i = 0; i < this->historyIdx; ++i)
   {
@@ -156,8 +154,6 @@ void EnergyValidator<Real>::sendTable()
               << " | " << s.potentialEnergyError
               << " |" << std::endl;
   }
-  std::cout << "+----------------+------------------------+------------------------+------------------+---------------------+" << std::endl;
-  ;
 }
 
 template <typename Real>
