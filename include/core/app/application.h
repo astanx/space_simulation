@@ -2,8 +2,9 @@
 
 #include <GL/glew.h>
 
-#include "core/inputManager.h"
-#include "core/appConfig.h"
+#include "core/app/appConfig.h"
+#include "core/input/inputManager.h"
+#include "core/window/window.h"
 
 #include "scene/scene.h"
 
@@ -14,9 +15,10 @@
 
 #include "debug/validators/validator.h"
 
+#include <GLFW/glfw3.h>
+
 #include <chrono>
 #include <memory>
-#include <GLFW/glfw3.h>
 
 class Shader;
 class Texture;
@@ -42,20 +44,12 @@ const std::string BASE_TEXTURE_PATH = "assets/textures/";
 class Application
 {
 private:
-  // Window properties
-  GLFWwindow *window;
-  const int windowWidth;
-  const int windowHeight;
-  int framebufferWidth = 0;
-  int framebufferHeight = 0;
+  // Window
+  std::unique_ptr<Window> window;
 
   // Config
   AppConfig cfg;
   bool isFinished = false;
-
-  // OpenGL properties
-  const int GLmajor;
-  const int GLminor;
 
   // Resource management
   ResourceManager resourceManager;
@@ -92,39 +86,35 @@ private:
   double getTime();
 
   // INITIALIZERS
-  // GLFW and window
-  void initGLFW();
-  void initWindow(const char *title, GLboolean resizable);
-  void initGLEW();
-  void initOpenGLSettings();
+  void initWindow();
+  void initResources();
+  void initMode();
 
   void initShaderResources();
   void initKernelResources();
   void initModelResources();
   void initAsteroidResources();
 
-  void initWorld(const AppConfig &config);
-  void initRenderer(const AppConfig &config);
+  void initWorld();
+  void initRenderer();
 
-  void updateFrameContext();
-
-  LoadedTextures loadTextures(const std::string &model_name, const std::string &diffuse_name, const std::string &normal_name = "", const std::string &night_name = "", const std::string &roughness_name = "");
+  LoadedTextures loadTextures(const std::string &name, const std::string &diffuse_name, const std::string &normal_name = "", const std::string &night_name = "", const std::string &roughness_name = "");
   void loadEllipsoid(const std::string &mesh_name, Radii radii, bool isTangent = false, int segments = 32);
 
-  void loadHapkePBRMaterial(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+  void loadHapkePBRMaterial(const std::string &name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                             float ao, float metallic, float roughness, HapkeParameters params, float emissiveStrength = 0.f, const std::string &normal_name = "", const std::string &night_name = "",
                             const std::string &roughness_name = "");
 
-  void loadPBRMaterial(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+  void loadPBRMaterial(const std::string &name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                        float ao, float metallic, float roughness, float emissiveStrength = 0.f, const std::string &normal_name = "", const std::string &night_name = "",
                        const std::string &roughness_name = "");
-  void loadEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+  void loadEllipsoidObject(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                            Radii radii, float ao, float metallic, float roughness, ModelFlags flags = ModelFlags::None, float emissiveStrength = 0.0f,
                            const std::string &normal_name = "", const std::string &night_name = "", const std::string &roughness_name = "", int segments = 32);
-  void loadReflectanceAcceptorEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+  void loadReflectanceAcceptorEllipsoidObject(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                                               Radii radii, float ao, float metallic, float roughness, ModelFlags flags = ModelFlags::None, float emissiveStrength = 0.0f,
                                               const std::string &normal_name = "", const std::string &night_name = "", const std::string &roughness_name = "", int segments = 32);
-  void loadHapkeEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+  void loadHapkeEllipsoidObject(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                                 Radii radii, float ao, float metallic, float roughness, HapkeParameters hapke, const std::string &acceptor_model_name, ModelFlags flags = ModelFlags::None, float emissiveStrength = 0.0f,
                                 const std::string &normal_name = "", const std::string &night_name = "", const std::string &roughness_name = "", int segments = 32);
 
@@ -141,8 +131,4 @@ public:
   void render();
   void update();
   int shouldExit();
-  void setWindowShouldClose();
-  static void mouseCallback(GLFWwindow *window, double xpos, double ypos);
-  static void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
-  static void framebuffer_resize_callback(GLFWwindow *window, int width, int height);
 };

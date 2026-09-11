@@ -1,4 +1,4 @@
-#include "core/inputManager.h"
+#include "core/input/inputManager.h"
 
 // Private functions
 void InputManager::assignKey(Action action, int key)

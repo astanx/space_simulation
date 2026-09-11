@@ -2,7 +2,7 @@
 
 #include "debug/logger.h"
 
-#include "core/appConfig.h"
+#include "core/app/appConfig.h"
 
 #include "resources/data/date.h"
 

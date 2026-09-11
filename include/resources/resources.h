@@ -136,6 +136,9 @@ namespace Res
   const std::string URANUS = "uranus";
   const std::string NEPTUNE = "neptune";
 
+  const std::string EARTH_ATMOSPHERE = "earth_atmosphere";
+  const std::string VENUS_ATMOSPHERE = "venus_atmosphere";
+
   const std::string ASTEROID_BELT = "asteroid_belt";
 
   // Models

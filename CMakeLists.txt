@@ -87,6 +87,7 @@ add_executable(Space
     # Core
     src/core/application.cpp
     src/core/inputManager.cpp
+    src/core/window.cpp
 
     # Camera
     src/camera/camera.cpp

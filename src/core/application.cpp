@@ -1,4 +1,4 @@
-#include "core/application.h"
+#include "core/app/application.h"
 
 #include "debug/logger.h"
 
@@ -22,98 +22,28 @@
 #include <filesystem>
 
 // Private functions
-void Application::initGLFW()
-{
-  if (!glfwInit())
-  {
-    glfwTerminate();
-    Logger::logFatal("Application", "GLFW init failed");
-  }
-}
-void Application::initWindow(const char *title, GLboolean resizable)
-{
-  glfwWindowHint(GLFW_SAMPLES, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, this->GLmajor);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, this->GLminor);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS
-#endif
-
-  glfwWindowHint(GLFW_RESIZABLE, resizable);
-
-  GLFWwindow *window = glfwCreateWindow(this->windowWidth, this->windowHeight, title, NULL, NULL);
-  if (!window)
-  {
-    Logger::logFatal("Application", "GLFW window creation failed");
-    glfwTerminate();
-  }
-
-  glfwGetFramebufferSize(window, &this->framebufferWidth, &this->framebufferHeight);
-  glfwSetWindowUserPointer(window, this);
-  glfwSetFramebufferSizeCallback(window, Application::framebuffer_resize_callback);
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  glfwSetCursorPosCallback(window, Application::mouseCallback);
-  glfwSetScrollCallback(window, Application::scrollCallback);
-
-  glfwMakeContextCurrent(window);
-
-  this->window = window;
-}
-void Application::initGLEW()
-{
-  glewExperimental = GL_TRUE;
-  if (glewInit() != GLEW_OK)
-  {
-    Logger::logFatal("Application", "GLEW init failed");
-    glfwDestroyWindow(this->window);
-    glfwTerminate();
-  }
-}
-void Application::initOpenGLSettings()
-{
-  glEnable(GL_MULTISAMPLE);
-
-  glEnable(GL_DEPTH_TEST);
-  RenderState::applyDepthFunc();
-
-  glEnable(GL_STENCIL_TEST);
-
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
-  glFrontFace(GL_CCW);
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
 void Application::initShaderResources()
 {
-  // this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
-  this->resourceManager.LoadShader(Res::CORE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
-  this->resourceManager.LoadShader(Res::CORE_TANGENT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/vertex_tangent_core.glsl", "assets/shaders/fragment_tangent_core.glsl");
-  this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->GLmajor, this->GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
-  this->resourceManager.LoadShader(Res::TRAIL_SHADER, this->GLmajor, this->GLminor, "assets/shaders/trail/vertex.glsl", "assets/shaders/trail/fragment.glsl");
-  this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
-  // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->GLmajor, this->GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
-  this->resourceManager.LoadShader(Res::TEXT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
-  this->resourceManager.LoadShader(Res::HDR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/hdr/vertex.glsl", "assets/shaders/hdr/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLOOM_SHADER, this->GLmajor, this->GLminor, "assets/shaders/bloom/vertex.glsl", "assets/shaders/bloom/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLUR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/texture/vertex.glsl", "assets/shaders/blur/texture/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLUR_CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/blur/cubemap/vertex.glsl", "assets/shaders/blur/cubemap/fragment.glsl", "assets/shaders/blur/cubemap/geometry.glsl");
-  this->resourceManager.LoadShader(Res::CUBEMAP_SHADER, this->GLmajor, this->GLminor, "assets/shaders/cubemap/vertex.glsl", "assets/shaders/cubemap/fragment.glsl");
-  this->resourceManager.LoadShader(Res::CONVOLUTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/convolution/vertex.glsl", "assets/shaders/convolution/fragment.glsl");
-  this->resourceManager.LoadShader(Res::REFLECTION_SHADER, this->GLmajor, this->GLminor, "assets/shaders/reflector/vertex.glsl", "assets/shaders/reflector/fragment.glsl");
-  this->resourceManager.LoadShader(Res::DOWNSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/down/vertex.glsl", "assets/shaders/sample/down/fragment.glsl");
-  this->resourceManager.LoadShader(Res::UPSAMPLE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/sample/up/vertex.glsl", "assets/shaders/sample/up/fragment.glsl");
-  this->resourceManager.LoadShader(Res::ATMOSPHERE_SHADER, this->GLmajor, this->GLminor, "assets/shaders/atmosphere/vertex.glsl", "assets/shaders/atmosphere/fragment.glsl");
-  this->resourceManager.LoadShader(Res::IMPOSTOR_SHADER, this->GLmajor, this->GLminor, "assets/shaders/impostor/vertex.glsl", "assets/shaders/impostor/fragment.glsl");
-  this->resourceManager.LoadShader(Res::POINT_SHADER, this->GLmajor, this->GLminor, "assets/shaders/point/vertex.glsl", "assets/shaders/point/fragment.glsl");
+  // this->resourceManager.LoadShader(Res::CORE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
+  this->resourceManager.LoadShader(Res::CORE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
+  this->resourceManager.LoadShader(Res::CORE_TANGENT_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/vertex_tangent_core.glsl", "assets/shaders/fragment_tangent_core.glsl");
+  this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
+  this->resourceManager.LoadShader(Res::TRAIL_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/trail/vertex.glsl", "assets/shaders/trail/fragment.glsl");
+  this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
+  // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
+  this->resourceManager.LoadShader(Res::TEXT_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
+  this->resourceManager.LoadShader(Res::HDR_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/hdr/vertex.glsl", "assets/shaders/hdr/fragment.glsl");
+  this->resourceManager.LoadShader(Res::BLOOM_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/bloom/vertex.glsl", "assets/shaders/bloom/fragment.glsl");
+  this->resourceManager.LoadShader(Res::BLUR_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/blur/texture/vertex.glsl", "assets/shaders/blur/texture/fragment.glsl");
+  this->resourceManager.LoadShader(Res::BLUR_CUBEMAP_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/blur/cubemap/vertex.glsl", "assets/shaders/blur/cubemap/fragment.glsl", "assets/shaders/blur/cubemap/geometry.glsl");
+  this->resourceManager.LoadShader(Res::CUBEMAP_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/cubemap/vertex.glsl", "assets/shaders/cubemap/fragment.glsl");
+  this->resourceManager.LoadShader(Res::CONVOLUTION_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/convolution/vertex.glsl", "assets/shaders/convolution/fragment.glsl");
+  this->resourceManager.LoadShader(Res::REFLECTION_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/reflector/vertex.glsl", "assets/shaders/reflector/fragment.glsl");
+  this->resourceManager.LoadShader(Res::DOWNSAMPLE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/sample/down/vertex.glsl", "assets/shaders/sample/down/fragment.glsl");
+  this->resourceManager.LoadShader(Res::UPSAMPLE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/sample/up/vertex.glsl", "assets/shaders/sample/up/fragment.glsl");
+  this->resourceManager.LoadShader(Res::ATMOSPHERE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/atmosphere/vertex.glsl", "assets/shaders/atmosphere/fragment.glsl");
+  this->resourceManager.LoadShader(Res::IMPOSTOR_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/impostor/vertex.glsl", "assets/shaders/impostor/fragment.glsl");
+  this->resourceManager.LoadShader(Res::POINT_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/point/vertex.glsl", "assets/shaders/point/fragment.glsl");
 }
 void Application::initKernelResources()
 {
@@ -144,19 +74,19 @@ void Application::initKernelResources()
 }
 void Application::initModelResources()
 {
-  this->loadEllipsoidObject(Res::SUN_MODEL, Res::SUN_MESH, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, ModelFlags::Special, sunLuminosity);
+  this->loadEllipsoidObject(Res::SUN, Res::SUN_MODEL, Res::SUN_MESH, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, ModelFlags::Special, sunLuminosity);
   // this->loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);
-  this->loadEllipsoidObject(Res::MERCURY_MODEL, Res::MERCURY_MESH, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::VENUS_MODEL, Res::VENUS_MESH, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::VENUS_ATMOSPHERE_MODEL, Res::VENUS_ATMOSPHERE_MESH, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
-  this->loadReflectanceAcceptorEllipsoidObject(Res::EARTH_MODEL, Res::EARTH_MESH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, ModelFlags::CastsShadow | ModelFlags::Special, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
-  this->loadEllipsoidObject(Res::EARTH_ATMOSPHERE_MODEL, Res::EARTH_ATMOSPHERE_MESH, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
-  this->loadHapkeEllipsoidObject(Res::MOON_MODEL, Res::MOON_MESH, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f, moonHapkeParameters, Res::EARTH_MODEL, ModelFlags::CastsShadow | ModelFlags::ReflectsLight | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::MARS_MODEL, Res::MARS_MESH, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::JUPITER_MODEL, Res::JUPITER_MESH, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::SATURN_MODEL, Res::SATURN_MESH, Res::SATURN_DIFFUSE, Res::SATURN_MATERIAL, saturnRadii, 0.9f, 0.f, 0.85f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::URANUS_MODEL, Res::URANUS_MESH, Res::URANUS_DIFFUSE, Res::URANUS_MATERIAL, uranusRadii, 0.94f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::NEPTUNE_MODEL, Res::NEPTUNE_MESH, Res::NEPTUNE_DIFFUSE, Res::NEPTUNE_MATERIAL, neptuneRadii, 0.9f, 0.f, 0.8f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::MERCURY, Res::MERCURY_MODEL, Res::MERCURY_MESH, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::VENUS, Res::VENUS_MODEL, Res::VENUS_MESH, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_MODEL, Res::VENUS_ATMOSPHERE_MESH, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
+  this->loadReflectanceAcceptorEllipsoidObject(Res::EARTH, Res::EARTH_MODEL, Res::EARTH_MESH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, ModelFlags::CastsShadow | ModelFlags::Special, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
+  this->loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MODEL, Res::EARTH_ATMOSPHERE_MESH, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
+  this->loadHapkeEllipsoidObject(Res::MOON, Res::MOON_MODEL, Res::MOON_MESH, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f, moonHapkeParameters, Res::EARTH_MODEL, ModelFlags::CastsShadow | ModelFlags::ReflectsLight | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::MARS, Res::MARS_MODEL, Res::MARS_MESH, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::JUPITER, Res::JUPITER_MODEL, Res::JUPITER_MESH, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::SATURN, Res::SATURN_MODEL, Res::SATURN_MESH, Res::SATURN_DIFFUSE, Res::SATURN_MATERIAL, saturnRadii, 0.9f, 0.f, 0.85f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::URANUS, Res::URANUS_MODEL, Res::URANUS_MESH, Res::URANUS_DIFFUSE, Res::URANUS_MATERIAL, uranusRadii, 0.94f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
+  this->loadEllipsoidObject(Res::NEPTUNE, Res::NEPTUNE_MODEL, Res::NEPTUNE_MESH, Res::NEPTUNE_DIFFUSE, Res::NEPTUNE_MATERIAL, neptuneRadii, 0.9f, 0.f, 0.8f, ModelFlags::CastsShadow | ModelFlags::Special);
 }
 
 void Application::initAsteroidResources()
@@ -169,45 +99,92 @@ void Application::initAsteroidResources()
   this->loadAsteroidShape(Res::VESTA_ASTEROID, Res::VESTA_ASTEROID_MODEL, Res::VESTA_ASTEROID_MESH, Res::VESTA_ASTEROID_MATERIAL, diff, 0.88f, 0.04f, 0.9f, 40, 28, 6.0, 1.0, 1.0, 4.0, 3.0, 15.0);
 }
 
-void Application::initWorld(const AppConfig &config)
+void Application::initWorld()
 {
-  bool enableRender = config.mode == Mode::Simulation;
-  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, config.precision, this->startTime, enableRender);
+  bool enableRender = this->cfg.mode == Mode::Simulation;
+  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, this->cfg.precision, this->startTime, enableRender);
 
-  if (config.backend == Backend::GPU)
+  if (this->cfg.backend == Backend::GPU)
     this->scene.initGPUWorld(this->resourceManager);
-  else if (config.backend == Backend::CPU)
+  else if (this->cfg.backend == Backend::CPU)
     this->scene.initCPUWorld(this->threadPool);
   else
     Logger::logFatal("Application", "Backend type is not supported");
 }
-void Application::initRenderer(const AppConfig &config)
+void Application::initRenderer()
 {
   this->renderer.init(this->renderCtx);
 
-  if (config.backend == Backend::GPU)
+  if (this->cfg.backend == Backend::GPU)
     this->renderer.initGPUBackend(this->scene);
-  else if (config.backend == Backend::CPU)
+  else if (this->cfg.backend == Backend::CPU)
     this->renderer.initCPUBackend(this->scene);
   else
     Logger::logFatal("Application", "Backend type is not supported");
 }
 
-void Application::updateFrameContext()
+void Application::initWindow()
 {
-  float aspect = 1.f;
-  if (framebufferHeight != 0)
-    aspect = static_cast<float>(framebufferWidth) / framebufferHeight;
+  if (this->window)
+    Logger::logError("Application", "Window initialized twice");
 
-  this->renderCtx.frameCtx.width = framebufferWidth;
-  this->renderCtx.frameCtx.height = framebufferHeight;
-  this->renderCtx.frameCtx.aspect = aspect;
+  if (this->cfg.mode == Mode::Simulation)
+  {
+    this->window = std::make_unique<Window>(this->cfg.windowConfig);
+    this->window->init();
+
+    this->renderCtx.frameCtx = this->window->getFrameContext();
+
+    this->window->setMouseCallback([this](float x, float y)
+                                   { scene.processMouseMovement(x, y); });
+
+    this->window->setScrollCallback([this](float y)
+                                    { scene.processMouseScroll(y); });
+
+    this->window->setFramebufferResizeCallback([this](FrameContext ctx)
+                                               { renderer.resize(ctx); });
+  }
+}
+void Application::initResources()
+{
+  if (this->cfg.mode == Mode::Simulation)
+  {
+    this->initShaderResources();
+    this->initModelResources();
+    this->initAsteroidResources();
+
+    this->resourceManager.LoadMesh<VertexPositionTexcoord>(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
+  }
+
+  if (this->cfg.backend == Backend::GPU)
+  {
+    Context &ctx = this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
+    if (this->cfg.precision == Precision::DOUBLE && !ctx.getSupportsDouble())
+      Logger::logFatal("Application", "Double precision is not supported on this GPU, use --float argument");
+    this->initKernelResources();
+  }
+}
+void Application::initMode()
+{
+  if (this->cfg.mode == Mode::Simulation)
+    this->initRenderer();
+  else if (this->cfg.mode == Mode::EnergyValidation)
+  {
+    if (this->cfg.precision == Precision::DOUBLE)
+      this->validator = std::make_unique<EnergyValidator<double>>(this->threadPool);
+    else if (this->cfg.precision == Precision::FLOAT)
+      this->validator = std::make_unique<EnergyValidator<float>>(this->threadPool);
+    else
+      Logger::logFatal("Application", "This precision is not supported for validator");
+
+    this->validator->init(this->scene, this->elapsedDays * 86400, this->cfg.validatorCfg.steps);
+  }
 }
 
 void Application::processInput()
 {
   if (this->input.isActionPressed(Action::Exit))
-    this->setWindowShouldClose();
+    this->window->setWindowShouldClose();
 
   if (this->input.isActionHold(Action::MoveForward))
     this->scene.processKeyboard(FORWARD, this->deltaTime);
@@ -277,55 +254,55 @@ void Application::processInput()
     this->timestep += 2;
 }
 
-LoadedTextures Application::loadTextures(const std::string &model_name, const std::string &diffuse_name, const std::string &normal_name, const std::string &night_name, const std::string &roughness_name)
+LoadedTextures Application::loadTextures(const std::string &name, const std::string &diffuse_name, const std::string &normal_name, const std::string &night_name, const std::string &roughness_name)
 {
   const std::string format = ".png";
 
-  const std::string diffusePath = BASE_TEXTURE_PATH + "diffuse/" + model_name + format;
+  const std::string diffusePath = BASE_TEXTURE_PATH + "diffuse/" + name + format;
 
   if (!std::filesystem::exists(diffusePath))
-    Logger::logFatal("Application", "Diffuse texture is not found, skipping the object - " + model_name);
+    Logger::logFatal("Application", "Diffuse texture is not found, skipping the object - " + name);
 
   LoadedTextures textures;
   textures.diffuse = &this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
 
-  const std::string roughnessPath = BASE_TEXTURE_PATH + "roughness/" + model_name + format;
+  const std::string roughnessPath = BASE_TEXTURE_PATH + "roughness/" + name + format;
   if (std::filesystem::exists(roughnessPath) && roughness_name != "")
   {
-    Logger::logInfo("Application", "Found roughness texture for object - " + model_name);
+    Logger::logInfo("Application", "Found roughness texture for object - " + name);
     textures.roughness = &this->resourceManager.LoadTexture(roughness_name, roughnessPath, GL_TEXTURE_2D);
   }
 
-  const std::string normalPath = BASE_TEXTURE_PATH + "normal/" + model_name + format;
+  const std::string normalPath = BASE_TEXTURE_PATH + "normal/" + name + format;
   if (std::filesystem::exists(normalPath) && normal_name != "")
   {
-    Logger::logInfo("Application", "Found normal texture for object - " + model_name);
+    Logger::logInfo("Application", "Found normal texture for object - " + name);
     textures.normal = &this->resourceManager.LoadTexture(normal_name, normalPath, GL_TEXTURE_2D);
   }
 
-  const std::string nightPath = BASE_TEXTURE_PATH + "night/" + model_name + format;
+  const std::string nightPath = BASE_TEXTURE_PATH + "night/" + name + format;
   if (std::filesystem::exists(nightPath) && night_name != "")
   {
-    Logger::logInfo("Application", "Found night texture for object - " + model_name);
+    Logger::logInfo("Application", "Found night texture for object - " + name);
     textures.night = &this->resourceManager.LoadTexture(night_name, nightPath, GL_TEXTURE_2D);
   }
 
   return textures;
 }
 
-void Application::loadHapkePBRMaterial(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+void Application::loadHapkePBRMaterial(const std::string &name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                                        float ao, float metallic, float roughness, HapkeParameters params, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
                                        const std::string &roughness_name)
 {
-  LoadedTextures textures = this->loadTextures(model_name, diffuse_name, normal_name, night_name, roughness_name);
+  LoadedTextures textures = this->loadTextures(name, diffuse_name, normal_name, night_name, roughness_name);
   this->resourceManager.LoadPBRMaterial(material_name, textures.diffuse, textures.normal, nullptr, nullptr, textures.roughness, textures.night, emissiveStrength, ao, metallic, roughness);
 }
 
-void Application::loadPBRMaterial(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+void Application::loadPBRMaterial(const std::string &name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                                   float ao, float metallic, float roughness, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
                                   const std::string &roughness_name)
 {
-  LoadedTextures textures = this->loadTextures(model_name, diffuse_name, normal_name, night_name, roughness_name);
+  LoadedTextures textures = this->loadTextures(name, diffuse_name, normal_name, night_name, roughness_name);
   this->resourceManager.LoadPBRMaterial(material_name, textures.diffuse, textures.normal, nullptr, nullptr, textures.roughness, textures.night, emissiveStrength, ao, metallic, roughness);
 }
 
@@ -339,11 +316,11 @@ void Application::loadEllipsoid(const std::string &mesh_name, Radii radii, bool 
     this->resourceManager.LoadMesh<VertexPositionTexcoordNormal>(mesh_name, std::move(obj),
                                                                  VertexLayout::NoColor);
 }
-void Application::loadEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+void Application::loadEllipsoidObject(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                                       Radii radii, float ao, float metallic, float roughness, ModelFlags flags, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
                                       const std::string &roughness_name, int segments)
 {
-  this->loadPBRMaterial(model_name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
+  this->loadPBRMaterial(name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
 
   bool isTangent = normal_name != "";
 
@@ -351,11 +328,11 @@ void Application::loadEllipsoidObject(const std::string &model_name, const std::
 
   this->resourceManager.LoadModel(model_name, material_name, mesh_name, flags);
 }
-void Application::loadReflectanceAcceptorEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+void Application::loadReflectanceAcceptorEllipsoidObject(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                                                          Radii radii, float ao, float metallic, float roughness, ModelFlags flags, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
                                                          const std::string &roughness_name, int segments)
 {
-  this->loadPBRMaterial(model_name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
+  this->loadPBRMaterial(name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
 
   bool isTangent = normal_name != "";
 
@@ -363,11 +340,11 @@ void Application::loadReflectanceAcceptorEllipsoidObject(const std::string &mode
 
   this->resourceManager.LoadReflectanceAcceptorModel(model_name, material_name, mesh_name, flags);
 }
-void Application::loadHapkeEllipsoidObject(const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
+void Application::loadHapkeEllipsoidObject(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
                                            Radii radii, float ao, float metallic, float roughness, HapkeParameters hapke, const std::string &acceptor_model_name, ModelFlags flags, float emissiveStrength,
                                            const std::string &normal_name, const std::string &night_name, const std::string &roughness_name, int segments)
 {
-  this->loadHapkePBRMaterial(model_name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, hapke, emissiveStrength, normal_name, night_name, roughness_name);
+  this->loadHapkePBRMaterial(name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, hapke, emissiveStrength, normal_name, night_name, roughness_name);
 
   bool isTangent = normal_name != "";
 
@@ -392,25 +369,15 @@ double Application::getTime()
 }
 
 // Constructor / Destructor
-Application::Application(const AppConfig &config) : windowWidth(config.width),
-                                                    windowHeight(config.height),
-                                                    GLmajor(config.GLmajor),
-                                                    GLminor(config.GLminor),
-                                                    cfg(config),
+Application::Application(const AppConfig &config) : cfg(config),
                                                     resourceManager(),
                                                     threadPool(),
                                                     scene(),
                                                     input(),
                                                     renderer(resourceManager)
 {
-  // Initialize application
   if (this->cfg.mode == Mode::Simulation)
-  {
-    this->initGLFW();
-    this->initWindow(config.title, config.resizable);
-    this->initGLEW();
-    this->initOpenGLSettings();
-  }
+    this->initWindow();
 
   // Init variables
   this->renderCtx.deltaTime = 0.0;
@@ -429,63 +396,21 @@ Application::Application(const AppConfig &config) : windowWidth(config.width),
 
   this->isTextShown = true;
 
-  if (this->cfg.mode == Mode::Simulation)
-  {
-    this->initShaderResources();
-    this->initModelResources();
-    this->initAsteroidResources();
+  this->initResources();
 
-    this->resourceManager.LoadMesh<VertexPositionTexcoord>(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
-  }
+  this->initWorld();
 
-  this->updateFrameContext();
-
-  if (config.backend == Backend::GPU)
-  {
-    Context &ctx = this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
-    if (config.precision == Precision::DOUBLE && !ctx.getSupportsDouble())
-      Logger::logFatal("Application", "Double precision is not supported on this GPU, use --float argument");
-    this->initKernelResources();
-  }
-
-  this->initWorld(config);
-
-  if (this->cfg.mode == Mode::Simulation)
-    this->initRenderer(config);
-  else if (this->cfg.mode == Mode::EnergyValidation)
-  {
-    if (config.precision == Precision::DOUBLE)
-      this->validator = std::make_unique<EnergyValidator<double>>(this->threadPool);
-    else if (config.precision == Precision::FLOAT)
-      this->validator = std::make_unique<EnergyValidator<float>>(this->threadPool);
-    else
-      Logger::logFatal("Application", "This precision is not supported for validator");
-
-    this->validator->init(this->scene, this->elapsedDays * 86400, this->cfg.validatorCfg.steps);
-  }
+  this->initMode();
 }
 
-Application::~Application()
-{
-  if (this->window)
-  {
-    glfwDestroyWindow(this->window);
-    glfwTerminate();
-  }
-}
+Application::~Application() = default;
 
 // Accessors
 int Application::shouldExit()
 {
   if (this->window)
-    return glfwWindowShouldClose(this->window);
+    return this->window->getWindowShouldClose();
   return this->isFinished;
-}
-
-// Modifiers
-void Application::setWindowShouldClose()
-{
-  glfwSetWindowShouldClose(this->window, GLFW_TRUE);
 }
 
 // Public functions
@@ -539,12 +464,14 @@ void Application::update()
   }
 
   // Poll events
-  glfwPollEvents();
-
   if (this->cfg.mode == Mode::Simulation)
-    this->input.update(this->window);
+  {
+    glfwPollEvents();
 
-  this->processInput();
+    this->input.update(this->window->get());
+
+    this->processInput();
+  }
 }
 
 void Application::render()
@@ -556,49 +483,20 @@ void Application::render()
 
   if (this->isTextShown)
   {
+    int height = this->window->getHeight();
+    int width = this->window->getWidth();
     this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
-                              25.f, this->framebufferHeight - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+                              25.f, height - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
     this->renderer.renderText("Time scale: " + std::to_string(int(this->timestep)) + " seconds per real second",
-                              25.f, this->framebufferHeight - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+                              25.f, height - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
     this->renderer.renderText("Date: " + JDToDate(this->startTime + this->elapsedDays).toString(),
-                              25.f, this->framebufferHeight - 200.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
+                              25.f, height - 200.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
 
     if (this->renderCtx.settings.paused)
-      this->renderer.renderText("Paused", this->framebufferWidth / 2 - 50.f, this->framebufferHeight - 100.f, .5f, glm::vec3(1.f, 0.8f, 0.2f));
+      this->renderer.renderText("Paused", width / 2 - 50.f, height - 100.f, .5f, glm::vec3(1.f, 0.8f, 0.2f));
   }
 
   // Swap buffers
   if (this->cfg.mode == Mode::Simulation)
-    glfwSwapBuffers(this->window);
+    this->window->swapBuffers();
 }
-
-// Static functions
-void Application::mouseCallback(GLFWwindow *window, double xpos, double ypos)
-{
-  Application *appState = static_cast<Application *>(glfwGetWindowUserPointer(window));
-
-  appState->scene.processMouseMovement(static_cast<float>(xpos), static_cast<float>(ypos));
-}
-
-void Application::scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
-{
-  Application *appState = static_cast<Application *>(glfwGetWindowUserPointer(window));
-
-  appState->scene.processMouseScroll(static_cast<float>(yoffset));
-}
-
-void Application::framebuffer_resize_callback(GLFWwindow *window, int width, int height)
-{
-  if (height == 0)
-    return;
-
-  Application *appState = static_cast<Application *>(glfwGetWindowUserPointer(window));
-
-  appState->framebufferWidth = width;
-  appState->framebufferHeight = height;
-
-  glViewport(0, 0, width, height);
-
-  appState->updateFrameContext();
-  appState->renderer.resize(appState->renderCtx.frameCtx);
-};
