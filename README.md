@@ -8,15 +8,17 @@ https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
  <li><a href="#build">Build</a></li>
 
  <li>
-  <a href="#mechanics">Mechanics</a>
+  <a href="#mechanics">Celestial Mechanics, Rotational Dynamics and Object Modelling</a>
   <ul>
    <li>
     <a href="#integrators">Integrators</a>
-    <li><a href="#wh">Wisdom-Holman</a></li>
     <ul>
-     <li><a href="#energy-conservation-wh">Energy Conservation plots</a></li>
-     <li><a href="#celestial-mechanics-wh">Celestial Mechanics</a></li>
-     <li><a href="#rotational-dynamics-wh">Rotational Dynamics</a></li>
+     <li><a href="#wh">Wisdom-Holman</a></li>
+     <ul>
+      <li><a href="#energy-conservation-wh">Energy Conservation plots</a></li>
+      <li><a href="#celestial-mechanics-wh">Celestial Mechanics</a></li>
+      <li><a href="#rotational-dynamics-wh">Rotational Dynamics</a></li>
+     </ul>
     </ul>
    </li>
   </ul>
