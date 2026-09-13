@@ -39,7 +39,7 @@ cmake --build .
 <h4>Arguments</h4>
 There are some optional arguments 
 <table>
-  <thead >
+  <thead>
     <tr>
       <th>Argument</th>
       <th>Default</th>
@@ -57,15 +57,10 @@ There are some optional arguments
       <td>on</td>
       <td>Forces CPU backend</td>
     </tr>
-   <tr>
-      <td><code>--float</code></td>
-      <td>off</td>
-      <td>Forces float precision for simulation</td>
-    </tr>
     <tr>
-      <td><code>--double</code></td>
-      <td>on</td>
-      <td>Forces double precision for simulation (might not work with some GPUs if <code>--gpu</code> mode enabled)</td>
+      <td><code>--precision float/double </code></td>
+      <td>double</td>
+      <td>Defines float/double precision for simulation</td>
     </tr>
     <tr>
       <td><code>--timestep time</code></td>
@@ -78,9 +73,19 @@ There are some optional arguments
       <td>Sets starting date for the simulation, <code>hour:minute:second</code> are optional</td>
     </tr>
     <tr>
-      <td><code>--energy-validator</code></td>
+      <td><code>--simulation</code></td>
+      <td>on</td>
+      <td>Enables simulation mode</td>
+    </tr>
+    <tr>
+      <td><code>--validate-energy</code></td>
       <td>off</td>
       <td>Enables energy validator mode</td>
+    </tr>
+    <tr>
+      <td><code>--validator-precision float/double </code></td>
+      <td>double</td>
+      <td>Defines float/double precision for validator</td>
     </tr>
     <tr>
       <td><code>--steps step_count</code></td>
