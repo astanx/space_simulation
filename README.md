@@ -2,7 +2,30 @@
 
 https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
 
-<h2>Project Overview </h2>
+<h2>Contents</h2>
+<ul>
+ <li><a href="#overview">Project Overview</a></li>
+ <li><a href="#build">Build</a></li>
+
+ <li>
+  <a href="#mechanics">Mechanics</a>
+  <ul>
+   <li>
+    <a href="#integrators">Integrators</a>
+    <li><a href="#wh">Wisdom-Holman</a></li>
+    <ul>
+     <li><a href="#energy-conservation-wh">Energy Conservation plots</a></li>
+     <li><a href="#celestial-mechanics-wh">Celestial Mechanics</a></li>
+     <li><a href="#rotational-dynamics-wh">Rotational Dynamics</a></li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li><a href="#atmosphere">Atmosphere Modelling</a></li>
+ <li><a href="#rendering">Rendering</a></li>
+</ul>
+
+<h2 id="overview">Project Overview</h2>
 The project implements a custom C++ simulation engine specialized for celestial body dynamics. It combines:
 
  - N-body gravitational dynamics.
@@ -14,10 +37,18 @@ The project implements a custom C++ simulation engine specialized for celestial 
 The simulation currently models the Solar System.
 The engine is structured as a modular real-time application rather than a pure scientific library, enabling interactive exploration while keeping scientific precision and accuracy.
 
-<h2>Build</h2>
+<h2 id="build">Build</h2>
 <h3>Requirements</h3>
 Cmake 3.16+, OpenGL 4.1+, OpenCL 1.2+, C++20 compiler
 <h3>Building</h3>
+
+<h4>Clone Repository</h4>
+
+```bash
+git clone https://github.com/astanx/space_simulation
+```
+
+<h4>Build</h4>
 
 Unix:
 ```bash
@@ -36,6 +67,13 @@ cmake --build .
 ```
 
 <h3>Running</h3>
+
+To run program call
+```bash
+./Space
+```
+from /build directory
+
 <h4>Arguments</h4>
 There are some optional arguments 
 <table>
@@ -100,14 +138,7 @@ There are some optional arguments
   </tbody>
 </table>
 
-
-To run program call
-```bash
-./Space
-```
-from /build directory
-
-<h2>Celestial Mechanics, Rotational Dynamics and Object Modelling </h2>
+<h2 id="mechanics">Celestial Mechanics, Rotational Dynamics and Object Modelling </h2>
 <h3>Object Hierarchy</h3>
 Each body is either pure Object or OrbitalObject
 Object has properties of any basic body, like:
@@ -120,15 +151,15 @@ OrbitalObject extends Object class and adds properties such as:
   <li>Orbit(owns KeplerElements)</li>
 </ul>
 
-<h3>Integrators</h3>
-<h4>Hybrid Wisdom-Holman Integrator</h4>
+<h3 id="integrators">Integrators</h3>
+<h4 id="wh">Hybrid Wisdom-Holman Integrator</h4>
 My version of WH Integrator contains:
 <ul>
   <li>WH Integrator for hierarchical orbital bodies</li>
   <li>Leapfrog for other bodies</li>
 </ul>
 
-<h5>System energy conservation</h5>
+<h5 id="energy-conservation-wh">System energy conservation</h5>
 
 <details> 
 <summary>100 Steps, Timestep 1 day per second</summary>
@@ -345,7 +376,7 @@ My version of WH Integrator contains:
 </details>
 
 
-<h5>Celestial Mechanics</h5>
+<h5 id="celestial-mechanics-wh">Celestial Mechanics</h5>
 Each step can be divided into Half-Kick or Drift
 The sequence looks like
 1. Half-Kick
@@ -402,7 +433,7 @@ and then solves equations to predict updated position.
 </p>
 
 
-<h5>Rotational Dynamics</h5>
+<h5 id="rotational-dynamics-wh">Rotational Dynamics</h5>
 Half Kick calculates torque by combining gravitational torque for every body and <a href="https://en.wikipedia.org/wiki/Tidal_force">tidal torque</a> for bodies with defined properties, it assumes constant tidal properties, such like constant tidal factor.
 
 Tidal torque:
@@ -452,7 +483,7 @@ $$
 q_{n+1}=q_{n}q_{rot}
 $$
 
-<h2>Atmospheric Modelling</h2>
+<h2 id="atmosphere">Atmospheric Modelling</h2>
 <h3>Grid</h3>
 At its base it uses spherical pressure coordinate grid:
 <p>
@@ -562,7 +593,7 @@ Each step total flux is calculated for each face:
 </p>
 
 
-<h2>Rendering and Visualization</h2>
+<h2 id="rendering">Rendering and Visualization</h2>
 <h3>Hapke BRDF Model</h3>
 It is used to calculate the light reflected from the moon towards the planet.
 For each reflector body the set of parameters is defined:
