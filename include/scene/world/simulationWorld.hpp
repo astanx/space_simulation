@@ -4,14 +4,13 @@
 
 #include "scene/world/database/worldDatabaseBuilder.h"
 
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 #include "resources/resources.h"
 
 #include "maths/constants.h"
 
-#include "physics/constants.h"
+#include "physics/constants/constants.h"
 #include "physics/object.h"
-#include "physics/planet.h"
 #include "physics/systems/asteroidSystem.h"
 
 #include "physics/structs/radii.h"
@@ -23,7 +22,7 @@
 #include "graphics/primitives/ellipsoid.h"
 #include "graphics/skybox.h"
 
-#include "render/renderContext.h"
+#include "render/state/renderContext.h"
 
 #include "scene/light/pointLight.h"
 
@@ -35,18 +34,19 @@ void SimulationWorld<Real>::initDatabases(ResourceManager &resourceManager, Thre
 {
   WorldDatabaseBuilder<Real> builder(this->entityManager, this->render.getTrailManager(), this->importance);
 
-  Object *sunPtr = builder.createStar(Res::SUN, sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
-  Planet *mercuryPtr = builder.createPlanet(Res::MERCURY, mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
-  Planet *venusPtr = builder.createPlanet(Res::VENUS, venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
-  Planet *earthPtr = builder.createPlanet(Res::EARTH, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters, 9.80665); // temp
-  builder.addAtmosphereToPlanet(resourceManager, threadPool, Res::EARTH_MODEL, earthPtr);
-  Moon *moonPtr = builder.createMoon(Res::MOON, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, timeAfterJD2000, moonGravityField, moonTidalParameters);
-  Planet *marsPtr = builder.createPlanet(Res::MARS, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
+  Object *sunPtr = builder.createObject(Res::SUN, sunMu, sunRadii, sunLuminosity, sunRotationalElements, timeAfterJD2000, sunPos);
+  OrbitalObject *mercuryPtr = builder.createOrbitalObject(Res::MERCURY, mercuryMu, mercuryRadii, sunPtr, mercuryElements, mercuryRotationalElements, timeAfterJD2000);
+  OrbitalObject *venusPtr = builder.createOrbitalObject(Res::VENUS, venusMu, venusRadii, sunPtr, venusElements, venusRotationalElements, timeAfterJD2000);
+  OrbitalObject *earthPtr = builder.createOrbitalObject(Res::EARTH, earthMu, earthRadii, sunPtr, earthElements, earthRotationalElements, timeAfterJD2000, earthGravityField, earthTidalParameters);
+  // earthPtr->setGravitationalAcceleration(9.80665);
+  // builder.addAtmosphereToPlanet(resourceManager, threadPool, Res::EARTH_MODEL, earthPtr);
+  OrbitalObject *moonPtr = builder.createOrbitalObject(Res::MOON, moonMu, moonRadii, earthPtr, moonElements, moonRotationalElements, timeAfterJD2000, moonGravityField, moonTidalParameters);
+  OrbitalObject *marsPtr = builder.createOrbitalObject(Res::MARS, marsMu, marsRadii, sunPtr, marsElements, marsRotationalElements, timeAfterJD2000, marsGravityField);
   AsteroidSystem *sys = builder.createAsteroidSystem(Res::ASTEROID_BELT, resourceManager, threadPool, sunPtr, 100, INNER_ASTEROID_BELT_EDGE, OUTER_ASTEROID_BELT_EDGE, timeAfterJD2000, enableRender);
-  Planet *jupiterPtr = builder.createPlanet(Res::JUPITER, jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
-  Planet *saturnPtr = builder.createPlanet(Res::SATURN, saturnMu, saturnRadii, sunPtr, saturnElements, saturnRotationalElements, timeAfterJD2000);
-  Planet *uranusPtr = builder.createPlanet(Res::URANUS, uranusMu, uranusRadii, sunPtr, uranusElements, uranusRotationalElements, timeAfterJD2000);
-  Planet *neptunePtr = builder.createPlanet(Res::NEPTUNE, neptuneMu, neptuneRadii, sunPtr, neptuneElements, neptuneRotationalElements, timeAfterJD2000);
+  OrbitalObject *jupiterPtr = builder.createOrbitalObject(Res::JUPITER, jupiterMu, jupiterRadii, sunPtr, jupiterElements, jupiterRotationalElements, timeAfterJD2000);
+  OrbitalObject *saturnPtr = builder.createOrbitalObject(Res::SATURN, saturnMu, saturnRadii, sunPtr, saturnElements, saturnRotationalElements, timeAfterJD2000);
+  OrbitalObject *uranusPtr = builder.createOrbitalObject(Res::URANUS, uranusMu, uranusRadii, sunPtr, uranusElements, uranusRotationalElements, timeAfterJD2000);
+  OrbitalObject *neptunePtr = builder.createOrbitalObject(Res::NEPTUNE, neptuneMu, neptuneRadii, sunPtr, neptuneElements, neptuneRotationalElements, timeAfterJD2000);
 
   if (enableRender)
   {
@@ -138,7 +138,7 @@ template <typename Real>
 void SimulationWorld<Real>::init(RenderContext &ctx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime, bool enableRender)
 {
   if (this->wasInit)
-    Logger::logWarning("SimulationWorld", "World initialized twice");
+    Logger::logWarning("Simulation World", "World initialized twice");
 
   double timeAfterJD2000 = startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds

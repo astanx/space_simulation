@@ -1,8 +1,8 @@
-#include "render/postProcess.h"
+#include "render/process/postProcess.h"
 
-#include "render/renderState.h"
+#include "render/state/renderState.h"
 
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 #include "resources/resources.h"
 
 #include "graphics/shader.h"

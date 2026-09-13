@@ -4,7 +4,7 @@
 
 #include "graphics/state/scopedBuffer.h"
 
-#include "graphics/instanceLayouts.h"
+#include "graphics/layouts/instanceLayouts.h"
 #include "graphics/model.h"
 
 // Public functions

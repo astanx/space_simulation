@@ -3,9 +3,9 @@
 #include "debug/logger.h"
 
 #include "resources/resources.h"
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 
-#include "render/renderConfig.h"
+#include "render/state/renderConfig.h"
 
 #include "graphics/mesh.h"
 #include "graphics/shader.h"

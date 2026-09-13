@@ -2,7 +2,7 @@
 
 #include "compute/commandQueue.h"
 
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 
 // Constructor
 Scan::Scan(ResourceManager &manager, const std::string &localScanName, const std::string &groupScanName, const std::string &groupOffsetScanName) : localScanKernel(manager.GetKernel(localScanName)),

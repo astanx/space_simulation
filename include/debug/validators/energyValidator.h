@@ -6,7 +6,7 @@
 
 #include "resources/data/realTypes.h"
 
-#include "resources/threadPool.h"
+#include "resources/threadPool/threadPool.h"
 #include "resources/entity/entity.h"
 
 #include <vector>
@@ -38,7 +38,7 @@ struct SystemSample
 
 struct Entity;
 
-template <typename Real>
+template <typename Real, typename WorldReal>
 class EnergyValidator : public Validator
 {
 private:
@@ -58,7 +58,7 @@ private:
 
   void initIndices(const std::vector<Entity> &entities);
 
-  void calculateEnergy(const PhysicsDatabaseView<Real> &database, double elapsedTime);
+  void calculateEnergy(const PhysicsDatabaseView<WorldReal> &database, double elapsedTime);
 
 public:
   EnergyValidator(ThreadPool &threadPool);

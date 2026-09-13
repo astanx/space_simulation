@@ -4,7 +4,6 @@
 
 #include "physics/object.h"
 #include "physics/orbitalObject.h"
-#include "physics/planet.h"
 #include "physics/systems/asteroidSystem.h"
 
 #include "physics/integrators/integratorCPU.h"
@@ -16,7 +15,7 @@
 #include "physics/world/backend/physicsBackendCPU.h"
 #include "physics/world/backend/physicsBackendGPU.h"
 
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 #include "resources/resources.h"
 
 #include "debug/logger.h"

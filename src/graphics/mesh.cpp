@@ -4,7 +4,7 @@
 
 #include "graphics/shader.h"
 #include "graphics/vertex.h"
-#include "graphics/instanceLayouts.h"
+#include "graphics/layouts/instanceLayouts.h"
 
 #include "graphics/state/scopedBuffer.h"
 #include "graphics/state/scopedVertexArray.h"

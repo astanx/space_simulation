@@ -1,9 +1,9 @@
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 
 #include "debug/logger.h"
 
-#include "render/reflectanceAcceptor.h"
-#include "render/reflector.h"
+#include "render/reflectance/reflectanceAcceptor.h"
+#include "render/reflectance/reflector.h"
 
 #include "graphics/primitives/primitives.h"
 #include "graphics/primitives/asteroidShape.h"

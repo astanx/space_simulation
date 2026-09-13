@@ -1,6 +1,6 @@
 #include "physics/orbitalObject.h"
 
-#include "physics/constants.h"
+#include "physics/constants/constants.h"
 #include "physics/structs/tidalParameters.h"
 
 #include "maths/orbitalMaths.h"

@@ -2,40 +2,23 @@
 
 #include "debug/logger.h"
 
-#include "physics/constants.h"
+#include "physics/constants/constants.h"
+#include "physics/structs/radii.h"
 
 #include "maths/constants.h"
 
-#include "graphics/mesh.h"
-#include "graphics/texture.h"
-#include "graphics/shader.h"
-
 #include "graphics/primitives/asteroidShape.h"
-#include "graphics/primitives/quad.h"
-#include "graphics/primitives/point.h"
 
 #include "graphics/materials/asteroidMaterial.h"
-
-#include "graphics/bindings/impostor.h"
 
 #include "graphics/state/scopedTexture.h"
 
 #include "maths/random.h"
 
-#include "resources/threadPool.h"
-#include "resources/resourceManager.h"
+#include "resources/threadPool/threadPool.h"
+#include "resources/manager/resourceManager.h"
 #include "resources/resources.h"
 #include "resources/data/asteroidType.h"
-
-#include "render/frustum.h"
-#include "render/lod/manager/lodManager.h"
-#include "render/instanceManager.h"
-#include "render/lod/lodResult.h"
-#include "render/queue/renderQueue.h"
-#include "render/queue/builder/renderQueueBuilder.h"
-#include "render/queue/renderBatch.h"
-
-#include "scene/frameContext.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -78,7 +61,7 @@ KeplerElements<double> AsteroidSystem::createRandomKeplerElements(double timeAft
   return e;
 }
 
-void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, Radii typeRadii, double volume, double timeAfterJD2000)
+void AsteroidSystem::createAsteroid(size_t type, std::vector<OrbitalObject> &typeAsteroids, Radii typeRadii, double volume, double timeAfterJD2000)
 {
   double radius = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
 
@@ -97,7 +80,7 @@ void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAste
   }
 }
 
-void AsteroidSystem::createAsteroid(size_t type, std::vector<Asteroid> &typeAsteroids, double timeAfterJD2000)
+void AsteroidSystem::createAsteroid(size_t type, std::vector<OrbitalObject> &typeAsteroids, double timeAfterJD2000)
 {
   double polar = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
   double equatorian = generateRandom(MINIMUM_ASTEROID_RADIUS, MAXIMUM_ASTEROID_RADIUS);
@@ -121,7 +104,7 @@ void AsteroidSystem::createAsteroids(ResourceManager &resourceManager, unsigned 
 {
   this->asteroidTypes.resize(amount);
   size_t typeCount = 1;
-  std::vector<std::vector<Asteroid>> tempAsteroids(typeCount);
+  std::vector<std::vector<OrbitalObject>> tempAsteroids(typeCount);
 
   this->totalObjects = amount;
 

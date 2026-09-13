@@ -39,4 +39,4 @@ public:
   void calculateRanges(std::vector<Range> &ranges, size_t total);
 };
 
-#include "resources/threadPool.tpp"
+#include "resources/threadPool/threadPool.tpp"

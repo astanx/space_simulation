@@ -1,8 +1,7 @@
 #pragma once
 
-#include "resources/range.h"
+#include "resources/data/range.h"
 
-#include "render/modelSource.h"
 #include "physics/structs/radii.h"
 
 #include "external/json.hpp"
@@ -10,11 +9,12 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <glm/glm.hpp>
 
 class Texture;
 class Buffer;
 class Shader;
-class Planet;
+class Object;
 
 struct Grid
 {
@@ -166,7 +166,7 @@ protected:
   float calculateWaterVaporPressure(float q, float pressure);
 
 public:
-  Atmosphere(Planet *planet, std::string &folderPath, ThreadPool &threadPool);
+  Atmosphere(Object *planet, std::string &folderPath, ThreadPool &threadPool);
   ~Atmosphere() = default;
 
   Radii getRadii() const { return this->radii; };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "render/renderable.h"
+#include "graphics/modelFlags.h"
 
 #include <vector>
 #include <string>
@@ -10,26 +10,10 @@
 class Material;
 class Texture;
 class Mesh;
+class Shader;
+class Buffer;
 
-enum class ModelFlags : uint32_t
-{
-	None = 0,
-	CastsShadow = 1 << 0,
-	ReflectsLight = 1 << 1,
-	Special = 1 << 2,
-};
-
-inline ModelFlags operator|(ModelFlags a, ModelFlags b)
-{
-	return static_cast<ModelFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
-}
-
-inline ModelFlags operator&(ModelFlags a, ModelFlags b)
-{
-	return static_cast<ModelFlags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
-}
-
-class Model : public Renderable
+class Model
 {
 protected:
 	Material *material;
@@ -53,8 +37,8 @@ public:
 
 	~Model();
 
-	virtual void render(Shader &shader) const override;
-	virtual void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) const override;
+	virtual void render(Shader &shader) const;
+	virtual void renderInstanced(Shader &shader, Buffer *instanceVBO = nullptr, size_t size = 0, size_t count = 0, size_t offset = 0) const;
 
 	void setImpostorLayer(unsigned int layer) { this->impostorLayer = layer; };
 	void setImportance(float importance) { this->importance = importance; };

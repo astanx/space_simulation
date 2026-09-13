@@ -6,16 +6,14 @@
 
 #include "physics/object.h"
 #include "physics/orbitalObject.h"
-#include "physics/constants.h"
+#include "physics/constants/constants.h"
 #include "physics/calculateGravitationalAcceleration.h"
-
-#include "render/modelSource.h"
 
 #include "maths/constants.h"
 #include "maths/orbitalMaths.h"
 #include "maths/torqueMaths.h"
 
-#include "resources/threadPool.h"
+#include "resources/threadPool/threadPool.h"
 
 #include <iostream>
 #include <cmath>

@@ -6,7 +6,7 @@
 
 #include "camera/cameraMovement.h"
 
-#include "resources/precision.h"
+#include "resources/data/precision.h"
 
 #include <memory>
 #include <variant>

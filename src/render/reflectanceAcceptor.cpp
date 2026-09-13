@@ -1,6 +1,6 @@
-#include "render/reflectanceAcceptor.h"
+#include "render/reflectance/reflectanceAcceptor.h"
 
-#include "render/reflector.h"
+#include "render/reflectance/reflector.h"
 
 #include "debug/logger.h"
 

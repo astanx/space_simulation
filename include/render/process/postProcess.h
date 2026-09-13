@@ -1,7 +1,5 @@
 #pragma once
 
-#include "resources/resourceManager.h"
-
 #include "graphics/texture.h"
 #include "graphics/mesh.h"
 
@@ -9,8 +7,8 @@
 
 #include "graphics/buffers/renderBuffer.h"
 
-#include "render/gaussianBlur.h"
-#include "render/renderContext.h"
+#include "render/process/gaussianBlur.h"
+#include "render/state/renderContext.h"
 
 #include <memory>
 
@@ -19,6 +17,8 @@ struct bloomMip
   glm::vec2 mipSize;
   std::unique_ptr<Texture> mipTexture;
 };
+
+class ResourceManager;
 
 class PostProcess
 {

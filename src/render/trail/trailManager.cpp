@@ -6,7 +6,7 @@
 
 #include "resources/entity/entity.h"
 
-#include "graphics/vertexLayouts.h"
+#include "graphics/layouts/vertexLayouts.h"
 #include "graphics/mesh.h"
 
 #include <iostream>

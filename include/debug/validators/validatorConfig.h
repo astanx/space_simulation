@@ -6,6 +6,7 @@
 struct ValidatorConfig
 {
   bool pathSpecified = false;
-  std::filesystem::path savePath; // --save folder
-  size_t steps = 1;               // --steps steps
+  size_t steps = 1;                        // --steps steps
+  Precision precision = Precision::DOUBLE; // --validator-precision <float|double>
+  std::filesystem::path savePath;          // --save folder
 };

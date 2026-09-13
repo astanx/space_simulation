@@ -1,12 +1,12 @@
 #pragma once
 
-#include "render/textRenderer.h"
-#include "render/postProcess.h"
-#include "render/gaussianBlur.h"
-#include "render/renderContext.h"
+#include "render/renderer/textRenderer.h"
+#include "render/process/postProcess.h"
+#include "render/process/gaussianBlur.h"
+#include "render/state/renderContext.h"
 #include "render/lod/manager/lodManager.h"
 #include "render/instanceManager.h"
-#include "render/renderFlags.h"
+#include "render/state/renderFlags.h"
 #include "render/queue/renderQueue.h"
 
 #include "graphics/texture.h"

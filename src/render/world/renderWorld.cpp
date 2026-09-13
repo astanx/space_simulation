@@ -9,8 +9,7 @@
 #include "render/world/backend/renderWorldBackendCPU.h"
 #include "render/world/backend/renderWorldBackendGPU.h"
 
-#include "render/updatable.h"
-#include "render/renderContext.h"
+#include "render/state/renderContext.h"
 #include "render/world/data/renderDatabase.h"
 #include "render/world/data/renderDatabaseView.h"
 

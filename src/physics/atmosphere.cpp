@@ -1,10 +1,12 @@
 #include "physics/atmosphere.h"
 
-#include "physics/atmosphereConstants.h"
-#include "physics/constants.h"
-#include "physics/planet.h"
+#include "debug/logger.h"
 
-#include "resources/threadPool.h"
+#include "physics/constants/atmosphereConstants.h"
+#include "physics/constants/constants.h"
+#include "physics/object.h"
+
+#include "resources/threadPool/threadPool.h"
 
 #include "graphics/texture.h"
 #include "graphics/shader.h"
@@ -14,8 +16,6 @@
 #include "graphics/state/scopedBuffer.h"
 
 #include "graphics/bindings/atmosphereTexture.h"
-
-#include "debug/logger.h"
 
 #include <glm/glm.hpp>
 #include <cmath>
@@ -475,7 +475,7 @@ void Atmosphere::applyDelta()
 }
 
 // Constructor
-Atmosphere::Atmosphere(Planet *planet, std::string &folderPath, ThreadPool &threadPool) : threadPool(threadPool)
+Atmosphere::Atmosphere(Object *obj, std::string &folderPath, ThreadPool &threadPool) : threadPool(threadPool)
 {
   this->initFromMetadata(folderPath);
 
@@ -498,7 +498,7 @@ Atmosphere::Atmosphere(Planet *planet, std::string &folderPath, ThreadPool &thre
 
   this->threadPool.calculateRanges(this->threadRanges, this->longitude.size());
 
-  this->initVectors(planet->getFreeFallAcc(), planet->getRadii());
+  this->initVectors(obj->getGravitationalAcceleration(), obj->getRadii());
 
   this->initTextures();
 }

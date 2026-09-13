@@ -1,8 +1,8 @@
 #include "render/world/backend/renderWorldBackend.h"
 
 #include "render/instanceManager.h"
-#include "render/reflectanceAcceptor.h"
-#include "render/reflector.h"
+#include "render/reflectance/reflectanceAcceptor.h"
+#include "render/reflectance/reflector.h"
 #include "render/queue/renderQueue.h"
 #include "render/trail/trailManager.h"
 
@@ -39,6 +39,9 @@ void RenderWorldBackend::initReflectorQueue(RenderQueue &queue, InstanceManager 
 void RenderWorldBackend::initEntityQueue(RenderQueue &queue, InstanceManager &manager, const RenderDatabaseView &database, const Entity entity)
 {
   const Model *model = database.getModel(entity);
+
+  if (!model)
+    Logger::logFatal("Render World Backend", "No model is registered for entity to init queue");
 
   this->initShadowQueue(queue, manager, model);
   this->initReflectorQueue(queue, manager, model);

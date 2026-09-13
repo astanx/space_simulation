@@ -1,4 +1,4 @@
-#include "render/gaussianBlur.h"
+#include "render/process/gaussianBlur.h"
 
 #include "debug/logger.h"
 

@@ -6,9 +6,8 @@
 
 #include "render/trail/trailManager.h"
 
-#include "render/modelSource.h"
 #include "render/renderSystem.h"
-#include "render/renderContext.h"
+#include "render/state/renderContext.h"
 
 #include "physics/world/physicsWorld.h"
 

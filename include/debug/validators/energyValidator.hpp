@@ -1,6 +1,7 @@
 #pragma once
 
 #include "resources/entity/entity.h"
+#include "resources/data/gpuTypes.h"
 
 #include <glm/glm.hpp>
 #include <iostream>
@@ -10,21 +11,21 @@
 #include <cmath>
 
 // Private functions
-template <typename Real>
-Real EnergyValidator<Real>::calculateError(Real current, Real prev)
+template <typename Real, typename WorldReal>
+Real EnergyValidator<Real, WorldReal>::calculateError(Real current, Real prev)
 {
   if (prev == 0)
     return 0;
 
-  Real error = (current - prev) / prev;
+  Real error = cast<Real>((current - prev) / prev);
   if (!std::isfinite(error))
     return 0;
 
   return error;
 }
 
-template <typename Real>
-void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &database, double elapsedTime)
+template <typename Real, typename WorldReal>
+void EnergyValidator<Real, WorldReal>::calculateEnergy(const PhysicsDatabaseView<WorldReal> &database, double elapsedTime)
 {
   if (this->isFinished())
     return;
@@ -43,7 +44,7 @@ void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &dat
     {
       const Entity &entity = entities[i];
 
-      Real kineticEnergy = 0.5 * database.getMu(entity) / static_cast<Real>(G) * glm::dot(vec3(database.getVelocity(entity)), vec3(database.getVelocity(entity)));
+      Real kineticEnergy = cast<Real>(0.5 * database.getMu(entity) / static_cast<Real>(G) * glm::dot(vec3(database.getVelocity(entity)), vec3(database.getVelocity(entity))));
 
       quat q = database.getOrientation(entity);
 
@@ -51,14 +52,14 @@ void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &dat
       vec3 omega = glm::transpose(R) * database.getAngularVelocity(entity);
       mat3 tensor = database.getInertiaTensor(entity);
 
-      Real rotationalEnergy = 0.5 * glm::dot(omega, tensor * omega);
+      Real rotationalEnergy = cast<Real>(0.5 * glm::dot(omega, tensor * omega));
 
       for (size_t j = i + 1; j < entities.size(); j++)
       {
         const Entity &otherEntity = entities[j];
-        localSystemSample.potentialEnergy -= database.getMu(entity) * database.getMu(otherEntity) / static_cast<Real>(G) / glm::length(vec3(database.getPosition(entity)) - vec3(database.getPosition(otherEntity)));
+        localSystemSample.potentialEnergy -= cast<Real>(database.getMu(entity) * database.getMu(otherEntity) / static_cast<Real>(G) / glm::length(vec3(database.getPosition(entity)) - vec3(database.getPosition(otherEntity))));
       }
-      localSystemSample.totalEnergy += kineticEnergy + rotationalEnergy;
+      localSystemSample.totalEnergy += cast<Real>(kineticEnergy + rotationalEnergy);
 
       Real prevKinetic = kineticEnergy;
       Real prevRotational = rotationalEnergy;
@@ -77,12 +78,12 @@ void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &dat
         this->calculateError(rotationalEnergy, prevRotational)
       };
     } 
-    localSystemSample.totalEnergy += localSystemSample.potentialEnergy; });
+    localSystemSample.totalEnergy += cast<Real>(localSystemSample.potentialEnergy); });
 
   for (SystemSample<Real> &local : tempSystemSamples)
   {
-    this->systemHistory[this->historyIdx].totalEnergy += local.totalEnergy;
-    this->systemHistory[this->historyIdx].potentialEnergy += local.potentialEnergy;
+    this->systemHistory[this->historyIdx].totalEnergy += cast<Real>(local.totalEnergy);
+    this->systemHistory[this->historyIdx].potentialEnergy += cast<Real>(local.potentialEnergy);
   }
 
   this->systemHistory[this->historyIdx].elapsedTime = elapsedTime;
@@ -103,37 +104,37 @@ void EnergyValidator<Real>::calculateEnergy(const PhysicsDatabaseView<Real> &dat
   if (this->historyIdx < this->steps)
     this->historyIdx++;
 }
-template <typename Real>
-void EnergyValidator<Real>::initIndices(const std::vector<Entity> &entities)
+template <typename Real, typename WorldReal>
+void EnergyValidator<Real, WorldReal>::initIndices(const std::vector<Entity> &entities)
 {
   for (size_t i = 0; i < entities.size(); i++)
     this->indexToEntity[i] = Entity{entities[i]};
 }
 
 // Constructor / Destructor
-template <typename Real>
-EnergyValidator<Real>::EnergyValidator(ThreadPool &threadPool) : threadPool(threadPool) {};
-template <typename Real>
-EnergyValidator<Real>::~EnergyValidator() = default;
+template <typename Real, typename WorldReal>
+EnergyValidator<Real, WorldReal>::EnergyValidator(ThreadPool &threadPool) : threadPool(threadPool) {};
+template <typename Real, typename WorldReal>
+EnergyValidator<Real, WorldReal>::~EnergyValidator() = default;
 
 // Public functions
-template <typename Real>
-void EnergyValidator<Real>::init(Scene &scene, double elapsedTime, size_t steps)
+template <typename Real, typename WorldReal>
+void EnergyValidator<Real, WorldReal>::init(Scene &scene, double elapsedTime, size_t steps)
 {
   this->steps = steps;
   this->bodyHistory.resize(this->steps);
   this->systemHistory.resize(this->steps);
 
-  this->initIndices(scene.getSimulationWorld<Real>().getEntityManager().getEntities());
+  this->initIndices(scene.getSimulationWorld<WorldReal>().getEntityManager().getEntities());
 }
-template <typename Real>
-void EnergyValidator<Real>::update(Scene &scene, double elapsedTime)
+template <typename Real, typename WorldReal>
+void EnergyValidator<Real, WorldReal>::update(Scene &scene, double elapsedTime)
 {
-  SimulationWorld<Real> &world = scene.getSimulationWorld<Real>();
+  SimulationWorld<WorldReal> &world = scene.getSimulationWorld<WorldReal>();
   this->calculateEnergy(world.getPhysicsWorldView(), elapsedTime);
 }
-template <typename Real>
-void EnergyValidator<Real>::sendTable()
+template <typename Real, typename WorldReal>
+void EnergyValidator<Real, WorldReal>::sendTable()
 {
   if (this->historyIdx == 0)
     return;
@@ -156,8 +157,8 @@ void EnergyValidator<Real>::sendTable()
   }
 }
 
-template <typename Real>
-void EnergyValidator<Real>::saveTable(Scene &scene, const std::filesystem::path &folderPath)
+template <typename Real, typename WorldReal>
+void EnergyValidator<Real, WorldReal>::saveTable(Scene &scene, const std::filesystem::path &folderPath)
 {
   std::filesystem::path systemPath = folderPath / "system_data_history.csv";
   std::ofstream systemFile(systemPath);
@@ -179,7 +180,7 @@ void EnergyValidator<Real>::saveTable(Scene &scene, const std::filesystem::path 
 
   systemFile.close();
 
-  const EntityManager &manager = scene.getSimulationWorld<Real>().getEntityManager();
+  const EntityManager &manager = scene.getSimulationWorld<WorldReal>().getEntityManager();
 
   std::filesystem::path bodyPath = folderPath / "body_data_history.csv";
   std::ofstream bodyFile(bodyPath);

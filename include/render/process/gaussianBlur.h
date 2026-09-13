@@ -1,6 +1,6 @@
 #pragma once
 
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 
 #include "scene/frameContext.h"
 

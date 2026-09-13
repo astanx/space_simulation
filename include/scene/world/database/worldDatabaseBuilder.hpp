@@ -9,7 +9,6 @@
 
 #include "graphics/primitives/ellipsoid.h"
 
-#include "render/modelSource.h"
 #include "render/renderSystem.h"
 #include "render/instanceManager.h"
 
@@ -106,15 +105,6 @@ void WorldDatabaseBuilder<Real>::processModel(TemporaryStorage<Real> &storage, M
 }
 
 template <typename Real>
-void WorldDatabaseBuilder<Real>::processModelSource(TemporaryStorage<Real> &storage, ModelSource *modelSource, size_t i)
-{
-  if (!modelSource)
-    Logger::logFatal("World GPU Builder", "ModelSource is null");
-
-  this->processModel(storage, modelSource->getMainLayer(), i);
-}
-
-template <typename Real>
 void WorldDatabaseBuilder<Real>::processSystem(System *system, TemporaryStorage<Real> &objectStorage, TemporaryStorage<Real> &orbitalStorage, std::atomic_size_t &objectIndex, std::atomic_size_t &orbitalIndex)
 {
   system->forEachObject([this, &system, &objectStorage, &orbitalStorage, &orbitalIndex, &objectIndex](Object &obj, size_t i)
@@ -192,6 +182,13 @@ size_t WorldDatabaseBuilder<Real>::findCentralBodyIndex(Object *central)
   Logger::logFatal("World Database Builder", "Central body was not found");
   return 0;
 }
+template <typename Real>
+void WorldDatabaseBuilder<Real>::createObjectModel(Model &model, Object &object, float importance)
+{
+  model.setImportance(importance);
+  this->modelTotal.total++;
+  this->objectToModel[&object] = &model;
+}
 
 // Public functions
 template <typename Real>
@@ -207,7 +204,7 @@ const Entity WorldDatabaseBuilder<Real>::convertObjectToEntity(Object *object)
 }
 
 template <typename Real>
-void WorldDatabaseBuilder<Real>::addAtmosphereToPlanet(ResourceManager &resourceManager, ThreadPool &threadPool, std::string planetName, Planet *planet)
+void WorldDatabaseBuilder<Real>::addAtmosphereToPlanet(ResourceManager &resourceManager, ThreadPool &threadPool, std::string planetName, OrbitalObject *planet)
 {
   // fix
   // std::string path = "assets/data/" + planetName + "/atmosphere/32_resolution";
@@ -224,7 +221,7 @@ void WorldDatabaseBuilder<Real>::addAtmosphereToPlanet(ResourceManager &resource
 }
 
 template <typename Real>
-Planet *WorldDatabaseBuilder<Real>::createPlanet(const std::string &name, Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters, Real g)
+OrbitalObject *WorldDatabaseBuilder<Real>::createOrbitalObject(const std::string &name, Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
 {
   KeplerElements e = keplerElements;
   e.calculateMeanMotion(centralBody->getMu());
@@ -233,12 +230,12 @@ Planet *WorldDatabaseBuilder<Real>::createPlanet(const std::string &name, Real m
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
 
-  std::unique_ptr<Planet> planet = std::make_unique<Planet>(centralBody, mu, radii, e, tidalParameters, gravityField, g);
+  std::unique_ptr<OrbitalObject> obj = std::make_unique<OrbitalObject>(centralBody, mu, radii, e, tidalParameters, gravityField);
 
-  planet->setAngularVelocity(r.calculateAngularVelocity());
-  planet->setOrientation(r.calculateOrientation());
+  obj->setAngularVelocity(r.calculateAngularVelocity());
+  obj->setOrientation(r.calculateOrientation());
 
-  Planet *ptr = planet.get();
+  OrbitalObject *ptr = obj.get();
 
   this->total.orbital++;
   this->total.total++;
@@ -246,36 +243,25 @@ Planet *WorldDatabaseBuilder<Real>::createPlanet(const std::string &name, Real m
   this->objectToEntity[ptr] = this->entityManager.create();
   this->entityManager.registerEntityName(this->objectToEntity[ptr], name);
 
-  this->orbitalObjects.push_back(std::move(planet));
+  this->orbitalObjects.push_back(std::move(obj));
 
   return ptr;
 }
 
 template <typename Real>
-void WorldDatabaseBuilder<Real>::createPlanetModel(Model &model, Planet &planet)
-{
-  model.setImportance(this->importance.planet);
-
-  this->modelTotal.orbital++;
-  this->modelTotal.total++;
-
-  this->objectToModel[&planet] = &model;
-}
-
-template <typename Real>
-Object *WorldDatabaseBuilder<Real>::createStar(const std::string &name, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos)
+Object *WorldDatabaseBuilder<Real>::createObject(const std::string &name, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos)
 {
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
 
-  std::unique_ptr<Object> star = std::make_unique<Object>(mu / G, radii, TidalParameters(), GravityField(), pos);
+  std::unique_ptr<Object> obj = std::make_unique<Object>(mu / G, radii, TidalParameters(), GravityField(), pos);
 
-  star->setAngularVelocity(r.calculateAngularVelocity());
-  star->setOrientation(r.calculateOrientation());
-  star->setLuminosity(luminosity);
-  star->setMu(mu);
+  obj->setAngularVelocity(r.calculateAngularVelocity());
+  obj->setOrientation(r.calculateOrientation());
+  obj->setLuminosity(luminosity);
+  obj->setMu(mu);
 
-  Object *ptr = star.get();
+  Object *ptr = obj.get();
 
   this->total.object++;
   this->total.total++;
@@ -283,59 +269,30 @@ Object *WorldDatabaseBuilder<Real>::createStar(const std::string &name, Real mu,
   this->objectToEntity[ptr] = this->entityManager.create();
   this->entityManager.registerEntityName(this->objectToEntity[ptr], name);
 
-  this->objects.push_back(std::move(star));
+  this->objects.push_back(std::move(obj));
 
   return ptr;
+}
+
+template <typename Real>
+void WorldDatabaseBuilder<Real>::createPlanetModel(Model &model, OrbitalObject &planet)
+{
+  this->modelTotal.orbital++;
+  this->createObjectModel(model, planet, this->importance.planet);
 }
 
 template <typename Real>
 void WorldDatabaseBuilder<Real>::createStarModel(Model &model, Object &star)
 {
-  model.setImportance(this->importance.star);
-
   this->modelTotal.object++;
-  this->modelTotal.total++;
-
-  this->objectToModel[&star] = &model;
+  this->createObjectModel(model, star, this->importance.star);
 }
 
 template <typename Real>
-Moon *WorldDatabaseBuilder<Real>::createMoon(const std::string &name, Real mu, Radii radii, Planet *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
+void WorldDatabaseBuilder<Real>::createMoonModel(Model &model, OrbitalObject &moon)
 {
-  KeplerElements e = keplerElements;
-  e.calculateMeanMotion(centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
-
-  RotationalElements r = rotationalElements;
-  r.advanceFromJD2000(timeAfterJD2000);
-
-  std::unique_ptr<Moon> moon = std::make_unique<Moon>(centralBody, mu, radii, e, tidalParameters, gravityField);
-
-  moon->setAngularVelocity(r.calculateAngularVelocity());
-  moon->setOrientation(r.calculateOrientation());
-
-  Moon *ptr = moon.get();
-
-  this->total.orbital++;
-  this->total.total++;
-
-  this->objectToEntity[ptr] = this->entityManager.create();
-  this->entityManager.registerEntityName(this->objectToEntity[ptr], name);
-
-  this->orbitalObjects.push_back(std::move(moon));
-
-  return ptr;
-}
-
-template <typename Real>
-void WorldDatabaseBuilder<Real>::createMoonModel(Model &model, Moon &moon)
-{
-  model.setImportance(this->importance.moon);
-
   this->modelTotal.orbital++;
-  this->modelTotal.total++;
-
-  this->objectToModel[&moon] = &model;
+  this->createObjectModel(model, moon, this->importance.moon);
 }
 
 template <typename Real>

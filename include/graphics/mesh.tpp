@@ -2,7 +2,7 @@
 
 #include "debug/logger.h"
 
-#include "graphics/instanceLayouts.h"
+#include "graphics/layouts/instanceLayouts.h"
 
 #include "graphics/primitives/primitives.h"
 

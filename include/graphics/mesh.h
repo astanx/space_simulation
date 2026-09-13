@@ -1,7 +1,7 @@
 #pragma once
 
-#include "graphics/vertexLayouts.h"
-#include "graphics/instanceLayouts.h"
+#include "graphics/layouts/vertexLayouts.h"
+#include "graphics/layouts/instanceLayouts.h"
 #include "graphics/vertex.h"
 
 #include "graphics/buffers/buffer.h"

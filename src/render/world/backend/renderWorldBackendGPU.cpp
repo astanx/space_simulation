@@ -6,7 +6,7 @@
 #include "render/world/data/renderDatabaseView.h"
 #include "render/queue/data/renderQueueGPUBuffers.h"
 
-#include "render/renderContext.h"
+#include "render/state/renderContext.h"
 
 #include "render/trail/trailManager.h"
 

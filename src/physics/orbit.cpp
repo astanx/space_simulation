@@ -2,8 +2,8 @@
 
 #include "debug/logger.h"
 
-#include "physics/constants.h"
-#include "physics/planet.h"
+#include "physics/orbitalObject.h"
+#include "physics/constants/constants.h"
 
 #include "maths/constants.h"
 

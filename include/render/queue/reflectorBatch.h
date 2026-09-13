@@ -1,6 +1,6 @@
 #pragma once
 
-#include "resources/range.h"
+#include "resources/data/range.h"
 #include "render/queue/renderBatch.h"
 
 #include <vector>

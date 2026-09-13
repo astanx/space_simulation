@@ -11,14 +11,12 @@
 
 #include "physics/object.h"
 #include "physics/orbitalObject.h"
-#include "physics/constants.h"
-
-#include "render/modelSource.h"
+#include "physics/constants/constants.h"
 
 #include "compute/context.h"
 #include "compute/commandQueue.h"
 
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 #include "resources/resources.h"
 
 #include "graphics/state/scopedBuffer.h"

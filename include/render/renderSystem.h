@@ -5,6 +5,7 @@ class LODManager;
 class InstanceManager;
 class Camera;
 class Texture;
+class Model;
 struct Frustum;
 
 class RenderSystem

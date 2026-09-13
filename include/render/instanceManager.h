@@ -1,8 +1,8 @@
 #pragma once
 
-#include "resources/range.h"
+#include "resources/data/range.h"
 
-#include "graphics/instanceLayouts.h"
+#include "graphics/layouts/instanceLayouts.h"
 
 #include "graphics/buffers/buffer.h"
 

@@ -88,6 +88,7 @@ add_executable(Space
     src/core/application.cpp
     src/core/inputManager.cpp
     src/core/window.cpp
+    src/core/timeManager.cpp
 
     # Camera
     src/camera/camera.cpp
@@ -160,18 +161,18 @@ add_executable(Space
         src/scene/world/IsimulationWorld.cpp
     
     # Render
-    src/render/textRenderer.cpp
-    src/render/postProcess.cpp
-    src/render/gaussianBlur.cpp
-    src/render/modelSource.cpp
     src/render/reflectanceAcceptor.cpp
     src/render/instanceManager.cpp
         # Renderer
         src/render/renderer/renderer.cpp
+        src/render/renderer/textRenderer.cpp
             # Backend
             src/render/renderer/backend/rendererBackend.cpp
             src/render/renderer/backend/rendererBackendCPU.cpp
             src/render/renderer/backend/rendererBackendGPU.cpp
+        # Process
+        src/render/process/postProcess.cpp
+        src/render/process/gaussianBlur.cpp
         # LOD
         src/render/lod/scan.cpp
         src/render/lod/lodManager.cpp
@@ -194,6 +195,7 @@ add_executable(Space
     # Resources
     src/resources/OBJloader.cpp
     src/resources/resourceManager.cpp
+    src/resources/resourceInitializer.cpp
     src/resources/threadPool.cpp
     src/resources/modelRegistry.cpp
         # Entity
@@ -201,17 +203,14 @@ add_executable(Space
     
     # Physics
     src/physics/object.cpp
-    src/physics/planet.cpp
-    src/physics/constants.cpp
-    src/physics/atmosphereConstants.cpp
     src/physics/orbit.cpp
-    src/physics/moon.cpp
     src/physics/orbitalObject.cpp
-    src/physics/asteroid.cpp
     src/physics/atmosphere.cpp
+        # Constants
+        src/physics/constants/constants.cpp
+        src/physics/constants/atmosphereConstants.cpp
         # World
         src/physics/world/IphysicsWorld.cpp
-            # Backend
         # Integrators
         src/physics/integrators/integrator.cpp
         # Systems

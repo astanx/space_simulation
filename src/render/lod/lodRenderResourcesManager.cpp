@@ -1,6 +1,5 @@
 #include "render/lod/lodRenderResourcesManager.h"
 
-#include "render/modelSource.h"
 #include "render/renderSystem.h"
 
 #include "graphics/bindings/impostor.h"
@@ -11,6 +10,8 @@
 #include "graphics/primitives/point.h"
 
 #include "graphics/mesh.h"
+#include "graphics/model.h"
+#include "graphics/materials/material.h"
 
 #define STB_IMAGE_RESIZE2_IMPLEMENTATION
 #include "external/stb_image_resize2.h"

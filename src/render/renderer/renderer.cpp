@@ -11,12 +11,12 @@
 #include "scene/scene.h"
 #include "scene/light/pointLight.h"
 
-#include "render/renderState.h"
-#include "render/reflectanceAcceptor.h"
+#include "render/state/renderState.h"
+#include "render/reflectance/reflectanceAcceptor.h"
 #include "render/frustum.h"
 #include "render/queue/renderBatch.h"
 
-#include "graphics/instanceLayouts.h"
+#include "graphics/layouts/instanceLayouts.h"
 #include "graphics/skybox.h"
 
 #include "graphics/bindings/texture.h"
@@ -35,7 +35,7 @@
 
 #include "graphics/buffers/renderBuffer.h"
 
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 #include "resources/resources.h"
 
 #include <iostream>

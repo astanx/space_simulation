@@ -1,6 +1,6 @@
 #pragma once
 
-#include "resources/range.h"
+#include "resources/data/range.h"
 
 // Public functions
 template <typename F>

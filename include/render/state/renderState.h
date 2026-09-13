@@ -1,6 +1,6 @@
 #pragma once
 
-#include "render/renderConfig.h"
+#include "render/state/renderConfig.h"
 
 #include <glm/glm.hpp>
 

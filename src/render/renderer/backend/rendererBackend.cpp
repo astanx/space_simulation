@@ -1,11 +1,11 @@
 #include "render/renderer/backend/rendererBackend.h"
 
-#include "render/renderContext.h"
+#include "render/state/renderContext.h"
 
 #include "scene/scene.h"
 #include "scene/light/pointLight.h"
 
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 
 #include "camera/cameraGPU.h"
 #include "camera/camera.h"

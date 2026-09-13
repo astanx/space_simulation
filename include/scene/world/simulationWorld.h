@@ -29,16 +29,8 @@ struct Importance
   float star = 0;
 };
 
-class Planet;
-class Moon;
-class AsteroidSystem;
-class ModelSource;
 class ResourceManager;
 class ThreadPool;
-class Camera;
-class Model;
-struct Radii;
-struct RotationalElements;
 struct RenderContext;
 
 template <typename Real>

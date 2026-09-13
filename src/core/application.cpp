@@ -5,16 +5,15 @@
 #include "scene/scene.h"
 
 #include "resources/resources.h"
+#include "resources/resourceInitializer.h"
 
 #include "graphics/primitives/ellipsoid.h"
 #include "graphics/primitives/quad.h"
 #include "graphics/primitives/asteroidShape.h"
 
-#include "render/renderState.h"
+#include "render/state/renderState.h"
 
-#include "physics/constants.h"
-
-#include "maths/dateToJD.h"
+#include "physics/constants/constants.h"
 
 #include "debug/validators/energyValidator.h"
 
@@ -22,87 +21,10 @@
 #include <filesystem>
 
 // Private functions
-void Application::initShaderResources()
-{
-  // this->resourceManager.LoadShader(Res::CORE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/debug/normal_fragment.glsl", "assets/shaders/debug/normal_geometry.glsl");
-  this->resourceManager.LoadShader(Res::CORE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/vertex_core.glsl", "assets/shaders/fragment_core.glsl");
-  this->resourceManager.LoadShader(Res::CORE_TANGENT_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/vertex_tangent_core.glsl", "assets/shaders/fragment_tangent_core.glsl");
-  this->resourceManager.LoadShader(Res::SKYBOX_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/skybox/vertex.glsl", "assets/shaders/skybox/fragment.glsl");
-  this->resourceManager.LoadShader(Res::TRAIL_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/trail/vertex.glsl", "assets/shaders/trail/fragment.glsl");
-  this->resourceManager.LoadShader(Res::POINT_SHADOW_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/shadow/point/vertex.glsl", "assets/shaders/shadow/point/fragment.glsl", "assets/shaders/shadow/point/geometry.glsl");
-  // this->resourceManager.LoadShader(Res::DIRECTIONAL_SHADOW_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/shadow/directional/vertex.glsl", "assets/shaders/shadow/directional/fragment.glsl");
-  this->resourceManager.LoadShader(Res::TEXT_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/text/vertex.glsl", "assets/shaders/text/fragment.glsl");
-  this->resourceManager.LoadShader(Res::HDR_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/hdr/vertex.glsl", "assets/shaders/hdr/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLOOM_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/bloom/vertex.glsl", "assets/shaders/bloom/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLUR_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/blur/texture/vertex.glsl", "assets/shaders/blur/texture/fragment.glsl");
-  this->resourceManager.LoadShader(Res::BLUR_CUBEMAP_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/blur/cubemap/vertex.glsl", "assets/shaders/blur/cubemap/fragment.glsl", "assets/shaders/blur/cubemap/geometry.glsl");
-  this->resourceManager.LoadShader(Res::CUBEMAP_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/cubemap/vertex.glsl", "assets/shaders/cubemap/fragment.glsl");
-  this->resourceManager.LoadShader(Res::CONVOLUTION_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/convolution/vertex.glsl", "assets/shaders/convolution/fragment.glsl");
-  this->resourceManager.LoadShader(Res::REFLECTION_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/reflector/vertex.glsl", "assets/shaders/reflector/fragment.glsl");
-  this->resourceManager.LoadShader(Res::DOWNSAMPLE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/sample/down/vertex.glsl", "assets/shaders/sample/down/fragment.glsl");
-  this->resourceManager.LoadShader(Res::UPSAMPLE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/sample/up/vertex.glsl", "assets/shaders/sample/up/fragment.glsl");
-  this->resourceManager.LoadShader(Res::ATMOSPHERE_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/atmosphere/vertex.glsl", "assets/shaders/atmosphere/fragment.glsl");
-  this->resourceManager.LoadShader(Res::IMPOSTOR_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/impostor/vertex.glsl", "assets/shaders/impostor/fragment.glsl");
-  this->resourceManager.LoadShader(Res::POINT_SHADER, this->cfg.windowConfig.GLmajor, this->cfg.windowConfig.GLminor, "assets/shaders/point/vertex.glsl", "assets/shaders/point/fragment.glsl");
-}
-void Application::initKernelResources()
-{
-  this->resourceManager.LoadProgram(Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM, "assets/kernels/wisdomHolman/wisdomHolman.cl", Res::MAIN_CONTEXT);
-  this->resourceManager.LoadKernel(Res::DRIFT_ANGULAR_KERNEL, Res::DRIFT_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::DRIFT_OBJECTS_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::DRIFT_ORBITAL_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::HALF_KICK_LINEAR_KERNEL, Res::HALF_KICK_LINEAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::HALF_KICK_ANGULAR_KERNEL, Res::HALF_KICK_ANGULAR_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-  this->resourceManager.LoadKernel(Res::HALF_KICK_KERNEL, Res::HALF_KICK_KERNEL, Res::WISDOM_HOLMAN_INTERGATOR_PROGRAM);
-
-  this->resourceManager.LoadProgram(Res::RENDER_QUEUE_PROGRAM, "assets/kernels/render/render.cl", Res::MAIN_CONTEXT);
-  this->resourceManager.LoadKernel(Res::LOD_FULL_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_POINT_LOCAL_SCAN_KERNEL, Res::LOCAL_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_SCAN_KERNEL, Res::GROUP_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_FULL_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_NON_FULL_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_IMPOSTOR_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_POINT_GROUP_OFFSET_SCAN_KERNEL, Res::GROUP_OFFSET_SCAN_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-  this->resourceManager.LoadKernel(Res::LOD_PASS_KERNEL, Res::LOD_PASS_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-
-  this->resourceManager.LoadKernel(Res::PARTITION_OBJECTS_KERNEL, Res::PARTITION_OBJECTS_KERNEL, Res::RENDER_QUEUE_PROGRAM);
-}
-void Application::initModelResources()
-{
-  this->loadEllipsoidObject(Res::SUN, Res::SUN_MODEL, Res::SUN_MESH, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f, ModelFlags::Special, sunLuminosity);
-  // this->loadEllipsoidObject(Res::SUN, Res::SUN_DIFFUSE, Res::SUN_MATERIAL, sunRadii, 1.f, 0.f, 0.05f);
-  this->loadEllipsoidObject(Res::MERCURY, Res::MERCURY_MODEL, Res::MERCURY_MESH, Res::MERCURY_DIFFUSE, Res::MERCURY_MATERIAL, mercuryRadii, 0.9f, 0.f, 0.95f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::VENUS, Res::VENUS_MODEL, Res::VENUS_MESH, Res::VENUS_DIFFUSE, Res::VENUS_MATERIAL, venusRadii, 0.9f, 0.f, 0.98f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::VENUS_ATMOSPHERE, Res::VENUS_ATMOSPHERE_MODEL, Res::VENUS_ATMOSPHERE_MESH, Res::VENUS_ATMOSPHERE_DIFFUSE, Res::VENUS_ATMOSPHERE_MATERIAL, venusRadii.scaled(1.01), 1.f, 0.f, 0.05f);
-  this->loadReflectanceAcceptorEllipsoidObject(Res::EARTH, Res::EARTH_MODEL, Res::EARTH_MESH, Res::EARTH_DIFFUSE, Res::EARTH_MATERIAL, earthRadii, 1.f, 0.f, 0.55f, ModelFlags::CastsShadow | ModelFlags::Special, 0.0f, Res::EARTH_NORMAL, Res::EARTH_NIGHT, Res::EARTH_ROUGHNESS);
-  this->loadEllipsoidObject(Res::EARTH_ATMOSPHERE, Res::EARTH_ATMOSPHERE_MODEL, Res::EARTH_ATMOSPHERE_MESH, Res::EARTH_ATMOSPHERE_DIFFUSE, Res::EARTH_ATMOSPHERE_MATERIAL, earthRadii.scaled(1.01), 1.f, 0.f, 0.03f);
-  this->loadHapkeEllipsoidObject(Res::MOON, Res::MOON_MODEL, Res::MOON_MESH, Res::MOON_DIFFUSE, Res::MOON_MATERIAL, moonRadii, 0.95f, 0.f, 0.95f, moonHapkeParameters, Res::EARTH_MODEL, ModelFlags::CastsShadow | ModelFlags::ReflectsLight | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::MARS, Res::MARS_MODEL, Res::MARS_MESH, Res::MARS_DIFFUSE, Res::MARS_MATERIAL, marsRadii, 0.9f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::JUPITER, Res::JUPITER_MODEL, Res::JUPITER_MESH, Res::JUPITER_DIFFUSE, Res::JUPITER_MATERIAL, jupiterRadii, 1.f, 0.f, 0.25f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::SATURN, Res::SATURN_MODEL, Res::SATURN_MESH, Res::SATURN_DIFFUSE, Res::SATURN_MATERIAL, saturnRadii, 0.9f, 0.f, 0.85f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::URANUS, Res::URANUS_MODEL, Res::URANUS_MESH, Res::URANUS_DIFFUSE, Res::URANUS_MATERIAL, uranusRadii, 0.94f, 0.f, 0.9f, ModelFlags::CastsShadow | ModelFlags::Special);
-  this->loadEllipsoidObject(Res::NEPTUNE, Res::NEPTUNE_MODEL, Res::NEPTUNE_MESH, Res::NEPTUNE_DIFFUSE, Res::NEPTUNE_MATERIAL, neptuneRadii, 0.9f, 0.f, 0.8f, ModelFlags::CastsShadow | ModelFlags::Special);
-}
-
-void Application::initAsteroidResources()
-{
-  Texture &diff = this->resourceManager.LoadTexture(Res::ASTEROID_DIFFUSE, BASE_TEXTURE_PATH + "diffuse/asteroid.png", GL_TEXTURE_2D);
-  this->loadAsteroidShape(Res::EROS_ASTEROID, Res::EROS_ASTEROID_MODEL, Res::EROS_ASTEROID_MESH, Res::EROS_ASTEROID_MATERIAL, diff, 0.85f, 0.05f, 0.92f, 48, 32, 4.0, 1.0, 1.0, 2.5, 8.0, 8.0);
-  this->loadAsteroidShape(Res::ITOKAWA_ASTEROID, Res::ITOKAWA_ASTEROID_MODEL, Res::ITOKAWA_ASTEROID_MESH, Res::ITOKAWA_ASTEROID_MATERIAL, diff, 0.9f, 0.08f, 0.95f, 64, 48, 7.0, 0.9, 1.1, 3.0, 12.0, 6.0);
-  this->loadAsteroidShape(Res::BENNU_ASTEROID, Res::BENNU_ASTEROID_MODEL, Res::BENNU_ASTEROID_MESH, Res::BENNU_ASTEROID_MATERIAL, diff, 0.78f, 0.03f, 0.88f, 56, 40, 5.0, 1.0, 0.95, 1.8, 4.0, 10.0);
-  this->loadAsteroidShape(Res::RYUGU_ASTEROID, Res::RYUGU_ASTEROID_MODEL, Res::RYUGU_ASTEROID_MESH, Res::RYUGU_ASTEROID_MATERIAL, diff, 0.82f, 0.06f, 0.85f, 52, 36, 3.0, 1.2, 0.8, 2.2, 5.0, 18.0);
-  this->loadAsteroidShape(Res::VESTA_ASTEROID, Res::VESTA_ASTEROID_MODEL, Res::VESTA_ASTEROID_MESH, Res::VESTA_ASTEROID_MATERIAL, diff, 0.88f, 0.04f, 0.9f, 40, 28, 6.0, 1.0, 1.0, 4.0, 3.0, 15.0);
-}
-
 void Application::initWorld()
 {
   bool enableRender = this->cfg.mode == Mode::Simulation;
-  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, this->cfg.precision, this->startTime, enableRender);
+  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, this->cfg.precision, this->timeManager.getStartTime(), enableRender);
 
   if (this->cfg.backend == Backend::GPU)
     this->scene.initGPUWorld(this->resourceManager);
@@ -149,19 +71,18 @@ void Application::initResources()
 {
   if (this->cfg.mode == Mode::Simulation)
   {
-    this->initShaderResources();
-    this->initModelResources();
-    this->initAsteroidResources();
-
-    this->resourceManager.LoadMesh<VertexPositionTexcoord>(Res::FULLSCREEN_QUAD, std::make_unique<Quad>(), VertexLayout::PositionTexcoord);
+    ResourceInitializer::loadShaders(this->resourceManager, this->cfg.windowConfig);
+    ResourceInitializer::loadModels(this->resourceManager);
+    ResourceInitializer::loadAsteroids(this->resourceManager);
+    ResourceInitializer::loadFullscreenQuad(this->resourceManager);
   }
 
   if (this->cfg.backend == Backend::GPU)
   {
     Context &ctx = this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
     if (this->cfg.precision == Precision::DOUBLE && !ctx.getSupportsDouble())
-      Logger::logFatal("Application", "Double precision is not supported on this GPU, use --float argument");
-    this->initKernelResources();
+      Logger::logFatal("Application", "Double precision is not supported on this GPU, use --precision float argument");
+    ResourceInitializer::loadKernels(this->resourceManager);
   }
 }
 void Application::initMode()
@@ -170,39 +91,50 @@ void Application::initMode()
     this->initRenderer();
   else if (this->cfg.mode == Mode::EnergyValidation)
   {
-    if (this->cfg.precision == Precision::DOUBLE)
-      this->validator = std::make_unique<EnergyValidator<double>>(this->threadPool);
-    else if (this->cfg.precision == Precision::FLOAT)
-      this->validator = std::make_unique<EnergyValidator<float>>(this->threadPool);
+    if (this->cfg.validatorCfg.precision == Precision::DOUBLE)
+    {
+      if (this->cfg.precision == Precision::DOUBLE)
+        this->validator = std::make_unique<EnergyValidator<double, double>>(this->threadPool);
+      else if (this->cfg.precision == Precision::FLOAT)
+        this->validator = std::make_unique<EnergyValidator<double, float>>(this->threadPool);
+    }
+    else if (this->cfg.validatorCfg.precision == Precision::FLOAT)
+    {
+      if (this->cfg.precision == Precision::DOUBLE)
+        this->validator = std::make_unique<EnergyValidator<float, double>>(this->threadPool);
+      else if (this->cfg.precision == Precision::FLOAT)
+        this->validator = std::make_unique<EnergyValidator<float, float>>(this->threadPool);
+    }
     else
       Logger::logFatal("Application", "This precision is not supported for validator");
 
-    this->validator->init(this->scene, this->elapsedDays * 86400, this->cfg.validatorCfg.steps);
+    this->validator->init(this->scene, this->timeManager.getElapsedTime(), this->cfg.validatorCfg.steps);
   }
 }
 
 void Application::processInput()
 {
+  double dt = this->timeManager.getFrameDeltaTime();
   if (this->input.isActionPressed(Action::Exit))
     this->window->setWindowShouldClose();
 
   if (this->input.isActionHold(Action::MoveForward))
-    this->scene.processKeyboard(FORWARD, this->deltaTime);
+    this->scene.processKeyboard(FORWARD, dt);
 
   if (this->input.isActionHold(Action::MoveBackward))
-    this->scene.processKeyboard(BACKWARD, this->deltaTime);
+    this->scene.processKeyboard(BACKWARD, dt);
 
   if (this->input.isActionHold(Action::MoveLeft))
-    this->scene.processKeyboard(LEFT, this->deltaTime);
+    this->scene.processKeyboard(LEFT, dt);
 
   if (this->input.isActionHold(Action::MoveRight))
-    this->scene.processKeyboard(RIGHT, this->deltaTime);
+    this->scene.processKeyboard(RIGHT, dt);
 
   if (this->input.isActionHold(Action::MoveUp))
-    this->scene.processKeyboard(UP, this->deltaTime);
+    this->scene.processKeyboard(UP, dt);
 
   if (this->input.isActionHold(Action::MoveDown))
-    this->scene.processKeyboard(DOWN, this->deltaTime);
+    this->scene.processKeyboard(DOWN, dt);
 
   if (this->input.isActionPressed(Action::ToggleBloom))
     this->renderCtx.settings.useBloom = !this->renderCtx.settings.useBloom;
@@ -233,139 +165,38 @@ void Application::processInput()
 
   if (this->input.isActionPressed(Action::DoubleTimestep))
   {
-    if (this->timestep > 0)
-      this->timestep *= 2;
+    if (this->cfg.timeCfg.timestep > 0)
+      this->cfg.timeCfg.timestep *= 2;
     else
-      this->timestep *= .5;
+      this->cfg.timeCfg.timestep *= .5;
   }
 
   if (this->input.isActionPressed(Action::HalfTimestep))
   {
-    if (this->timestep > 0)
-      this->timestep *= .5;
+    if (this->cfg.timeCfg.timestep > 0)
+      this->cfg.timeCfg.timestep *= .5;
     else
-      this->timestep *= 2;
+      this->cfg.timeCfg.timestep *= 2;
   }
 
   if (this->input.isActionHold(Action::DecreaseTimestep))
-    this->timestep -= 2;
+    this->cfg.timeCfg.timestep -= 2;
 
   if (this->input.isActionHold(Action::IncreaseTimestep))
-    this->timestep += 2;
+    this->cfg.timeCfg.timestep += 2;
 }
 
-LoadedTextures Application::loadTextures(const std::string &name, const std::string &diffuse_name, const std::string &normal_name, const std::string &night_name, const std::string &roughness_name)
+void Application::updateValidator()
 {
-  const std::string format = ".png";
-
-  const std::string diffusePath = BASE_TEXTURE_PATH + "diffuse/" + name + format;
-
-  if (!std::filesystem::exists(diffusePath))
-    Logger::logFatal("Application", "Diffuse texture is not found, skipping the object - " + name);
-
-  LoadedTextures textures;
-  textures.diffuse = &this->resourceManager.LoadTexture(diffuse_name, diffusePath, GL_TEXTURE_2D);
-
-  const std::string roughnessPath = BASE_TEXTURE_PATH + "roughness/" + name + format;
-  if (std::filesystem::exists(roughnessPath) && roughness_name != "")
+  this->validator->update(this->scene, this->timeManager.getElapsedTime());
+  if (this->validator->isFinished())
   {
-    Logger::logInfo("Application", "Found roughness texture for object - " + name);
-    textures.roughness = &this->resourceManager.LoadTexture(roughness_name, roughnessPath, GL_TEXTURE_2D);
+    this->validator->sendTable();
+    if (this->cfg.validatorCfg.pathSpecified)
+      this->validator->saveTable(this->scene, this->cfg.validatorCfg.savePath);
+
+    this->isFinished = true;
   }
-
-  const std::string normalPath = BASE_TEXTURE_PATH + "normal/" + name + format;
-  if (std::filesystem::exists(normalPath) && normal_name != "")
-  {
-    Logger::logInfo("Application", "Found normal texture for object - " + name);
-    textures.normal = &this->resourceManager.LoadTexture(normal_name, normalPath, GL_TEXTURE_2D);
-  }
-
-  const std::string nightPath = BASE_TEXTURE_PATH + "night/" + name + format;
-  if (std::filesystem::exists(nightPath) && night_name != "")
-  {
-    Logger::logInfo("Application", "Found night texture for object - " + name);
-    textures.night = &this->resourceManager.LoadTexture(night_name, nightPath, GL_TEXTURE_2D);
-  }
-
-  return textures;
-}
-
-void Application::loadHapkePBRMaterial(const std::string &name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
-                                       float ao, float metallic, float roughness, HapkeParameters params, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
-                                       const std::string &roughness_name)
-{
-  LoadedTextures textures = this->loadTextures(name, diffuse_name, normal_name, night_name, roughness_name);
-  this->resourceManager.LoadPBRMaterial(material_name, textures.diffuse, textures.normal, nullptr, nullptr, textures.roughness, textures.night, emissiveStrength, ao, metallic, roughness);
-}
-
-void Application::loadPBRMaterial(const std::string &name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
-                                  float ao, float metallic, float roughness, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
-                                  const std::string &roughness_name)
-{
-  LoadedTextures textures = this->loadTextures(name, diffuse_name, normal_name, night_name, roughness_name);
-  this->resourceManager.LoadPBRMaterial(material_name, textures.diffuse, textures.normal, nullptr, nullptr, textures.roughness, textures.night, emissiveStrength, ao, metallic, roughness);
-}
-
-void Application::loadEllipsoid(const std::string &mesh_name, Radii radii, bool isTangent, int segments)
-{
-  std::unique_ptr<Ellipsoid> obj = std::make_unique<Ellipsoid>(segments, radii, isTangent);
-  if (isTangent)
-    this->resourceManager.LoadMesh<VertexPositionTexcoordNormalTangent>(mesh_name, std::move(obj),
-                                                                        VertexLayout::PositionNormalTangent);
-  else
-    this->resourceManager.LoadMesh<VertexPositionTexcoordNormal>(mesh_name, std::move(obj),
-                                                                 VertexLayout::NoColor);
-}
-void Application::loadEllipsoidObject(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
-                                      Radii radii, float ao, float metallic, float roughness, ModelFlags flags, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
-                                      const std::string &roughness_name, int segments)
-{
-  this->loadPBRMaterial(name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
-
-  bool isTangent = normal_name != "";
-
-  this->loadEllipsoid(mesh_name, radii, isTangent, segments);
-
-  this->resourceManager.LoadModel(model_name, material_name, mesh_name, flags);
-}
-void Application::loadReflectanceAcceptorEllipsoidObject(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
-                                                         Radii radii, float ao, float metallic, float roughness, ModelFlags flags, float emissiveStrength, const std::string &normal_name, const std::string &night_name,
-                                                         const std::string &roughness_name, int segments)
-{
-  this->loadPBRMaterial(name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, emissiveStrength, normal_name, night_name, roughness_name);
-
-  bool isTangent = normal_name != "";
-
-  this->loadEllipsoid(mesh_name, radii, isTangent, segments);
-
-  this->resourceManager.LoadReflectanceAcceptorModel(model_name, material_name, mesh_name, flags);
-}
-void Application::loadHapkeEllipsoidObject(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &diffuse_name, const std::string &material_name,
-                                           Radii radii, float ao, float metallic, float roughness, HapkeParameters hapke, const std::string &acceptor_model_name, ModelFlags flags, float emissiveStrength,
-                                           const std::string &normal_name, const std::string &night_name, const std::string &roughness_name, int segments)
-{
-  this->loadHapkePBRMaterial(name, mesh_name, diffuse_name, material_name, ao, metallic, roughness, hapke, emissiveStrength, normal_name, night_name, roughness_name);
-
-  bool isTangent = normal_name != "";
-
-  this->loadEllipsoid(mesh_name, radii, isTangent, segments);
-
-  this->resourceManager.LoadReflectorModel(model_name, material_name, mesh_name, acceptor_model_name, flags);
-}
-
-void Application::loadAsteroidShape(const std::string &name, const std::string &model_name, const std::string &mesh_name, const std::string &material_name,
-                                    Texture &albedo, float ao, float metallic, float roughness,
-                                    double thetaSteps, double phiSteps, double m, double a, double b, double n1, double n2, double n3)
-{
-  std::unique_ptr<AsteroidShape> shape = std::make_unique<AsteroidShape>(thetaSteps, phiSteps, m, a, b, n1, n2, n3);
-
-  Material &mat = this->resourceManager.LoadPBRMaterial(material_name, &albedo, nullptr, nullptr, nullptr, nullptr, nullptr, 0.f, ao, metallic, roughness);
-  this->resourceManager.LoadAsteroid<VertexPositionTexcoordNormal>(name, model_name, mesh_name, std::move(shape), mat, VertexLayout::NoColor);
-}
-
-double Application::getTime()
-{
-  return std::chrono::duration<double>(std::chrono::steady_clock::now() - this->clock).count();
 }
 
 // Constructor / Destructor
@@ -374,10 +205,10 @@ Application::Application(const AppConfig &config) : cfg(config),
                                                     threadPool(),
                                                     scene(),
                                                     input(),
+                                                    timeManager(this->cfg.timeCfg),
                                                     renderer(resourceManager)
 {
-  if (this->cfg.mode == Mode::Simulation)
-    this->initWindow();
+  this->initWindow();
 
   // Init variables
   this->renderCtx.deltaTime = 0.0;
@@ -387,19 +218,10 @@ Application::Application(const AppConfig &config) : cfg(config),
   this->renderCtx.settings.exposure = 5e-4;
   this->renderCtx.settings.bloomPower = 0.5;
 
-  this->timestep = config.timestep;
-  this->deltaTime = 0.0;
-  this->clock = std::chrono::steady_clock::now();
-  this->lastFrame = this->getTime();
-
-  this->startTime = dateToJD(config.startDate);
-
   this->isTextShown = true;
 
   this->initResources();
-
   this->initWorld();
-
   this->initMode();
 }
 
@@ -416,34 +238,9 @@ int Application::shouldExit()
 // Public functions
 void Application::update()
 {
-  // Calculate delta time
-  double currentFrame = this->getTime();
-  this->deltaTime = currentFrame - this->lastFrame;
-  this->lastFrame = currentFrame;
-
-  if (this->isFirstFrame)
-  {
-    this->deltaTime = 0.0;
-    this->isFirstFrame = false;
-  }
-
   // Update context
-  this->renderCtx.deltaTime = this->deltaTime * this->timestep;
-  if (!this->renderCtx.settings.paused)
-    this->elapsedDays += this->deltaTime * this->timestep / 86400.0;
-
-  // Update FPS counter
-  this->frames++;
-  double elapsed = currentFrame - lastFpsUpdateTime;
-  if (elapsed >= 1.0)
-  {
-    this->fps = frames / elapsed;
-
-    Logger::logInfo("FPS", std::to_string(fps));
-
-    this->frames = 0;
-    this->lastFpsUpdateTime = currentFrame;
-  }
+  this->timeManager.update(this->renderCtx.settings.paused);
+  this->renderCtx.deltaTime = this->timeManager.getDeltaTime();
 
   if (!this->renderCtx.settings.paused)
     this->scene.updatePhysicsWorld(this->renderCtx.deltaTime);
@@ -451,17 +248,7 @@ void Application::update()
   if (this->cfg.mode == Mode::Simulation)
     this->renderer.update(this->scene, this->renderCtx);
   else if (this->cfg.mode == Mode::EnergyValidation)
-  {
-    this->validator->update(this->scene, this->elapsedDays * 86400);
-    if (this->validator->isFinished())
-    {
-      this->validator->sendTable();
-      if (this->cfg.validatorCfg.pathSpecified)
-        this->validator->saveTable(this->scene, this->cfg.validatorCfg.savePath);
-
-      this->isFinished = true;
-    }
-  }
+    this->updateValidator();
 
   // Poll events
   if (this->cfg.mode == Mode::Simulation)
@@ -485,11 +272,11 @@ void Application::render()
   {
     int height = this->window->getHeight();
     int width = this->window->getWidth();
-    this->renderer.renderText("FPS: " + std::to_string(int(this->fps)),
+    this->renderer.renderText("FPS: " + std::to_string(this->timeManager.getFPS()),
                               25.f, height - 100.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
-    this->renderer.renderText("Time scale: " + std::to_string(int(this->timestep)) + " seconds per real second",
+    this->renderer.renderText("Time scale: " + std::to_string(int(this->cfg.timeCfg.timestep)) + " seconds per real second",
                               25.f, height - 150.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
-    this->renderer.renderText("Date: " + JDToDate(this->startTime + this->elapsedDays).toString(),
+    this->renderer.renderText("Date: " + this->timeManager.getDate().toString(),
                               25.f, height - 200.f, .5f, glm::vec3(0.5, 0.8f, 0.2f));
 
     if (this->renderCtx.settings.paused)

@@ -1,6 +1,6 @@
-#include "physics/constants.h"
-
 #include "physics/object.h"
+
+#include "physics/constants/constants.h"
 
 #include "maths/rk4.h"
 #include "maths/constants.h"
@@ -74,6 +74,11 @@ double Object::getLuminosity() const
 {
   return this->luminosity;
 }
+double Object::getGravitationalAcceleration() const
+{
+  return this->g;
+}
+
 // Setters
 void Object::setVelocity(const glm::dvec3 &velocity)
 {
@@ -90,6 +95,10 @@ void Object::setAcceleration(const glm::dvec3 &acceleration)
 void Object::setLuminosity(double luminosity)
 {
   this->luminosity = luminosity;
+}
+void Object::setGravitationalAcceleration(double g)
+{
+  this->g = g;
 }
 
 void Object::setMu(double mu)

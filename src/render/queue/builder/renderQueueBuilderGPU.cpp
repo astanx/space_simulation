@@ -19,7 +19,7 @@
 #include "compute/commandQueue.h"
 #include "compute/clBuffer.h"
 
-#include "resources/resourceManager.h"
+#include "resources/manager/resourceManager.h"
 #include "resources/resources.h"
 #include "resources/data/gpuTypes.h"
 

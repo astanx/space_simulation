@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/transformSource.h"
+#include "physics/source/transformSource.h"
 #include "physics/integrators/integratable.h"
 
 #include "physics/structs/radii.h"
@@ -27,6 +27,7 @@ protected:
   double mass;
   double mu;
   double luminosity;
+  double g;
 
 public:
   Object(double mass, Radii radii, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), glm::dvec3 position = glm::dvec3(0.0), glm::dvec3 velocity = glm::dvec3(0.0));
@@ -42,9 +43,11 @@ public:
   double getMass() const;
   double getMu() const;
   double getLuminosity() const;
+  double getGravitationalAcceleration() const;
 
   void setMu(double mu);
   void setLuminosity(double luminosity);
+  void setGravitationalAcceleration(double g);
   void setVelocity(const glm::dvec3 &velocity);
   void setAngularVelocity(const glm::dvec3 &angularVelocity);
   void setAcceleration(const glm::dvec3 &acceleration);

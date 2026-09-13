@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/vertex.h"
-#include "graphics/vertexAttribute.h"
+#include "graphics/layouts/vertexAttribute.h"
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>

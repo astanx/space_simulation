@@ -91,4 +91,4 @@ public:
   std::vector<Shader *> GetAllShaders();
 };
 
-#include "resources/resourceManager.tpp"
+#include "resources/manager/resourceManager.tpp"

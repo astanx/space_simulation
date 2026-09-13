@@ -66,32 +66,32 @@ bool parseTimestep(AppConfig &cfg, std::string timestep)
 
   if (factor == "d")
   {
-    cfg.timestep = scale * 86400;
+    cfg.timeCfg.timestep = scale * 86400;
     return true;
   }
   else if (factor == "m")
   {
-    cfg.timestep = scale * 86400 * 30.6001;
+    cfg.timeCfg.timestep = scale * 86400 * 30.6001;
     return true;
   }
   else if (factor == "y")
   {
-    cfg.timestep = scale * 86400 * 365.2425;
+    cfg.timeCfg.timestep = scale * 86400 * 365.2425;
     return true;
   }
   else if (factor == "h")
   {
-    cfg.timestep = scale * 60 * 24;
+    cfg.timeCfg.timestep = scale * 60 * 24;
     return true;
   }
   else if (factor == "min")
   {
-    cfg.timestep = scale * 60;
+    cfg.timeCfg.timestep = scale * 60;
     return true;
   }
   else
   {
-    cfg.timestep = scale;
+    cfg.timeCfg.timestep = scale;
     return true;
   }
 }
@@ -296,10 +296,51 @@ bool parseStart(AppConfig &cfg, std::string firstParam, std::string secondParam)
       d = daysInMonth(m, y);
     }
 
-    cfg.startDate = Date{d, m, y, h, min, s};
+    cfg.timeCfg.startDate = Date{d, m, y, h, min, s};
   }
 
   return true;
+}
+
+bool parsePrecision(Precision &precision, std::string param)
+{
+  if (param == "double")
+  {
+    precision = Precision::DOUBLE;
+    return true;
+  }
+  else if (param == "float")
+  {
+    precision = Precision::FLOAT;
+    return true;
+  }
+  else
+  {
+    Logger::logError("Parsers", "Unknown precision argument passed, defaulting to double");
+    precision = Precision::DOUBLE;
+    return false;
+  }
+}
+
+bool parseAppPrecision(AppConfig &cfg, std::string param)
+{
+  if (param.starts_with("-"))
+  {
+    Logger::logError("Parsers", "Wrong use of --precision argument");
+    return false;
+  }
+
+  return parsePrecision(cfg.precision, param);
+}
+bool parseValidatorPrecision(AppConfig &cfg, std::string param)
+{
+  if (param.starts_with("-"))
+  {
+    Logger::logError("Parsers", "Wrong use of --validator-precision argument");
+    return false;
+  }
+
+  return parsePrecision(cfg.validatorCfg.precision, param);
 }
 
 AppConfig parseArgs(int argc, char **argv)
@@ -314,12 +355,32 @@ AppConfig parseArgs(int argc, char **argv)
       cfg.backend = Backend::GPU;
     else if (arg == "--cpu")
       cfg.backend = Backend::CPU;
-    else if (arg == "--double")
-      cfg.precision = Precision::DOUBLE;
-    else if (arg == "--float")
-      cfg.precision = Precision::FLOAT;
     else if (arg == "--validate-energy")
       cfg.mode = Mode::EnergyValidation;
+    else if (arg == "--simulation")
+      cfg.mode = Mode::Simulation;
+    else if (arg == "--precision")
+    {
+      if (argc <= i + 1)
+      {
+        Logger::logError("Parsers", "Wrong use of --precision argument");
+        continue;
+      }
+
+      if (parseAppPrecision(cfg, argv[i + 1]))
+        i++;
+    }
+    else if (arg == "--validator-precision")
+    {
+      if (argc <= i + 1)
+      {
+        Logger::logError("Parsers", "Wrong use of --validator-precision argument");
+        continue;
+      }
+
+      if (parseValidatorPrecision(cfg, argv[i + 1]))
+        i++;
+    }
     else if (arg == "--save")
     {
       if (argc <= i + 1)

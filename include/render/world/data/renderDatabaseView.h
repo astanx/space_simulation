@@ -7,7 +7,7 @@
 #include "physics/structs/radii.h"
 
 #include "resources/entity/entityManager.h"
-#include "resources/transform.h"
+#include "resources/data/transform.h"
 
 class PointLight;
 class Camera;

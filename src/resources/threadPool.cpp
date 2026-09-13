@@ -1,6 +1,6 @@
-#include "resources/threadPool.h"
+#include "resources/threadPool/threadPool.h"
 
-#include "resources/range.h"
+#include "resources/data/range.h"
 
 #include "debug/logger.h"
 

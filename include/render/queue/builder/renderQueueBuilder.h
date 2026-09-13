@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graphics/instanceLayouts.h"
+#include "graphics/layouts/instanceLayouts.h"
 
-#include "resources/transform.h"
+#include "resources/data/transform.h"
 
 #include <vector>
 #include <glm/glm.hpp>

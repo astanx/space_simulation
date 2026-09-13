@@ -3,11 +3,9 @@
 #include "camera/camera.h"
 
 #include "physics/structs/radii.h"
-#include "resources/transform.h"
+#include "resources/data/transform.h"
 
 #include "scene/light/pointLight.h"
-
-#include "resources/transform.h"
 
 #include "physics/structs/radii.h"
 

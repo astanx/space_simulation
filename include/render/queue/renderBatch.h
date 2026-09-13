@@ -1,7 +1,7 @@
 #pragma once
 
-#include "resources/range.h"
-#include "render/renderFlags.h"
+#include "resources/data/range.h"
+#include "render/state/renderFlags.h"
 
 class Model;
 
