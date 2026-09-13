@@ -35,7 +35,10 @@ void Window::initWindow()
     glfwTerminate();
   }
 
-  glfwGetFramebufferSize(window, &this->ctx.width, &this->ctx.height);
+  int width, height;
+  glfwGetFramebufferSize(window, &width, &height);
+  this->ctx.width = static_cast<float>(width);
+  this->ctx.height = static_cast<float>(height);
   glfwSetWindowUserPointer(window, this);
   glfwSetFramebufferSizeCallback(window, Window::framebufferResizeCallback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -81,7 +84,7 @@ void Window::updateFrameContext()
 {
   float aspect = 1.f;
   if (this->ctx.height != 0)
-    aspect = static_cast<float>(this->ctx.width) / this->ctx.height;
+    aspect = static_cast<float>(this->ctx.width / this->ctx.height);
 
   this->ctx.aspect = aspect;
 }
@@ -159,8 +162,8 @@ void Window::framebufferResizeCallback(GLFWwindow *window, int width, int height
 
   Window *w = static_cast<Window *>(glfwGetWindowUserPointer(window));
 
-  w->ctx.width = width;
-  w->ctx.height = height;
+  w->ctx.width = static_cast<float>(width);
+  w->ctx.height = static_cast<float>(height);
 
   glViewport(0, 0, width, height);
   w->updateFrameContext();
