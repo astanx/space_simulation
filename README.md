@@ -118,6 +118,16 @@ There are some optional arguments
       <td>Enables simulation mode</td>
     </tr>
     <tr>
+      <td><code>--force-model name</code></td>
+      <td>direct</td>
+      <td>Sets force model, supported models: direct</td>
+    </tr>
+    <tr>
+      <td><code>--integrator name</code></td>
+      <td>wh</td>
+      <td>Sets integrator, suppored integrators: wh (Wisdom-Holman)</td>
+    </tr>
+    <tr>
       <td><code>--validate-energy</code></td>
       <td>off</td>
       <td>Enables energy validator mode</td>
