@@ -4,7 +4,7 @@
 
 #include "scene/world/data/sharedGPUBuffers.h"
 #include "scene/world/data/sharedDatabase.h"
-#include "scene/world/worldObject.h"
+#include "scene/world/worldConfig.h"
 
 #include "render/world/renderWorld.h"
 
@@ -48,11 +48,9 @@ private:
 
   CommandQueue queue;
 
-  std::vector<WorldObject> worldObjects;
-  std::vector<WorldSystem> worldSystems;
-
   bool wasInit = false;
 
+  void initConfigs(WorldConfig &cfg);
   void initDatabases(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000, bool enableRender);
   void initGPUBuffers(Context &ctx);
 
@@ -64,13 +62,10 @@ public:
 
   void initCPU(ThreadPool &threadPool) override;
   void initGPU(ResourceManager &resourceManager) override;
-  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime, bool enableRender) override;
+  void init(RenderContext &renderCtx, ResourceManager &resourceManager, ThreadPool &threadPool, WorldConfig &cfg) override;
 
   void updatePhysics(double dt) override;
   void updateRender(RenderQueue &queue, RenderContext &renderCtx) override;
-
-  void addWorldObject(WorldObject object) { this->worldObjects.push_back(object); };
-  void addWorldSystem(WorldSystem system) { this->worldSystems.push_back(system); };
 
   const PhysicsDatabaseView<Real> getPhysicsWorldView() const;
   const EntityManager &getEntityManager() const { return this->entityManager; };

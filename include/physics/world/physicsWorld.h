@@ -2,6 +2,8 @@
 
 #include "physics/world/IphysicsWorld.h"
 
+#include "physics/world/physicsConfig.h"
+
 #include "physics/world/data/physicsCPUData.h"
 #include "physics/world/data/physicsGPUBuffers.h"
 #include "physics/world/data/physicsDatabase.h"
@@ -37,6 +39,8 @@ private:
   PhysicsGPUBuffers gpuBuffers;
   PhysicsDatabase<Real> database;
   bool wasDatabaseInit = false;
+  PhysicsConfig cfg;
+  bool wasCfgInit = false;
 
   std::unique_ptr<PhysicsBackend<Real>> backend;
 
@@ -56,6 +60,7 @@ public:
 
   void addSun(const Entity sun);
   void setDatabase(PhysicsDatabase<Real> database);
+  void setConfig(PhysicsConfig config);
 
   const PhysicsGPUBuffers &getGPUBuffers() const { return this->gpuBuffers; };
   const PhysicsDatabase<Real> &getDatabase() const { return this->database; };

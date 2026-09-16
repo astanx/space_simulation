@@ -23,8 +23,9 @@
 // Private functions
 void Application::initWorld()
 {
-  bool enableRender = this->cfg.mode == Mode::Simulation;
-  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, this->cfg.precision, this->timeManager.getStartTime(), enableRender);
+  this->cfg.worldCfg.render.enabled = this->cfg.mode == Mode::Simulation;
+  this->cfg.worldCfg.startTime = this->timeManager.getStartTime();
+  this->scene.init(this->renderCtx, this->resourceManager, this->threadPool, this->cfg.worldCfg);
 
   if (this->cfg.backend == Backend::GPU)
     this->scene.initGPUWorld(this->resourceManager);
@@ -80,7 +81,7 @@ void Application::initResources()
   if (this->cfg.backend == Backend::GPU)
   {
     Context &ctx = this->resourceManager.LoadContext(Res::MAIN_CONTEXT);
-    if (this->cfg.precision == Precision::DOUBLE && !ctx.getSupportsDouble())
+    if (this->cfg.worldCfg.precision == Precision::DOUBLE && !ctx.getSupportsDouble())
       Logger::logFatal("Application", "Double precision is not supported on this GPU, use --precision float argument");
     ResourceInitializer::loadKernels(this->resourceManager);
   }
@@ -93,16 +94,16 @@ void Application::initMode()
   {
     if (this->cfg.validatorCfg.precision == Precision::DOUBLE)
     {
-      if (this->cfg.precision == Precision::DOUBLE)
+      if (this->cfg.worldCfg.precision == Precision::DOUBLE)
         this->validator = std::make_unique<EnergyValidator<double, double>>(this->threadPool);
-      else if (this->cfg.precision == Precision::FLOAT)
+      else if (this->cfg.worldCfg.precision == Precision::FLOAT)
         this->validator = std::make_unique<EnergyValidator<double, float>>(this->threadPool);
     }
     else if (this->cfg.validatorCfg.precision == Precision::FLOAT)
     {
-      if (this->cfg.precision == Precision::DOUBLE)
+      if (this->cfg.worldCfg.precision == Precision::DOUBLE)
         this->validator = std::make_unique<EnergyValidator<float, double>>(this->threadPool);
-      else if (this->cfg.precision == Precision::FLOAT)
+      else if (this->cfg.worldCfg.precision == Precision::FLOAT)
         this->validator = std::make_unique<EnergyValidator<float, float>>(this->threadPool);
     }
     else

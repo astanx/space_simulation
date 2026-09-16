@@ -5,6 +5,7 @@
 
 #include "core/window/windowConfig.h"
 #include "core/time/timeConfig.h"
+#include "scene/world/worldConfig.h"
 
 #include "debug/validators/validatorConfig.h"
 
@@ -28,6 +29,7 @@ struct AppConfig
   WindowConfig windowConfig;
   ValidatorConfig validatorCfg;
   TimeConfig timeCfg;
+  WorldConfig worldCfg;
 
   Mode mode = Mode::Simulation;
 

@@ -1,14 +1,20 @@
 #include "physics/world/backend/physicsBackendGPU.h"
 
+#include "debug/logger.h"
+
 #include "physics/integrators/wisdomHolmanGPU.h"
 
 #include "compute/context.h"
 
 // Constructor
 template <typename Real>
-PhysicsBackendGPU<Real>::PhysicsBackendGPU(ResourceManager &manager, Context &ctx, IntegratorGPUBuffers &gpu, CommandQueue &queue, Total &total) : queue(queue), total(total)
+PhysicsBackendGPU<Real>::PhysicsBackendGPU(const PhysicsConfig &cfg, ResourceManager &manager, Context &ctx, IntegratorGPUBuffers &gpu, CommandQueue &queue, Total &total) : queue(queue), total(total)
 {
-  this->integrator = std::make_unique<WisdomHolmanIntegratorGPU<Real>>(manager);
+  if (cfg.integrator == PhysicsIntegrator::WisdomHolman)
+    this->integrator = std::make_unique<WisdomHolmanIntegratorGPU<Real>>(manager);
+  else
+    Logger::logFatal("Physics Backend CPU", "Unsupported physics integrator");
+
   this->integrator->init(gpu, this->total, ctx);
 };
 

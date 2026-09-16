@@ -1,7 +1,5 @@
 #pragma once
 
-#include "scene/world/worldObject.h"
-
 #include "physics/structs/radii.h"
 #include "physics/systems/system.h"
 #include "physics/object.h"

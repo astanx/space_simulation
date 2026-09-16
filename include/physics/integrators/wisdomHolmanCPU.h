@@ -30,7 +30,7 @@ protected:
   void keplerDrift(const Entity &entity, IntegratorDatabase<Real> &database, Real dt);
 
 public:
-  WisdomHolmanIntegratorCPU(ThreadPool &threadPool) : IntegratorCPU<Real>(threadPool) {};
+  WisdomHolmanIntegratorCPU(ThreadPool &threadPool, std::unique_ptr<ForceModel<Real>> forceModel) : IntegratorCPU<Real>(threadPool, std::move(forceModel)) {};
   ~WisdomHolmanIntegratorCPU() = default;
 
   void step(IntegratorDatabase<Real> &database, Real dt) override;

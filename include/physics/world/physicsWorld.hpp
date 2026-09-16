@@ -31,12 +31,12 @@ template <typename Real>
 void PhysicsWorld<Real>::initCPUBackend(const EntityManager &entityManager, SharedDatabase<Real> &shared, ThreadPool &threadPool)
 {
   IntegratorDatabase db{entityManager, shared, this->database};
-  this->backend = std::make_unique<PhysicsBackendCPU<Real>>(db, threadPool);
+  this->backend = std::make_unique<PhysicsBackendCPU<Real>>(this->cfg, db, threadPool);
 }
 template <typename Real>
 void PhysicsWorld<Real>::initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUBuffers &gpu, Total &total)
 {
-  this->backend = std::make_unique<PhysicsBackendGPU<Real>>(resourceManager, ctx, gpu, queue, total);
+  this->backend = std::make_unique<PhysicsBackendGPU<Real>>(this->cfg, resourceManager, ctx, gpu, queue, total);
 }
 
 template <typename Real>
@@ -80,8 +80,8 @@ void PhysicsWorld<Real>::addSun(const Entity sun)
   this->sun = sun;
   this->wasSunInit = true;
 }
-template <typename Real>
 
+template <typename Real>
 void PhysicsWorld<Real>::setDatabase(PhysicsDatabase<Real> database)
 {
   if (this->wasDatabaseInit)
@@ -89,6 +89,16 @@ void PhysicsWorld<Real>::setDatabase(PhysicsDatabase<Real> database)
 
   this->database = database;
   this->wasDatabaseInit = true;
+}
+
+template <typename Real>
+void PhysicsWorld<Real>::setConfig(PhysicsConfig config)
+{
+  if (this->wasCfgInit)
+    Logger::logWarning("Physics World", "Config was already initialized");
+
+  this->cfg = config;
+  this->wasCfgInit = true;
 }
 
 template <typename Real>

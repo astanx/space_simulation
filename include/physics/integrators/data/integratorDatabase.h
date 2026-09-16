@@ -69,10 +69,10 @@ public:
 
     return params;
   };
-  Real getMu(const Entity &entity) { return this->physics.mus[this->entityManager.getObjectIndex(entity)]; };
-  Real getMu(size_t idx) { return this->physics.mus[idx]; };
+  Real getMu(const Entity &entity) const { return this->physics.mus[this->entityManager.getObjectIndex(entity)]; };
+  Real getMu(size_t idx) const { return this->physics.mus[idx]; };
 
-  Quat<Real> getOrientation(const Entity &entity) { return this->shared.orientations[this->entityManager.getObjectIndex(entity)]; };
+  Quat<Real> getOrientation(const Entity &entity) const { return this->shared.orientations[this->entityManager.getObjectIndex(entity)]; };
   void setPosition(const Entity &entity, Vec3<Real> pos) { this->shared.positions[this->entityManager.getObjectIndex(entity)] = pos; };
   void setOrientation(const Entity &entity, Quat<Real> orientation) { this->shared.orientations[this->entityManager.getObjectIndex(entity)] = orientation; };
 

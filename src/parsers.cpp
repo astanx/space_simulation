@@ -322,7 +322,7 @@ bool parsePrecision(Precision &precision, std::string param)
   }
 }
 
-bool parseAppPrecision(AppConfig &cfg, std::string param)
+bool parseWorldPrecision(AppConfig &cfg, std::string param)
 {
   if (param.starts_with("-"))
   {
@@ -330,7 +330,7 @@ bool parseAppPrecision(AppConfig &cfg, std::string param)
     return false;
   }
 
-  return parsePrecision(cfg.precision, param);
+  return parsePrecision(cfg.worldCfg.precision, param);
 }
 bool parseValidatorPrecision(AppConfig &cfg, std::string param)
 {
@@ -341,6 +341,38 @@ bool parseValidatorPrecision(AppConfig &cfg, std::string param)
   }
 
   return parsePrecision(cfg.validatorCfg.precision, param);
+}
+bool parseForceModel(AppConfig &cfg, std::string param)
+{
+  if (param.starts_with("-"))
+  {
+    Logger::logError("Parsers", "Wrong use of --force-model argument");
+    return false;
+  }
+
+  if (param == "direct")
+    cfg.worldCfg.physics.forceModel = PhysicsForceModel::Direct;
+  else if (param == "bh")
+    cfg.worldCfg.physics.forceModel = PhysicsForceModel::BarnesHut;
+  else
+    Logger::logError("Parsers", "Wrong --force-model argument passed");
+
+  return true;
+}
+bool parseIntegrator(AppConfig &cfg, std::string param)
+{
+  if (param.starts_with("-"))
+  {
+    Logger::logError("Parsers", "Wrong use of --integrator argument");
+    return false;
+  }
+
+  if (param == "wh")
+    cfg.worldCfg.physics.integrator = PhysicsIntegrator::WisdomHolman;
+  else
+    Logger::logError("Parsers", "Wrong --integrator argument passed");
+
+  return true;
 }
 
 AppConfig parseArgs(int argc, char **argv)
@@ -359,6 +391,28 @@ AppConfig parseArgs(int argc, char **argv)
       cfg.mode = Mode::EnergyValidation;
     else if (arg == "--simulation")
       cfg.mode = Mode::Simulation;
+    else if (arg == "--force-model")
+    {
+      if (argc <= i + 1)
+      {
+        Logger::logError("Parsers", "Wrong use of --force-model argument");
+        continue;
+      }
+
+      if (parseForceModel(cfg, argv[i + 1]))
+        i++;
+    }
+    else if (arg == "--integrator")
+    {
+      if (argc <= i + 1)
+      {
+        Logger::logError("Parsers", "Wrong use of --integrator argument");
+        continue;
+      }
+
+      if (parseIntegrator(cfg, argv[i + 1]))
+        i++;
+    }
     else if (arg == "--precision")
     {
       if (argc <= i + 1)
@@ -367,7 +421,7 @@ AppConfig parseArgs(int argc, char **argv)
         continue;
       }
 
-      if (parseAppPrecision(cfg, argv[i + 1]))
+      if (parseWorldPrecision(cfg, argv[i + 1]))
         i++;
     }
     else if (arg == "--validator-precision")

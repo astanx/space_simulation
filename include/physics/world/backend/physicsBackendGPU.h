@@ -2,6 +2,8 @@
 
 #include "physics/world/backend/physicsBackend.h"
 
+#include "physics/world/physicsConfig.h"
+
 #include "physics/integrators/integratorGPU.h"
 
 class ResourceManager;
@@ -20,7 +22,7 @@ private:
   std::unique_ptr<IntegratorGPU> integrator;
 
 public:
-  PhysicsBackendGPU(ResourceManager &manager, Context &ctx, IntegratorGPUBuffers &data, CommandQueue &queue, Total &total);
+  PhysicsBackendGPU(const PhysicsConfig &cfg, ResourceManager &manager, Context &ctx, IntegratorGPUBuffers &data, CommandQueue &queue, Total &total);
   ~PhysicsBackendGPU() = default;
 
   void step(Real dt) override;

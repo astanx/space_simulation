@@ -30,6 +30,12 @@
 
 // Private functions
 template <typename Real>
+void SimulationWorld<Real>::initConfigs(WorldConfig &cfg)
+{
+  this->physics.setConfig(cfg.physics);
+}
+
+template <typename Real>
 void SimulationWorld<Real>::initDatabases(ResourceManager &resourceManager, ThreadPool &threadPool, double timeAfterJD2000, bool enableRender)
 {
   WorldDatabaseBuilder<Real> builder(this->entityManager, this->render.getTrailManager(), this->importance);
@@ -135,15 +141,16 @@ void SimulationWorld<Real>::initCPU(ThreadPool &threadPool)
 }
 
 template <typename Real>
-void SimulationWorld<Real>::init(RenderContext &ctx, ResourceManager &resourceManager, ThreadPool &threadPool, double startTime, bool enableRender)
+void SimulationWorld<Real>::init(RenderContext &ctx, ResourceManager &resourceManager, ThreadPool &threadPool, WorldConfig &cfg)
 {
   if (this->wasInit)
     Logger::logWarning("Simulation World", "World initialized twice");
 
-  double timeAfterJD2000 = startTime - JD_2000;
+  double timeAfterJD2000 = cfg.startTime - JD_2000;
   timeAfterJD2000 *= 24 * 60 * 60; // Days to seconds
-  this->initDatabases(resourceManager, threadPool, timeAfterJD2000, enableRender);
-  if (enableRender)
+  this->initConfigs(cfg);
+  this->initDatabases(resourceManager, threadPool, timeAfterJD2000, cfg.render.enabled);
+  if (cfg.render.enabled)
     this->initRenderWorld(resourceManager, ctx.frameCtx);
 
   this->wasInit = true;

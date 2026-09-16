@@ -2,6 +2,8 @@
 
 #include "physics/world/backend/physicsBackend.h"
 
+#include "physics/world/physicsConfig.h"
+
 #include "physics/integrators/data/integratorDatabase.h"
 
 #include "physics/integrators/integratorCPU.h"
@@ -16,7 +18,7 @@ private:
   IntegratorDatabase<Real> database;
 
 public:
-  PhysicsBackendCPU(IntegratorDatabase<Real> &database, ThreadPool &threadPool);
+  PhysicsBackendCPU(const PhysicsConfig& cfg, IntegratorDatabase<Real> &database, ThreadPool &threadPool);
   ~PhysicsBackendCPU() = default;
 
   void step(Real dt) override;
