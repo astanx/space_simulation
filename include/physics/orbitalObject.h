@@ -12,17 +12,10 @@ class OrbitalObject : public Object
 {
 protected:
   Orbit orbit;
-  bool useTrail = true;
 
 public:
-  OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), bool useTrail = true);
-  OrbitalObject(double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField(), bool useTrail = false);
+  OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters = TidalParameters(), GravityField gravityField = GravityField());
   virtual ~OrbitalObject() = default;
 
   Orbit *getOrbit();
-  const bool getUseTrail() const;
-
-  void renderTrail();
-
-  virtual std::unique_ptr<Trail> generateTrail();
 };

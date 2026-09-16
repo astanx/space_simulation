@@ -1,50 +1,32 @@
 #include "physics/orbitalObject.h"
 
-#include "physics/constants/constants.h"
-#include "physics/structs/tidalParameters.h"
-
 #include "maths/orbitalMaths.h"
-#include "maths/constants.h"
-
-#include "graphics/vertex.h"
-#include "graphics/shader.h"
-#include "graphics/mesh.h"
-
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
 
 // Constructor
-OrbitalObject::OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters, GravityField gravityField, bool useTrail) : Object(mu / G, radii, tidalParameters, gravityField), orbit(centralBody, keplerElements)
+OrbitalObject::OrbitalObject(Object *centralBody, double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters, GravityField gravityField) : Object(mu / G, radii, tidalParameters, gravityField), orbit(centralBody, keplerElements)
 {
   this->mu = mu;
-  this->useTrail = useTrail;
-  this->position = OrbitalMaths::orbitalToInertial(this->orbit.getKeplerElements());
-  this->position += centralBody->getPosition();
 
-  this->velocity = this->orbit.calculateOrbitalVelocity(centralBody, this);
-  this->velocity += this->orbit.getCentralBody()->getVelocity();
-}
+  double E = OrbitalMaths::calculateEccentricAnomaly(keplerElements.m, keplerElements.e);
 
-OrbitalObject::OrbitalObject(double mu, Radii radii, const KeplerElements<double> &keplerElements, TidalParameters tidalParameters, GravityField gravityField, bool useTrail) : Object(mu / G, radii, tidalParameters, gravityField), orbit(nullptr, keplerElements)
-{
-  this->mu = mu;
-  this->useTrail = useTrail;
-  this->position = OrbitalMaths::orbitalToInertial(keplerElements);
+  this->position.x = keplerElements.a * (cos(E) - keplerElements.e);
+  this->position.y = keplerElements.a * sqrt(1 - (keplerElements.e * keplerElements.e)) * sin(E);
+
+  double r = keplerElements.a * (1 - keplerElements.e * cos(E));
+
+  this->velocity.x = -sqrt(centralBody->getMu() * keplerElements.a) / r * sin(E);
+  this->velocity.y = sqrt(centralBody->getMu() * keplerElements.a * (1 - (keplerElements.e * keplerElements.e))) / r * cos(E);
+
+  glm::dmat3 R = OrbitalMaths::createR3matrix<double>(keplerElements.Omega) * OrbitalMaths::createR1matrix<double>(keplerElements.i) * OrbitalMaths::createR3matrix<double>(keplerElements.omega);
+
+  this->velocity = R * this->velocity + centralBody->getVelocity();
+  this->position = R * this->position + centralBody->getPosition();
 }
 
 // Public functions
 Orbit *OrbitalObject::getOrbit()
 {
   return &this->orbit;
-}
-
-const bool OrbitalObject::getUseTrail() const
-{
-  return this->useTrail;
-}
-
-std::unique_ptr<Trail> OrbitalObject::generateTrail()
-{
-  return nullptr;
 }
