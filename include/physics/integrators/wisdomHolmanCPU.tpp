@@ -135,6 +135,8 @@ void WisdomHolmanIntegratorCPU<Real>::drift(const Entity &entity, IntegratorData
 template <typename Real>
 void WisdomHolmanIntegratorCPU<Real>::halfKick(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt)
 {
+  this->forceModel->prepare(entities, database);
+
   this->halfKickLinear(entities, database, dt);
   this->halfKickAngular(entities, database, dt);
 }

@@ -18,6 +18,8 @@ public:
   ForceModel(ThreadPool &threadPool) : threadPool(threadPool) {};
   virtual ~ForceModel() = default;
 
+  virtual void prepare(const std::vector<Entity> &entities, const IntegratorDatabase<Real> &database) {};
+
   virtual std::vector<typename RealTypes<Real>::vec3> calculateAccelerations(const std::vector<Entity> &entities, const IntegratorDatabase<Real> &database) = 0;
   virtual std::vector<typename RealTypes<Real>::vec3> calculateTorques(const std::vector<Entity> &entities, const IntegratorDatabase<Real> &database) = 0;
 };

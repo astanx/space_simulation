@@ -34,5 +34,4 @@ struct AppConfig
   Mode mode = Mode::Simulation;
 
   Backend backend = Backend::CPU;          // --gpu or --cpu
-  Precision precision = Precision::DOUBLE; // --precision <float|double>
 };
