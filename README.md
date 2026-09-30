@@ -6,6 +6,7 @@ https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
 <ul>
  <li><a href="#overview">Project Overview</a></li>
  <li><a href="#build">Build</a></li>
+ <li><a href="#frame">Frame diagram</a></li>
 
  <li>
   <a href="#mechanics">Celestial Mechanics, Rotational Dynamics and Object Modelling</a>
@@ -149,6 +150,52 @@ There are some optional arguments
     </tr>
   </tbody>
 </table>
+
+<h2 id="frame">Frame diagram</h2>
+
+```mermaid
+flowchart TD
+A[Start Frame]
+
+A --> B[Update Camera]
+B --> C[Advance Simulation Time]
+
+C --> D[Update All Physics]
+
+D --> E[Integrate all bodies]
+
+E --> F[Update Rotational Dynamics]
+
+F --> G[Update World-Space Transforms]
+
+G --> H[Evaluate All Objects]
+
+H --> I[Frustum / Visibility Test]
+I -->|Invisible| X[Skip Object]
+I -->|Visible| J[Compute Camera Distance]
+
+J --> K[Decide LOD]
+K --> K1[Select Geometry]
+
+K1 --> L[Update Instance Data]
+
+L --> M{Object Role}
+
+M -->|Normal Body| N[Add to Render Queue]
+M -->|Shadow Caster| O[Add to Shadow Queue]
+M -->|Reflector| P[Add to Reflector Queue]
+
+O --> R[Render Shadow Maps]
+R --> S[Render Main Scene]
+
+N --> S
+P --> T[Calculate Reflection / Hapke BRDF]
+T --> S
+
+S --> V[Apply Lighting]
+V --> W[Present Frame]
+W --> A
+```
 
 <h2 id="mechanics">Celestial Mechanics, Rotational Dynamics and Object Modelling </h2>
 <h3>Object Hierarchy</h3>
