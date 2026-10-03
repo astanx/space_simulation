@@ -26,6 +26,7 @@ https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
  </li>
  <li><a href="#atmosphere">Atmosphere Modelling</a></li>
  <li><a href="#rendering">Rendering</a></li>
+ <li><a href="#bibliography">Bibliography</a></li>
 </ul>
 
 <h2 id="overview">Project Overview</h2>
@@ -480,3 +481,20 @@ flowchart TD
     D -->|Build Shadow Queue| E[Render]
     D -->|Build Reflector Queue| E[Render]
   ```
+
+<h2 id="bibliography">Bibliography</h2>
+<ul>
+ <li>[1] Jack Wisdom & Mathew Holman — <a href="https://web.mit.edu/wisdom/www/nbodymap.pdf">Symplectic Maps for the N-Body Problem</a></li>
+ <li>[2] J. Peraire & S. Widnall — <a href="https://ocw.mit.edu/courses/16-07-dynamics-fall-2009/dd277ec654440f4c2b5b07d6c286c3fd_MIT16_07F09_Lec26.pdf">3D Rigid Body Dynamics: The Inertia Tensor</a> </li>
+ <li> [3] Valéry Lainey — <a href="https://arxiv.org/abs/1604.04184">Quantification of tidal parameters from Solar System data</a> </li>
+ <li> [4] B. A. Archinal, C. H. Acton, M. F. A'Hearn et al. — <a href="https://www.researchgate.net/publication/323367643_Report_of_the_IAU_Working_Group_on_Cartographic_Coordinates_and_Rotational_Elements_2015">Report of the IAU Working Group  on Cartographic Coordinates and Rotational Elements: 2015</a></li>
+ <li> [5] Bruce Hapke — <a href="https://www.researchgate.net/publication/248576653_Bidirectional_reflectance_spectroscopy_3_Correction_for_macroscopic_roughness">Bidirectional reflectance spectroscopy 3. Correction for macroscopic roughness</a> </li>
+ <li> [6] Alexander Kuzminykh — <a href="https://elib.dlr.de/203152/1/Bachelorarbeit_Alexander_Kuzminykh_20210818.pdf">Physically Based Real-Time Rendering of the Moon</a> </li>
+ <li> [7] Thomas Annen, Tom Mertens, Hans-Perter Seidel et al. — <a href="https://www.researchgate.net/publication/32893024_Exponential_Shadow_Maps">Exponential Shadow Maps</a> </li>
+ <li> [8] Eric Heitz, Jonathan Dupuy, Stephen Hill, David Neubelt — <a href="https://dl.acm.org/doi/10.1145/2897824.2925895">Real-Time Polygonal-Light Shading with Linearly Transformed Cosines</a> </li>
+ <li> [9] Pascal Lecocq, Arthur Dufay, Gaël Sourimant, Jean-Eudes Marvie — <a href="http://pascal.lecocq.home.free.fr/publications/lecocq_TVCG2017_analyticAreaLightShading.pdf">Analytic Approximations for Real-Time Area Light Shading</a> </li>
+ <li> [10] Aakash KT, Eric Heitz, Jonathan Dupuy, P. J. Narayanan — <a href="https://arxiv.org/pdf/2203.11904">Bringing Linearly Transformed Cosines to Anisotropic GGX</a> </li>
+ <li> [11] NASA/JPL — <a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html">Approximate Positions of the Planets</a> </li>
+ <li> [12] NASA/JPL — <a href="https://ssd.jpl.nasa.gov/astro_par.html">Astrodynamic Parameters</a> </li>
+ <li> [13] NASA/JPL — <a href="https://ssd.jpl.nasa.gov/horizons/app.html#/">Horizons System</a> </li>
+</ul>
