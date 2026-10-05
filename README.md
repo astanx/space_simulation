@@ -41,163 +41,6 @@ The project implements a custom C++ simulation engine specialized for celestial 
 The simulation currently models the Solar System.
 The engine is structured as a modular real-time application rather than a pure scientific library, enabling interactive exploration while keeping scientific precision and accuracy.
 
-<h2 id="build">Build</h2>
-<h3>Requirements</h3>
-Cmake 3.16+, OpenGL 4.1+, OpenCL 1.2+, C++20 compiler
-<h3>Building</h3>
-
-<h4>Clone Repository</h4>
-
-```bash
-git clone https://github.com/astanx/space_simulation
-```
-
-<h4>Build</h4>
-
-Unix:
-```bash
-mkdir build
-cd build
-cmake ..
-make
-```
-
-Windows:
-```bash
-mkdir build
-cd build
-cmake ..
-cmake --build .
-```
-
-<h3>Running</h3>
-
-To run program call
-```bash
-./Space
-```
-from /build directory
-
-<h4>Arguments</h4>
-There are some optional arguments 
-<table>
-  <thead>
-    <tr>
-      <th>Argument</th>
-      <th>Default</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>--gpu</code></td>
-      <td>off</td>
-      <td>Forces GPU (OpenCL) backend</td>
-    </tr>
-    <tr>
-      <td><code>--cpu</code></td>
-      <td>on</td>
-      <td>Forces CPU backend</td>
-    </tr>
-    <tr>
-      <td><code>--precision float/double </code></td>
-      <td>double</td>
-      <td>Defines float/double precision for simulation</td>
-    </tr>
-    <tr>
-      <td><code>--timestep time</code></td>
-      <td>86400</td>
-      <td>Sets initial timestep for the simulation, both positive and negative values supported</td>
-    </tr>
-    <tr>
-      <td><code>--date day/month/year hour:minute:second</code></td>
-      <td>1/1/2000</td>
-      <td>Sets starting date for the simulation, <code>hour:minute:second</code> are optional</td>
-    </tr>
-    <tr>
-      <td><code>--simulation</code></td>
-      <td>on</td>
-      <td>Enables simulation mode</td>
-    </tr>
-    <tr>
-      <td><code>--force-model name</code></td>
-      <td>direct</td>
-      <td>Sets force model, supported models: direct</td>
-    </tr>
-    <tr>
-      <td><code>--integrator name</code></td>
-      <td>wh</td>
-      <td>Sets integrator, suppored integrators: wh (Wisdom-Holman)</td>
-    </tr>
-    <tr>
-      <td><code>--validate-energy</code></td>
-      <td>off</td>
-      <td>Enables energy validator mode</td>
-    </tr>
-    <tr>
-      <td><code>--validator-precision float/double </code></td>
-      <td>double</td>
-      <td>Defines float/double precision for validator</td>
-    </tr>
-    <tr>
-      <td><code>--steps step_count</code></td>
-      <td>1</td>
-      <td>Defines number of steps for validator</td>
-    </tr>
-    <tr>
-      <td><code>--save folder</code></td>
-      <td>Not defined</td>
-      <td>Defines save directory for the validator history data, <b>optional</b></td>
-    </tr>
-  </tbody>
-</table>
-
-<h2 id="frame">Frame diagram</h2>
-
-```mermaid
-flowchart TD
-A[Start Frame]
-
-A --> B[Update Camera]
-B --> C[Advance Simulation Time]
-
-C --> D[Update All Physics]
-
-D --> E[Integrate all bodies]
-
-E --> F[Update Rotational Dynamics]
-
-F --> G[Update World-Space Transforms]
-
-G --> H[Evaluate All Objects]
-
-H --> I[Frustum / Visibility Test]
-I -->|Invisible| X[Skip Object]
-I -->|Visible| J[Compute Camera Distance]
-
-J --> K[Decide LOD]
-K --> K1[Select Geometry]
-
-K1 --> L[Update Instance Data]
-
-L --> M{Object Role}
-
-M -->|Normal Body| N[Add to Render Queue]
-M -->|Shadow Caster| O[Add to Shadow Queue]
-M -->|Reflector| P[Add to Reflector Queue]
-
-O --> R[Render Shadow Maps]
-R --> S[Render Main Scene]
-
-N --> S
-P --> T[Calculate Reflection / Hapke BRDF]
-T --> S
-
-S --> V[Apply Lighting]
-V --> W[Present Frame]
-W --> A
-```
-
 <h2 id="mechanics">Celestial Mechanics, Rotational Dynamics and Object Modelling </h2>
 <h3>Object Hierarchy</h3>
 Each body is either pure Object or OrbitalObject
@@ -469,6 +312,163 @@ Where
   <li>$$L$$ = Light Luminocity</li>
   <li>$$d$$ = distance between object and light source</li>
 </ul>
+
+<h2 id="build">Build</h2>
+<h3>Requirements</h3>
+Cmake 3.16+, OpenGL 4.1+, OpenCL 1.2+, C++20 compiler
+<h3>Building</h3>
+
+<h4>Clone Repository</h4>
+
+```bash
+git clone https://github.com/astanx/space_simulation
+```
+
+<h4>Build</h4>
+
+Unix:
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
+
+Windows:
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+<h3>Running</h3>
+
+To run program call
+```bash
+./Space
+```
+from /build directory
+
+<h4>Arguments</h4>
+There are some optional arguments 
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>--gpu</code></td>
+      <td>off</td>
+      <td>Forces GPU (OpenCL) backend</td>
+    </tr>
+    <tr>
+      <td><code>--cpu</code></td>
+      <td>on</td>
+      <td>Forces CPU backend</td>
+    </tr>
+    <tr>
+      <td><code>--precision float/double </code></td>
+      <td>double</td>
+      <td>Defines float/double precision for simulation</td>
+    </tr>
+    <tr>
+      <td><code>--timestep time</code></td>
+      <td>86400</td>
+      <td>Sets initial timestep for the simulation, both positive and negative values supported</td>
+    </tr>
+    <tr>
+      <td><code>--date day/month/year hour:minute:second</code></td>
+      <td>1/1/2000</td>
+      <td>Sets starting date for the simulation, <code>hour:minute:second</code> are optional</td>
+    </tr>
+    <tr>
+      <td><code>--simulation</code></td>
+      <td>on</td>
+      <td>Enables simulation mode</td>
+    </tr>
+    <tr>
+      <td><code>--force-model name</code></td>
+      <td>direct</td>
+      <td>Sets force model, supported models: direct</td>
+    </tr>
+    <tr>
+      <td><code>--integrator name</code></td>
+      <td>wh</td>
+      <td>Sets integrator, suppored integrators: wh (Wisdom-Holman)</td>
+    </tr>
+    <tr>
+      <td><code>--validate-energy</code></td>
+      <td>off</td>
+      <td>Enables energy validator mode</td>
+    </tr>
+    <tr>
+      <td><code>--validator-precision float/double </code></td>
+      <td>double</td>
+      <td>Defines float/double precision for validator</td>
+    </tr>
+    <tr>
+      <td><code>--steps step_count</code></td>
+      <td>1</td>
+      <td>Defines number of steps for validator</td>
+    </tr>
+    <tr>
+      <td><code>--save folder</code></td>
+      <td>Not defined</td>
+      <td>Defines save directory for the validator history data, <b>optional</b></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="frame">Frame diagram</h2>
+
+```mermaid
+flowchart TD
+A[Start Frame]
+
+A --> B[Update Camera]
+B --> C[Advance Simulation Time]
+
+C --> D[Update All Physics]
+
+D --> E[Integrate all bodies]
+
+E --> F[Update Rotational Dynamics]
+
+F --> G[Update World-Space Transforms]
+
+G --> H[Evaluate All Objects]
+
+H --> I[Frustum / Visibility Test]
+I -->|Invisible| X[Skip Object]
+I -->|Visible| J[Compute Camera Distance]
+
+J --> K[Decide LOD]
+K --> K1[Select Geometry]
+
+K1 --> L[Update Instance Data]
+
+L --> M{Object Role}
+
+M -->|Normal Body| N[Add to Render Queue]
+M -->|Shadow Caster| O[Add to Shadow Queue]
+M -->|Reflector| P[Add to Reflector Queue]
+
+O --> R[Render Shadow Maps]
+R --> S[Render Main Scene]
+
+N --> S
+P --> T[Calculate Reflection / Hapke BRDF]
+T --> S
+
+S --> V[Apply Lighting]
+V --> W[Present Frame]
+W --> A
+```
 
 <h3>Render pipeline</h3>
 
