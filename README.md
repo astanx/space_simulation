@@ -5,9 +5,6 @@ https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
 <h2>Contents</h2>
 <ul>
  <li><a href="#overview">Project Overview</a></li>
- <li><a href="#build">Build</a></li>
- <li><a href="#frame">Frame diagram</a></li>
-
  <li>
   <a href="#mechanics">Celestial Mechanics, Rotational Dynamics and Object Modelling</a>
   <ul>
@@ -26,6 +23,8 @@ https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
  </li>
  <li><a href="#atmosphere">Atmosphere Modelling</a></li>
  <li><a href="#rendering">Rendering</a></li>
+ <li><a href="#build">Build</a></li>
+ <li><a href="#frame">Frame diagram</a></li>
  <li><a href="#bibliography">Bibliography</a></li>
 </ul>
 
@@ -313,6 +312,18 @@ Where
   <li>$$d$$ = distance between object and light source</li>
 </ul>
 
+<h3>Render pipeline</h3>
+
+```mermaid
+flowchart TD
+    A[Object] -->|Update Physics| B{LOD Manager}
+    B --> |Decide LOD level| C(InstanceManager)
+    C --> |Update instance data| D{Render Queue Builder}
+    D -->|Build Render Queue| E[Render]
+    D -->|Build Shadow Queue| E[Render]
+    D -->|Build Reflector Queue| E[Render]
+  ```
+
 <h2 id="build">Build</h2>
 <h3>Requirements</h3>
 Cmake 3.16+, OpenGL 4.1+, OpenCL 1.2+, C++20 compiler
@@ -469,18 +480,6 @@ S --> V[Apply Lighting]
 V --> W[Present Frame]
 W --> A
 ```
-
-<h3>Render pipeline</h3>
-
-```mermaid
-flowchart TD
-    A[Object] -->|Update Physics| B{LOD Manager}
-    B --> |Decide LOD level| C(InstanceManager)
-    C --> |Update instance data| D{Render Queue Builder}
-    D -->|Build Render Queue| E[Render]
-    D -->|Build Shadow Queue| E[Render]
-    D -->|Build Reflector Queue| E[Render]
-  ```
 
 <h2 id="bibliography">Bibliography</h2>
 <ul>
