@@ -63,9 +63,10 @@ My version of WH Integrator contains:
 
 <h5 id="energy-conservation-wh">System energy conservation</h5>
 <h6>Total energy</h6>
-<img width="3570" height="3570" alt="img" src="https://github.com/user-attachments/assets/e14b6864-1461-47e7-80ef-41e417fc54a4" />
+<img width="3570" height="3570" alt="total_energy_error" src="https://github.com/user-attachments/assets/0e886b0e-3c7a-4f88-b878-514e4b6e2894"/>
 <h6>Potential energy</h6>
-<img width="3570" height="3570" alt="img" src="https://github.com/user-attachments/assets/fc74fbe3-2aa5-4a97-a238-082e86ad906a" />
+<img width="3570" height="3570" alt="potential_energy_error" src="https://github.com/user-attachments/assets/e7e30c28-26a7-4d1a-a32e-bc3aa0017d9b"/>
+
 
 <h5 id="celestial-mechanics-wh">Celestial Mechanics</h5>
 Each step can be divided into Half-Kick or Drift
