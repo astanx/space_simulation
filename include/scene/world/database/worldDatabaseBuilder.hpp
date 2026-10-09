@@ -1,7 +1,9 @@
 #pragma once
 
 #include "physics/structs/radii.h"
+#include "physics/structs/keplerMaths.h"
 #include "physics/systems/system.h"
+#include "physics/systems/asteroidSystem.h"
 #include "physics/object.h"
 #include "physics/orbitalObject.h"
 
@@ -221,9 +223,9 @@ void WorldDatabaseBuilder<Real>::addAtmosphereToPlanet(ResourceManager &resource
 template <typename Real>
 OrbitalObject *WorldDatabaseBuilder<Real>::createOrbitalObject(const std::string &name, Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
 {
-  KeplerElements e = keplerElements;
-  e.calculateMeanMotion(centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
+  KeplerElements<Real> e = keplerElements;
+  e.n = calculateMeanMotion<Real>(centralBody->getMu(), e.a);
+  e.m = advanceMeanAnomaly<Real>(e.m, e.n, timeAfterJD2000);
 
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);

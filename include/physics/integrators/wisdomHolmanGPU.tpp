@@ -2,24 +2,14 @@
 
 #include "debug/logger.h"
 
-#include "physics/integrators/integratable.h"
 #include "physics/integrators/data/wisdomHolmanGPUBuffers.h"
 
 #include "physics/world/total.h"
 
-#include "physics/systems/system.h"
-
-#include "physics/object.h"
-#include "physics/orbitalObject.h"
-#include "physics/constants/constants.h"
-
-#include "compute/context.h"
 #include "compute/commandQueue.h"
 
 #include "resources/manager/resourceManager.h"
 #include "resources/resources.h"
-
-#include "graphics/state/scopedBuffer.h"
 
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -100,23 +90,21 @@ void WisdomHolmanIntegratorGPU<Real>::updateDt(Real dt)
 // Constructor
 template <typename Real>
 WisdomHolmanIntegratorGPU<Real>::WisdomHolmanIntegratorGPU(ResourceManager &resourceManager)
-    : driftAngularKernel(resourceManager.GetKernel(Res::DRIFT_ANGULAR_KERNEL)),
-      driftObjectsLinearKernel(resourceManager.GetKernel(Res::DRIFT_OBJECTS_LINEAR_KERNEL)),
-      driftOrbitalLinearKernel(resourceManager.GetKernel(Res::DRIFT_ORBITAL_LINEAR_KERNEL)),
-      halfKickLinearKernel(resourceManager.GetKernel(Res::HALF_KICK_LINEAR_KERNEL)),
-      halfKickAngularKernel(resourceManager.GetKernel(Res::HALF_KICK_ANGULAR_KERNEL)),
-      halfKickKernel(resourceManager.GetKernel(Res::HALF_KICK_KERNEL))
+    : driftAngularKernel(resourceManager.GetKernel(Res::WH_DRIFT_ANGULAR_KERNEL)),
+      driftObjectsLinearKernel(resourceManager.GetKernel(Res::WH_DRIFT_OBJECTS_LINEAR_KERNEL)),
+      driftOrbitalLinearKernel(resourceManager.GetKernel(Res::WH_DRIFT_ORBITAL_LINEAR_KERNEL)),
+      halfKickLinearKernel(resourceManager.GetKernel(Res::WH_HALF_KICK_LINEAR_KERNEL)),
+      halfKickAngularKernel(resourceManager.GetKernel(Res::WH_HALF_KICK_ANGULAR_KERNEL)),
+      halfKickKernel(resourceManager.GetKernel(Res::WH_HALF_KICK_KERNEL))
 {
 }
 
 // Public functions
 template <typename Real>
-void WisdomHolmanIntegratorGPU<Real>::init(IntegratorGPUBuffers &gpu, Total &total, Context &ctx)
+void WisdomHolmanIntegratorGPU<Real>::init(AllIntegratorGPUBuffers &gpu, Total &total)
 {
-  WisdomHolmanGPUBuffers *whGpu = dynamic_cast<WisdomHolmanGPUBuffers *>(&gpu);
-  if (!whGpu)
-    Logger::logFatal("Wisdom Holman Integrator", "Wrong GPU data passed");
-  this->initKernels(*whGpu, total);
+  WisdomHolmanGPUBuffers whGPU(gpu);
+  this->initKernels(whGPU, total);
 }
 
 template <typename Real>

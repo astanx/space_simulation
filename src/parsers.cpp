@@ -369,6 +369,10 @@ bool parseIntegrator(AppConfig &cfg, std::string param)
 
   if (param == "wh")
     cfg.worldCfg.physics.integrator = PhysicsIntegrator::WisdomHolman;
+  else if (param == "euler")
+    cfg.worldCfg.physics.integrator = PhysicsIntegrator::Euler;
+  else if (param == "rk4")
+    cfg.worldCfg.physics.integrator = PhysicsIntegrator::RK4;
   else
     Logger::logError("Parsers", "Wrong --integrator argument passed");
 

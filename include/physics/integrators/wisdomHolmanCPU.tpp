@@ -6,6 +6,7 @@
 
 #include "physics/object.h"
 #include "physics/orbitalObject.h"
+#include "physics/structs/keplerMaths.h"
 #include "physics/constants/constants.h"
 #include "physics/calculateGravitationalAcceleration.h"
 
@@ -20,17 +21,6 @@
 
 // Private functions
 template <typename Real>
-bool WisdomHolmanIntegratorCPU<Real>::validEntity(const std::unique_ptr<Entity> &entity)
-{
-  if (!entity)
-  {
-    Logger::logError("Wisdom Holman Integrator CPU", "Uninitialized entity detected");
-    return false;
-  }
-  return true;
-}
-
-template <typename Real>
 void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt)
 {
   std::vector<vec3> accelerations = this->forceModel->calculateAccelerations(entities, database);
@@ -40,6 +30,18 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<Entity> &
   {
     const Entity& entity = entities[i];
     database.setVelocity(entity, vec3(database.getVelocity(entity)) + dt * accelerations[i]); // kick
+  } });
+
+  this->threadPool.parallelFor(0, entities.size(), [this, &database, &entities, dt](Range work)
+                               {
+  for(size_t i = work.begin; i < work.end; i++)
+  {
+    if (!database.getIsOrbital(entities[i]))
+      continue;
+    const Entity& entity = entities[i];
+    vec3 pos = vec3(database.getPosition(entity)) - vec3(database.getPosition(database.getCentralBodyIdx(entity)));
+    vec3 vel = vec3(database.getVelocity(entity)) - vec3(database.getVelocity(database.getCentralBodyIdx(entity)));
+    database.setKeplerElements(entity, ::calculateKeplerElements<Real>(database.getMu(database.getCentralBodyIdx(entity)), pos, vel));
   } });
 }
 
@@ -77,9 +79,12 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickAngular(const std::vector<Entity> 
 template <typename Real>
 void WisdomHolmanIntegratorCPU<Real>::keplerDrift(const Entity &entity, IntegratorDatabase<Real> &database, Real dt)
 {
-  KeplerElements keplerElements = database.getKeplerElements(entity);
   size_t centralBodyIdx = database.getCentralBodyIdx(entity);
-  keplerElements.advanceMeanAnomaly(dt);
+
+  KeplerElements<Real> keplerElements = database.getKeplerElements(entity);
+  if (keplerElements.a == 0 || keplerElements.e < 0 || keplerElements.e >= 1)
+    Logger::logWarning("Wisdom Holman Integrator CPU", "Instability detected for entity " + std::to_string(entity.id));
+  keplerElements.m = advanceMeanAnomaly<Real>(keplerElements.m, keplerElements.n, dt);
 
   Real E = OrbitalMaths::calculateEccentricAnomaly(keplerElements.m, keplerElements.e);
 
@@ -98,7 +103,6 @@ void WisdomHolmanIntegratorCPU<Real>::keplerDrift(const Entity &entity, Integrat
 
   database.setVelocity(entity, R * v + vec3(database.getVelocity(centralBodyIdx)));
   database.setPosition(entity, R * pos + vec3(database.getPosition(centralBodyIdx)));
-  database.setMeanAnomaly(entity, keplerElements.m);
 }
 
 template <typename Real>

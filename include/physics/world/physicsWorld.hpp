@@ -2,21 +2,10 @@
 
 #include "physics/world/physicsWorld.h"
 
-#include "physics/object.h"
-#include "physics/orbitalObject.h"
-#include "physics/systems/asteroidSystem.h"
-
-#include "physics/integrators/integratorCPU.h"
-#include "physics/integrators/integratorGPU.h"
-
-#include "physics/integrators/wisdomHolmanCPU.h"
-#include "physics/integrators/wisdomHolmanGPU.h"
-
 #include "physics/world/backend/physicsBackendCPU.h"
 #include "physics/world/backend/physicsBackendGPU.h"
 
 #include "resources/manager/resourceManager.h"
-#include "resources/resources.h"
 
 #include "debug/logger.h"
 
@@ -34,7 +23,7 @@ void PhysicsWorld<Real>::initCPUBackend(const EntityManager &entityManager, Shar
   this->backend = std::make_unique<PhysicsBackendCPU<Real>>(this->cfg, db, threadPool);
 }
 template <typename Real>
-void PhysicsWorld<Real>::initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUBuffers &gpu, Total &total)
+void PhysicsWorld<Real>::initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, AllIntegratorGPUBuffers &gpu, Total &total)
 {
   this->backend = std::make_unique<PhysicsBackendGPU<Real>>(this->cfg, resourceManager, ctx, gpu, queue, total);
 }

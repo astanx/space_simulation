@@ -29,7 +29,7 @@ class Atmosphere;
 class System;
 class ThreadPool;
 class CommandQueue;
-struct IntegratorGPUBuffers;
+struct AllIntegratorGPUBuffers;
 struct Total;
 
 template <typename Real>
@@ -54,7 +54,7 @@ public:
   void initGPUBuffers(Context &ctx);
 
   void initCPUBackend(const EntityManager &entityManager, SharedDatabase<Real> &shared, ThreadPool &threadPool);
-  void initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, IntegratorGPUBuffers &gpu, Total &total);
+  void initGPUBackend(ResourceManager &resourceManager, Context &ctx, CommandQueue &queue, AllIntegratorGPUBuffers &gpu, Total &total);
 
   void step(double dt);
 

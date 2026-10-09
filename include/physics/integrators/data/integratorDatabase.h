@@ -27,8 +27,10 @@ public:
 
   Vec3<Real> getPosition(const Entity &entity) const { return this->shared.positions[this->entityManager.getObjectIndex(entity)]; };
   Vec3<Real> getPosition(size_t idx) const { return this->shared.positions[idx]; };
-  real getMeanRadius(const Entity &entity) const { return this->shared.meanRadii[this->entityManager.getObjectIndex(entity)]; };
+  Real getMeanRadius(const Entity &entity) const { return this->shared.meanRadii[this->entityManager.getObjectIndex(entity)]; };
 
+  size_t getTotal() const { return this->shared.total.total; };
+  size_t getObjectIdx(const Entity &entity) const { return this->entityManager.getObjectIndex(entity); };
   size_t getCentralBodyIdx(const Entity &entity) const { return this->physics.centralBodyIndices[this->entityManager.getOrbitalIndex(entity)]; };
   bool getIsOrbital(const Entity &entity) const { return this->entityManager.getIsOrbital(entity); };
   Vec3<Real> getVelocity(const Entity &entity) const { return this->physics.velocities[this->entityManager.getObjectIndex(entity)]; };
@@ -64,7 +66,7 @@ public:
     else
     {
       params.k2 = this->physics.loveNumbers[loveIdx];
-      params.Q = this->physics.tidalFactors[loveIdx];
+      params.Q = this->physics.tidalFactors[tidalIdx];
     }
 
     return params;
@@ -79,4 +81,15 @@ public:
   void setAngularVelocity(const Entity &entity, Vec3<Real> omega) { this->physics.angularVelocities[this->entityManager.getObjectIndex(entity)] = omega; };
   void setVelocity(const Entity &entity, Vec3<Real> vel) { this->physics.velocities[this->entityManager.getObjectIndex(entity)] = vel; };
   void setMeanAnomaly(const Entity &entity, Real anomaly) { this->physics.meanAnomaly[this->entityManager.getOrbitalIndex(entity)] = anomaly; };
+  void setKeplerElements(const Entity &entity, const KeplerElements<Real> &elements)
+  {
+    size_t idx = this->entityManager.getOrbitalIndex(entity);
+    this->physics.semiAxises[idx] = elements.a;
+    this->physics.eccentricities[idx] = elements.e;
+    this->physics.inclinations[idx] = elements.i;
+    this->physics.longitude[idx] = elements.Omega;
+    this->physics.periapsis[idx] = elements.omega;
+    this->physics.meanAnomaly[idx] = elements.m;
+    this->physics.meanMotion[idx] = elements.n;
+  };
 };

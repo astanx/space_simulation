@@ -174,15 +174,27 @@ namespace Res
 
   // Programs
   const std::string WISDOM_HOLMAN_INTERGATOR_PROGRAM = "wisdom_holman_intergator";
+  const std::string EULER_INTERGATOR_PROGRAM = "euler_intergator";
   const std::string RENDER_QUEUE_PROGRAM = "render_queue";
 
   // Kernels
   const std::string DRIFT_ANGULAR_KERNEL = "driftAngular";
+  const std::string DRIFT_LINEAR_KERNEL = "driftLinear";
   const std::string DRIFT_OBJECTS_LINEAR_KERNEL = "driftObjectsLinear";
   const std::string DRIFT_ORBITAL_LINEAR_KERNEL = "driftOrbitalLinear";
   const std::string HALF_KICK_ANGULAR_KERNEL = "halfKickAngular";
   const std::string HALF_KICK_LINEAR_KERNEL = "halfKickLinear";
   const std::string HALF_KICK_KERNEL = "halfKick";
+
+  const std::string WH_DRIFT_ANGULAR_KERNEL = "wh_driftAngular";
+  const std::string WH_DRIFT_OBJECTS_LINEAR_KERNEL = "wh_driftObjectsLinear";
+  const std::string WH_DRIFT_ORBITAL_LINEAR_KERNEL = "wh_driftOrbitalLinear";
+  const std::string WH_HALF_KICK_ANGULAR_KERNEL = "wh_halfKickAngular";
+  const std::string WH_HALF_KICK_LINEAR_KERNEL = "wh_halfKickLinear";
+  const std::string WH_HALF_KICK_KERNEL = "wh_halfKick";
+
+  const std::string EULER_DRIFT_ANGULAR_KERNEL = "euler_driftAngular";
+  const std::string EULER_DRIFT_LINEAR_KERNEL = "euler_driftLinear";
 
   const std::string LOCAL_SCAN_KERNEL = "scanLocal";
   const std::string GROUP_SCAN_KERNEL = "scanGroup";

@@ -5,7 +5,7 @@
 #include "physics/integrators/data/integratorGPUBuffers.h"
 #include "physics/integrators/data/allIntegratorGPUBuffers.h"
 
-struct WisdomHolmanGPUBuffers : IntegratorGPUBuffers
+struct EulerGPUBuffers : IntegratorGPUBuffers
 {
   const CLBuffer &positionsBuffer;
   const CLBuffer &orientationsBuffer;
@@ -26,16 +26,7 @@ struct WisdomHolmanGPUBuffers : IntegratorGPUBuffers
   const CLBuffer &loveNumbersBuffer;
   const CLBuffer &tidalFactorsBuffer;
 
-  const CLBuffer &semiAxisesBuffer;
-  const CLBuffer &eccentricitiesBuffer;
-  const CLBuffer &inclinationsBuffer;
-  const CLBuffer &longitudeBuffer;
-  const CLBuffer &periapsisBuffer;
-  const CLBuffer &meanAnomalyBuffer;
-  const CLBuffer &meanMotionBuffer;
-  const CLBuffer &centralBodyIndicesBuffer;
-
-  WisdomHolmanGPUBuffers(const AllIntegratorGPUBuffers &all)
+  EulerGPUBuffers(const AllIntegratorGPUBuffers &all)
       : positionsBuffer(all.positionsBuffer),
         orientationsBuffer(all.orientationsBuffer),
 
@@ -53,14 +44,5 @@ struct WisdomHolmanGPUBuffers : IntegratorGPUBuffers
         loveIndicesBuffer(all.loveIndicesBuffer),
         tidalFactorIndicesBuffer(all.tidalFactorIndicesBuffer),
         loveNumbersBuffer(all.loveNumbersBuffer),
-        tidalFactorsBuffer(all.tidalFactorsBuffer),
-
-        semiAxisesBuffer(all.semiAxisesBuffer),
-        eccentricitiesBuffer(all.eccentricitiesBuffer),
-        inclinationsBuffer(all.inclinationsBuffer),
-        longitudeBuffer(all.longitudeBuffer),
-        periapsisBuffer(all.periapsisBuffer),
-        meanAnomalyBuffer(all.meanAnomalyBuffer),
-        meanMotionBuffer(all.meanMotionBuffer),
-        centralBodyIndicesBuffer(all.centralBodyIndicesBuffer) {};
+        tidalFactorsBuffer(all.tidalFactorsBuffer) {};
 };

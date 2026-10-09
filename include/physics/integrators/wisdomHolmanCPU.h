@@ -16,8 +16,6 @@ protected:
   using mat3 = typename RealTypes<Real>::mat3;
   using quat = typename RealTypes<Real>::quat;
 
-  bool validEntity(const std::unique_ptr<Entity> &entity);
-
   void halfKickLinear(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database, Real dt);
   void driftLinear(const Entity &entity, IntegratorDatabase<Real> &database, Real dt);
 

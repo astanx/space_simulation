@@ -105,7 +105,7 @@ inline glm::vec<3, real> calculateTidalTorque(glm::vec<3, real> dp, real d, glm:
     return real3(0.0);
 #endif
 
-  if (objectLoveNumber == -1 && objectTidalFactor == -1)
+  if (objectLoveNumber == -1 || objectTidalFactor == -1)
 #ifdef __OPENCL_VERSION__
     return (real3)(0.0);
 #else

@@ -123,7 +123,7 @@ void SimulationWorld<Real>::initGPU(ResourceManager &resourceManager)
 
   this->initGPUBuffers(ctx);
 
-  WisdomHolmanGPUBuffers integratorBuffers{this->physics.getGPUBuffers(), this->gpu};
+  AllIntegratorGPUBuffers integratorBuffers{this->physics.getGPUBuffers(), this->gpu};
   this->physics.initGPUBackend(resourceManager, ctx, this->queue, integratorBuffers, this->database.total);
 
   this->render.initGPUBuffers(ctx);

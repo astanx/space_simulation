@@ -4,6 +4,7 @@
 
 #include "physics/constants/constants.h"
 #include "physics/structs/radii.h"
+#include "physics/structs/keplerMaths.h"
 
 #include "maths/constants.h"
 
@@ -47,16 +48,16 @@ void AsteroidSystem::forEachObjectImpl(std::function<void(Object &, size_t)> fun
 
 KeplerElements<double> AsteroidSystem::createRandomKeplerElements(double timeAfterJD2000)
 {
-  KeplerElements<double> e{
-      generateRandom(this->innerEdge, this->outerEdge),
-      generateRandom(MINIMUM_ASTEROID_ELEMENTS.e, MAXIMUM_ASTEROID_ELEMENTS.e),
-      generateRandom(MINIMUM_ASTEROID_ELEMENTS.i, MAXIMUM_ASTEROID_ELEMENTS.i),
-      generateRandom(MINIMUM_ASTEROID_ELEMENTS.Omega, MAXIMUM_ASTEROID_ELEMENTS.Omega),
-      generateRandom(MINIMUM_ASTEROID_ELEMENTS.omega, MAXIMUM_ASTEROID_ELEMENTS.omega),
-      generateRandom(MINIMUM_ASTEROID_ELEMENTS.m, MAXIMUM_ASTEROID_ELEMENTS.m)};
+  KeplerElements<double> e;
+  e.a = generateRandom(this->innerEdge, this->outerEdge);
+  e.e = generateRandom(MINIMUM_ASTEROID_ELEMENTS.e, MAXIMUM_ASTEROID_ELEMENTS.e);
+  e.i = generateRandom(MINIMUM_ASTEROID_ELEMENTS.i, MAXIMUM_ASTEROID_ELEMENTS.i);
+  e.Omega = generateRandom(MINIMUM_ASTEROID_ELEMENTS.Omega, MAXIMUM_ASTEROID_ELEMENTS.Omega);
+  e.omega = generateRandom(MINIMUM_ASTEROID_ELEMENTS.omega, MAXIMUM_ASTEROID_ELEMENTS.omega);
+  e.m = generateRandom(MINIMUM_ASTEROID_ELEMENTS.m, MAXIMUM_ASTEROID_ELEMENTS.m);
+  e.n = calculateMeanMotion<double>(this->centralBody->getMu(), e.a);
 
-  e.calculateMeanMotion(this->centralBody->getMu());
-  e.advanceMeanAnomaly(timeAfterJD2000);
+  e.m = advanceMeanAnomaly<double>(e.m, e.n, timeAfterJD2000);
 
   return e;
 }

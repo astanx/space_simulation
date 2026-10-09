@@ -3,6 +3,8 @@
 enum class PhysicsIntegrator
 {
   WisdomHolman,
+  Euler,
+  RK4,
 };
 
 enum class PhysicsForceModel

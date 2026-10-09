@@ -10,7 +10,7 @@ class ResourceManager;
 class CommandQueue;
 class Context;
 struct Total;
-struct IntegratorGPUBuffers;
+struct AllIntegratorGPUBuffers;
 
 template <typename Real>
 class PhysicsBackendGPU : public PhysicsBackend<Real>
@@ -22,7 +22,7 @@ private:
   std::unique_ptr<IntegratorGPU> integrator;
 
 public:
-  PhysicsBackendGPU(const PhysicsConfig &cfg, ResourceManager &manager, Context &ctx, IntegratorGPUBuffers &data, CommandQueue &queue, Total &total);
+  PhysicsBackendGPU(const PhysicsConfig &cfg, ResourceManager &manager, Context &ctx, AllIntegratorGPUBuffers &data, CommandQueue &queue, Total &total);
   ~PhysicsBackendGPU() = default;
 
   void step(Real dt) override;

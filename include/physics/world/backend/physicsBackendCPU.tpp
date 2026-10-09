@@ -5,6 +5,7 @@
 #include "physics/world/data/physicsCPUData.h"
 
 #include "physics/integrators/wisdomHolmanCPU.h"
+#include "physics/integrators/eulerCPU.h"
 
 #include "physics/integrators/force/directForceModel.h"
 
@@ -22,6 +23,10 @@ PhysicsBackendCPU<Real>::PhysicsBackendCPU(const PhysicsConfig &cfg, IntegratorD
 
   if (cfg.integrator == PhysicsIntegrator::WisdomHolman)
     this->integrator = std::make_unique<WisdomHolmanIntegratorCPU<Real>>(threadPool, std::move(forceModel));
+  else if (cfg.integrator == PhysicsIntegrator::Euler)
+    this->integrator = std::make_unique<EulerIntegratorCPU<Real>>(threadPool, std::move(forceModel));
+  else if (cfg.integrator == PhysicsIntegrator::RK4)
+    Logger::logFatal("Physics Backend CPU", "RK4 integrator is not implemented yet");
   else
     Logger::logFatal("Physics Backend CPU", "Unsupported physics integrator");
 };

@@ -44,12 +44,12 @@ inline glm::mat<3, 3, real> createR3matrix(real angle)
 
   dmat3 mat;
 #ifdef __OPENCL_VERSION__
-  mat.cols[0] = (real3)(cos(angle), -sin(angle), 0);
-  mat.cols[1] = (real3)(sin(angle), cos(angle), 0);
+  mat.cols[0] = (real3)(cos(angle), sin(angle), 0);
+  mat.cols[1] = (real3)(-sin(angle), cos(angle), 0);
   mat.cols[2] = (real3)(0, 0, 1);
 #else
-  mat[0] = real3(cos(angle), -sin(angle), 0);
-  mat[1] = real3(sin(angle), cos(angle), 0);
+  mat[0] = real3(cos(angle), sin(angle), 0);
+  mat[1] = real3(-sin(angle), cos(angle), 0);
   mat[2] = real3(0, 0, 1);
 #endif
 
@@ -70,12 +70,12 @@ inline glm::mat<3, 3, real> createR1matrix(real angle)
   dmat3 mat;
 #ifdef __OPENCL_VERSION__
   mat.cols[0] = (real3)(1, 0, 0);
-  mat.cols[1] = (real3)(0, cos(angle), -sin(angle));
-  mat.cols[2] = (real3)(0, sin(angle), cos(angle));
+  mat.cols[1] = (real3)(0, cos(angle), sin(angle));
+  mat.cols[2] = (real3)(0, -sin(angle), cos(angle));
 #else
   mat[0] = real3(1, 0, 0);
-  mat[1] = real3(0, cos(angle), -sin(angle));
-  mat[2] = real3(0, sin(angle), cos(angle));
+  mat[1] = real3(0, cos(angle), sin(angle));
+  mat[2] = real3(0, -sin(angle), cos(angle));
 #endif
   return mat;
 }
