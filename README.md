@@ -17,6 +17,10 @@ https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
       <li><a href="#celestial-mechanics-wh">Celestial Mechanics</a></li>
       <li><a href="#rotational-dynamics-wh">Rotational Dynamics</a></li>
      </ul>
+     <li><a href="#euler">Sympletic Euler</a></li>
+     <ul>
+      <li><a href="#energy-conservation-euler">Energy Conservation plots</a></li>
+     </ul>
     </ul>
    </li>
   </ul>
@@ -174,6 +178,26 @@ The new orientation is obtained by:
 $$
 q_{n+1}=q_{n}q_{rot}
 $$
+
+---
+
+<h4 id="euler">Sympletic Euler Integrator</h4>
+Basic euler integrator, following equations:
+
+$$
+v_{n+1}=v_{n} + a_{n}{\Delta}t
+$$
+$$
+p_{n+1}=p_{n} + v_{n+1}{\Delta}t
+$$
+
+<h5 id="energy-conservation-euler">System energy conservation</h5>
+<h6>Total energy</h6>
+<img width="3569" height="3570" alt="total_energy_error" src="https://github.com/user-attachments/assets/cc9cf83d-58f8-4237-a588-b582c0e3c59a"/>
+<h6>Potential energy</h6>
+<img width="3570" height="3570" alt="potential_energy_error" src="https://github.com/user-attachments/assets/7ec0d9bc-43b4-4cb6-b7f6-b79b57bd27c0"/>
+
+
 
 <h2 id="atmosphere">Atmospheric Modelling</h2>
 <h3>Grid</h3>
