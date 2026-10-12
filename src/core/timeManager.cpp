@@ -21,7 +21,7 @@ TimeManager::TimeManager(const TimeConfig &cfg) : cfg(cfg)
 TimeManager::~TimeManager() = default;
 
 // Public functions
-void TimeManager::update(bool isPaused)
+void TimeManager::update(bool isPaused, bool useDt)
 {
   double currentFrame = this->getTime();
   this->deltaTime = currentFrame - this->lastFrame;
@@ -29,12 +29,17 @@ void TimeManager::update(bool isPaused)
 
   if (this->isFirstFrame)
   {
-    this->deltaTime = 0.0;
+    this->reset();
     this->isFirstFrame = false;
   }
 
   if (!isPaused)
-    this->elapsedDays += this->deltaTime * this->cfg.timestep / 86400.0;
+  {
+    if (useDt)
+      this->elapsedDays += this->deltaTime * this->cfg.timestep / 86400.0;
+    else
+      this->elapsedDays += this->deltaTime != 0 ? this->cfg.timestep / 86400.0 : 0;
+  }
 
   // Update FPS counter
   this->frames++;
@@ -48,6 +53,20 @@ void TimeManager::update(bool isPaused)
     this->frames = 0;
     this->lastFpsUpdateTime = currentFrame;
   }
+};
+void TimeManager::reset()
+{
+  this->clock = std::chrono::steady_clock::now();
+
+  double now = this->getTime();
+
+  this->lastFrame = now;
+  this->lastFpsUpdateTime = now;
+  this->deltaTime = 0.0;
+
+  this->elapsedDays = 0.0;
+  this->frames = 0;
+  this->isFirstFrame = true;
 };
 double TimeManager::getTime()
 {

@@ -25,7 +25,8 @@ public:
   TimeManager(const TimeConfig &cfg);
   ~TimeManager();
 
-  void update(bool isPaused);
+  void update(bool isPaused, bool useDt);
+  void reset();
 
   double getTime();
   Date getDate();

@@ -90,26 +90,26 @@ void Application::initMode()
 {
   if (this->cfg.mode == Mode::Simulation)
     this->initRenderer();
-  else if (this->cfg.mode == Mode::EnergyValidation)
+  else if (this->cfg.mode == Mode::Validation)
   {
     if (this->cfg.validatorCfg.precision == Precision::DOUBLE)
     {
       if (this->cfg.worldCfg.precision == Precision::DOUBLE)
-        this->validator = std::make_unique<EnergyValidator<double, double>>(this->threadPool);
+        this->initValidator<double, double>();
       else if (this->cfg.worldCfg.precision == Precision::FLOAT)
-        this->validator = std::make_unique<EnergyValidator<double, float>>(this->threadPool);
+        this->initValidator<double, float>();
     }
     else if (this->cfg.validatorCfg.precision == Precision::FLOAT)
     {
       if (this->cfg.worldCfg.precision == Precision::DOUBLE)
-        this->validator = std::make_unique<EnergyValidator<float, double>>(this->threadPool);
+        this->initValidator<float, double>();
       else if (this->cfg.worldCfg.precision == Precision::FLOAT)
-        this->validator = std::make_unique<EnergyValidator<float, float>>(this->threadPool);
+        this->initValidator<float, float>();
     }
     else
       Logger::logFatal("Application", "This precision is not supported for validator");
 
-    this->validator->init(this->scene, this->timeManager.getElapsedTime(), this->cfg.validatorCfg.steps);
+    this->validator->init(this->scene, this->cfg.timeCfg.startDate, this->cfg.validatorCfg.steps);
   }
 }
 
@@ -189,10 +189,10 @@ void Application::processInput()
 
 void Application::updateValidator()
 {
-  this->validator->update(this->scene, this->timeManager.getElapsedTime());
+  this->validator->update(this->scene, this->timeManager.getDate());
   if (this->validator->isFinished())
   {
-    this->validator->sendTable();
+    this->validator->sendTable(this->scene);
     if (this->cfg.validatorCfg.pathSpecified)
       this->validator->saveTable(this->scene, this->cfg.validatorCfg.savePath);
 
@@ -224,6 +224,8 @@ Application::Application(const AppConfig &config) : cfg(config),
   this->initResources();
   this->initWorld();
   this->initMode();
+
+  this->timeManager.reset();
 }
 
 Application::~Application() = default;
@@ -240,15 +242,19 @@ int Application::shouldExit()
 void Application::update()
 {
   // Update context
-  this->timeManager.update(this->renderCtx.settings.paused);
-  this->renderCtx.deltaTime = this->timeManager.getDeltaTime();
+  this->timeManager.update(this->renderCtx.settings.paused, this->cfg.mode == Mode::Simulation);
+
+  if (this->cfg.mode == Mode::Simulation)
+    this->renderCtx.deltaTime = this->timeManager.getDeltaTime();
+  else if (this->cfg.mode == Mode::Validation)
+    this->renderCtx.deltaTime = this->timeManager.getDeltaTime() != 0 ? this->cfg.timeCfg.timestep : 0;
 
   if (!this->renderCtx.settings.paused)
     this->scene.updatePhysicsWorld(this->renderCtx.deltaTime);
 
   if (this->cfg.mode == Mode::Simulation)
     this->renderer.update(this->scene, this->renderCtx);
-  else if (this->cfg.mode == Mode::EnergyValidation)
+  else if (this->cfg.mode == Mode::Validation)
     this->updateValidator();
 
   // Poll events

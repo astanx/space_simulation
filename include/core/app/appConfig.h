@@ -20,7 +20,7 @@ enum class Backend
 
 enum class Mode
 {
-  EnergyValidation,
+  Validation,
   Simulation
 };
 
@@ -33,5 +33,5 @@ struct AppConfig
 
   Mode mode = Mode::Simulation;
 
-  Backend backend = Backend::CPU;          // --gpu or --cpu
+  Backend backend = Backend::CPU; // --gpu or --cpu
 };

@@ -392,7 +392,15 @@ AppConfig parseArgs(int argc, char **argv)
     else if (arg == "--cpu")
       cfg.backend = Backend::CPU;
     else if (arg == "--validate-energy")
-      cfg.mode = Mode::EnergyValidation;
+    {
+      cfg.mode = Mode::Validation;
+      cfg.validatorCfg.type = ValidatorType::Energy;
+    }
+    else if (arg == "--validate-data")
+    {
+      cfg.mode = Mode::Validation;
+      cfg.validatorCfg.type = ValidatorType::Data;
+    }
     else if (arg == "--simulation")
       cfg.mode = Mode::Simulation;
     else if (arg == "--force-model")

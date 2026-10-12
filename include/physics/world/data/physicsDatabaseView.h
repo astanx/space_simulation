@@ -31,10 +31,14 @@ public:
   // Shared
   Quat<Real> getOrientation(const Entity entity) const { return this->shared.getOrientation(this->entityManager.getObjectIndex(entity)); };
   Vec3<Real> getPosition(const Entity entity) const { return this->shared.getRealPosition(this->entityManager.getObjectIndex(entity)); };
+  Vec3<Real> getPosition(size_t index) const { return this->shared.getRealPosition(index); };
 
   // Physics
+  size_t getCentralBodyIdx(const Entity entity) const { return this->physics.centralBodyIndices[this->entityManager.getOrbitalIndex(entity)]; };
+  bool getIsOrbital(const Entity entity) const { return this->entityManager.getIsOrbital(entity); };
   Vec3<Real> getAngularVelocity(const Entity entity) const { return this->physics.angularVelocities[this->entityManager.getObjectIndex(entity)]; };
   Vec3<Real> getVelocity(const Entity entity) const { return this->physics.velocities[this->entityManager.getObjectIndex(entity)]; };
+  Vec3<Real> getVelocity(size_t index) const { return this->physics.velocities[index]; };
   Mat3<Real> getInertiaTensor(const Entity entity) const { return this->physics.inertiaTensors[this->entityManager.getObjectIndex(entity)]; };
   Real getMu(const Entity entity) const { return this->physics.mus[this->entityManager.getObjectIndex(entity)]; };
 };

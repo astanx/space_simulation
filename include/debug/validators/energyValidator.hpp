@@ -25,21 +25,21 @@ Real EnergyValidator<Real, WorldReal>::calculateError(Real current, Real prev)
 }
 
 template <typename Real, typename WorldReal>
-void EnergyValidator<Real, WorldReal>::calculateEnergy(const PhysicsDatabaseView<WorldReal> &database, double elapsedTime)
+void EnergyValidator<Real, WorldReal>::calculateEnergy(const PhysicsDatabaseView<WorldReal> &database, Date date)
 {
   if (this->isFinished())
     return;
 
   const std::vector<Entity> &entities = database.getEntities();
 
-  this->bodyHistory[this->historyIdx].resize(entities.size());
-  this->systemHistory[this->historyIdx] = SystemSample<Real>{};
+  this->bodyHistory[this->historyIdx].resize(entities.size(), EnergyBodySample<Real>{date});
+  this->systemHistory[this->historyIdx] = EnergySystemSample<Real>{date};
 
-  std::vector<SystemSample<Real>> tempSystemSamples(this->threadPool.getThreadCount());
+  std::vector<EnergySystemSample<Real>> tempSystemSamples(this->threadPool.getThreadCount(), EnergySystemSample<Real>{date});
 
-  this->threadPool.parallelFor(0, entities.size(), [this, &database, &entities, &tempSystemSamples, elapsedTime](Range work, size_t threadIdx)
+  this->threadPool.parallelFor(0, entities.size(), [this, &database, &entities, &tempSystemSamples](Range work, size_t threadIdx)
                                {
-    SystemSample<Real> &localSystemSample = tempSystemSamples[threadIdx];
+    EnergySystemSample<Real> &localSystemSample = tempSystemSamples[threadIdx];
     for (size_t i = work.begin; i < work.end; i++)
     {
       const Entity &entity = entities[i];
@@ -66,34 +66,32 @@ void EnergyValidator<Real, WorldReal>::calculateEnergy(const PhysicsDatabaseView
 
       if (this->historyIdx > 0)
       {
-        BodySample<Real> prevBody = this->bodyHistory[this->historyIdx - 1][i];
+        EnergyBodySample<Real> prevBody = this->bodyHistory[this->historyIdx - 1][i];
         prevKinetic = prevBody.kineticEnergy;
         prevRotational = prevBody.rotationalEnergy;
       }
 
-      this->bodyHistory[this->historyIdx][i] = BodySample<Real>{
-        static_cast<Real>(elapsedTime), 
-        kineticEnergy, rotationalEnergy,
-        this->calculateError(kineticEnergy, prevKinetic),
-        this->calculateError(rotationalEnergy, prevRotational)
-      };
+      this->bodyHistory[this->historyIdx][i].kineticEnergy = kineticEnergy;
+      this->bodyHistory[this->historyIdx][i].rotationalEnergy = rotationalEnergy;
+      this->bodyHistory[this->historyIdx][i].kineticEnergyError = this->calculateError(kineticEnergy, prevKinetic);
+      this->bodyHistory[this->historyIdx][i].rotationalEnergyError = this->calculateError(rotationalEnergy, prevRotational);
     } 
     localSystemSample.totalEnergy += cast<Real>(localSystemSample.potentialEnergy); });
 
-  for (SystemSample<Real> &local : tempSystemSamples)
+  for (EnergySystemSample<Real> &local : tempSystemSamples)
   {
     this->systemHistory[this->historyIdx].totalEnergy += cast<Real>(local.totalEnergy);
     this->systemHistory[this->historyIdx].potentialEnergy += cast<Real>(local.potentialEnergy);
   }
 
-  this->systemHistory[this->historyIdx].elapsedTime = elapsedTime;
+  this->systemHistory[this->historyIdx].date = date;
 
   Real prevPotential = this->systemHistory[this->historyIdx].potentialEnergy;
   Real prevTotal = this->systemHistory[this->historyIdx].totalEnergy;
 
   if (this->historyIdx > 0)
   {
-    SystemSample<Real> prevSys = this->systemHistory[this->historyIdx - 1];
+    EnergySystemSample<Real> prevSys = this->systemHistory[this->historyIdx - 1];
     prevPotential = prevSys.potentialEnergy;
     prevTotal = prevSys.totalEnergy;
   }
@@ -119,22 +117,22 @@ EnergyValidator<Real, WorldReal>::~EnergyValidator() = default;
 
 // Public functions
 template <typename Real, typename WorldReal>
-void EnergyValidator<Real, WorldReal>::init(Scene &scene, double elapsedTime, size_t steps)
+void EnergyValidator<Real, WorldReal>::init(Scene &scene, Date date, size_t steps)
 {
   this->steps = steps;
   this->bodyHistory.resize(this->steps);
-  this->systemHistory.resize(this->steps);
+  this->systemHistory.resize(this->steps, EnergySystemSample<Real>{date});
 
   this->initIndices(scene.getSimulationWorld<WorldReal>().getEntityManager().getEntities());
 }
 template <typename Real, typename WorldReal>
-void EnergyValidator<Real, WorldReal>::update(Scene &scene, double elapsedTime)
+void EnergyValidator<Real, WorldReal>::update(Scene &scene, Date date)
 {
   SimulationWorld<WorldReal> &world = scene.getSimulationWorld<WorldReal>();
-  this->calculateEnergy(world.getPhysicsWorldView(), elapsedTime);
+  this->calculateEnergy(world.getPhysicsWorldView(), date);
 }
 template <typename Real, typename WorldReal>
-void EnergyValidator<Real, WorldReal>::sendTable()
+void EnergyValidator<Real, WorldReal>::sendTable(Scene &scene)
 {
   if (this->historyIdx == 0)
     return;
@@ -142,13 +140,13 @@ void EnergyValidator<Real, WorldReal>::sendTable()
   std::cout << std::scientific << std::setprecision(20);
 
   std::cout << std::endl;
-  std::cout << "|      Time      |      Total Energy      |    Potential Energy    |   Total Error    |    Potential Error  |" << std::endl;
+  std::cout << "|      Date      |      Total Energy      |    Potential Energy    |   Total Error    |    Potential Error  |" << std::endl;
   std::cout << "|----------------|------------------------|------------------------|------------------|---------------------|" << std::endl;
 
   for (size_t i = 0; i < this->historyIdx; ++i)
   {
-    SystemSample<Real> &s = this->systemHistory[i];
-    std::cout << "| " << s.elapsedTime
+    EnergySystemSample<Real> &s = this->systemHistory[i];
+    std::cout << "| " << s.date.toString()
               << " | " << s.totalEnergy
               << " | " << s.potentialEnergy
               << " | " << s.totalEnergyError
@@ -166,12 +164,12 @@ void EnergyValidator<Real, WorldReal>::saveTable(Scene &scene, const std::filesy
     Logger::logFatal("Energy Validator", "Couldnt open system history data file");
 
   systemFile << std::scientific << std::setprecision(std::numeric_limits<Real>::max_digits10);
-  systemFile << "time;total_energy;potential_energy;total_energy_error;potential_energy_error" << std::endl;
+  systemFile << "date;total_energy;potential_energy;total_energy_error;potential_energy_error" << std::endl;
 
   for (size_t i = 0; i < this->historyIdx; ++i)
   {
-    SystemSample<Real> &s = this->systemHistory[i];
-    systemFile << s.elapsedTime << ';'
+    EnergySystemSample<Real> &s = this->systemHistory[i];
+    systemFile << s.date.toString() << ';'
                << s.totalEnergy << ';'
                << s.potentialEnergy << ';'
                << s.totalEnergyError << ';'
@@ -188,15 +186,15 @@ void EnergyValidator<Real, WorldReal>::saveTable(Scene &scene, const std::filesy
     Logger::logFatal("Energy Validator", "Couldnt open body history data file");
 
   bodyFile << std::scientific << std::setprecision(std::numeric_limits<Real>::max_digits10);
-  bodyFile << "time;id;name;kinetic_energy;rotational_energy;kinetic_error;rotational_error" << std::endl;
+  bodyFile << "date;id;name;kinetic_energy;rotational_energy;kinetic_error;rotational_error" << std::endl;
 
   for (size_t i = 0; i < this->historyIdx; i++)
   {
-    std::vector<BodySample<Real>> &bodies = this->bodyHistory[i];
+    std::vector<EnergyBodySample<Real>> &bodies = this->bodyHistory[i];
     for (size_t j = 0; j < bodies.size(); j++)
     {
-      BodySample<Real> &b = bodies[j];
-      bodyFile << b.elapsedTime << ';'
+      EnergyBodySample<Real> &b = bodies[j];
+      bodyFile << b.date.toString() << ';'
                << j << ';'
                << manager.getEntityName(this->indexToEntity.at(j)) << ';'
                << b.kineticEnergy << ';'

@@ -21,8 +21,29 @@ extern const double saturnMu;
 extern const double uranusMu;
 extern const double neptuneMu;
 
-extern const glm::dvec3 sunPos;
 extern const double sunLuminosity;
+
+extern const glm::dvec3 sunPos;
+extern const glm::dvec3 mercuryPos;
+extern const glm::dvec3 venusPos;
+extern const glm::dvec3 earthPos;
+extern const glm::dvec3 moonPos;
+extern const glm::dvec3 marsPos;
+extern const glm::dvec3 jupiterPos;
+extern const glm::dvec3 saturnPos;
+extern const glm::dvec3 uranusPos;
+extern const glm::dvec3 neptunePos;
+
+extern const glm::dvec3 sunVelocity;
+extern const glm::dvec3 mercuryVelocity;
+extern const glm::dvec3 venusVelocity;
+extern const glm::dvec3 earthVelocity;
+extern const glm::dvec3 moonVelocity;
+extern const glm::dvec3 marsVelocity;
+extern const glm::dvec3 jupiterVelocity;
+extern const glm::dvec3 saturnVelocity;
+extern const glm::dvec3 uranusVelocity;
+extern const glm::dvec3 neptuneVelocity;
 
 extern const KeplerElements<double> mercuryElements;
 extern const KeplerElements<double> venusElements;

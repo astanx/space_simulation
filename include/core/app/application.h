@@ -73,6 +73,9 @@ private:
   void initWorld();
   void initRenderer();
 
+  template <typename Real, typename WorldReal>
+  void initValidator();
+
   void processInput();
 
   void updateValidator();
@@ -85,3 +88,5 @@ public:
   void update();
   int shouldExit();
 };
+
+#include "core/app/application.hpp"

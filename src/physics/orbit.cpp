@@ -3,6 +3,7 @@
 #include "debug/logger.h"
 
 #include "physics/orbitalObject.h"
+#include "physics/structs/keplerMaths.h"
 #include "physics/constants/constants.h"
 
 #include "maths/constants.h"
@@ -18,6 +19,11 @@ Orbit::Orbit(Object *centralBody, const KeplerElements<double> &keplerElements) 
 {
   this->centralBody = centralBody;
 }
+Orbit::Orbit(Object *centralBody, const glm::dvec3 &position, const glm::dvec3 &velocity)
+{
+  this->centralBody = centralBody;
+  this->keplerElements = ::calculateKeplerElements<double>(centralBody->getMu(), position - centralBody->getPosition(), velocity - centralBody->getVelocity());
+}
 
 // Public functions
 KeplerElements<double> Orbit::getKeplerElements() const
@@ -27,7 +33,6 @@ KeplerElements<double> Orbit::getKeplerElements() const
 void Orbit::updateKeplerElements(KeplerElements<double> newElements)
 {
   this->keplerElements = newElements;
-  // this->keplerElements.calculateMeanMotion(this->centralBody->getMu());
 }
 Object *Orbit::getCentralBody() const
 {

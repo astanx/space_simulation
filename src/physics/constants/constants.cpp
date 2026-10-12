@@ -51,16 +51,14 @@ const RotationalElements MAXIMUM_ASTEROID_ROTATIONAL_ELEMENTS(
 		glm::radians(360.0),
 		glm::radians(3000.0));
 
-// Time step
-// const double TIME_SCALE = 3600.0 * 24;
-
 // SUN
 const double sunMu = 1.3271244004210e20;
 const Radii sunRadii(
 		6.957e8,
 		6.957e8,
 		6.957e8);
-const glm::dvec3 sunPos = glm::dvec3(0.0f, 0.0f, 0.0f);
+const glm::dvec3 sunPos = glm::dvec3(0.0, 0.0, 0.0);
+const glm::dvec3 sunVelocity = glm::dvec3(0.0, 0.0, 0.0);
 const double sunLuminosity = 3.826e26f;
 const RotationalElements sunRotationalElements{
 		glm::radians(286.13),
@@ -76,12 +74,14 @@ const Radii mercuryRadii(
 		2.4397e6,
 		2.4397e6,
 		2.4397e6);
+const glm::dvec3 mercuryPos = glm::dvec3(-2.105262107244070e10, -6.640663812253430e10, -3.492445946577720e9);
+const glm::dvec3 mercuryVelocity = glm::dvec3(3.665298704187096e4, -1.228983806940175E4, -4.368173036243590e3);
 const KeplerElements<double> mercuryElements(
 		0.38709927 * AU_TO_METER,
 		0.20563593,
 		glm::radians(7.00497902),
 		glm::radians(48.33076593),
-		glm::radians(77.45779628),
+		glm::radians(29.12703035),
 		glm::radians(174.796));
 const RotationalElements mercuryRotationalElements{
 		glm::radians(281.0103),
@@ -97,12 +97,14 @@ const Radii venusRadii(
 		6.0518e6,
 		6.0518e6,
 		6.0518e6);
+const glm::dvec3 venusPos = glm::dvec3(-1.075055502719850e11, -3.366520666522362e9, 6.159219789239045e9);
+const glm::dvec3 venusVelocity = glm::dvec3(8.891597859686224e2, -3.515920774137907e4, -5.318594228644749e2);
 const KeplerElements<double> venusElements(
 		0.72333566 * AU_TO_METER,
 		0.00677672,
 		glm::radians(3.39467605),
 		glm::radians(76.67984255),
-		glm::radians(131.60246718),
+		glm::radians(54.92262463),
 		glm::radians(50.115));
 const RotationalElements venusRotationalElements{
 		glm::radians(272.76),
@@ -118,13 +120,15 @@ const Radii earthRadii(
 		6.378137e6,
 		6.356752e6,
 		6.371e6);
+const glm::dvec3 earthPos = glm::dvec3(-2.521092855899356e10, 1.449279195838006e11, -6.164165719002485e5);
+const glm::dvec3 earthVelocity = glm::dvec3(-2.983983333677879e4, -5.207633902410673e3, 6.168441184239981e-2);
 const KeplerElements<double> earthElements(
 		1.000003 * AU_TO_METER,
 		0.01671,
 		glm::radians(0.00005),
 		glm::radians(-11.26064),
 		glm::radians(114.20783),
-		glm::radians(358.617));
+		glm::radians(357.517));
 const RotationalElements earthRotationalElements{
 		glm::radians(0.0),
 		glm::radians(90.0),
@@ -146,6 +150,8 @@ const Radii moonRadii(
 		1.7381e6,
 		1.736e6,
 		1.7374e6);
+const glm::dvec3 moonPos = glm::dvec3(-3.137906052298216e8, -2.389441542921124e8, 3.611164846347232e7);
+const glm::dvec3 moonVelocity = glm::dvec3(5.539731755361379e2, -7.902126156968242e2, -1.619414189257984);
 const KeplerElements<double> moonElements(
 		(1.0 / 389.0) * AU_TO_METER,
 		0.0549,
@@ -184,6 +190,8 @@ const Radii marsRadii(
 		3.3962e6,
 		3.3762e6,
 		3.3896e6);
+const glm::dvec3 marsPos = glm::dvec3(2.079950549836171e11, -3.143009713942494e9, -5.178781243488781e9);
+const glm::dvec3 marsVelocity = glm::dvec3(1.295003552976085e3, 2.629442066947034e4, 5.190097459225722e2);
 const KeplerElements<double> marsElements(
 		1.52368055 * AU_TO_METER,
 		0.0934,
@@ -209,6 +217,8 @@ const Radii jupiterRadii(
 		7.1492e7,
 		6.684e7,
 		6.9911e7);
+const glm::dvec3 jupiterPos = glm::dvec3(5.989091645401344e11, 4.391225866604841e11, -1.523251063025475e10);
+const glm::dvec3 jupiterVelocity = glm::dvec3(-7.901937516136118e3, 1.116317703172796e4, 1.306732148714280e2);
 const KeplerElements<double> jupiterElements(
 		5.2038 * AU_TO_METER,
 		0.0489,
@@ -230,6 +240,8 @@ const Radii saturnRadii(
 		6.0268e7,
 		5.4364e7,
 		5.8232e7);
+const glm::dvec3 saturnPos = glm::dvec3(9.587063371733198e11, 9.825652104588115e11, -5.522065631225652e10);
+const glm::dvec3 saturnVelocity = glm::dvec3(-7.428885680409909e3, 6.738814240733793e3, 1.776643606866641e2);
 const KeplerElements<double> saturnElements(
 		9.5826 * AU_TO_METER,
 		0.0565,
@@ -252,6 +264,8 @@ const Radii uranusRadii(
 		2.5559e7,
 		2.4973e7,
 		2.5362e7);
+const glm::dvec3 uranusPos = glm::dvec3(2.158774481135687e12, -2.054825439980978e12, -3.562364902696741e10);
+const glm::dvec3 uranusVelocity = glm::dvec3(4.637647623549194e3, 4.627191832186803e3, -4.285552181289254e1);
 const KeplerElements<double> uranusElements(
 		19.19126 * AU_TO_METER,
 		0.04717,
@@ -273,6 +287,8 @@ const Radii neptuneRadii(
 		2.4766e7,
 		2.4342e7,
 		2.4624e7);
+const glm::dvec3 neptunePos = glm::dvec3(2.514853613177421e12, -3.738847442885483e12, 1.903940597915769e10);
+const glm::dvec3 neptuneVelocity = glm::dvec3(4.465802935040887e3, 3.075682076112343e3, -1.665662524371097e2);
 const KeplerElements<double> neptuneElements(
 		30.07 * AU_TO_METER,
 		0.008678,

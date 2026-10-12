@@ -2,6 +2,8 @@
 
 #include "scene/world/database/worldDatabase.h"
 
+#include "resources/data/realTypes.h"
+
 class Object;
 class OrbitalObject;
 class Model;
@@ -27,6 +29,8 @@ template <typename Real>
 class WorldDatabaseBuilder
 {
 private:
+  using vec3 = typename RealTypes<Real>::vec3;
+
   Importance &importance;
   EntityManager &entityManager;
   TrailManager &trailManager;
@@ -64,9 +68,10 @@ public:
   ~WorldDatabaseBuilder() = default;
 
   OrbitalObject *createOrbitalObject(const std::string &name, Real mu, Radii radii, Object *centralBody, const KeplerElements<Real> &keplerElements, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
+  OrbitalObject *createOrbitalObject(const std::string &name, Real mu, Radii radii, Object *centralBody, const vec3 &position, const vec3 &velocity, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField = GravityField(), TidalParameters tidalParameters = TidalParameters());
   void createPlanetModel(Model &model, OrbitalObject &planet);
   void createMoonModel(Model &model, OrbitalObject &planet);
-  Object *createObject(const std::string &name, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos);
+  Object *createObject(const std::string &name, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, const vec3 &position, const vec3 &velocity);
   void createStarModel(Model &model, Object &object);
   void addAtmosphereToPlanet(ResourceManager &resourceManager, ThreadPool &threadPool, std::string planetName, OrbitalObject *planet);
   AsteroidSystem *createAsteroidSystem(const std::string &name, ResourceManager &resourceManager, ThreadPool &threadPool, Object *centralBody, unsigned amount, Real innerEdge, Real outerEdge, Real timeAfterJD2000, bool enableRender);

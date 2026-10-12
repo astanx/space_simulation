@@ -27,6 +27,8 @@ protected:
 
   void keplerDrift(const Entity &entity, IntegratorDatabase<Real> &database, Real dt);
 
+  void updateKeplerElements(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database);
+
 public:
   WisdomHolmanIntegratorCPU(ThreadPool &threadPool, std::unique_ptr<ForceModel<Real>> forceModel) : IntegratorCPU<Real>(threadPool, std::move(forceModel)) {};
   ~WisdomHolmanIntegratorCPU() = default;

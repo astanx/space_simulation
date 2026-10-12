@@ -25,6 +25,13 @@ OrbitalObject::OrbitalObject(Object *centralBody, double mu, Radii radii, const 
   this->position = R * this->position + centralBody->getPosition();
 }
 
+OrbitalObject::OrbitalObject(Object *centralBody, double mu, Radii radii, const glm::dvec3 &position, const glm::dvec3 &velocity, TidalParameters tidalParameters, GravityField gravityField) : Object(mu / G, radii, tidalParameters, gravityField, position, velocity), orbit(centralBody, position, velocity)
+{
+  this->mu = mu;
+  this->position = position + centralBody->getPosition();
+  this->velocity = velocity + centralBody->getVelocity();
+}
+
 // Public functions
 Orbit *OrbitalObject::getOrbit()
 {

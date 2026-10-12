@@ -15,14 +15,15 @@ DirectForceModel<Real>::~DirectForceModel() = default;
 // Public functions
 template <typename Real>
 std::vector<typename RealTypes<Real>::vec3>
-DirectForceModel<Real>::calculateAccelerations(
-    const std::vector<Entity> &entities,
-    const IntegratorDatabase<Real> &database)
+DirectForceModel<Real>::calculateAccelerations(const std::vector<Entity> &entities, const IntegratorDatabase<Real> &database)
 {
   std::vector<std::vector<vec3>> threadLocalAccelerations;
   threadLocalAccelerations.resize(this->threadPool.getThreadCount());
   for (auto &local : threadLocalAccelerations)
+  { 
     local.resize(entities.size());
+    local.assign(entities.size(), vec3(0.0));
+  }
 
   this->threadPool.parallelFor(
       0, entities.size(),
@@ -35,9 +36,7 @@ DirectForceModel<Real>::calculateAccelerations(
 
           bool iOrbital = database.getIsOrbital(entity);
 
-          size_t central = iOrbital
-                               ? database.getCentralBodyIdx(entity)
-                               : database.getObjectIdx(entity);
+          size_t central = iOrbital ? database.getCentralBodyIdx(entity) : database.getObjectIdx(entity);
 
           for (size_t j = i + 1; j < entities.size(); j++)
           {
@@ -45,18 +44,14 @@ DirectForceModel<Real>::calculateAccelerations(
 
             bool jOrbital = database.getIsOrbital(otherEntity);
 
-            size_t otherCentral = jOrbital
-                                      ? database.getCentralBodyIdx(otherEntity)
-                                      : database.getObjectIdx(otherEntity);
+            size_t otherCentral = jOrbital ? database.getCentralBodyIdx(otherEntity) : database.getObjectIdx(otherEntity);
 
             if (database.getObjectIdx(otherEntity) == central)
               continue;
             if (database.getObjectIdx(entity) == otherCentral)
               continue;
 
-            vec3 scale = gravitationalDpOverD3<Real>(
-                database.getPosition(entity),
-                database.getPosition(otherEntity));
+            vec3 scale = gravitationalDpOverD3<Real>(database.getPosition(entity), database.getPosition(otherEntity));
 
             localAccelerations[i] += scale * database.getMu(otherEntity);
             localAccelerations[j] -= scale * database.getMu(entity);
@@ -69,8 +64,7 @@ DirectForceModel<Real>::calculateAccelerations(
         }
       });
 
-  std::vector<vec3> accelerations;
-  accelerations.resize(entities.size());
+  std::vector<vec3> accelerations(entities.size(), vec3(0.0));
 
   for (auto &local : threadLocalAccelerations)
     for (size_t i = 0; i < entities.size(); i++)
@@ -86,7 +80,10 @@ std::vector<typename RealTypes<Real>::vec3> DirectForceModel<Real>::calculateTor
   threadLocalTorques.resize(this->threadPool.getThreadCount());
 
   for (auto &local : threadLocalTorques)
+  { 
     local.resize(entities.size());
+    local.assign(entities.size(), vec3(0.0));
+  }
   this->threadPool.parallelFor(0, entities.size(), [this, &threadLocalTorques, &database, &entities](Range work, size_t thread)
                                {
     std::vector<vec3> &localTorque = threadLocalTorques[thread];
@@ -126,8 +123,7 @@ std::vector<typename RealTypes<Real>::vec3> DirectForceModel<Real>::calculateTor
       }
     } });
 
-  std::vector<vec3> torques;
-  torques.resize(entities.size());
+  std::vector<vec3> torques(entities.size(), vec3(0.0));
 
   for (auto &local : threadLocalTorques)
     for (size_t i = 0; i < entities.size(); i++)

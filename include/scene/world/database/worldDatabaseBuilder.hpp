@@ -249,12 +249,36 @@ OrbitalObject *WorldDatabaseBuilder<Real>::createOrbitalObject(const std::string
 }
 
 template <typename Real>
-Object *WorldDatabaseBuilder<Real>::createObject(const std::string &name, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, Vec3<Real> pos)
+OrbitalObject *WorldDatabaseBuilder<Real>::createOrbitalObject(const std::string &name, Real mu, Radii radii, Object *centralBody, const vec3 &position, const vec3 &velocity, const RotationalElements rotationalElements, Real timeAfterJD2000, GravityField gravityField, TidalParameters tidalParameters)
 {
   RotationalElements r = rotationalElements;
   r.advanceFromJD2000(timeAfterJD2000);
 
-  std::unique_ptr<Object> obj = std::make_unique<Object>(mu / G, radii, TidalParameters(), GravityField(), pos);
+  std::unique_ptr<OrbitalObject> obj = std::make_unique<OrbitalObject>(centralBody, mu, radii, position, velocity, tidalParameters, gravityField);
+
+  obj->setAngularVelocity(r.calculateAngularVelocity());
+  obj->setOrientation(r.calculateOrientation());
+
+  OrbitalObject *ptr = obj.get();
+
+  this->total.orbital++;
+  this->total.total++;
+
+  this->objectToEntity[ptr] = this->entityManager.create();
+  this->entityManager.registerEntityName(this->objectToEntity[ptr], name);
+
+  this->orbitalObjects.push_back(std::move(obj));
+
+  return ptr;
+}
+
+template <typename Real>
+Object *WorldDatabaseBuilder<Real>::createObject(const std::string &name, Real mu, Radii radii, Real luminosity, const RotationalElements rotationalElements, Real timeAfterJD2000, const vec3 &position, const vec3 &velocity)
+{
+  RotationalElements r = rotationalElements;
+  r.advanceFromJD2000(timeAfterJD2000);
+
+  std::unique_ptr<Object> obj = std::make_unique<Object>(mu / G, radii, TidalParameters(), GravityField(), position, velocity);
 
   obj->setAngularVelocity(r.calculateAngularVelocity());
   obj->setOrientation(r.calculateOrientation());

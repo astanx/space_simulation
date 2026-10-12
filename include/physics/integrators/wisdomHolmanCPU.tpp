@@ -31,18 +31,6 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickLinear(const std::vector<Entity> &
     const Entity& entity = entities[i];
     database.setVelocity(entity, vec3(database.getVelocity(entity)) + dt * accelerations[i]); // kick
   } });
-
-  this->threadPool.parallelFor(0, entities.size(), [this, &database, &entities, dt](Range work)
-                               {
-  for(size_t i = work.begin; i < work.end; i++)
-  {
-    if (!database.getIsOrbital(entities[i]))
-      continue;
-    const Entity& entity = entities[i];
-    vec3 pos = vec3(database.getPosition(entity)) - vec3(database.getPosition(database.getCentralBodyIdx(entity)));
-    vec3 vel = vec3(database.getVelocity(entity)) - vec3(database.getVelocity(database.getCentralBodyIdx(entity)));
-    database.setKeplerElements(entity, ::calculateKeplerElements<Real>(database.getMu(database.getCentralBodyIdx(entity)), pos, vel));
-  } });
 }
 
 template <typename Real>
@@ -77,13 +65,33 @@ void WisdomHolmanIntegratorCPU<Real>::halfKickAngular(const std::vector<Entity> 
 }
 
 template <typename Real>
+void WisdomHolmanIntegratorCPU<Real>::updateKeplerElements(const std::vector<Entity> &entities, IntegratorDatabase<Real> &database)
+{
+  this->threadPool.parallelFor(0, entities.size(), [this, &database, &entities](Range work)
+                               {
+  for(size_t i = work.begin; i < work.end; i++)
+  {
+    if (!database.getIsOrbital(entities[i]))
+      continue;
+    const Entity& entity = entities[i];
+    vec3 pos = vec3(database.getPosition(entity)) - vec3(database.getPosition(database.getCentralBodyIdx(entity)));
+    vec3 vel = vec3(database.getVelocity(entity)) - vec3(database.getVelocity(database.getCentralBodyIdx(entity)));
+    Real mu = database.getMu(database.getCentralBodyIdx(entity)) + database.getMu(entity);
+    database.setKeplerElements(entity, ::calculateKeplerElements<Real>(mu, pos, vel));
+  } });
+}
+
+template <typename Real>
 void WisdomHolmanIntegratorCPU<Real>::keplerDrift(const Entity &entity, IntegratorDatabase<Real> &database, Real dt)
 {
   size_t centralBodyIdx = database.getCentralBodyIdx(entity);
 
   KeplerElements<Real> keplerElements = database.getKeplerElements(entity);
   if (keplerElements.a == 0 || keplerElements.e < 0 || keplerElements.e >= 1)
+  {
     Logger::logWarning("Wisdom Holman Integrator CPU", "Instability detected for entity " + std::to_string(entity.id));
+    return;
+  }
   keplerElements.m = advanceMeanAnomaly<Real>(keplerElements.m, keplerElements.n, dt);
 
   Real E = OrbitalMaths::calculateEccentricAnomaly(keplerElements.m, keplerElements.e);
@@ -96,8 +104,9 @@ void WisdomHolmanIntegratorCPU<Real>::keplerDrift(const Entity &entity, Integrat
   vec3 v(0.0);
   Real r = keplerElements.a * (1 - keplerElements.e * cos(E));
 
-  v.x = -sqrt(database.getMu(centralBodyIdx) * keplerElements.a) / r * sin(E);
-  v.y = sqrt(database.getMu(centralBodyIdx) * keplerElements.a * (1 - (keplerElements.e * keplerElements.e))) / r * cos(E);
+  Real mu = database.getMu(centralBodyIdx) + database.getMu(entity);
+  v.x = -sqrt(mu * keplerElements.a) / r * sin(E);
+  v.y = sqrt(mu * keplerElements.a * (1 - (keplerElements.e * keplerElements.e))) / r * cos(E);
 
   mat3 R = OrbitalMaths::createR3matrix<Real>(keplerElements.Omega) * OrbitalMaths::createR1matrix<Real>(keplerElements.i) * OrbitalMaths::createR3matrix<Real>(keplerElements.omega);
 
@@ -153,6 +162,8 @@ void WisdomHolmanIntegratorCPU<Real>::step(IntegratorDatabase<Real> &database, R
 
   // kick
   this->halfKick(entities, database, dt * 0.5);
+
+  this->updateKeplerElements(entities, database);
 
   // drift
   for (const Entity &entity : entities)
