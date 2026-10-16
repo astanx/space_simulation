@@ -13,13 +13,13 @@ https://github.com/user-attachments/assets/3ee465eb-00da-4448-86c8-a077777bcb80
     <ul>
      <li><a href="#wh">Wisdom-Holman</a></li>
      <ul>
-      <li><a href="#energy-conservation-wh">Energy Conservation plots</a></li>
+      <li><a href="#error-wh">Error plots</a></li>
       <li><a href="#celestial-mechanics-wh">Celestial Mechanics</a></li>
       <li><a href="#rotational-dynamics-wh">Rotational Dynamics</a></li>
      </ul>
      <li><a href="#euler">Sympletic Euler</a></li>
      <ul>
-      <li><a href="#energy-conservation-euler">Energy Conservation plots</a></li>
+      <li><a href="#error-euler">Error plots</a></li>
      </ul>
     </ul>
    </li>
@@ -65,12 +65,15 @@ My version of WH Integrator contains:
   <li>Leapfrog for other bodies</li>
 </ul>
 
-<h5 id="energy-conservation-wh">System energy conservation</h5>
+<h5 id="error-wh">Error plots</h5>
 <h6>Total energy</h6>
 <img width="3570" height="3570" alt="total_energy_error" src="https://github.com/user-attachments/assets/0e886b0e-3c7a-4f88-b878-514e4b6e2894"/>
 <h6>Potential energy</h6>
 <img width="3570" height="3570" alt="potential_energy_error" src="https://github.com/user-attachments/assets/e7e30c28-26a7-4d1a-a32e-bc3aa0017d9b"/>
-
+<h6>Earth's position</h6>
+<img width="3569" height="3570" alt="position_error" src="https://github.com/user-attachments/assets/3554fe22-8548-46a7-b627-6608d1e9bd5d" />
+<h6>Earth's velocity</h6>
+<img width="3570" height="3570" alt="velocity_error" src="https://github.com/user-attachments/assets/ce65e623-e3e2-4e07-a402-23a58893a263" />
 
 <h5 id="celestial-mechanics-wh">Celestial Mechanics</h5>
 Each step can be divided into Half-Kick or Drift
@@ -191,13 +194,15 @@ $$
 p_{n+1}=p_{n} + v_{n+1}{\Delta}t
 $$
 
-<h5 id="energy-conservation-euler">System energy conservation</h5>
+<h5 id="error-euler">Error plots</h5>
 <h6>Total energy</h6>
 <img width="3569" height="3570" alt="total_energy_error" src="https://github.com/user-attachments/assets/cc9cf83d-58f8-4237-a588-b582c0e3c59a"/>
 <h6>Potential energy</h6>
 <img width="3570" height="3570" alt="potential_energy_error" src="https://github.com/user-attachments/assets/7ec0d9bc-43b4-4cb6-b7f6-b79b57bd27c0"/>
-
-
+<h6>Earth's position</h6>
+<img width="3569" height="3570" alt="position_error" src="https://github.com/user-attachments/assets/2265c3c7-0a43-415a-a2cc-268692ee3920" />
+<h6>Earth's velocity</h6>
+<img width="3570" height="3570" alt="velocity_error" src="https://github.com/user-attachments/assets/0190a62f-3389-4cf5-ab2b-c25a6ea95395" />
 
 <h2 id="atmosphere">Atmospheric Modelling</h2>
 <h3>Grid</h3>
