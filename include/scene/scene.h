@@ -23,7 +23,7 @@ struct RenderContext;
 class Scene
 {
 private:
-  std::variant<SimulationWorld<float>, SimulationWorld<double>> world;
+  std::variant<std::monostate, SimulationWorld<float>, SimulationWorld<double>> world;
 
 public:
   Scene();

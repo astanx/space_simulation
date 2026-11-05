@@ -16,6 +16,8 @@
 
 #include "graphics/model.h"
 
+#include <iostream>
+
 // Private functions
 template <typename Real>
 void RenderQueueBuilderGPU::updateKernels(const Camera &camera, FrameContext &ctx)

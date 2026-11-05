@@ -69,7 +69,7 @@ void WisdomHolmanIntegratorCPU<Real>::updateKeplerElements(const std::vector<Ent
 {
   this->threadPool.parallelFor(0, entities.size(), [this, &database, &entities](Range work)
                                {
-  for(size_t i = work.begin; i < work.end; i++)
+  for (size_t i = work.begin; i < work.end; i++)
   {
     if (!database.getIsOrbital(entities[i]))
       continue;

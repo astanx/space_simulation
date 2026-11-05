@@ -4,12 +4,12 @@
 
 struct Date
 {
-  int day;
-  int month;
-  int year;
-  int hour;
-  int minute;
-  int second;
+  int day = 0;
+  int month = 0;
+  int year = 0;
+  int hour = 0;
+  int minute = 0;
+  int second = 0;
 
   Date(int day, int month, int year, int hour = 0, int minute = 0, int second = 0) : day(day), month(month), year(year), hour(hour), minute(minute), second(second) {}
 

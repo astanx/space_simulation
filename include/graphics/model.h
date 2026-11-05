@@ -16,17 +16,17 @@ class Buffer;
 class Model
 {
 protected:
-	Material *material;
-	Texture *overrideTextureDiffuse;
-	Texture *overrideTextureSpecular;
-	Mesh *mesh;
+	Material *material = nullptr;
+	Texture *overrideTextureDiffuse = nullptr;
+	Texture *overrideTextureSpecular = nullptr;
+	Mesh *mesh = nullptr;
 
-	unsigned int impostorLayer;
-	float importance;
+	unsigned int impostorLayer = 0;
+	float importance = 0;
 
-	ModelFlags flags;
+	ModelFlags flags = ModelFlags::None;
 
-	uint32_t id;
+	uint32_t id = 0;
 
 public:
 	Model(Material &material, Mesh &mesh, ModelFlags flags = ModelFlags::None, Texture *overrideTextureDiffuse = nullptr, Texture *overrideTextureSpecular = nullptr);

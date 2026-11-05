@@ -2,7 +2,7 @@
 
 struct FrameContext
 {
-  float width;
-  float height;
-  float aspect;
+  float width = 0;
+  float height = 0;
+  float aspect = 0;
 };

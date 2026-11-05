@@ -10,9 +10,9 @@ class PointShadow : public Shadow
 {
 protected:
   glm::vec3 lightPos;
-  float nearPlane;
-  float farPlane;
-  float aspectRatio;
+  float nearPlane = 0;
+  float farPlane = 0;
+  float aspectRatio = 0;
 
   std::unique_ptr<Texture> depthTexture;
 

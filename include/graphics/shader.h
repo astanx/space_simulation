@@ -8,10 +8,10 @@
 class Shader
 {
 private:
-  GLuint id;
+  GLuint id = 0;
   std::unordered_map<std::string, GLint> uniformCache;
-  int GLSLmajor;
-  int GLSLminor;
+  int GLSLmajor = 0;
+  int GLSLminor = 0;
 
   std::string loadShaderSrc(const std::string &fileName, bool isInclude = false);
 

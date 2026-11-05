@@ -61,6 +61,8 @@ Texture::Texture(const std::string &fileName, GLenum target)
 Texture::Texture(GLsizei width, GLsizei height, GLenum target, GLint internalFormat, GLenum format, GLenum type, const void *pixels)
 {
   this->target = target;
+  this->width = width;
+  this->height = height;
 
   glGenTextures(1, &this->id);
 

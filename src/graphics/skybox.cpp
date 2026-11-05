@@ -244,6 +244,7 @@ Skybox::Skybox(std::vector<std::string> &faces) : mesh(TypeTag<VertexPosition>{}
 
   this->createCubemap();
   this->allocateCubemapFaces(internalFormat, format, GL_UNSIGNED_BYTE);
+  this->initIrradianceMap(internalFormat, format);
   this->loadCubemap(faces, internalFormat, format, GL_UNSIGNED_BYTE);
 }
 
@@ -276,6 +277,9 @@ void Skybox::render(Shader &shader) const
 
 void Skybox::bindIrradianceMap(Shader &shader) const
 {
+  if (!this->irradianceMap)
+    Logger::logFatal("Skybox", "Irradiance map is not initialized");
+
   this->irradianceMap->activate(TextureBindingPoints::IrradianceMap);
   this->irradianceMap->bind();
 

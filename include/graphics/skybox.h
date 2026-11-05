@@ -19,8 +19,8 @@ private:
   std::unique_ptr<Texture> environmentTexture;
   std::unique_ptr<Texture> irradianceMap;
 
-  int width;
-  int height;
+  int width = 0;
+  int height = 0;
 
   Mesh mesh;
 

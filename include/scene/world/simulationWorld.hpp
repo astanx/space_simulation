@@ -109,6 +109,7 @@ void SimulationWorld<Real>::initRenderWorld(ResourceManager &manager, const Fram
   this->render.addPointLight(std::make_unique<PointLight>(this->database.positions[sunIdx], glm::vec3(1.0f), this->database.luminosities[sunIdx], this->database.meanRadii[sunIdx]));
   this->render.addCamera(std::make_unique<Camera>(this->database.positions[sunIdx], glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), ctx.width, ctx.height));
   this->render.addSkybox(std::make_unique<Skybox>("assets/skybox/starmap.exr", manager));
+  this->render.getActiveSkybox().unbindIrradianceMap();
 }
 
 // Constructor

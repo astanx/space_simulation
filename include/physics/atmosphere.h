@@ -18,11 +18,11 @@ class Object;
 
 struct Grid
 {
-  int npres;
-  int nlat;
-  int nlon;
+  int npres = 0;
+  int nlat = 0;
+  int nlon = 0;
 
-  size_t size;
+  size_t size = 0;
 
   Grid(int npres = 0, int nlat = 0, int nlon = 0) : npres(npres), nlat(nlat), nlon(nlon)
   {

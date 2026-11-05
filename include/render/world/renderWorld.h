@@ -42,12 +42,12 @@ private:
 
   RenderDatabase database;
   RenderGPUBuffers gpuBuffers;
-  uint32_t rangeCount;
+  uint32_t rangeCount = 0;
 
   std::unique_ptr<RenderWorldBackend> backend;
 
-  Camera *activeCamera;
-  Skybox *skybox;
+  Camera *activeCamera = nullptr;
+  Skybox *skybox = nullptr;
 
   std::vector<std::unique_ptr<Camera>> cameras;
   std::vector<Camera *> cameraViews;

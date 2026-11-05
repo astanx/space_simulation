@@ -9,8 +9,8 @@ class Texture
 {
 private:
   GLuint id = 0;
-  int width;
-  int height;
+  int width = 0;
+  int height = 0;
   GLenum target;
   glm::vec3 averageColor;
 

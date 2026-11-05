@@ -30,10 +30,10 @@ private:
   std::unique_ptr<Buffer> pointInstancesVBO;
 
   std::vector<Range> allocations;
-  size_t lastAllocation;
+  size_t lastAllocation = 0;
 
-  size_t impostorCount;
-  size_t pointCount;
+  size_t impostorCount = 0;
+  size_t pointCount = 0;
 
 public:
   InstanceManager() = default;

@@ -59,7 +59,8 @@ void EnergyValidator<Real, WorldReal>::calculateEnergy(const PhysicsDatabaseView
         const Entity &otherEntity = entities[j];
         localSystemSample.potentialEnergy -= cast<Real>(database.getMu(entity) * database.getMu(otherEntity) / static_cast<Real>(G) / glm::length(vec3(database.getPosition(entity)) - vec3(database.getPosition(otherEntity))));
       }
-      localSystemSample.totalEnergy += cast<Real>(kineticEnergy + rotationalEnergy);
+
+      localSystemSample.totalEnergy += cast<Real>(kineticEnergy);
 
       Real prevKinetic = kineticEnergy;
       Real prevRotational = rotationalEnergy;
