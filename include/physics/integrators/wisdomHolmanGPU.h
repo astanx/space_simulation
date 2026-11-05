@@ -21,9 +21,11 @@ protected:
   Kernel &driftAngularKernel;
   Kernel &driftObjectsLinearKernel;
   Kernel &driftOrbitalLinearKernel;
-  Kernel &halfKickLinearKernel;
+  Kernel &halfKickObjectsLinearKernel;
+  Kernel &halfKickOrbitalLinearKernel;
   Kernel &halfKickAngularKernel;
   Kernel &halfKickKernel;
+  Kernel &updateKeplerElementsKernel;
 
   void initKernels(WisdomHolmanGPUBuffers &gpu, Total total);
 

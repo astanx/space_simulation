@@ -18,9 +18,12 @@ __kernel void driftOrbitalLinear(__global real3* positions, __global real* mus, 
   real Omega = longitude[id];
   real omega = periapsis[id];
 
+  if (a == 0 || e < 0 || e >= 1)
+    return;
+
   int centralBodyID = centralBodyIndices[id];
 
-  real mu_central = mus[centralBodyID];
+  real mu = mus[centralBodyID] + mus[id];
 
   m = advanceMeanAnomaly(m, n, dt);
 
@@ -34,8 +37,8 @@ __kernel void driftOrbitalLinear(__global real3* positions, __global real* mus, 
   real3 v = real3(0.0);
   real r = a * (1 - e * cos(E));
 
-  v.x = -sqrt(mu_central * a) / r * sin(E);
-  v.y = sqrt(mu_central * a * (1 - (e * e))) / r * cos(E);
+  v.x = -sqrt(mu * a) / r * sin(E);
+  v.y = sqrt(mu * a * (1 - (e * e))) / r * cos(E);
 
   dmat3 R = dmat3_dot_dmat3(createR3matrix(Omega), dmat3_dot_dmat3(createR1matrix(i), createR3matrix(omega)));
 

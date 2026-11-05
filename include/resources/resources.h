@@ -183,15 +183,19 @@ namespace Res
   const std::string DRIFT_OBJECTS_LINEAR_KERNEL = "driftObjectsLinear";
   const std::string DRIFT_ORBITAL_LINEAR_KERNEL = "driftOrbitalLinear";
   const std::string HALF_KICK_ANGULAR_KERNEL = "halfKickAngular";
-  const std::string HALF_KICK_LINEAR_KERNEL = "halfKickLinear";
+  const std::string HALF_KICK_OBJECTS_LINEAR_KERNEL = "halfKickObjectsLinear";
+  const std::string HALF_KICK_ORBITAL_LINEAR_KERNEL = "halfKickOrbitalLinear";
   const std::string HALF_KICK_KERNEL = "halfKick";
+  const std::string UPDATE_KEPLER_ELEMENTS_KERNEL = "updateKeplerElements";
 
   const std::string WH_DRIFT_ANGULAR_KERNEL = "wh_driftAngular";
   const std::string WH_DRIFT_OBJECTS_LINEAR_KERNEL = "wh_driftObjectsLinear";
   const std::string WH_DRIFT_ORBITAL_LINEAR_KERNEL = "wh_driftOrbitalLinear";
   const std::string WH_HALF_KICK_ANGULAR_KERNEL = "wh_halfKickAngular";
-  const std::string WH_HALF_KICK_LINEAR_KERNEL = "wh_halfKickLinear";
+  const std::string WH_HALF_KICK_OBJECTS_LINEAR_KERNEL = "wh_halfKickObjectsLinear";
+  const std::string WH_HALF_KICK_ORBITAL_LINEAR_KERNEL = "wh_halfKickOrbitalLinear";
   const std::string WH_HALF_KICK_KERNEL = "wh_halfKick";
+  const std::string WH_UPDATE_KEPLER_ELEMENTS_KERNEL = "wh_updateKeplerElements";
 
   const std::string EULER_DRIFT_ANGULAR_KERNEL = "euler_driftAngular";
   const std::string EULER_DRIFT_LINEAR_KERNEL = "euler_driftLinear";

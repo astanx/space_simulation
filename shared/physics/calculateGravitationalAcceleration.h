@@ -3,7 +3,7 @@
 
 #ifdef __OPENCL_VERSION__
 #include "real.cl"
-using gravity_vec3 = real3;
+typedef real3 gravity_vec3;
 #else
 #include <cmath>
 #include <glm/glm.hpp>

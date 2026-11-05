@@ -3,5 +3,8 @@
 #include "wisdomHolman/driftOrbitalLinear.cl"
 
 #include "wisdomHolman/halfKickAngular.cl"
-#include "wisdomHolman/halfKickLinear.cl"
+#include "wisdomHolman/halfKickOrbitalLinear.cl"
+#include "wisdomHolman/halfKickObjectsLinear.cl"
 #include "wisdomHolman/halfKick.cl"
+
+#include "wisdomHolman/updateKeplerElements.cl"
